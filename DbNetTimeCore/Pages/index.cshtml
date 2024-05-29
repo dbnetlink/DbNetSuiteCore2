@@ -1,0 +1,28 @@
+﻿@page
+@{
+    Layout = "_Layout";
+}
+@using DbNetSuiteCore.Components;
+@model DbNetTimeCore.Pages.IndexModel
+<h5>Projects</h5>
+<div id="projetsGrid"></div>
+<h5>Tasks</h5>
+<div id="tasksGrid"></div>
+@{
+    DbNetGridCore projectGrid = new DbNetGridCore("dbnettime", "dbnettime_project", "projetsGrid");
+    projectGrid.Update = true;
+    projectGrid.Insert = true;
+    projectGrid.Column("Id").PrimaryKey();
+
+    DbNetGridCore taskGrid = new DbNetGridCore("dbnettime", "dbnettime_task", "tasksGrid");
+    taskGrid.Column("ProjectID").ForeignKey();
+    taskGrid.Update = true;
+    taskGrid.Insert = true;
+
+    taskGrid.EditControl.Columns = new List<string>() { "Id", "ProjectId", "Name" };
+
+  
+    projectGrid.AddLinkedControl(taskGrid);
+
+    @projectGrid.Render();
+}
