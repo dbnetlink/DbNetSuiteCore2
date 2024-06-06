@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-namespace DbNetTime.Services.Interfaces
+﻿namespace DbNetTimeCore.Services.Interfaces
 {
     public interface IDbNetTimeService
     {

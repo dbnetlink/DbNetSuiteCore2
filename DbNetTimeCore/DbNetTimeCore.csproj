@@ -12,29 +12,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Pages\Index.cshtml" />
-    <Content Remove="Pages\Shared\_Layout.cshtml" />
-    <Content Remove="Pages\Users.cshtml" />
+    <Content Remove="Pages\index.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Resources\CSS\bootstrap.min.css" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bootstrap.min.js" />
+    <None Remove="Resources\JS\htmx.min.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Pages\users.cshtml" />
-    <EmbeddedResource Include="Pages\index.cshtml" />
-    <EmbeddedResource Include="Pages\Shared\_Layout.cshtml" />
+    <EmbeddedResource Include="Pages\index.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />
     <EmbeddedResource Include="Resources\ICO\favicon.ico" />
     <EmbeddedResource Include="Resources\JS\bootstrap.min.js" />
+    <EmbeddedResource Include="Resources\JS\htmx.min.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DbNetSuiteCore" Version="1.0.19" />
+    <EmbeddedResource Include="Pages\Shared\_Layout.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\users.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />
+    <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
   </ItemGroup>
 
 </Project>

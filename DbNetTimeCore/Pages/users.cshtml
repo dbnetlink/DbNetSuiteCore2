@@ -1,14 +1,1 @@
-﻿@page
-@{
-    Layout = "_Layout";
-}
-@using DbNetSuiteCore.Components;
-@model DbNetTimeCore.Pages.UsersModel
-<h2>Users</h2>
-<div id="usersGrid"></div>
-@{
-    DbNetGridCore usersGrid = new DbNetGridCore("dbnettime", "dbnettime_user", "usersGrid");
-    usersGrid.Update = true;
-    usersGrid.Insert = true;
-    @usersGrid.Render()
-}
+﻿

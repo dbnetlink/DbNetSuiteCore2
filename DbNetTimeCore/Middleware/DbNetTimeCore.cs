@@ -2,8 +2,12 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using System.Text;
-using DbNetTime.Services.Interfaces;
-using DbNetTime.Services;
+using DbNetTimeCore.Repositories;
+using Microsoft.Extensions.Configuration;
+using DbNetTimeCore.Services.Interfaces;
+using DbNetTimeCore.Services;
+using Microsoft.AspNetCore.Mvc.Razor;
+using System.Diagnostics;
 
 namespace DbNetLink.Middleware
 {
@@ -90,9 +94,12 @@ namespace DbNetLink.Middleware
             });
 
             services.AddRazorPages().AddRazorRuntimeCompilation();
+            services.AddControllersWithViews();
             services.AddHttpContextAccessor();
             services.AddScoped<IDbNetTimeService, DbNetTimeService>();
-
+            services.AddScoped<IDbNetTimeRepository, DbNetTimeRepository>();
+            services.AddScoped<RazorViewToStringRenderer>();
+            
             return services;
         }
     }
