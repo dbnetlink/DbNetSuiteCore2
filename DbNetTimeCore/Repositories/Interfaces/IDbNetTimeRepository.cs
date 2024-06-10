@@ -1,10 +1,9 @@
-﻿using DbNetTimeCore.Models;
-using System.Data;
+﻿using System.Data;
 
 namespace DbNetTimeCore.Repositories
 {
     public interface IDbNetTimeRepository
     {
-        public DataTable GetProjects();
+        public DataTable GetCustomers();
     }
 }

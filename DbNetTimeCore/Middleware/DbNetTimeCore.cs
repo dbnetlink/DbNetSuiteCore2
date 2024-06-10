@@ -50,7 +50,7 @@ namespace DbNetLink.Middleware
 
                 request.Body.Position = 0;  //rewinding the stream to 0
             }
-            string page = request.Path.ToString().Split('/').Last();
+            string page = request.Path.ToString().Split('/')[1];
 
             if (page == string.Empty)
             {

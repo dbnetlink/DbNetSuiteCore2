@@ -1,12 +1,10 @@
+using DbNetTimeCore.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Data;
 
 namespace DbNetTimeCore.Pages
 {
     public class IndexModel : PageModel
     {
-        public DataTable Data { get; set; } = new DataTable();
-
-        public string Test => "TEST";
+        public DataGrid DataGrid { get; set; } = new DataGrid();
     }
 }

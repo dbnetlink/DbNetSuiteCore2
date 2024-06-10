@@ -6,7 +6,15 @@
     <title>DbNetTimeCore</title>
     <link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
     <link rel="stylesheet" href="bootstrap.min.css" />
-    <link href="~/resource.dbnetsuite?action=css" type="text/css" rel="stylesheet" />
+    <link rel="stylesheet" href="bootstrap.icons.min.css" />
+    <script>
+        function domReady(fn) {
+            document.addEventListener("DOMContentLoaded", fn);
+            if (document.readyState === "interactive" || document.readyState === "complete") {
+                fn();
+            }
+        }
+    </script>
 </head>
 <body>
     <header>
@@ -35,13 +43,16 @@
             @RenderBody()
         </main>
     </div>
-
     <footer class="border-top footer text-muted">
         <div class="container">
            
         </div>
     </footer>
     <script src="bootstrap.min.js"></script>
-    <script src="~/resource.dbnetsuite?action=script"></script>
+    <script src="jquery.min.js"></script>
+    <script src="htmx.min.js"></script>
+    <script src="surreal.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

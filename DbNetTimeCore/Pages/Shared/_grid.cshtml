@@ -1,0 +1,60 @@
+﻿@model DbNetTimeCore.Models.DataGrid
+@using System.Data
+<form class="datagrid">
+    <div class="d-flex flex-row mt-2">
+        <div class="d-flex">
+            <input class="form-control me-2 form-control-sm" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success btn-sm me-2" type="button">Search</button>
+        </div>
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-secondary btn-sm me-2" id="prev-btn" type="button" @(Model.PreviousPage ? null : "disabled") hx-post="@Model.PreviousPageUrl" hx-target="#@Model.BodyId" hx-swap="outerHTML">Previous</button>
+            <span class=" me-2">Page</span>
+            <input class="form-control form-control-sm me-2" style="width:20px" readonly type="text" />
+            <span class=" me-2">of</span>
+            <input class="form-control form-control-sm me-2" style="width:20px" readonly type="text" />
+            <button class="btn btn-outline-secondary btn-sm" id="next-btn" type="button" @(Model.NextPage ? null : "disabled") hx-post="@Model.NextPageUrl" hx-target="#@Model.BodyId" hx-swap="outerHTML">Next</button>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>&nbsp;</th>
+                @foreach (DataColumn column in Model.Columns)
+                {
+                    <th>@column.ColumnName</th>
+                }
+            </tr>
+        </thead>
+        <tbody id="@Model.BodyId">
+            @await Html.PartialAsync("~/Pages/Shared/_gridRows.cshtml", Model)
+        </tbody>
+    </table>
+
+    <script>
+        class GridScript {
+            constructor() {
+                any(this.rbSelector).on("click", ev => this.highlightRow(me(ev)));
+                me(this.rbSelector).click();
+
+                document.addEventListener('htmx:afterRequest', function (event) {
+                    console.log me((event.detail.target.id))
+                })
+            }
+
+            rbSelector = "input[type='radio']"
+
+            highlightRow(rb) {
+                this.clearHighlighting();
+                let tr = rb.closest("tr")
+                me(tr).classAdd("table-primary")
+            }
+
+            clearHighlighting() {
+                any(this.rbSelector).run(e => { let tr = e.closest("tr"); me(tr).classRemove("table-primary") })
+            }
+        }
+
+        domReady(() => { let gridScript = new GridScript() });
+    </script>
+</form>

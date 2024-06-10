@@ -22,10 +22,10 @@ public class RazorViewToStringRenderer
         _serviceProvider = serviceProvider;
     }
 
-    public async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model)
+    public async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model, bool isMainPage = false)
     {
         var actionContext = GetActionContext();
-        var view = FindView(actionContext, viewName);
+        var view = FindView(actionContext, viewName, isMainPage);
 
         using (var output = new StringWriter())
         {
@@ -50,15 +50,20 @@ public class RazorViewToStringRenderer
         }
     }
 
-    private IView FindView(ActionContext actionContext, string viewName)
+    public async Task<string> RenderPageToStringAsync<TModel>(string viewName, TModel model )
     {
-        var getViewResult = _razorViewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
+        return await RenderViewToStringAsync(viewName, model, true);
+    }
+
+    private IView FindView(ActionContext actionContext, string viewName, bool isMainPage)
+    {
+        var getViewResult = _razorViewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: isMainPage);
         if (getViewResult.Success)
         {
             return getViewResult.View;
         }
 
-        var findViewResult = _razorViewEngine.FindView(actionContext, viewName, isMainPage: true);
+        var findViewResult = _razorViewEngine.FindView(actionContext, viewName, isMainPage: isMainPage);
         if (findViewResult.Success)
         {
             return findViewResult.View;

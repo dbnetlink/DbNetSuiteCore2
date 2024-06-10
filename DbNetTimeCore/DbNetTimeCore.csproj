@@ -8,11 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\DataColumn.cs" />
+    <Compile Remove="Models\DataRow.cs" />
     <Compile Remove="Services\AspNetCoreServices.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Pages\index.cshtml" />
+    <Content Remove="Pages\Shared\_grid.cshtml" />
+    <Content Remove="Pages\Shared\_gridRows.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,10 +24,18 @@
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bootstrap.min.js" />
     <None Remove="Resources\JS\htmx.min.js" />
+    <None Remove="Resources\JS\jquery.min.js" />
+    <None Remove="Resources\JS\surreal.js" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Pages\index.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Shared\_gridRows.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Shared\_grid.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />
@@ -37,6 +49,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\users.cshtml" />
+    <EmbeddedResource Include="Resources\JS\jquery.min.js" />
+    <EmbeddedResource Include="Resources\JS\surreal.js" />
   </ItemGroup>
 
   <ItemGroup>

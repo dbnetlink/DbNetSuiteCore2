@@ -3,26 +3,27 @@
     Layout = "_Layout";
 }
 @using System.Data;
-<h5>Projects</h5>
-<table class="table">
-    <thead>
-        <tr>
 
-            @foreach (DataColumn column in Model.Data.Columns)
-            {
-                <th>@column.ColumnName</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow row in Model.Data.Rows)
-        {
-            <tr>
-                @foreach (DataColumn col in Model.Data.Columns)
-                {
-                    <th>@row[col]</th>
-                }
-            </tr>
-        }
-    </tbody>
-</table>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab" aria-controls="projects" aria-selected="true">Customers</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab" aria-controls="tasks" aria-selected="false">Tasks</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="projects" role="tabpanel" aria-labelledby="projects-tab">
+        @await Html.PartialAsync("~/Pages/Shared/_grid.cshtml",Model.DataGrid)
+    </div>
+    <div class="tab-pane fade" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
+    </div>
+</div>
+
+
+@section scripts {
+    <script>
+    //    $("form.datagrid").find("input[type='radio']").on('click', function () {alert('click')})
+    </script> 
+}

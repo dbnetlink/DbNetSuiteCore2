@@ -1,5 +1,4 @@
-﻿using DbNetTimeCore.Models;
-using System.Data;
+﻿using System.Data;
 
 namespace DbNetTimeCore.Repositories
 {
@@ -8,9 +7,9 @@ namespace DbNetTimeCore.Repositories
         public DbNetTimeRepository(IConfiguration configuration, IWebHostEnvironment env) : base(configuration, env)
         {
         }
-        public DataTable GetProjects()
+        public DataTable GetCustomers()
         {
-            return GetDataTable("select * from DbNetTime_Project");
+            return GetDataTable("select * from customer");
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using DbNetTimeCore.Services.Interfaces;
 using DbNetTimeCore.Repositories;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Reflection;
 using System.Text;
 using DbNetTimeCore.Pages;
+using DbNetTimeCore.Models;
+using System.Data;
+using Microsoft.Extensions.Primitives;
 
 namespace DbNetTimeCore.Services
 {
@@ -13,6 +15,8 @@ namespace DbNetTimeCore.Services
         private readonly IDbNetTimeRepository _dbNetTimeRepository;
         private readonly RazorViewToStringRenderer _razorRendererService;
         private HttpContext? _context = null;
+        private bool isAjaxCall => _context.Request.Headers["hx-request"] == "true";
+
         public DbNetTimeService(IDbNetTimeRepository dbNetTimeRepository, RazorViewToStringRenderer razorRendererService)  
         {
             _dbNetTimeRepository = dbNetTimeRepository;
@@ -25,7 +29,8 @@ namespace DbNetTimeCore.Services
             switch (page.ToLower())
             {
                 case "index":
-                    return await ProjectPage();
+                case "customers":
+                    return await CustomersPage();
                 case "users":
                     return await UsersPage();
             }
@@ -33,10 +38,18 @@ namespace DbNetTimeCore.Services
             return GetResource(page);
         }
 
-        private async Task<Byte[]> ProjectPage()
+        private async Task<Byte[]> CustomersPage()
         {
             var model = new IndexModel();
-            model.Data = _dbNetTimeRepository.GetProjects();
+
+            DataTable dataTable = _dbNetTimeRepository.GetCustomers();
+
+            model.DataGrid = new DataGrid(dataTable, "customers", GetPageNumber());
+
+            if (isAjaxCall)
+            {
+                return await View("_gridRows", model.DataGrid);
+            }
 
             return await Page("index", model);
         }
@@ -46,9 +59,32 @@ namespace DbNetTimeCore.Services
             return await Page("users", new UsersModel());
         }
 
-        private async Task<Byte[]> Page(string page, PageModel pageModel)
+        private async Task<Byte[]> Page(string pageName, PageModel pageModel)
         {
-            return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Pages/{page}.cshtml", pageModel));
+            return Encoding.UTF8.GetBytes(await _razorRendererService.RenderPageToStringAsync<PageModel>($"Pages/{pageName}.cshtml", pageModel));
+        }
+
+        private async Task<Byte[]> View<TModel>(string viewName, TModel model)
+        {
+            return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Pages/Shared/{viewName}.cshtml", model));
+        }
+
+        private int GetPageNumber()
+        {
+            StringValues page = string.Empty;
+
+            if (_context.Request.Query.TryGetValue("page", out page))
+            {
+            }
+
+            try
+            {
+                return Convert.ToInt32(page);
+            }
+            catch
+            {
+                return 1;
+            }
         }
 
         public Byte[] GetResource(string resource)
