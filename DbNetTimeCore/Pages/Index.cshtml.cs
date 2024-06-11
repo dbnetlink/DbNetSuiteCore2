@@ -5,6 +5,8 @@ namespace DbNetTimeCore.Pages
 {
     public class IndexModel : PageModel
     {
-        public DataGrid DataGrid { get; set; } = new DataGrid();
+        public DataGrid CustomersGrid { get; set; } = new DataGrid();
+        public DataGrid FilmsGrid { get; set; } = new DataGrid();
+        public DataGrid ActorsGrid { get; set; } = new DataGrid();
     }
 }

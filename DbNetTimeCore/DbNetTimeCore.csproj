@@ -15,30 +15,33 @@
 
   <ItemGroup>
     <Content Remove="Pages\index.cshtml" />
-    <Content Remove="Pages\Shared\_grid.cshtml" />
-    <Content Remove="Pages\Shared\_gridRows.cshtml" />
+    <Content Remove="Pages\Shared\_gridControl.cshtml" />
+    <Content Remove="Pages\Shared\_gridMarkup.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Resources\CSS\bootstrap.min.css" />
+    <None Remove="Resources\CSS\daisyui.css" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bootstrap.min.js" />
     <None Remove="Resources\JS\htmx.min.js" />
     <None Remove="Resources\JS\jquery.min.js" />
     <None Remove="Resources\JS\surreal.js" />
+    <None Remove="Resources\JS\tailwindcss.js" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Pages\index.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_gridRows.cshtml">
+    <EmbeddedResource Include="Pages\Shared\_gridMarkup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_grid.cshtml">
+    <EmbeddedResource Include="Pages\Shared\_gridControl.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />
+    <EmbeddedResource Include="Resources\CSS\daisyui.css" />
     <EmbeddedResource Include="Resources\ICO\favicon.ico" />
     <EmbeddedResource Include="Resources\JS\bootstrap.min.js" />
     <EmbeddedResource Include="Resources\JS\htmx.min.js" />
@@ -51,10 +54,12 @@
     <EmbeddedResource Include="Pages\users.cshtml" />
     <EmbeddedResource Include="Resources\JS\jquery.min.js" />
     <EmbeddedResource Include="Resources\JS\surreal.js" />
+    <EmbeddedResource Include="Resources\JS\tailwindcss.js" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />

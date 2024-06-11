@@ -41,6 +41,7 @@ namespace DbNetLink.Middleware
             string requestContent = string.Empty;
             var request = context.Request;
             var resp = context.Response;
+            /*
             if (request.Method == HttpMethods.Post && request.ContentLength > 0)
             {
                 request.EnableBuffering();
@@ -50,6 +51,7 @@ namespace DbNetLink.Middleware
 
                 request.Body.Position = 0;  //rewinding the stream to 0
             }
+            */
             string page = request.Path.ToString().Split('/')[1];
 
             if (page == string.Empty)

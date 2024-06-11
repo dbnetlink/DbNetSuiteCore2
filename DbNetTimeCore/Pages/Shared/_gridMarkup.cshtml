@@ -1,0 +1,40 @@
+﻿@model DbNetTimeCore.Models.DataGrid
+@using System.Data
+
+<div class="flex flex-col">
+    <div class="flex flex-row gap-1 items-center">
+        <input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="searchInput">
+        <button class="btn btn-sm" type="button" hx-include="#@Model.GridId [name='searchInput']" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Search</button>
+        <button class="btn btn-sm" type="button" @(Model.PreviousPage ? null : "disabled") hx-post="@Model.PreviousPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Previous</button>
+        <span class="">Page</span>
+        <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.CurrentPage" />
+        <span class="">of</span>
+        <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.TotalPages" />
+        <button class="btn btn-sm" type="button" @(Model.NextPage ? null : "disabled") hx-post="@Model.NextPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Next</button>
+    </div>
+    <div class="flex mt-2">
+        <table class="table">
+            <thead>
+                <tr class="bg-slate-200">
+                    <th>&nbsp;</th>
+                    @foreach (DataColumn column in Model.Columns)
+                    {
+                        <th class="text-base">@column.ColumnName</th>
+                    }
+                </tr>
+            </thead>
+            <tbody data-url="@Model.BaseUrl" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
+                @foreach (DataRow row in Model.Rows)
+                {
+                    <tr>
+                        <td><input type="radio" name="rb" /></td>
+                        @foreach (DataColumn col in Model.Columns)
+                        {
+                            <td class="text-base">@row[col]</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

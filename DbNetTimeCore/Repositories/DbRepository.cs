@@ -53,10 +53,10 @@ namespace DbNetTimeCore.Repositories
                 _connection.Open();
             }
         }
-        public DataTable GetDataTable(string sql)
+        public DataTable GetDataTable(QueryCommandConfig queryCommandConfig)
         {
             DataTable dataTable = new DataTable();
-            dataTable.Load(ExecuteQuery(sql));
+            dataTable.Load(ExecuteQuery(queryCommandConfig));
             return dataTable;
         }
 

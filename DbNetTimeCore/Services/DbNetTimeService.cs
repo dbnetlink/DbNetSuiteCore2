@@ -29,8 +29,13 @@ namespace DbNetTimeCore.Services
             switch (page.ToLower())
             {
                 case "index":
+                    return await IndexPage();
                 case "customers":
                     return await CustomersPage();
+                case "films":
+                    return await FilmsPage();
+                case "actors":
+                    return await ActorsPage();
                 case "users":
                     return await UsersPage();
             }
@@ -38,20 +43,31 @@ namespace DbNetTimeCore.Services
             return GetResource(page);
         }
 
-        private async Task<Byte[]> CustomersPage()
+        private async Task<Byte[]> IndexPage()
         {
             var model = new IndexModel();
 
-            DataTable dataTable = _dbNetTimeRepository.GetCustomers();
-
-            model.DataGrid = new DataGrid(dataTable, "customers", GetPageNumber());
-
-            if (isAjaxCall)
-            {
-                return await View("_gridRows", model.DataGrid);
-            }
+            model.CustomersGrid = CustomersDataGrid();
+            model.FilmsGrid = FilmsDataGrid();
+            model.ActorsGrid = ActorsDataGrid();
 
             return await Page("index", model);
+        }
+
+   
+        private async Task<Byte[]> CustomersPage()
+        {
+            return await View("_gridMarkup", CustomersDataGrid(GetGridParameters()));
+        }
+
+        private async Task<Byte[]> FilmsPage()
+        {
+            return await View("_gridMarkup", FilmsDataGrid(GetGridParameters()));
+        }
+
+        private async Task<Byte[]> ActorsPage()
+        {
+            return await View("_gridMarkup", ActorsDataGrid(GetGridParameters()));
         }
 
         private async Task<Byte[]> UsersPage()
@@ -69,22 +85,39 @@ namespace DbNetTimeCore.Services
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Pages/Shared/{viewName}.cshtml", model));
         }
 
-        private int GetPageNumber()
+        private DataGrid CustomersDataGrid(GridParameters? gridParameters = null)
         {
-            StringValues page = string.Empty;
+            gridParameters = gridParameters ?? new GridParameters();
+            DataTable customers = _dbNetTimeRepository.GetCustomers(gridParameters);
+            return new DataGrid(customers, "customers", gridParameters);
+        }
 
-            if (_context.Request.Query.TryGetValue("page", out page))
-            {
-            }
+        private DataGrid FilmsDataGrid(GridParameters? gridParameters = null)
+        {
+            gridParameters = gridParameters ?? new GridParameters();
+            DataTable films = _dbNetTimeRepository.GetFilms(gridParameters);
+            return new DataGrid(films, "films", gridParameters);
+        }
 
+        private DataGrid ActorsDataGrid(GridParameters? gridParameters = null)
+        {
+            gridParameters = gridParameters ?? new GridParameters();
+            DataTable actors = _dbNetTimeRepository.GetActors(gridParameters);
+            return new DataGrid(actors, "actors", gridParameters);
+        }
+        private GridParameters GetGridParameters()
+        {
+            GridParameters gridParameters = new GridParameters();
             try
             {
-                return Convert.ToInt32(page);
+                gridParameters.CurrentPage = _context.Request.Query.ContainsKey("page") ? Convert.ToInt32(_context.Request.Query["page"]) : 1;
+                gridParameters.SearchInput = _context.Request.Form.ContainsKey("searchInput") ? _context.Request.Form["searchInput"].ToString() : string.Empty;
             }
             catch
             {
-                return 1;
             }
+
+            return gridParameters;
         }
 
         public Byte[] GetResource(string resource)
