@@ -5,33 +5,7 @@
 </form>
 
 <script>
-    class @(Model.GridId)GridScript{
-        constructor() {
-            this.init();
-            document.addEventListener('htmx:afterRequest', this.init.bind(this), false);
-        }
-
-        gridSelector = "#@(Model.GridId)"
-        rbSelector = "#@(Model.GridId) input[type='radio']"
-        bgColourClass = "bg-cyan-500"
-
-        init() {
-            any(this.rbSelector).on("click", ev => this.highlightRow(me(ev)));
-            me(this.rbSelector).click();
-        }
-
-        highlightRow(rb) {
-            this.clearHighlighting();
-            let tr = rb.closest("tr")
-            me(tr).classAdd(this.bgColourClass)
-        }
-
-        clearHighlighting() {
-            any(this.rbSelector).run(e => { let tr = e.closest("tr"); me(tr).classRemove(this.bgColourClass) })
-        }
-    }
-
     domReady(() => {
-        let @(Model.GridId.ToLower())gridScript = new @(Model.GridId)GridScript();
+        let gridControl = new GridControl("@(Model.GridId)");
     });
 </script>

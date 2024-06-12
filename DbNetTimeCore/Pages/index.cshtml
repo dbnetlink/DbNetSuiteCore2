@@ -10,7 +10,7 @@
         @await Html.PartialAsync("~/Pages/Shared/_gridControl.cshtml", Model.CustomersGrid)
     </div>
 
-    <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Films"  />
+    <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Films" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
         @await Html.PartialAsync("~/Pages/Shared/_gridControl.cshtml", Model.FilmsGrid)
     </div>
@@ -20,3 +20,83 @@
         @await Html.PartialAsync("~/Pages/Shared/_gridControl.cshtml", Model.ActorsGrid)
     </div>
 </div>
+
+
+@section Scripts { 
+    <script>
+        document.addEventListener("customersGrid:pageLoaded", reRenderActive);
+
+        function reRenderActive(event) {
+            event.detail.columnCells("active").run(cell => { transformActiveCell(cell) })
+            event.detail.columnCells("email").run(cell => { transformEmailCell(cell) })
+        }
+
+        function transformActiveCell(cell) {
+            if (cell.innerText == "0")
+            {
+                cell.innerText = "";
+            }
+            else
+            {
+                me(cell).classAdd("text-green-500");
+                cell.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"3\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke - linejoin=\"round\" d=\"m4.5 12.75 6 6 9-13.5\"/></svg>";
+            }
+        }
+
+        function transformEmailCell(cell) {
+            me(cell).classAdd("text-blue-500").classAdd("underline");
+         }
+    </script>
+    <script>
+        class GridControl {
+            constructor(gridId) {
+                this.gridId = gridId;
+                this.init();
+                document.addEventListener('htmx:afterRequest', this.init.bind(this), false);
+            }
+
+            gridId = "";
+            bgColourClass = "bg-cyan-200";
+            rbAttributeSelector = "input[type='radio']";
+
+            tableSelector() {
+                return `#${this.gridId} table`
+            }
+
+            rbSelector() {
+                return `#${this.gridId} ${this.rbAttributeSelector}`
+            }
+
+            rowSelector() {
+                return `#${this.gridId} tbody tr`
+            }
+
+            columnCells(columnName) {
+                let th = me(`#${this.gridId} th[data-columnname='${columnName.toLowerCase()}']`)
+                return any(`#${this.gridId} td:nth-child(${(th.cellIndex+1)})`)
+            }
+
+            init() {
+                any(this.rbSelector()).on("click", ev => this.highlightRow(me(ev)));
+                any(this.rowSelector()).on("click", ev => this.clickRb(me(ev)));
+                me(this.rbSelector()).click();
+                const event = new CustomEvent(`${this.gridId}:pageLoaded`, { detail: this });
+                document.dispatchEvent(event);
+            }
+
+            clickRb(tr) {
+                tr.querySelector(this.rbAttributeSelector).click();
+            }
+
+            highlightRow(rb) {
+                this.clearHighlighting();
+                let tr = rb.closest("tr")
+                me(tr).classAdd(this.bgColourClass)
+            }
+
+            clearHighlighting() {
+                any(this.rbSelector()).run(e => { let tr = e.closest("tr"); me(tr).classRemove(this.bgColourClass) })
+            }
+        }
+    </script>
+}

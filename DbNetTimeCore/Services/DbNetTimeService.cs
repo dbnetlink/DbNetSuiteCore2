@@ -6,7 +6,6 @@ using System.Text;
 using DbNetTimeCore.Pages;
 using DbNetTimeCore.Models;
 using System.Data;
-using Microsoft.Extensions.Primitives;
 
 namespace DbNetTimeCore.Services
 {
@@ -110,8 +109,8 @@ namespace DbNetTimeCore.Services
             GridParameters gridParameters = new GridParameters();
             try
             {
-                gridParameters.CurrentPage = _context.Request.Query.ContainsKey("page") ? Convert.ToInt32(_context.Request.Query["page"]) : 1;
-                gridParameters.SearchInput = _context.Request.Form.ContainsKey("searchInput") ? _context.Request.Form["searchInput"].ToString() : string.Empty;
+                gridParameters.CurrentPage = Convert.ToInt32(QueryValue("page","1"));
+                gridParameters.SearchInput = FormValue("searchInput", string.Empty);
             }
             catch
             {
@@ -120,7 +119,17 @@ namespace DbNetTimeCore.Services
             return gridParameters;
         }
 
-        public Byte[] GetResource(string resource)
+        private string QueryValue(string key, string defaultValue)
+        {
+            return _context.Request.Query.ContainsKey(key) ? _context.Request.Query[key].ToString() : defaultValue;
+        }
+
+        private string FormValue(string key, string defaultValue)
+        {
+            return _context.Request.Form.ContainsKey(key) ? _context.Request.Form[key].ToString() : defaultValue;
+        }
+
+        private Byte[] GetResource(string resource)
         {
             string folder = resource.Split(".").Last().ToUpper();
             var assembly = Assembly.GetExecutingAssembly();

@@ -1,16 +1,28 @@
 ﻿@model DbNetTimeCore.Models.DataGrid
 @using System.Data
+@using DbNetTimeCore.Models
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
-        <input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="searchInput">
-        <button class="btn btn-sm" type="button" hx-include="#@Model.GridId [name='searchInput']" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Search</button>
-        <button class="btn btn-sm" type="button" @(Model.PreviousPage ? null : "disabled") hx-post="@Model.PreviousPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Previous</button>
-        <span class="">Page</span>
-        <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.CurrentPage" />
-        <span class="">of</span>
-        <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.TotalPages" />
-        <button class="btn btn-sm" type="button" @(Model.NextPage ? null : "disabled") hx-post="@Model.NextPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Next</button>
+        <input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput">
+        <button class="btn btn-sm" type="button" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Search</button>
+
+        @if (Model.TotalPages == 0)
+        {
+            <div class="p-1 rounded-md border-solid border-slate-300 bg-slate-100 flex flex-row gap-2">
+                @Html.Raw(InfoIcon())
+                <span>No records found</span>
+            </div>
+        }
+        else
+        {
+            <button class="btn btn-sm" type="button" @(Model.PreviousPage ? null : "disabled") hx-post="@Model.PreviousPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Previous</button>
+            <span class="">Page</span>
+            <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.CurrentPage" />
+            <span class="">of</span>
+            <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.TotalPages" />
+            <button class="btn btn-sm" type="button" @(Model.NextPage ? null : "disabled") hx-post="@Model.NextPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Next</button>
+        }
     </div>
     <div class="flex mt-2">
         <table class="table">
@@ -19,22 +31,103 @@
                     <th>&nbsp;</th>
                     @foreach (DataColumn column in Model.Columns)
                     {
-                        <th class="text-base">@column.ColumnName</th>
+                        ColumnInfo? columnInfo = Model.GetColumnInfo(column);
+                        <th class="text-base" style="cursor:pointer" data-columnname="@column.ColumnName.ToLower()" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">
+                            <div class="flex flex-row justify-between items-center">@(columnInfo?.Label ?? column.ColumnName) @Html.Raw(ChevronDownIcon())</div>
+                        </th>
                     }
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
-            <tbody data-url="@Model.BaseUrl" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
+            <tbody data-url="@Model.Id" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
                 @foreach (DataRow row in Model.Rows)
                 {
-                    <tr>
+                    <tr style="cursor:pointer">
                         <td><input type="radio" name="rb" /></td>
                         @foreach (DataColumn col in Model.Columns)
                         {
-                            <td class="text-base">@row[col]</td>
+                            ColumnInfo? columnInfo = Model.GetColumnInfo(col);
+                            var classes = new List<string>() { "text-base" };
+
+                            if (col.DataType == typeof(Int64) || col.DataType == typeof(Double))
+                            {
+                                classes.Add("text-right");
+                            }
+
+                            var value = FormatValue(row[col], columnInfo);
+                            <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
                         }
+                        <td>
+                            <button class="btn btn-sm w-8 p-0 text-slate-600" type="button">
+                                @Html.Raw(EditIcon())
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+@functions {
+
+    public static object? FormatValue(object? value, ColumnInfo? columnInfo)
+    {
+        if (string.IsNullOrEmpty(columnInfo?.Format) || value == null)
+        {
+            return value;
+        }
+
+        string format = columnInfo!.Format;
+
+        switch(format)
+        {
+            case "email":
+                value = $"<a href=\"mailto:{value}\">{value}</a>";
+                break;
+            case "www":
+                value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
+                break;
+            default:
+                if (columnInfo?.DataType == typeof(DateTime))
+                {
+                    value = Convert.ToDateTime(value).ToString(format);
+                }
+                if (columnInfo?.DataType == typeof(Int64))
+                {
+                    value = Convert.ToInt64(value).ToString(format);
+                }
+                if (columnInfo?.DataType == typeof(Double))
+                {
+                    value = Convert.ToDouble(value).ToString(format);
+                }
+                break;
+        }
+
+        return value;
+    }
+
+    public static string InfoIcon()
+    {
+        return IconSVG("m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z");
+    }
+
+    public static string EditIcon()
+    {
+        return IconSVG("m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10");
+    }
+
+    public static string ChevronDownIcon()
+    {
+        return IconSVG("m19.5 8.25-7.5 7.5-7.5-7.5");
+    }
+
+    public static string ChevronUpIcon()
+    {
+        return IconSVG("m4.5 15.75 7.5-7.5 7.5 7.5");
+    }
+
+    public static string IconSVG(string data)
+    {
+        return "<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"{d}\"/></svg>".Replace("{d}", data);
+    }
+}
