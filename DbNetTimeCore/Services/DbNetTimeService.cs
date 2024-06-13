@@ -52,11 +52,18 @@ namespace DbNetTimeCore.Services
 
             return await Page("index", model);
         }
-
    
         private async Task<Byte[]> CustomersPage()
         {
-            return await View("_gridMarkup", CustomersDataGrid(GetGridParameters()));
+            var gridParameters = GetGridParameters();
+            if (gridParameters.Handler == "edit")
+            {
+                return await View("_formMarkup", CustomersDataGrid(gridParameters));
+            }
+            else
+            {
+                return await View("_gridMarkup", CustomersEditForm(gridParameters));
+            }
         }
 
         private async Task<Byte[]> FilmsPage()
@@ -91,6 +98,14 @@ namespace DbNetTimeCore.Services
             return new DataGrid(customers, "customers", gridParameters);
         }
 
+        private DataGrid CustomersEditForm(GridParameters? gridParameters = null)
+        {
+            gridParameters = gridParameters ?? new GridParameters();
+            DataTable customers = _dbNetTimeRepository.GetCustomer(gridParameters);
+            return new DataGrid(customers, "customers", gridParameters);
+        }
+       
+
         private DataGrid FilmsDataGrid(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
@@ -111,6 +126,11 @@ namespace DbNetTimeCore.Services
             {
                 gridParameters.CurrentPage = Convert.ToInt32(QueryValue("page","1"));
                 gridParameters.SearchInput = FormValue("searchInput", string.Empty);
+                gridParameters.SortKey = FormValue("sortKey", string.Empty);
+                gridParameters.CurrentSortKey = FormValue("currentSortKey", string.Empty);
+                gridParameters.CurrentSortAscending = Convert.ToBoolean(FormValue("currentSortAscending", "0"));
+                gridParameters.Handler = QueryValue("handler", string.Empty);
+                gridParameters.PrimaryKey = QueryValue("pk", string.Empty);
             }
             catch
             {

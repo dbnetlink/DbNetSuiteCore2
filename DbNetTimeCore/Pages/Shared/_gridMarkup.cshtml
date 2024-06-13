@@ -1,11 +1,12 @@
 ﻿@model DbNetTimeCore.Models.DataGrid
 @using System.Data
 @using DbNetTimeCore.Models
+@using Microsoft.AspNetCore.Html
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
         <input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput">
-        <button class="btn btn-sm" type="button" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Search</button>
+        <button class="btn btn-sm mr-5 p-1" type="button" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML" title="Search">@Html.Raw(SearchIcon())</button>
 
         @if (Model.TotalPages == 0)
         {
@@ -16,34 +17,36 @@
         }
         else
         {
-            <button class="btn btn-sm" type="button" @(Model.PreviousPage ? null : "disabled") hx-post="@Model.PreviousPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Previous</button>
+            RenderNavButton(Model.PreviousPage, Model.FirstPageUrl, FirstIcon(), "First page");
+            RenderNavButton(Model.PreviousPage, Model.PreviousPageUrl, PreviousIcon(), "Previous page");
             <span class="">Page</span>
-            <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.CurrentPage" />
+            RenderPageNumber(Model.CurrentPage);
             <span class="">of</span>
-            <input class="input input-bordered input-sm w-10" readonly type="text" value="@Model.TotalPages" />
-            <button class="btn btn-sm" type="button" @(Model.NextPage ? null : "disabled") hx-post="@Model.NextPageUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Next</button>
+            RenderPageNumber(Model.TotalPages);
+            RenderNavButton(Model.NextPage, Model.NextPageUrl, NextIcon(), "Next page");
+            RenderNavButton(Model.NextPage, Model.LastPageUrl, LastIcon(), "Last page");
         }
     </div>
     <div class="flex mt-2">
         <table class="table">
             <thead>
                 <tr class="bg-slate-200">
-                    <th>&nbsp;</th>
-                    @foreach (DataColumn column in Model.Columns)
+                    @foreach (ColumnInfo columnInfo in Model.ColumnInfo)
                     {
-                        ColumnInfo? columnInfo = Model.GetColumnInfo(column);
-                        <th class="text-base" style="cursor:pointer" data-columnname="@column.ColumnName.ToLower()" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">
-                            <div class="flex flex-row justify-between items-center">@(columnInfo?.Label ?? column.ColumnName) @Html.Raw(ChevronDownIcon())</div>
+                        <th class="text-base" style="cursor:pointer" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">
+                            <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) @SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</div>
                         </th>
                     }
-                    <th>&nbsp;</th>
+                    @if (Model.HasPrimaryKey)
+                    {
+                        <th>&nbsp;</th>
+                    }
                 </tr>
             </thead>
             <tbody data-url="@Model.Id" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
                 @foreach (DataRow row in Model.Rows)
                 {
                     <tr style="cursor:pointer">
-                        <td><input type="radio" name="rb" /></td>
                         @foreach (DataColumn col in Model.Columns)
                         {
                             ColumnInfo? columnInfo = Model.GetColumnInfo(col);
@@ -57,18 +60,35 @@
                             var value = FormatValue(row[col], columnInfo);
                             <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
                         }
-                        <td>
-                            <button class="btn btn-sm w-8 p-0 text-slate-600" type="button">
-                                @Html.Raw(EditIcon())
-                            </button>
-                        </td>
+                        @if (Model.HasPrimaryKey)
+                        {
+                            <td>
+                                <button class="btn btn-sm w-8 p-0 text-slate-600" type="button" hx-post="@Model.EditUrl(row)" hx-target="tr" hx-swap="outerHTML">
+                                    @Html.Raw(EditIcon())
+                                </button>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
         </table>
+        <input type="hidden" name="currentSortKey" value="@Model.CurrentSortKey" />
+        <input type="hidden" name="currentSortAscending" value="@Model.CurrentSortAscending.ToString()" />
     </div>
 </div>
+
+
 @functions {
+
+    void RenderNavButton(bool enable, string url, HtmlString icon, string title)
+    {
+        <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled") hx-post="@url" hx-target="#@Model.GridId" hx-swap="innerHTML">@icon</button>
+    }
+
+    void RenderPageNumber(int pageNumber)
+    {
+        <input class="input input-bordered input-sm w-10" readonly type="text" value="@pageNumber" />
+    }
 
     public static object? FormatValue(object? value, ColumnInfo? columnInfo)
     {
@@ -79,7 +99,7 @@
 
         string format = columnInfo!.Format;
 
-        switch(format)
+        switch (format)
         {
             case "email":
                 value = $"<a href=\"mailto:{value}\">{value}</a>";
@@ -106,28 +126,71 @@
         return value;
     }
 
-    public static string InfoIcon()
+    HtmlString InfoIcon()
     {
         return IconSVG("m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z");
     }
 
-    public static string EditIcon()
+    HtmlString EditIcon()
     {
         return IconSVG("m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10");
     }
 
-    public static string ChevronDownIcon()
+    HtmlString SortIcon(bool isSortColumn, bool sortAscending)
+    {
+        if (isSortColumn)
+        {
+            if (sortAscending)
+            {
+                return ChevronUpIcon();
+            }
+            else
+            {
+                return ChevronDownIcon();
+            }
+        }
+        else
+        {
+            return new HtmlString(string.Empty);
+        }
+    }
+
+    HtmlString SearchIcon()
+    {
+        return IconSVG("m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z");
+    }
+
+    HtmlString FirstIcon()
+    {
+        return IconSVG("m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5");
+    }
+
+    HtmlString LastIcon()
+    {
+        return IconSVG("m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5");
+    }
+
+    HtmlString PreviousIcon()
+    {
+        return IconSVG("M15.75 19.5 8.25 12l7.5-7.5");
+    }
+
+    HtmlString NextIcon()
+    {
+        return IconSVG("m8.25 4.5 7.5 7.5-7.5 7.5");
+    }
+    HtmlString ChevronDownIcon()
     {
         return IconSVG("m19.5 8.25-7.5 7.5-7.5-7.5");
     }
 
-    public static string ChevronUpIcon()
+    HtmlString ChevronUpIcon()
     {
         return IconSVG("m4.5 15.75 7.5-7.5 7.5 7.5");
     }
 
-    public static string IconSVG(string data)
+    HtmlString IconSVG(string data)
     {
-        return "<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"{d}\"/></svg>".Replace("{d}", data);
+        return new HtmlString("<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"2\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"{d}\"/></svg>".Replace("{d}", data));
     }
 }

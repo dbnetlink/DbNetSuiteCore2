@@ -57,14 +57,9 @@
 
             gridId = "";
             bgColourClass = "bg-cyan-200";
-            rbAttributeSelector = "input[type='radio']";
 
             tableSelector() {
                 return `#${this.gridId} table`
-            }
-
-            rbSelector() {
-                return `#${this.gridId} ${this.rbAttributeSelector}`
             }
 
             rowSelector() {
@@ -77,25 +72,19 @@
             }
 
             init() {
-                any(this.rbSelector()).on("click", ev => this.highlightRow(me(ev)));
-                any(this.rowSelector()).on("click", ev => this.clickRb(me(ev)));
-                me(this.rbSelector()).click();
+                any(this.rowSelector()).on("click", ev => this.highlightRow(me(ev)));
+                me(this.rowSelector()).click();
                 const event = new CustomEvent(`${this.gridId}:pageLoaded`, { detail: this });
                 document.dispatchEvent(event);
             }
 
-            clickRb(tr) {
-                tr.querySelector(this.rbAttributeSelector).click();
-            }
-
-            highlightRow(rb) {
+            highlightRow(tr) {
                 this.clearHighlighting();
-                let tr = rb.closest("tr")
                 me(tr).classAdd(this.bgColourClass)
             }
 
             clearHighlighting() {
-                any(this.rbSelector()).run(e => { let tr = e.closest("tr"); me(tr).classRemove(this.bgColourClass) })
+                any(this.rowSelector()).run(e => { let tr = e.closest("tr"); me(tr).classRemove(this.bgColourClass) })
             }
         }
     </script>

@@ -4,13 +4,13 @@
     {
         public string Label { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string ColumnName => Name.Split(".").Last();
+        public string Key => Name.GetHashCode().ToString();
         public bool Searchable { get; set; } = false;
         public string Format { get; set; } = string.Empty;
         public bool IsPrimaryKey { get; set; } = false;
         public bool Editable { get; set; } = false;
         public Type DataType { get; set; } = typeof(String);
-        public bool SortedBy { get; set; } = false;
-        public bool SortedByAscending { get; set; } = true;
 
         public ColumnInfo()
         {

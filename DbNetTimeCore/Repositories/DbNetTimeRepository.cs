@@ -29,6 +29,23 @@ namespace DbNetTimeCore.Repositories
             return GetDataTable(query);
         }
 
+        public DataTable GetCustomer(GridParameters gridParameters)
+        {
+            gridParameters.Columns = new List<ColumnInfo>()
+            {
+                new ColumnInfo("customer.customer_id", "CustomerID") {IsPrimaryKey = true},
+                new ColumnInfo("customer.first_name", "Forename", true),
+                new ColumnInfo("customer.last_name", "Surname", true),
+                new ColumnInfo("customer.email", "Email Address", true) {Format = "email" },
+                new ColumnInfo("customer.active", "Active"),
+                new ColumnInfo("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+                new ColumnInfo("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+            };
+
+            QueryCommandConfig query = BuildQuery("customer", gridParameters);
+            return GetDataTable(query);
+        }
+
         public DataTable GetFilms(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
@@ -65,7 +82,7 @@ namespace DbNetTimeCore.Repositories
             return GetDataTable(query);
         }
 
-        private QueryCommandConfig BuildQuery(string fromPart, GridParameters gridParameters, List<string>? filterColumns = null)
+        private QueryCommandConfig BuildQuery(string fromPart, GridParameters gridParameters)
         {
             string columns = "*";
             if (gridParameters.Columns.Any())
@@ -76,26 +93,46 @@ namespace DbNetTimeCore.Repositories
             string sql = $"select {columns} from {fromPart}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            if (!string.IsNullOrEmpty(gridParameters.SearchInput))
+            AddFilterPart(query, gridParameters);
+
+            if (!string.IsNullOrEmpty(gridParameters.SortKey) || !string.IsNullOrEmpty(gridParameters.CurrentSortKey))
             {
-                AddFilterPart(query, filterColumns ?? gridParameters.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList(), gridParameters.SearchInput);
+                AddOrderPart(query, gridParameters);
             }
 
             return query;
         }
 
-        private void AddFilterPart(QueryCommandConfig query, List<string> filterColumns, string filterValue)
+        private void AddFilterPart(QueryCommandConfig query, GridParameters gridParameters)
         {
             List<string> filterPart = new List<string>();
 
-            foreach (string filterColumn in filterColumns)
+            if (gridParameters.Handler == "edit")
             {
+                string filterColumn = gridParameters.Columns.FirstOrDefault(c => c.IsPrimaryKey)!.Name;
                 string paramName = filterColumn.Replace(".", string.Empty);
-                query.Params[$"@{paramName}"] = $"%{filterValue}%";
-                filterPart.Add($"{filterColumn} like @{paramName}");
+                query.Params[$"@{paramName}"] = gridParameters.PrimaryKey;
+                filterPart.Add($"{filterColumn} = @{paramName}");
+            }
+            else
+            {
+                foreach (string filterColumn in gridParameters.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+                {
+                    string paramName = filterColumn.Replace(".", string.Empty);
+                    query.Params[$"@{paramName}"] = $"%{gridParameters.SearchInput}%";
+                    filterPart.Add($"{filterColumn} like @{paramName}");
+                }
             }
 
-            query.Sql += $" where {string.Join(" or ", filterPart)}";
+            if (filterPart.Any())
+            {
+                query.Sql += $" where {string.Join(" or ", filterPart)}";
+            }
+        }
+
+        private void AddOrderPart(QueryCommandConfig query, GridParameters gridParameters)
+        {
+            query.Sql += $" order by {(!string.IsNullOrEmpty(gridParameters.SortKey) ? gridParameters.SortColumn : gridParameters.CurrentSortColumn)} {gridParameters.SortSequence}";
         }
     }
 }

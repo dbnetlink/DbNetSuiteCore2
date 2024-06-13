@@ -1,0 +1,82 @@
+﻿@model DbNetTimeCore.Models.DataGrid
+@using System.Data
+@using DbNetTimeCore.Models
+@using Microsoft.AspNetCore.Html
+
+<tr>
+    <td>
+        <div class="flex flex-col">
+            <div class="flex mt-2">
+                <table class="table">
+                    <tbody data-url="@Model.Id" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
+                        @foreach (DataRow row in Model.Rows)
+                        {
+                            <tr style="cursor:pointer">
+                                @foreach (DataColumn col in Model.Columns)
+                                {
+                                    ColumnInfo? columnInfo = Model.GetColumnInfo(col);
+                                    var classes = new List<string>() { "text-base" };
+
+                                    if (col.DataType == typeof(Int64) || col.DataType == typeof(Double))
+                                    {
+                                        classes.Add("text-right");
+                                    }
+
+                                    var value = FormatValue(row[col], columnInfo);
+                                    <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                                }
+                              
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </td>
+</tr>
+
+
+
+@functions {
+
+    void RenderNavButton(bool enable, string url, HtmlString icon, string title)
+    {
+        <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled") hx-post="@url" hx-target="#@Model.GridId" hx-swap="innerHTML">@icon</button>
+    }
+
+    public static object? FormatValue(object? value, ColumnInfo? columnInfo)
+    {
+        if (string.IsNullOrEmpty(columnInfo?.Format) || value == null)
+        {
+            return value;
+        }
+
+        string format = columnInfo!.Format;
+
+        switch (format)
+        {
+            case "email":
+                value = $"<a href=\"mailto:{value}\">{value}</a>";
+                break;
+            case "www":
+                value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
+                break;
+            default:
+                if (columnInfo?.DataType == typeof(DateTime))
+                {
+                    value = Convert.ToDateTime(value).ToString(format);
+                }
+                if (columnInfo?.DataType == typeof(Int64))
+                {
+                    value = Convert.ToInt64(value).ToString(format);
+                }
+                if (columnInfo?.DataType == typeof(Double))
+                {
+                    value = Convert.ToDouble(value).ToString(format);
+                }
+                break;
+        }
+
+        return value;
+    }
+}
