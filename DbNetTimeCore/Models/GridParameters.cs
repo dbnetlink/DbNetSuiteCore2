@@ -13,6 +13,7 @@
         public string SortSequence => GetSortSequence();
         public string Handler { get; set; } = string.Empty;
         public string? PrimaryKey { get; set; }
+        public int ColSpan { get; set; }
         private string GetSortSequence()
         {
             if (string.IsNullOrEmpty(SortKey))

@@ -28,7 +28,7 @@
         }
     </div>
     <div class="flex mt-2">
-        <table class="table">
+        <table class="htmx-table">
             <thead>
                 <tr class="bg-slate-200">
                     @foreach (ColumnInfo columnInfo in Model.ColumnInfo)
@@ -46,7 +46,7 @@
             <tbody data-url="@Model.Id" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
                 @foreach (DataRow row in Model.Rows)
                 {
-                    <tr style="cursor:pointer">
+                    <tr style="cursor:pointer" class="grid-row">
                         @foreach (DataColumn col in Model.Columns)
                         {
                             ColumnInfo? columnInfo = Model.GetColumnInfo(col);
@@ -63,7 +63,7 @@
                         @if (Model.HasPrimaryKey)
                         {
                             <td>
-                                <button class="btn btn-sm w-8 p-0 text-slate-600" type="button" hx-post="@Model.EditUrl(row)" hx-target="tr" hx-swap="outerHTML">
+                                <button class="btn btn-sm w-8 p-0 text-slate-600" type="button" hx-vals='{"colSpan":"@(Model.Columns.Count()+1)"}' hx-post="@Model.EditUrl(row)" hx-target="closest tr" hx-swap="outerHTML">
                                     @Html.Raw(EditIcon())
                                 </button>
                             </td>

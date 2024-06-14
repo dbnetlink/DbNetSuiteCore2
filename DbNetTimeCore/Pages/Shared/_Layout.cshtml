@@ -6,6 +6,15 @@
     <title>DbNetTimeCore</title>
     <link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
     <link rel="stylesheet" href="daisyui.css" />
+    <style>
+        .htmx-table :where(th,td) {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            vertical-align: middle;
+        }
+    </style>
     <script>
         function domReady(fn) {
             document.addEventListener("DOMContentLoaded", fn);

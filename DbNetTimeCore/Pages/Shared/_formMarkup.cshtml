@@ -3,80 +3,70 @@
 @using DbNetTimeCore.Models
 @using Microsoft.AspNetCore.Html
 
-<tr>
-    <td>
-        <div class="flex flex-col">
-            <div class="flex mt-2">
-                <table class="table">
-                    <tbody data-url="@Model.Id" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
-                        @foreach (DataRow row in Model.Rows)
-                        {
-                            <tr style="cursor:pointer">
-                                @foreach (DataColumn col in Model.Columns)
-                                {
-                                    ColumnInfo? columnInfo = Model.GetColumnInfo(col);
-                                    var classes = new List<string>() { "text-base" };
+<tr class="form-row">
+    <td colspan="@Model.ColSpan">
+        <form name="edit-form">
+            <div class="flex flex-col border-solid border-2 border-slate-300 bg-slate-100 rounded-md">
+                <div class="flex m-2">
 
-                                    if (col.DataType == typeof(Int64) || col.DataType == typeof(Double))
+                    <table class="htmx-table">
+                        <tbody>
+                            @foreach (DataRow row in Model.Rows)
+                            {
+                                <tr>
+                                    @foreach (DataColumn col in Model.Columns)
                                     {
-                                        classes.Add("text-right");
+                                        ColumnInfo? columnInfo = Model.GetColumnInfo(col);
+                                        <th>@columnInfo.Label</th>
                                     }
+                                </tr>
+                                <tr>
 
-                                    var value = FormatValue(row[col], columnInfo);
-                                    <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
-                                }
-                              
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                    @foreach (DataColumn col in Model.Columns)
+                                    {
+                                        ColumnInfo? columnInfo = Model.GetColumnInfo(col);
+                                        <td>
+                                            @if (columnInfo.DataType == typeof(Boolean))
+                                            {
+                                                <input type="checkbox" class="checkbox checkbox-lg" @(IsBoolean(row[col]) ? "checked" : null) />
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="input input-bordered max-w-xs @columnInfo.ClassName" @(columnInfo.IsPrimaryKey ? "disabled" : null) value="@Html.Raw(row[col])" />
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+                <hr class="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700">
+                <div class="flex m-2 justify-end gap-4">
+                    <div class="flex grow border-solid border-2 border-slate-300 bg-slate-100 rounded-md"></div>
+                    <button class="btn btn-primary" type="button" hx-post="@Model.SaveUrl" hx-target="closest tr" hx-swap="innerHTML">Save</button>
+                    <button class="btn" type="button" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Cancel</button>
+                </div>
             </div>
-        </div>
+        </form>
     </td>
 </tr>
 
-
-
 @functions {
-
+    bool IsBoolean(object value)
+    {
+        try
+        {
+            return Convert.ToBoolean(Convert.ToInt16(value));
+        }
+        catch
+        {
+            return false;
+        }
+    }
     void RenderNavButton(bool enable, string url, HtmlString icon, string title)
     {
-        <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled") hx-post="@url" hx-target="#@Model.GridId" hx-swap="innerHTML">@icon</button>
-    }
-
-    public static object? FormatValue(object? value, ColumnInfo? columnInfo)
-    {
-        if (string.IsNullOrEmpty(columnInfo?.Format) || value == null)
-        {
-            return value;
-        }
-
-        string format = columnInfo!.Format;
-
-        switch (format)
-        {
-            case "email":
-                value = $"<a href=\"mailto:{value}\">{value}</a>";
-                break;
-            case "www":
-                value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
-                break;
-            default:
-                if (columnInfo?.DataType == typeof(DateTime))
-                {
-                    value = Convert.ToDateTime(value).ToString(format);
-                }
-                if (columnInfo?.DataType == typeof(Int64))
-                {
-                    value = Convert.ToInt64(value).ToString(format);
-                }
-                if (columnInfo?.DataType == typeof(Double))
-                {
-                    value = Convert.ToDouble(value).ToString(format);
-                }
-                break;
-        }
-
-        return value;
+        <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled")>@icon</button>
     }
 }

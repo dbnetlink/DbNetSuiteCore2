@@ -36,10 +36,8 @@ namespace DbNetTimeCore.Repositories
                 new ColumnInfo("customer.customer_id", "CustomerID") {IsPrimaryKey = true},
                 new ColumnInfo("customer.first_name", "Forename", true),
                 new ColumnInfo("customer.last_name", "Surname", true),
-                new ColumnInfo("customer.email", "Email Address", true) {Format = "email" },
-                new ColumnInfo("customer.active", "Active"),
-                new ColumnInfo("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
-                new ColumnInfo("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+                new ColumnInfo("customer.email", "Email Address", true) {Format = "email", ClassName = "w-80" },
+                new ColumnInfo("customer.active", "Active") {DataType = typeof(Boolean)}
             };
 
             QueryCommandConfig query = BuildQuery("customer", gridParameters);
@@ -68,6 +66,27 @@ namespace DbNetTimeCore.Repositories
             return GetDataTable(query);
         }
 
+        public DataTable GetFilm(GridParameters gridParameters)
+        {
+            gridParameters.Columns = new List<ColumnInfo>()
+            {
+                new ColumnInfo("film.film_id", "FilmID") {IsPrimaryKey = true},
+                new ColumnInfo("film.title", "Title", true),
+                new ColumnInfo("film.description", "Description", true),
+                new ColumnInfo("film.release_year", "Year Of Release"),
+                new ColumnInfo("film.language_id", "Language", true),
+                new ColumnInfo("film.rental_duration", "Duration"),
+                new ColumnInfo("film.rental_rate", "Rental Rate"),
+                new ColumnInfo("film.length", "Length"),
+                new ColumnInfo("film.replacement_cost", "Replacement Cost"),
+                new ColumnInfo("film.rating", "Rating"),
+                new ColumnInfo("film.special_features", "Special Features", true),
+            };
+
+            QueryCommandConfig query = BuildQuery("film", gridParameters);
+            return GetDataTable(query);
+        }
+
         public DataTable GetActors(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
@@ -76,6 +95,19 @@ namespace DbNetTimeCore.Repositories
                 new ColumnInfo("first_name", "Forename", true),
                 new ColumnInfo("last_name", "Surname", true),
                 new ColumnInfo("last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+            };
+
+            QueryCommandConfig query = BuildQuery("actor", gridParameters);
+            return GetDataTable(query);
+        }
+
+        public DataTable GetActor(GridParameters gridParameters)
+        {
+            gridParameters.Columns = new List<ColumnInfo>()
+            {
+                new ColumnInfo("actor_id", "ActorID") {IsPrimaryKey = true},
+                new ColumnInfo("first_name", "Forename", true),
+                new ColumnInfo("last_name", "Surname", true)
             };
 
             QueryCommandConfig query = BuildQuery("actor", gridParameters);

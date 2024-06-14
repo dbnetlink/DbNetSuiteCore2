@@ -11,6 +11,7 @@
         public bool IsPrimaryKey { get; set; } = false;
         public bool Editable { get; set; } = false;
         public Type DataType { get; set; } = typeof(String);
+        public string ClassName { get; set; } = "w-full";
 
         public ColumnInfo()
         {

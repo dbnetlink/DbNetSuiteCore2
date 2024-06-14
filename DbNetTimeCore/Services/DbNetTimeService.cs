@@ -58,22 +58,38 @@ namespace DbNetTimeCore.Services
             var gridParameters = GetGridParameters();
             if (gridParameters.Handler == "edit")
             {
-                return await View("_formMarkup", CustomersDataGrid(gridParameters));
+                return await View("_formMarkup", CustomerEditForm(gridParameters));
             }
             else
             {
-                return await View("_gridMarkup", CustomersEditForm(gridParameters));
+                return await View("_gridMarkup", CustomersDataGrid(gridParameters));
             }
         }
 
         private async Task<Byte[]> FilmsPage()
         {
-            return await View("_gridMarkup", FilmsDataGrid(GetGridParameters()));
+            var gridParameters = GetGridParameters();
+            if (gridParameters.Handler == "edit")
+            {
+                return await View("_formMarkup", FilmEditForm(gridParameters));
+            }
+            else
+            {
+                return await View("_gridMarkup", FilmsDataGrid(gridParameters));
+            }
         }
 
         private async Task<Byte[]> ActorsPage()
         {
-            return await View("_gridMarkup", ActorsDataGrid(GetGridParameters()));
+            var gridParameters = GetGridParameters();
+            if (gridParameters.Handler == "edit")
+            {
+                return await View("_formMarkup", ActorEditForm(gridParameters));
+            }
+            else
+            {
+                return await View("_gridMarkup", ActorsDataGrid(gridParameters));
+            }
         }
 
         private async Task<Byte[]> UsersPage()
@@ -98,7 +114,7 @@ namespace DbNetTimeCore.Services
             return new DataGrid(customers, "customers", gridParameters);
         }
 
-        private DataGrid CustomersEditForm(GridParameters? gridParameters = null)
+        private DataGrid CustomerEditForm(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
             DataTable customers = _dbNetTimeRepository.GetCustomer(gridParameters);
@@ -113,10 +129,24 @@ namespace DbNetTimeCore.Services
             return new DataGrid(films, "films", gridParameters);
         }
 
+        private DataGrid FilmEditForm(GridParameters? gridParameters = null)
+        {
+            gridParameters = gridParameters ?? new GridParameters();
+            DataTable films = _dbNetTimeRepository.GetFilm(gridParameters);
+            return new DataGrid(films, "films", gridParameters);
+        }
+
         private DataGrid ActorsDataGrid(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
             DataTable actors = _dbNetTimeRepository.GetActors(gridParameters);
+            return new DataGrid(actors, "actors", gridParameters);
+        }
+
+        private DataGrid ActorEditForm(GridParameters? gridParameters = null)
+        {
+            gridParameters = gridParameters ?? new GridParameters();
+            DataTable actors = _dbNetTimeRepository.GetActor(gridParameters);
             return new DataGrid(actors, "actors", gridParameters);
         }
         private GridParameters GetGridParameters()
@@ -131,6 +161,7 @@ namespace DbNetTimeCore.Services
                 gridParameters.CurrentSortAscending = Convert.ToBoolean(FormValue("currentSortAscending", "0"));
                 gridParameters.Handler = QueryValue("handler", string.Empty);
                 gridParameters.PrimaryKey = QueryValue("pk", string.Empty);
+                gridParameters.ColSpan = Convert.ToInt32(FormValue("colSPan", "0"));
             }
             catch
             {

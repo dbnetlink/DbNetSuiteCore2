@@ -14,6 +14,7 @@ namespace DbNetTimeCore.Models
         public string Id { get; set; } = string.Empty;
         public string SearchInput => _gridParameters.SearchInput;
         public string SortColumn => _gridParameters.SortColumn;
+        public int ColSpan => _gridParameters.ColSpan;
         public string SortKey => _gridParameters.SortKey;
         public string CurrentSortKey => string.IsNullOrEmpty(SortKey) ? _gridParameters.CurrentSortKey : SortKey;
         public bool CurrentSortAscending => (_gridParameters.SortSequence ?? "asc") == "asc";
@@ -22,9 +23,10 @@ namespace DbNetTimeCore.Models
         public string NextPageUrl => NextPage ? PageUrl(CurrentPage + 1) : string.Empty;
         public string PreviousPageUrl => PreviousPage ? PageUrl(CurrentPage - 1) : string.Empty;
         public string SearchUrl => $"/{Id}/?handler=search";
+        public string SaveUrl => $"/{Id}/?handler=save";
         public string EditUrl(DataRow row)
         {
-            return $"/{Id}/?handler=edit&pk={PrimaryKeyValue(row)})";
+            return $"/{Id}/?handler=edit&pk={PrimaryKeyValue(row)}";
         }
         public bool NextPage => CurrentPage < TotalPages;
         public bool PreviousPage => CurrentPage > 1;
