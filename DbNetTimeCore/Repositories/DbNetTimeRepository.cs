@@ -1,4 +1,8 @@
-﻿using DbNetTimeCore.Models;
+﻿using DbNetTimeCore.Helpers;
+using DbNetTimeCore.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Specialized;
 using System.Data;
 using static DbNetTimeCore.Utilities.DbNetDataCore;
 
@@ -6,10 +10,12 @@ namespace DbNetTimeCore.Repositories
 {
     public class DbNetTimeRepository : DbRepository, IDbNetTimeRepository
     {
-        public DbNetTimeRepository(IConfiguration configuration, IWebHostEnvironment env) : base(configuration, env)
+        IHttpContextAccessor _httpContextAccessor;
+        public DbNetTimeRepository(IConfiguration configuration, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor) : base(configuration, env)
         {
+            _httpContextAccessor = httpContextAccessor;
         }
-        public DataTable GetCustomers(GridParameters gridParameters)
+        public async Task<DataTable> GetCustomers(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
             {
@@ -26,25 +32,26 @@ namespace DbNetTimeCore.Repositories
             };
 
             QueryCommandConfig query = BuildQuery("customer join address on customer.address_id = address.address_id join city on city.city_id = address.city_id", gridParameters);
-            return GetDataTable(query);
+            return await GetDataTable(query);
         }
 
-        public DataTable GetCustomer(GridParameters gridParameters)
+        public async Task<DataTable> GetCustomer(GridParameters gridParameters)
         {
-            gridParameters.Columns = new List<ColumnInfo>()
-            {
-                new ColumnInfo("customer.customer_id", "CustomerID") {IsPrimaryKey = true},
-                new ColumnInfo("customer.first_name", "Forename", true),
-                new ColumnInfo("customer.last_name", "Surname", true),
-                new ColumnInfo("customer.email", "Email Address", true) {Format = "email", ClassName = "w-80" },
-                new ColumnInfo("customer.active", "Active") {DataType = typeof(Boolean)}
-            };
-
+            gridParameters.Columns = CustomerEditColumns();
             QueryCommandConfig query = BuildQuery("customer", gridParameters);
-            return GetDataTable(query);
+            return await GetDataTable(query);
         }
 
-        public DataTable GetFilms(GridParameters gridParameters)
+        public async Task SaveCustomer(GridParameters gridParameters)
+        {
+            gridParameters.Columns = CustomerEditColumns();
+
+            CommandConfig update = BuildUpdate("customer", gridParameters, gridParameters.ParameterValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form));
+            await ExecuteNonQuery(update);
+            gridParameters.Message = "Record updated";
+        }
+
+        public async Task<DataTable> GetFilms(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
             {
@@ -63,10 +70,10 @@ namespace DbNetTimeCore.Repositories
             };
 
             QueryCommandConfig query = BuildQuery("film join language on language.language_id = film.language_id", gridParameters);
-            return GetDataTable(query);
+            return await GetDataTable(query);
         }
 
-        public DataTable GetFilm(GridParameters gridParameters)
+        public async Task<DataTable> GetFilm(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
             {
@@ -74,7 +81,7 @@ namespace DbNetTimeCore.Repositories
                 new ColumnInfo("film.title", "Title", true),
                 new ColumnInfo("film.description", "Description", true),
                 new ColumnInfo("film.release_year", "Year Of Release"),
-                new ColumnInfo("film.language_id", "Language", true),
+                new ColumnInfo("film.language_id", "Language", true) { Lookup = new QueryCommandConfig("select language_id, name from language order by 2")},
                 new ColumnInfo("film.rental_duration", "Duration"),
                 new ColumnInfo("film.rental_rate", "Rental Rate"),
                 new ColumnInfo("film.length", "Length"),
@@ -84,10 +91,21 @@ namespace DbNetTimeCore.Repositories
             };
 
             QueryCommandConfig query = BuildQuery("film", gridParameters);
-            return GetDataTable(query);
+
+            BuildLookups(gridParameters.Columns);
+            return await GetDataTable(query);
         }
 
-        public DataTable GetActors(GridParameters gridParameters)
+        public async Task SaveFilm(GridParameters gridParameters)
+        {
+            gridParameters.Columns = CustomerEditColumns();
+
+            CommandConfig update = BuildUpdate("film", gridParameters, gridParameters.ParameterValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form));
+            await ExecuteNonQuery(update);
+            gridParameters.Message = "Record updated";
+        }
+
+        public async Task<DataTable> GetActors(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
             {
@@ -98,10 +116,10 @@ namespace DbNetTimeCore.Repositories
             };
 
             QueryCommandConfig query = BuildQuery("actor", gridParameters);
-            return GetDataTable(query);
+            return await GetDataTable(query);
         }
 
-        public DataTable GetActor(GridParameters gridParameters)
+        public async Task<DataTable> GetActor(GridParameters gridParameters)
         {
             gridParameters.Columns = new List<ColumnInfo>()
             {
@@ -111,7 +129,7 @@ namespace DbNetTimeCore.Repositories
             };
 
             QueryCommandConfig query = BuildQuery("actor", gridParameters);
-            return GetDataTable(query);
+            return await GetDataTable(query);
         }
 
         private QueryCommandConfig BuildQuery(string fromPart, GridParameters gridParameters)
@@ -135,25 +153,42 @@ namespace DbNetTimeCore.Repositories
             return query;
         }
 
-        private void AddFilterPart(QueryCommandConfig query, GridParameters gridParameters)
+        private CommandConfig BuildUpdate(string fromPart, GridParameters gridParameters, ListDictionary values)
+        {
+            string columns = string.Join(",", gridParameters.Columns.Where(c => c.IsPrimaryKey == false).Select(c => $"{c.Name} = @{c.Name}").ToList());
+
+            string sql = $"update {fromPart} set {columns}";
+            CommandConfig update = new CommandConfig(sql) { Params = values };
+
+            foreach (string name in values.Keys)
+            {
+            }
+
+            AddFilterPart(update, gridParameters);
+            return update;
+        }
+
+        private void AddFilterPart(CommandConfig query, GridParameters gridParameters)
         {
             List<string> filterPart = new List<string>();
 
-            if (gridParameters.Handler == "edit")
+            switch (gridParameters.Handler)
             {
-                string filterColumn = gridParameters.Columns.FirstOrDefault(c => c.IsPrimaryKey)!.Name;
-                string paramName = filterColumn.Replace(".", string.Empty);
-                query.Params[$"@{paramName}"] = gridParameters.PrimaryKey;
-                filterPart.Add($"{filterColumn} = @{paramName}");
-            }
-            else
-            {
-                foreach (string filterColumn in gridParameters.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList())
-                {
+                case "edit":
+                case "save":
+                    string filterColumn = gridParameters.Columns.FirstOrDefault(c => c.IsPrimaryKey)!.Name;
                     string paramName = filterColumn.Replace(".", string.Empty);
-                    query.Params[$"@{paramName}"] = $"%{gridParameters.SearchInput}%";
-                    filterPart.Add($"{filterColumn} like @{paramName}");
-                }
+                    query.Params[$"@{paramName}"] = gridParameters.PrimaryKey;
+                    filterPart.Add($"{filterColumn} = @{paramName}");
+                    break;
+                default:
+                    foreach (var col in gridParameters.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+                    {
+                        paramName = col.Replace(".", string.Empty);
+                        query.Params[$"@{paramName}"] = $"%{gridParameters.SearchInput}%";
+                        filterPart.Add($"{col} like @{paramName}");
+                    }
+                    break;
             }
 
             if (filterPart.Any())
@@ -165,6 +200,26 @@ namespace DbNetTimeCore.Repositories
         private void AddOrderPart(QueryCommandConfig query, GridParameters gridParameters)
         {
             query.Sql += $" order by {(!string.IsNullOrEmpty(gridParameters.SortKey) ? gridParameters.SortColumn : gridParameters.CurrentSortColumn)} {gridParameters.SortSequence}";
+        }
+
+        private List<ColumnInfo> CustomerEditColumns()
+        {
+            return new List<ColumnInfo>()
+            {
+                new ColumnInfo("customer_id", "CustomerID") {IsPrimaryKey = true},
+                new ColumnInfo("first_name", "Forename", true),
+                new ColumnInfo("last_name", "Surname", true),
+                new ColumnInfo("email", "Email Address", true) {Format = "email", ClassName = "w-80" },
+                new ColumnInfo("active", "Active") {DataType = typeof(Boolean)}
+            };
+        }
+
+        private async Task BuildLookups(List<ColumnInfo> columns)
+        {
+            foreach (ColumnInfo column in columns.Where(c => c.Lookup != null))
+            {
+                column.LookupValues = await GetDataTable(column.Lookup);
+            }
         }
     }
 }

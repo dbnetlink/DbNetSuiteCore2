@@ -95,6 +95,7 @@ namespace DbNetLink.Middleware
                 options.FileProviders.Add(embeddedFileProvider);
             });
 
+            services.AddHttpContextAccessor();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddControllersWithViews();
             services.AddHttpContextAccessor();

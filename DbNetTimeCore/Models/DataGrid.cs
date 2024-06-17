@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using SQLitePCL;
+using System.Data;
 namespace DbNetTimeCore.Models
 {
     public class DataGrid
@@ -23,7 +24,11 @@ namespace DbNetTimeCore.Models
         public string NextPageUrl => NextPage ? PageUrl(CurrentPage + 1) : string.Empty;
         public string PreviousPageUrl => PreviousPage ? PageUrl(CurrentPage - 1) : string.Empty;
         public string SearchUrl => $"/{Id}/?handler=search";
-        public string SaveUrl => $"/{Id}/?handler=save";
+        public string Message => _gridParameters.Message;
+        public string SaveUrl(DataRow row)
+        {
+            return $"/{Id}/?handler=save&pk={PrimaryKeyValue(row)}";
+        }
         public string EditUrl(DataRow row)
         {
             return $"/{Id}/?handler=edit&pk={PrimaryKeyValue(row)}";

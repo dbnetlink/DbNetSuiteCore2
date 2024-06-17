@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using System.Collections.Specialized;
 using System.Data;
+using System.Data.Common;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using static DbNetTimeCore.Utilities.DbNetDataCore;
@@ -16,7 +17,7 @@ namespace DbNetTimeCore.Repositories
         private Assembly _providerAssembly;
         private IDbDataAdapter _adapter;
         private IDbConnection _connection;
-        private IDbCommand _command;
+        private DbCommand _command;
         private IDataReader _reader;
         private IDbTransaction _transaction;
         private DataProvider _dataProvider;
@@ -43,7 +44,7 @@ namespace DbNetTimeCore.Repositories
                 _providerAssembly = Assembly.GetAssembly(typeof(SqlConnection));
             }
 
-            _command = _connection.CreateCommand();
+            _command = (DbCommand)_connection.CreateCommand();
         }
 
         public void Open()
@@ -53,21 +54,41 @@ namespace DbNetTimeCore.Repositories
                 _connection.Open();
             }
         }
-        public DataTable GetDataTable(QueryCommandConfig queryCommandConfig)
+        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig)
         {
             DataTable dataTable = new DataTable();
-            dataTable.Load(ExecuteQuery(queryCommandConfig));
+            dataTable.Load(await ExecuteQuery(queryCommandConfig));
             return dataTable;
         }
 
-        public IDataReader ExecuteQuery(string sql)
+        public async Task<DbDataReader> ExecuteQuery(string sql)
         {
-            return ExecuteQuery(new QueryCommandConfig(sql));
+            return await ExecuteQuery(new QueryCommandConfig(sql));
         }
-        public IDataReader ExecuteQuery(QueryCommandConfig query)
+        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query)
         {
             ConfigureCommand(query.Sql, query.Params);
-            return _command.ExecuteReader(CommandBehavior.Default);
+            return await _command.ExecuteReaderAsync(CommandBehavior.Default);
+        }
+
+        public async Task<int> ExecuteNonQuery(CommandConfig commandConfig)
+        {
+            if (Regex.Match(commandConfig.Sql, "^(delete|update) ", RegexOptions.IgnoreCase).Success)
+                if (!Regex.Match(commandConfig.Sql, " where ", RegexOptions.IgnoreCase).Success)
+                    throw new Exception("Unqualified updates and deletes are not allowed.");
+
+            ConfigureCommand(commandConfig.Sql, commandConfig.Params);
+            int returnValue = 0;
+
+            try
+            {
+                returnValue = await _command.ExecuteNonQueryAsync();
+            }
+            catch (Exception Ex)
+            {
+            }
+
+            return returnValue;
         }
 
         private string MapDatabasePath(string connectionString)

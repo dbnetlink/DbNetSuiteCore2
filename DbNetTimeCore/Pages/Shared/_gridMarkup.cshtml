@@ -34,7 +34,7 @@
                     @foreach (ColumnInfo columnInfo in Model.ColumnInfo)
                     {
                         <th class="text-base" style="cursor:pointer" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">
-                            <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) @SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</div>
+                            <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400">@SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</span></div>
                         </th>
                     }
                     @if (Model.HasPrimaryKey)
@@ -57,7 +57,12 @@
                                 classes.Add("text-right");
                             }
 
-                            var value = FormatValue(row[col], columnInfo);
+                            if (col.DataType == typeof(Boolean))
+                            {
+                                classes.Add("text-center");
+                            }
+                          
+                           var value = FormatValue(row[col], columnInfo);
                             <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
                         }
                         @if (Model.HasPrimaryKey)
@@ -142,11 +147,11 @@
         {
             if (sortAscending)
             {
-                return ChevronUpIcon();
+                return ArrowUpIcon();
             }
             else
             {
-                return ChevronDownIcon();
+                return ArrowDownIcon();
             }
         }
         else
@@ -179,14 +184,14 @@
     {
         return IconSVG("m8.25 4.5 7.5 7.5-7.5 7.5");
     }
-    HtmlString ChevronDownIcon()
+    HtmlString ArrowDownIcon()
     {
-        return IconSVG("m19.5 8.25-7.5 7.5-7.5-7.5");
+        return IconSVG("M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3");
     }
 
-    HtmlString ChevronUpIcon()
+    HtmlString ArrowUpIcon()
     {
-        return IconSVG("m4.5 15.75 7.5-7.5 7.5 7.5");
+        return IconSVG("M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18");
     }
 
     HtmlString IconSVG(string data)

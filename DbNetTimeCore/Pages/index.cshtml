@@ -29,7 +29,7 @@
         function reRenderActive(event) {
             if (event.detail.htmxEvent)
             {
-                if (event.detail.htmxEvent.target.tagName = "TBODY") { 
+                if (event.detail.htmxEvent.target.tagName != "FORM") { 
                     return
                 }
             }

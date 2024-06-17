@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Content Remove="Pages\index.cshtml" />
+    <Content Remove="Pages\Shared\_dropDownLookup.cshtml" />
     <Content Remove="Pages\Shared\_formMarkup.cshtml" />
     <Content Remove="Pages\Shared\_gridControl.cshtml" />
     <Content Remove="Pages\Shared\_gridMarkup.cshtml" />
@@ -33,6 +34,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Pages\index.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Shared\_dropDownLookup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Shared\_formMarkup.cshtml">

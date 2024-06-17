@@ -6,6 +6,7 @@ using System.Text;
 using DbNetTimeCore.Pages;
 using DbNetTimeCore.Models;
 using System.Data;
+using DbNetTimeCore.Helpers;
 
 namespace DbNetTimeCore.Services
 {
@@ -46,9 +47,9 @@ namespace DbNetTimeCore.Services
         {
             var model = new IndexModel();
 
-            model.CustomersGrid = CustomersDataGrid();
-            model.FilmsGrid = FilmsDataGrid();
-            model.ActorsGrid = ActorsDataGrid();
+            model.CustomersGrid = await CustomersDataGrid();
+            model.FilmsGrid = await FilmsDataGrid();
+            model.ActorsGrid = await ActorsDataGrid();
 
             return await Page("index", model);
         }
@@ -56,26 +57,30 @@ namespace DbNetTimeCore.Services
         private async Task<Byte[]> CustomersPage()
         {
             var gridParameters = GetGridParameters();
-            if (gridParameters.Handler == "edit")
+            switch (gridParameters.Handler)
             {
-                return await View("_formMarkup", CustomerEditForm(gridParameters));
-            }
-            else
-            {
-                return await View("_gridMarkup", CustomersDataGrid(gridParameters));
+                case "edit":
+                    return await View("_formMarkup", await CustomerEditForm(gridParameters));
+                case "save":
+                    await _dbNetTimeRepository.SaveCustomer(gridParameters);
+                    return await View("_formMarkup", await CustomerEditForm(gridParameters));
+                default:
+                    return await View("_gridMarkup", await CustomersDataGrid(gridParameters));
             }
         }
 
         private async Task<Byte[]> FilmsPage()
         {
             var gridParameters = GetGridParameters();
-            if (gridParameters.Handler == "edit")
+            switch (gridParameters.Handler)
             {
-                return await View("_formMarkup", FilmEditForm(gridParameters));
-            }
-            else
-            {
-                return await View("_gridMarkup", FilmsDataGrid(gridParameters));
+                case "edit":
+                    return await View("_formMarkup", await FilmEditForm(gridParameters));
+                case "save":
+                    await _dbNetTimeRepository.SaveFilm(gridParameters);
+                    return await View("_formMarkup", await FilmEditForm(gridParameters));
+                default:
+                    return await View("_gridMarkup", await FilmsDataGrid(gridParameters));
             }
         }
 
@@ -84,11 +89,11 @@ namespace DbNetTimeCore.Services
             var gridParameters = GetGridParameters();
             if (gridParameters.Handler == "edit")
             {
-                return await View("_formMarkup", ActorEditForm(gridParameters));
+                return await View("_formMarkup", await ActorEditForm(gridParameters));
             }
             else
             {
-                return await View("_gridMarkup", ActorsDataGrid(gridParameters));
+                return await View("_gridMarkup", await ActorsDataGrid(gridParameters));
             }
         }
 
@@ -107,46 +112,46 @@ namespace DbNetTimeCore.Services
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Pages/Shared/{viewName}.cshtml", model));
         }
 
-        private DataGrid CustomersDataGrid(GridParameters? gridParameters = null)
+        private async Task<DataGrid> CustomersDataGrid(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
-            DataTable customers = _dbNetTimeRepository.GetCustomers(gridParameters);
+            DataTable customers = await _dbNetTimeRepository.GetCustomers(gridParameters);
             return new DataGrid(customers, "customers", gridParameters);
         }
 
-        private DataGrid CustomerEditForm(GridParameters? gridParameters = null)
+        private async Task<DataGrid> CustomerEditForm(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
-            DataTable customers = _dbNetTimeRepository.GetCustomer(gridParameters);
+            DataTable customers = await _dbNetTimeRepository.GetCustomer(gridParameters);
             return new DataGrid(customers, "customers", gridParameters);
         }
        
 
-        private DataGrid FilmsDataGrid(GridParameters? gridParameters = null)
+        private async Task<DataGrid> FilmsDataGrid(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
-            DataTable films = _dbNetTimeRepository.GetFilms(gridParameters);
+            DataTable films = await _dbNetTimeRepository.GetFilms(gridParameters);
             return new DataGrid(films, "films", gridParameters);
         }
 
-        private DataGrid FilmEditForm(GridParameters? gridParameters = null)
+        private async Task<DataGrid> FilmEditForm(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
-            DataTable films = _dbNetTimeRepository.GetFilm(gridParameters);
+            DataTable films = await _dbNetTimeRepository.GetFilm(gridParameters);
             return new DataGrid(films, "films", gridParameters);
         }
 
-        private DataGrid ActorsDataGrid(GridParameters? gridParameters = null)
+        private async Task<DataGrid> ActorsDataGrid(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
-            DataTable actors = _dbNetTimeRepository.GetActors(gridParameters);
+            DataTable actors =await _dbNetTimeRepository.GetActors(gridParameters);
             return new DataGrid(actors, "actors", gridParameters);
         }
 
-        private DataGrid ActorEditForm(GridParameters? gridParameters = null)
+        private async Task<DataGrid> ActorEditForm(GridParameters? gridParameters = null)
         {
             gridParameters = gridParameters ?? new GridParameters();
-            DataTable actors = _dbNetTimeRepository.GetActor(gridParameters);
+            DataTable actors = await _dbNetTimeRepository.GetActor(gridParameters);
             return new DataGrid(actors, "actors", gridParameters);
         }
         private GridParameters GetGridParameters()
@@ -154,30 +159,20 @@ namespace DbNetTimeCore.Services
             GridParameters gridParameters = new GridParameters();
             try
             {
-                gridParameters.CurrentPage = Convert.ToInt32(QueryValue("page","1"));
-                gridParameters.SearchInput = FormValue("searchInput", string.Empty);
-                gridParameters.SortKey = FormValue("sortKey", string.Empty);
-                gridParameters.CurrentSortKey = FormValue("currentSortKey", string.Empty);
-                gridParameters.CurrentSortAscending = Convert.ToBoolean(FormValue("currentSortAscending", "0"));
-                gridParameters.Handler = QueryValue("handler", string.Empty);
-                gridParameters.PrimaryKey = QueryValue("pk", string.Empty);
-                gridParameters.ColSpan = Convert.ToInt32(FormValue("colSPan", "0"));
+                gridParameters.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page","1", _context));
+                gridParameters.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
+                gridParameters.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
+                gridParameters.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
+                gridParameters.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
+                gridParameters.Handler = RequestHelper.QueryValue("handler", string.Empty, _context);
+                gridParameters.PrimaryKey = RequestHelper.QueryValue("pk", string.Empty, _context);
+                gridParameters.ColSpan = Convert.ToInt32(RequestHelper.FormValue("colSpan", "0", _context));
             }
             catch
             {
             }
 
             return gridParameters;
-        }
-
-        private string QueryValue(string key, string defaultValue)
-        {
-            return _context.Request.Query.ContainsKey(key) ? _context.Request.Query[key].ToString() : defaultValue;
-        }
-
-        private string FormValue(string key, string defaultValue)
-        {
-            return _context.Request.Form.ContainsKey(key) ? _context.Request.Form[key].ToString() : defaultValue;
         }
 
         private Byte[] GetResource(string resource)

@@ -1,4 +1,7 @@
-﻿namespace DbNetTimeCore.Models
+﻿using System.Data;
+using static DbNetTimeCore.Utilities.DbNetDataCore;
+
+namespace DbNetTimeCore.Models
 {
     public class ColumnInfo
     {
@@ -12,6 +15,8 @@
         public bool Editable { get; set; } = false;
         public Type DataType { get; set; } = typeof(String);
         public string ClassName { get; set; } = "w-full";
+        public QueryCommandConfig? Lookup { get; set; }
+        public DataTable LookupValues { get; set; } = new DataTable();
 
         public ColumnInfo()
         {
