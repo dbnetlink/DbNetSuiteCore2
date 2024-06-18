@@ -16,6 +16,7 @@ namespace DbNetTimeCore.Models
         public Type DataType { get; set; } = typeof(String);
         public string ClassName { get; set; } = "w-full";
         public QueryCommandConfig? Lookup { get; set; }
+        public Type? LookupEnum { get; set; }
         public DataTable LookupValues { get; set; } = new DataTable();
 
         public ColumnInfo()

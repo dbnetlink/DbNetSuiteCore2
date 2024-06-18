@@ -13,5 +13,6 @@ namespace DbNetTimeCore.Repositories
         public Task SaveFilm(GridParameters gridParameters);
         public Task<DataTable> GetActors(GridParameters gridParameters);
         public Task<DataTable> GetActor(GridParameters gridParameters);
+        public Task SaveActor(GridParameters gridParameters);
     }
 }

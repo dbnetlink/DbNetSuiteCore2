@@ -1,5 +1,6 @@
 ﻿@model DbNetTimeCore.Models.DataGrid
 @using System.Data
+@using DbNetTimeCore.Helpers
 @using DbNetTimeCore.Models
 @using Microsoft.AspNetCore.Html
 
@@ -36,10 +37,19 @@
                                         <td>
                                             @if (columnInfo.Lookup != null)
                                             {
-                                                <select class="select select-bordered w-full max-w-xs">
+                                                <select class="select select-bordered w-full max-w-xs" name="@col.ColumnName">
                                                     @foreach (DataRow option in columnInfo.LookupValues.Rows)
                                                     {
-                                                        <option value="@option[0].ToString()">@option[1].ToString()</option>
+                                                        <option value="@option[0].ToString()" @((row[col]?.ToString() ?? string.Empty) == option[0].ToString() ? "selected" : string.Empty)>@option[1].ToString()</option>
+                                                    }
+                                                </select>
+                                            }
+                                            else if (columnInfo.LookupEnum != null)
+                                            {
+                                                <select class="select select-bordered w-full max-w-xs" name="@col.ColumnName">
+                                                    @foreach (KeyValuePair<string, string> option in EnumHelper.GetEnumOptions(columnInfo.LookupEnum))
+                                                    {
+                                                        <option value="@option.Key" @((row[col]?.ToString() ?? string.Empty) == option.Key ? "selected" : string.Empty)>@option.Value</option>
                                                     }
                                                 </select>
                                             }
@@ -79,7 +89,7 @@
                 </div>
 
             </div>
-        </form> 
+        </form>
     </td>
 </tr>
 
@@ -97,6 +107,6 @@
     }
     void RenderNavButton(bool enable, string url, HtmlString icon, string title)
     {
-            <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled")>@icon</button>
+        <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled")>@icon</button>
     }
 }

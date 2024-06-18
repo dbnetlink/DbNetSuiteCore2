@@ -87,14 +87,17 @@ namespace DbNetTimeCore.Services
         private async Task<Byte[]> ActorsPage()
         {
             var gridParameters = GetGridParameters();
-            if (gridParameters.Handler == "edit")
+            switch (gridParameters.Handler)
             {
-                return await View("_formMarkup", await ActorEditForm(gridParameters));
+                case "edit":
+                    return await View("_formMarkup", await ActorEditForm(gridParameters));
+                case "save":
+                    await _dbNetTimeRepository.SaveActor(gridParameters);
+                    return await View("_formMarkup", await ActorEditForm(gridParameters));
+                default:
+                    return await View("_gridMarkup", await ActorsDataGrid(gridParameters));
             }
-            else
-            {
-                return await View("_gridMarkup", await ActorsDataGrid(gridParameters));
-            }
+
         }
 
         private async Task<Byte[]> UsersPage()

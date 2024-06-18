@@ -1,4 +1,5 @@
-﻿using DbNetTimeCore.Helpers;
+﻿using DbNetTimeCore.Enums;
+using DbNetTimeCore.Helpers;
 using DbNetTimeCore.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -61,9 +62,9 @@ namespace DbNetTimeCore.Repositories
                 new ColumnInfo("film.release_year", "Year Of Release"),
                 new ColumnInfo("language.name", "Language", true),
                 new ColumnInfo("film.rental_duration", "Duration"),
-                new ColumnInfo("film.rental_rate", "Rental Rate"){Format = "C" },
+                new ColumnInfo("film.rental_rate", "Rental Rate"),//{Format = "C" },
                 new ColumnInfo("film.length", "Length"),
-                new ColumnInfo("film.replacement_cost", "Replacement Cost"){Format = "C" },
+                new ColumnInfo("film.replacement_cost", "Replacement Cost"),//{Format = "C" },
                 new ColumnInfo("film.rating", "Rating"),
                 new ColumnInfo("film.special_features", "Special Features", true),
                 new ColumnInfo("film.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
@@ -75,31 +76,15 @@ namespace DbNetTimeCore.Repositories
 
         public async Task<DataTable> GetFilm(GridParameters gridParameters)
         {
-            gridParameters.Columns = new List<ColumnInfo>()
-            {
-                new ColumnInfo("film.film_id", "FilmID") {IsPrimaryKey = true},
-                new ColumnInfo("film.title", "Title", true),
-                new ColumnInfo("film.description", "Description", true),
-                new ColumnInfo("film.release_year", "Year Of Release"),
-                new ColumnInfo("film.language_id", "Language", true) { Lookup = new QueryCommandConfig("select language_id, name from language order by 2")},
-                new ColumnInfo("film.rental_duration", "Duration"),
-                new ColumnInfo("film.rental_rate", "Rental Rate"),
-                new ColumnInfo("film.length", "Length"),
-                new ColumnInfo("film.replacement_cost", "Replacement Cost"),
-                new ColumnInfo("film.rating", "Rating"),
-                new ColumnInfo("film.special_features", "Special Features", true),
-            };
-
+            gridParameters.Columns = FilmEditColumns();
             QueryCommandConfig query = BuildQuery("film", gridParameters);
-
             BuildLookups(gridParameters.Columns);
             return await GetDataTable(query);
         }
 
         public async Task SaveFilm(GridParameters gridParameters)
         {
-            gridParameters.Columns = CustomerEditColumns();
-
+            gridParameters.Columns = FilmEditColumns();
             CommandConfig update = BuildUpdate("film", gridParameters, gridParameters.ParameterValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form));
             await ExecuteNonQuery(update);
             gridParameters.Message = "Record updated";
@@ -121,15 +106,18 @@ namespace DbNetTimeCore.Repositories
 
         public async Task<DataTable> GetActor(GridParameters gridParameters)
         {
-            gridParameters.Columns = new List<ColumnInfo>()
-            {
-                new ColumnInfo("actor_id", "ActorID") {IsPrimaryKey = true},
-                new ColumnInfo("first_name", "Forename", true),
-                new ColumnInfo("last_name", "Surname", true)
-            };
+            gridParameters.Columns = ActorEditColumns();
 
             QueryCommandConfig query = BuildQuery("actor", gridParameters);
             return await GetDataTable(query);
+        }
+
+        public async Task SaveActor(GridParameters gridParameters)
+        {
+            gridParameters.Columns = ActorEditColumns();
+            CommandConfig update = BuildUpdate("actor", gridParameters, gridParameters.ParameterValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form));
+            await ExecuteNonQuery(update);
+            gridParameters.Message = "Record updated";
         }
 
         private QueryCommandConfig BuildQuery(string fromPart, GridParameters gridParameters)
@@ -211,6 +199,34 @@ namespace DbNetTimeCore.Repositories
                 new ColumnInfo("last_name", "Surname", true),
                 new ColumnInfo("email", "Email Address", true) {Format = "email", ClassName = "w-80" },
                 new ColumnInfo("active", "Active") {DataType = typeof(Boolean)}
+            };
+        }
+
+        private List<ColumnInfo> FilmEditColumns()
+        {
+            return new List<ColumnInfo>()
+            {
+                new ColumnInfo("film_id", "FilmID") {IsPrimaryKey = true},
+                new ColumnInfo("title", "Title", true),
+                new ColumnInfo("description", "Description", true),
+                new ColumnInfo("release_year", "Year Of Release"),
+                new ColumnInfo("language_id", "Language", true) { Lookup = new QueryCommandConfig("select language_id, name from language order by 2")},
+                new ColumnInfo("rental_duration", "Duration"),
+                new ColumnInfo("rental_rate", "Rental Rate"),
+                new ColumnInfo("length", "Length"),
+                new ColumnInfo("replacement_cost", "Replacement Cost"),
+                new ColumnInfo("rating", "Rating") {LookupEnum = typeof(FilmRating)},
+                new ColumnInfo("special_features", "Special Features", true),
+            };
+        }
+
+        private List<ColumnInfo> ActorEditColumns()
+        {
+            return new List<ColumnInfo>()
+            {
+                new ColumnInfo("actor_id", "ActorID") {IsPrimaryKey = true},
+                new ColumnInfo("first_name", "Forename", true),
+                new ColumnInfo("last_name", "Surname", true)
             };
         }
 
