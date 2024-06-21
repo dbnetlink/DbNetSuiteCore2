@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using DbNetTimeCore.Enums;
+using System.Data;
 using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Models
@@ -18,6 +19,8 @@ namespace DbNetTimeCore.Models
         public QueryCommandConfig? Lookup { get; set; }
         public Type? LookupEnum { get; set; }
         public DataTable LookupValues { get; set; } = new DataTable();
+        public EditControlType? EditControlType { get; set; }
+        public int? MaxTextLength { get; set; }
 
         public ColumnInfo()
         {

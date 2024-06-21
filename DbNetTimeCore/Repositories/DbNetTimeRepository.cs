@@ -58,13 +58,13 @@ namespace DbNetTimeCore.Repositories
             {
                 new ColumnInfo("film.film_id", "FilmID") {IsPrimaryKey = true},
                 new ColumnInfo("film.title", "Title", true),
-                new ColumnInfo("film.description", "Description", true),
+                new ColumnInfo("film.description", "Description", true) {MaxTextLength = 40},
                 new ColumnInfo("film.release_year", "Year Of Release"),
                 new ColumnInfo("language.name", "Language", true),
                 new ColumnInfo("film.rental_duration", "Duration"),
-                new ColumnInfo("film.rental_rate", "Rental Rate"),//{Format = "C" },
+                new ColumnInfo("film.rental_rate", "Rental Rate"){Format = "C" },
                 new ColumnInfo("film.length", "Length"),
-                new ColumnInfo("film.replacement_cost", "Replacement Cost"),//{Format = "C" },
+                new ColumnInfo("film.replacement_cost", "Replacement Cost"){Format = "C" },
                 new ColumnInfo("film.rating", "Rating"),
                 new ColumnInfo("film.special_features", "Special Features", true),
                 new ColumnInfo("film.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
@@ -208,7 +208,7 @@ namespace DbNetTimeCore.Repositories
             {
                 new ColumnInfo("film_id", "FilmID") {IsPrimaryKey = true},
                 new ColumnInfo("title", "Title", true),
-                new ColumnInfo("description", "Description", true),
+                new ColumnInfo("description", "Description", true){EditControlType = EditControlType.TextArea },
                 new ColumnInfo("release_year", "Year Of Release"),
                 new ColumnInfo("language_id", "Language", true) { Lookup = new QueryCommandConfig("select language_id, name from language order by 2")},
                 new ColumnInfo("rental_duration", "Duration"),
@@ -216,7 +216,7 @@ namespace DbNetTimeCore.Repositories
                 new ColumnInfo("length", "Length"),
                 new ColumnInfo("replacement_cost", "Replacement Cost"),
                 new ColumnInfo("rating", "Rating") {LookupEnum = typeof(FilmRating)},
-                new ColumnInfo("special_features", "Special Features", true),
+                new ColumnInfo("special_features", "Special Features", true) {EditControlType = EditControlType.MultiSelect, LookupEnum = typeof(SpecialFeature)},
             };
         }
 

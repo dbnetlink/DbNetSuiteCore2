@@ -63,7 +63,18 @@
                             }
                           
                            var value = FormatValue(row[col], columnInfo);
-                            <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                            if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
+                            {
+                                <td class="@(string.Join(" ",classes))">
+                                    <div class="tooltip" data-tip="@Html.Raw(value)">
+                                        @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
+                                    </div>
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                            }
                         }
                         @if (Model.HasPrimaryKey)
                         {
