@@ -1,4 +1,4 @@
-﻿@model DbNetTimeCore.Models.DataGrid
+﻿@model DbNetTimeCore.Models.GridViewModel
 @using System.Data
 @using DbNetTimeCore.Models
 @using Microsoft.AspNetCore.Html
@@ -31,7 +31,7 @@
         <table class="htmx-table">
             <thead>
                 <tr class="bg-slate-200">
-                    @foreach (ColumnInfo columnInfo in Model.ColumnInfo)
+                    @foreach (ColumnModel columnInfo in Model.ColumnInfo)
                     {
                         <th class="text-base" style="cursor:pointer" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">
                             <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400">@SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</span></div>
@@ -49,7 +49,7 @@
                     <tr style="cursor:pointer" class="grid-row">
                         @foreach (DataColumn col in Model.Columns)
                         {
-                            ColumnInfo? columnInfo = Model.GetColumnInfo(col);
+                            GridColumnModel? columnInfo = Model.GetColumnInfo(col);
                             var classes = new List<string>() { "text-base" };
 
                             if (col.DataType == typeof(Int64) || col.DataType == typeof(Double))
@@ -106,7 +106,7 @@
         <input class="input input-bordered input-sm w-10" readonly type="text" value="@pageNumber" />
     }
 
-    public static object? FormatValue(object? value, ColumnInfo? columnInfo)
+    public static object? FormatValue(object? value, GridColumnModel? columnInfo)
     {
         if (string.IsNullOrEmpty(columnInfo?.Format) || value == null)
         {

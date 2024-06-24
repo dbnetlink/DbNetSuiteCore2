@@ -7,17 +7,19 @@ using DbNetTimeCore.Pages;
 using DbNetTimeCore.Models;
 using System.Data;
 using DbNetTimeCore.Helpers;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetTimeCore.Services
 {
     public class DbNetTimeService : IDbNetTimeService
-    {   
+    {
         private readonly IDbNetTimeRepository _dbNetTimeRepository;
         private readonly RazorViewToStringRenderer _razorRendererService;
         private HttpContext? _context = null;
+        private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
         private bool isAjaxCall => _context.Request.Headers["hx-request"] == "true";
 
-        public DbNetTimeService(IDbNetTimeRepository dbNetTimeRepository, RazorViewToStringRenderer razorRendererService)  
+        public DbNetTimeService(IDbNetTimeRepository dbNetTimeRepository, RazorViewToStringRenderer razorRendererService)
         {
             _dbNetTimeRepository = dbNetTimeRepository;
             _razorRendererService = razorRendererService;
@@ -31,11 +33,11 @@ namespace DbNetTimeCore.Services
                 case "index":
                     return await IndexPage();
                 case "customers":
-                    return await CustomersPage();
+                    return await CustomersView();
                 case "films":
-                    return await FilmsPage();
+                    return await FilmsView();
                 case "actors":
-                    return await ActorsPage();
+                    return await ActorsView();
                 case "users":
                     return await UsersPage();
             }
@@ -47,57 +49,129 @@ namespace DbNetTimeCore.Services
         {
             var model = new IndexModel();
 
-            model.CustomersGrid = await CustomersDataGrid();
-            model.FilmsGrid = await FilmsDataGrid();
-            model.ActorsGrid = await ActorsDataGrid();
+            model.CustomersGrid = await CustomerGridViewModel( new GridModel() { Columns = ColumnInfoHelper.CustomerGridColumns().Cast<ColumnModel>().ToList() });
+            model.FilmsGrid = await FilmsGridViewModel(new GridModel() { Columns = ColumnInfoHelper.FilmGridColumns().Cast<ColumnModel>().ToList() });
+            model.ActorsGrid = await ActorsGridViewModel(new GridModel() { Columns = ColumnInfoHelper.ActorGridColumns().Cast<ColumnModel>().ToList() });
 
             return await Page("index", model);
         }
-   
-        private async Task<Byte[]> CustomersPage()
+
+        private async Task<Byte[]> CustomersView()
         {
-            var gridParameters = GetGridParameters();
-            switch (gridParameters.Handler)
+            switch (Handler)
             {
                 case "edit":
-                    return await View("_formMarkup", await CustomerEditForm(gridParameters));
                 case "save":
-                    await _dbNetTimeRepository.SaveCustomer(gridParameters);
-                    return await View("_formMarkup", await CustomerEditForm(gridParameters));
+                    return await CustomersFormView();
                 default:
-                    return await View("_gridMarkup", await CustomersDataGrid(gridParameters));
+                    return await CustomersGridView();
             }
         }
 
-        private async Task<Byte[]> FilmsPage()
+        private async Task<Byte[]> CustomersGridView()
         {
-            var gridParameters = GetGridParameters();
-            switch (gridParameters.Handler)
+            var gridModel = GetGridModel();
+            gridModel.Columns = ColumnInfoHelper.CustomerGridColumns().Cast<ColumnModel>().ToList();
+            return await View("_gridMarkup", await CustomerGridViewModel(gridModel));
+        }
+
+        private async Task<Byte[]> CustomersFormView()
+        {
+            var formModel = GetFormModel();
+            formModel.Columns = ColumnInfoHelper.CustomerEditColumns().Cast<ColumnModel>().ToList();
+            if  (Handler == "save")
+            {
+                if (ValidateCustomerEditForm(formModel))
+                {
+                    await _dbNetTimeRepository.SaveCustomer(formModel);
+                }
+                else
+                {
+                    var formViewModel = await CustomerFormViewModel(formModel);
+                    UpdateDataGridWithFormValues(formModel, formViewModel);
+                    return await View("_formMarkup", formViewModel);
+                }
+            }
+
+            return await View("_formMarkup", await CustomerFormViewModel(formModel));
+        }
+
+        private async Task<Byte[]> FilmsView()
+        {
+            switch (Handler)
             {
                 case "edit":
-                    return await View("_formMarkup", await FilmEditForm(gridParameters));
                 case "save":
-                    await _dbNetTimeRepository.SaveFilm(gridParameters);
-                    return await View("_formMarkup", await FilmEditForm(gridParameters));
+                    return await FilmsFormView();
                 default:
-                    return await View("_gridMarkup", await FilmsDataGrid(gridParameters));
+                    return await FilmsGridView();
             }
         }
 
-        private async Task<Byte[]> ActorsPage()
+        private async Task<Byte[]> FilmsGridView()
         {
-            var gridParameters = GetGridParameters();
-            switch (gridParameters.Handler)
+            var gridModel = GetGridModel();
+            gridModel.Columns = ColumnInfoHelper.FilmGridColumns().Cast<ColumnModel>().ToList();
+            return await View("_gridMarkup", await FilmsGridViewModel(gridModel));
+        }
+
+        private async Task<Byte[]> FilmsFormView()
+        {
+            var formModel = GetFormModel();
+            formModel.Columns = ColumnInfoHelper.FilmEditColumns().Cast<ColumnModel>().ToList();
+            if (Handler == "save")
+            {
+                if (ValidateFilmEditForm(formModel))
+                {
+                    await _dbNetTimeRepository.SaveFilm(formModel);
+                  }
+                else
+                {
+                    var formViewModel = await FilmFormViewModel(formModel);
+                    UpdateDataGridWithFormValues(formModel, formViewModel);
+                    return await View("_formMarkup", formViewModel);
+                }
+            }
+            return await View("_formMarkup", await FilmFormViewModel(formModel));
+        }
+
+        private async Task<Byte[]> ActorsView()
+        {
+            switch (Handler)
             {
                 case "edit":
-                    return await View("_formMarkup", await ActorEditForm(gridParameters));
                 case "save":
-                    await _dbNetTimeRepository.SaveActor(gridParameters);
-                    return await View("_formMarkup", await ActorEditForm(gridParameters));
+                    return await ActorsFormView();
                 default:
-                    return await View("_gridMarkup", await ActorsDataGrid(gridParameters));
+                    return await ActorsGridView();
             }
+        }
 
+        private async Task<Byte[]> ActorsGridView()
+        {
+            var gridModel = GetGridModel();
+            return await View("_gridMarkup", await ActorsGridViewModel(gridModel));
+        }
+
+        private async Task<Byte[]> ActorsFormView()
+        {
+            var formModel = GetFormModel();
+            formModel.Columns = ColumnInfoHelper.ActorEditColumns().Cast<ColumnModel>().ToList();
+            
+            if (Handler == "save")
+            {
+                if (ValidateActorEditForm(formModel))
+                {
+                    await _dbNetTimeRepository.SaveActor(formModel);
+                }
+                else
+                {
+                    var formViewModel = await ActorFormViewModel(formModel);
+                    UpdateDataGridWithFormValues(formModel, formViewModel);
+                    return await View("_formMarkup", formViewModel);
+                }
+            }
+            return await View("_formMarkup", await ActorFormViewModel(formModel));
         }
 
         private async Task<Byte[]> UsersPage()
@@ -115,67 +189,80 @@ namespace DbNetTimeCore.Services
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Pages/Shared/{viewName}.cshtml", model));
         }
 
-        private async Task<DataGrid> CustomersDataGrid(GridParameters? gridParameters = null)
+        private async Task<GridViewModel> CustomerGridViewModel(GridModel? gridModel = null)
         {
-            gridParameters = gridParameters ?? new GridParameters();
-            DataTable customers = await _dbNetTimeRepository.GetCustomers(gridParameters);
-            return new DataGrid(customers, "customers", gridParameters);
+            gridModel = gridModel ?? new GridModel();
+            DataTable customers = await _dbNetTimeRepository.GetCustomers(gridModel);
+            return new GridViewModel(customers, "customers", gridModel);
         }
 
-        private async Task<DataGrid> CustomerEditForm(GridParameters? gridParameters = null)
+        private async Task<FormViewModel> CustomerFormViewModel(FormModel? formModel = null)
         {
-            gridParameters = gridParameters ?? new GridParameters();
-            DataTable customers = await _dbNetTimeRepository.GetCustomer(gridParameters);
-            return new DataGrid(customers, "customers", gridParameters);
-        }
-       
-
-        private async Task<DataGrid> FilmsDataGrid(GridParameters? gridParameters = null)
-        {
-            gridParameters = gridParameters ?? new GridParameters();
-            DataTable films = await _dbNetTimeRepository.GetFilms(gridParameters);
-            return new DataGrid(films, "films", gridParameters);
+            formModel = formModel ?? new FormModel();
+            DataTable customers = await _dbNetTimeRepository.GetCustomer(formModel);
+            return new FormViewModel(customers, "customers", formModel);
         }
 
-        private async Task<DataGrid> FilmEditForm(GridParameters? gridParameters = null)
+        private async Task<GridViewModel> FilmsGridViewModel(GridModel? gridModel = null)
         {
-            gridParameters = gridParameters ?? new GridParameters();
-            DataTable films = await _dbNetTimeRepository.GetFilm(gridParameters);
-            return new DataGrid(films, "films", gridParameters);
+            gridModel = gridModel ?? new GridModel();
+            DataTable films = await _dbNetTimeRepository.GetFilms(gridModel);
+            return new GridViewModel(films, "films", gridModel);
         }
 
-        private async Task<DataGrid> ActorsDataGrid(GridParameters? gridParameters = null)
+        private async Task<FormViewModel> FilmFormViewModel(FormModel? gridModel = null)
         {
-            gridParameters = gridParameters ?? new GridParameters();
-            DataTable actors =await _dbNetTimeRepository.GetActors(gridParameters);
-            return new DataGrid(actors, "actors", gridParameters);
+            gridModel = gridModel ?? new FormModel();
+            DataTable films = await _dbNetTimeRepository.GetFilm(gridModel);
+            return new FormViewModel(films, "films", gridModel);
+        }
+   
+        private async Task<GridViewModel> ActorsGridViewModel(GridModel? gridModel = null)
+        {
+            gridModel = gridModel ?? new GridModel();
+            gridModel.Columns = ColumnInfoHelper.ActorGridColumns().Cast<ColumnModel>().ToList();
+            DataTable actors =await _dbNetTimeRepository.GetActors(gridModel);
+            return new GridViewModel(actors, "actors", gridModel);
         }
 
-        private async Task<DataGrid> ActorEditForm(GridParameters? gridParameters = null)
+        private async Task<FormViewModel> ActorFormViewModel(FormModel? formModel = null)
         {
-            gridParameters = gridParameters ?? new GridParameters();
-            DataTable actors = await _dbNetTimeRepository.GetActor(gridParameters);
-            return new DataGrid(actors, "actors", gridParameters);
+            formModel = formModel ?? new FormModel();
+            DataTable actors = await _dbNetTimeRepository.GetActor(formModel);
+            return new FormViewModel(actors, "actors", formModel);
         }
-        private GridParameters GetGridParameters()
+        private GridModel GetGridModel()
         {
-            GridParameters gridParameters = new GridParameters();
+            GridModel gridModel = new GridModel();
             try
             {
-                gridParameters.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page","1", _context));
-                gridParameters.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
-                gridParameters.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
-                gridParameters.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
-                gridParameters.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
-                gridParameters.Handler = RequestHelper.QueryValue("handler", string.Empty, _context);
-                gridParameters.PrimaryKey = RequestHelper.QueryValue("pk", string.Empty, _context);
-                gridParameters.ColSpan = Convert.ToInt32(RequestHelper.FormValue("colSpan", "0", _context));
+                gridModel.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page","1", _context));
+                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
+                gridModel.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
+                gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
+                gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
+                gridModel.PrimaryKey = RequestHelper.QueryValue("pk", string.Empty, _context);
             }
             catch
             {
             }
 
-            return gridParameters;
+            return gridModel;
+        }
+
+        private FormModel GetFormModel()
+        {
+            FormModel formModel = new FormModel();
+            try
+            {
+                formModel.PrimaryKey = RequestHelper.QueryValue("pk", string.Empty, _context);
+                formModel.ColSpan = Convert.ToInt32(RequestHelper.FormValue("colSpan", "0", _context));
+            }
+            catch
+            {
+            }
+
+            return formModel;
         }
 
         private Byte[] GetResource(string resource)
@@ -194,6 +281,59 @@ namespace DbNetTimeCore.Services
             }
 
             return bytes;
+        }
+
+        private bool ValidateFilmEditForm(FormModel formModel)
+        {
+            return CheckForRequired(formModel);
+        }
+
+        private bool ValidateCustomerEditForm(FormModel formModel)
+        {
+            return CheckForRequired(formModel);
+        }
+
+        private bool ValidateActorEditForm(FormModel formModel)
+        {
+            return CheckForRequired(formModel);
+        }
+
+        private bool CheckForRequired(FormModel formModel)
+        {
+            var formValues = (FormCollection)_context.Request.Form;
+
+            foreach (var column in formModel.EditColumns)
+            {
+                if (column.Required && !string.IsNullOrEmpty(formValues[column.Name]))
+                {
+                    formModel.Message = "Highlighted column is required";
+                    column.Invalid = true;
+                    break;
+                }
+            }
+
+            return formModel.EditColumns.Any(c => c.Invalid) == false;
+        }
+
+        private void UpdateDataGridWithFormValues(FormModel formModel, FormViewModel formViewModel)
+        {
+            var formValues = (FormCollection)_context.Request.Form;
+
+            foreach (var column in formModel.Columns)
+            {
+                if (column.IsPrimaryKey)
+                {
+                    continue;
+                }
+                DataColumn? dataColumn = formViewModel.Columns.FirstOrDefault(c => c.ColumnName == column.Name);
+                DataRow? dataRow = formViewModel.Row;
+
+                if (dataRow != null && dataColumn != null)
+                {
+                    var formValue = formValues[column.Name];
+                    formViewModel.Row[dataColumn!] = formValue.ToString();
+                }
+            }
         }
     }
 }

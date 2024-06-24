@@ -1,4 +1,4 @@
-﻿@model DbNetTimeCore.Models.DataGrid
+﻿@model DbNetTimeCore.Models.FormViewModel
 @using System.Data
 @using DbNetTimeCore.Helpers
 @using DbNetTimeCore.Enums
@@ -13,85 +13,68 @@
 
                     <table class="htmx-table">
                         <tbody>
-                            @foreach (DataRow row in Model.Rows)
-                            {
-                                <tr>
-                                    @foreach (DataColumn col in Model.Columns)
-                                    {
-                                        ColumnInfo? columnInfo = Model.GetColumnInfo(col);
-                                        if (columnInfo!.IsPrimaryKey)
-                                        {
-                                            continue;
-                                        }
-                                        <th>@columnInfo.Label</th>
-                                    }
-                                </tr>
-                                <tr>
 
-                                    @foreach (DataColumn col in Model.Columns)
+                            <tr>
+                                @foreach (DataColumn col in Model.Columns)
+                                {
+                                    EditColumnModel? columnInfo = Model.GetColumnInfo(col);
+                                    if (columnInfo!.IsPrimaryKey)
                                     {
-                                        ColumnInfo? columnInfo = Model.GetColumnInfo(col);
-                                        if (columnInfo!.IsPrimaryKey)
+                                        continue;
+                                    }
+                                    <th>@columnInfo.Label</th>
+                                }
+                            </tr>
+                            <tr>
+                                @{
+                                    DataRow row = Model.Row;
+                                    foreach (DataColumn col in Model.Columns)
+                                    {
+                                        EditColumnModel? editColumnModel = Model.GetColumnInfo(col);
+                                        if (editColumnModel!.IsPrimaryKey)
                                         {
                                             continue;
                                         }
                                         <td class="align-top">
-                                            @if (columnInfo.EditControlType != null)
+                                            @if (editColumnModel.EditControlType != null)
                                             {
-                                                switch (columnInfo.EditControlType.Value)
+                                                switch (editColumnModel.EditControlType.Value)
                                                 {
                                                     case DbNetTimeCore.Enums.EditControlType.MultiSelect:
-                                                        var values = (row[col]?.ToString() ?? string.Empty).Split(",").ToList();
-                                                        <select class="select select-bordered w-full max-w-xs" multiple size="5" name="@col.ColumnName">
-                                                            @foreach (KeyValuePair<string, string> option in EnumHelper.GetEnumOptions(columnInfo.LookupEnum))
-                                                            {
-                                                                <option value="@option.Key" @(values.Contains(option.Key) ? "selected" : string.Empty)>@option.Value</option>
-                                                            }
-                                                        </select>
+                                                        RenderMultiSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
                                                         break;
                                                     case DbNetTimeCore.Enums.EditControlType.TextArea:
-                                                        <textarea class="textarea textarea-bordered">@(row[col]?.ToString() ?? string.Empty)</textarea>
+                                                        <textarea class="@editColumnModel.ClassNames" name="@col.ColumnName">@(Model.ColumnValue(col))</textarea>
                                                         break;
                                                 }
                                             }
-                                            else if (columnInfo.Lookup != null)
+                                            else if (editColumnModel.Lookup != null)
                                             {
-                                                <select class="select select-bordered w-full max-w-xs" name="@col.ColumnName">
-                                                    @foreach (DataRow option in columnInfo.LookupValues.Rows)
-                                                    {
-                                                        <option value="@option[0].ToString()" @((row[col]?.ToString() ?? string.Empty) == option[0].ToString() ? "selected" : string.Empty)>@option[1].ToString()</option>
-                                                    }
-                                                </select>
+                                                RenderSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
                                             }
-                                            else if (columnInfo.LookupEnum != null)
+                                            else if (editColumnModel.LookupEnum != null)
                                             {
-                                                <select class="select select-bordered w-full max-w-xs" name="@col.ColumnName">
-                                                    @foreach (KeyValuePair<string, string> option in EnumHelper.GetEnumOptions(columnInfo.LookupEnum))
-                                                    {
-                                                        <option value="@option.Key" @((row[col]?.ToString() ?? string.Empty) == option.Key ? "selected" : string.Empty)>@option.Value</option>
-                                                    }
-                                                </select>
+                                                RenderEnumSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
                                             }
-                                            else if (columnInfo.DataType == typeof(Boolean))
+                                            else if (editColumnModel.DataType == typeof(Boolean))
                                             {
-                                                <input type="checkbox" name="@col.ColumnName" class="checkbox checkbox-lg" @(IsBoolean(row[col]) ? "checked" : null) />
+                                                <input type="checkbox" name="@col.ColumnName" class="@editColumnModel.ClassNames" @(IsBoolean(row[col]) ? "checked" : null) />
                                             }
                                             else
                                             {
-                                                <input type="text" name="@col.ColumnName" class="input input-bordered max-w-xs @columnInfo.ClassName" @(columnInfo.IsPrimaryKey ? "disabled" : null) value="@Html.Raw(row[col])" />
+                                                <input type="text" name="@col.ColumnName" class="@editColumnModel.ClassNames" @(editColumnModel.IsPrimaryKey ? "disabled" : null) value="@Html.Raw(Model.ColumnValue(col))" />
                                             }
                                         </td>
                                     }
-                                </tr>
-                            }
+                                }
+                            </tr>
                         </tbody>
                     </table>
-
                 </div>
                 <hr class="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700">
                 <div class="flex m-2 justify-end gap-4">
                     <div id="@(Model.GridId)formMessage" class="message flex grow border-solid border border-slate-300 bg-slate-100 rounded-md px-2 align-middle items-center"></div>
-                    <button class="btn btn-primary" type="button" hx-vals='{"colSpan":"@(Model.ColSpan)"}' hx-post="@Model.SaveUrl(Model.Rows.First())" hx-target="closest tr" hx-swap="outerHTML">Save</button>
+                    <button class="btn btn-primary" type="button" hx-vals='{"colSpan":"@(Model.ColSpan)"}' hx-post="@Model.SaveUrl(Model.Row)" hx-target="closest tr" hx-swap="outerHTML">Save</button>
                     <button class="btn cancel-btn" type="button" hx-post="@Model.SearchUrl" hx-target="#@Model.GridId" hx-swap="innerHTML">Cancel</button>
                     @if (!string.IsNullOrEmpty(Model.Message))
                     {
@@ -106,7 +89,6 @@
                         </script>
                     }
                 </div>
-
             </div>
         </form>
     </td>
@@ -124,8 +106,40 @@
             return false;
         }
     }
+
     void RenderNavButton(bool enable, string url, HtmlString icon, string title)
     {
         <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled")>@icon</button>
+    }
+
+    void RenderMultiSelect(string columnName, string value, EditColumnModel editColumnModel)
+    {
+        var values = value.Split(",").ToList();
+        <select class="@editColumnModel.ClassNames" multiple size="5" name="@columnName" value="@value">
+            @foreach (KeyValuePair<string, string> option in EnumHelper.GetEnumOptions(editColumnModel.LookupEnum))
+            {
+                <option value="@option.Key" @(values.Contains(option.Key) ? "selected" : string.Empty)>@option.Value</option>
+            }
+        </select>
+    }
+
+    void RenderSelect(string columnName, string value, EditColumnModel editColumnModel)
+    {
+        <select class="@editColumnModel.ClassNames" name="@columnName" value="@value">
+            @foreach (DataRow option in editColumnModel.LookupValues.Rows)
+            {
+                <option value="@option[0].ToString()" @(value == option[0].ToString() ? "selected" : string.Empty)>@option[1].ToString()</option>
+            }
+        </select>
+    }
+
+    void RenderEnumSelect(string columnName, string value, EditColumnModel editColumnModel)
+    {
+        <select class="@editColumnModel.ClassNames" name="@columnName" value="@value">
+            @foreach (KeyValuePair<string, string> option in EnumHelper.GetEnumOptions(editColumnModel.LookupEnum))
+            {
+                <option value="@option.Key" @(value == option.Key ? "selected" : string.Empty)>@option.Value</option>
+            }
+        </select>
     }
 }

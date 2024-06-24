@@ -1,13 +1,9 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
-using System.Text;
 using DbNetTimeCore.Repositories;
-using Microsoft.Extensions.Configuration;
 using DbNetTimeCore.Services.Interfaces;
 using DbNetTimeCore.Services;
-using Microsoft.AspNetCore.Mvc.Razor;
-using System.Diagnostics;
 
 namespace DbNetLink.Middleware
 {
@@ -25,33 +21,14 @@ namespace DbNetLink.Middleware
         public async Task Invoke(HttpContext context, IDbNetTimeService dbNetTimeService )
         {
             _dbNetTimeService = dbNetTimeService;
-            if (context.Request.Path.ToString().EndsWith(DbNetTimeExtensions.PathExtension) == false)
-            {
-                await GenerateResponse(context);
-            }
-            else
-            {
-                await _next.Invoke(context);
-            }
+            await GenerateResponse(context);
         }
 
         private async Task GenerateResponse(HttpContext context)
         {
-
-            string requestContent = string.Empty;
             var request = context.Request;
             var resp = context.Response;
-            /*
-            if (request.Method == HttpMethods.Post && request.ContentLength > 0)
-            {
-                request.EnableBuffering();
-                var buffer = new byte[Convert.ToInt32(request.ContentLength)];
-                await request.Body.ReadAsync(buffer, 0, buffer.Length);
-                requestContent = Encoding.UTF8.GetString(buffer);
 
-                request.Body.Position = 0;  //rewinding the stream to 0
-            }
-            */
             string page = request.Path.ToString().Split('/')[1];
 
             if (page == string.Empty)
@@ -79,8 +56,6 @@ namespace DbNetLink.Middleware
 
     public static class DbNetTimeExtensions
     {
-        public static string PathExtension => ".dbnetsuite";
-
         public static IApplicationBuilder UseDbNetTimeCore(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<DbNetTimeCore>();
