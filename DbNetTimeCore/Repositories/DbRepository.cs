@@ -120,7 +120,7 @@ namespace DbNetTimeCore.Repositories
             return connectionString;
         }
 
-        private void ConfigureCommand(string sql, ListDictionary @params)
+        private void ConfigureCommand(string sql, Dictionary<string,object> @params)
         {
             CloseReader();
             Open();
@@ -131,7 +131,7 @@ namespace DbNetTimeCore.Repositories
             AddCommandParameters(@params);
         }
 
-        private void AddCommandParameters(ListDictionary @params)
+        private void AddCommandParameters(Dictionary<string, object> @params)
         {
             if (@params == null)
                 return;

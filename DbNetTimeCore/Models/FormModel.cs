@@ -1,5 +1,4 @@
 ﻿using DbNetTimeCore.Helpers;
-using System.Collections.Specialized;
 
 namespace DbNetTimeCore.Models
 {
@@ -9,22 +8,22 @@ namespace DbNetTimeCore.Models
         public string? PrimaryKey { get; set; }
         public int ColSpan { get; set; }
         public string Message { get; set; } = string.Empty;
-
-        public bool InErrorState => EditColumns.Any(c => c.Invalid);
-        public ListDictionary FormValues(FormCollection form)
+        public bool Error { get; set; } = false;
+        public Dictionary<string, object> SavedFormValues { get; set; } = new Dictionary<string, object>();
+       
+        public Dictionary<string, object> FormValues(FormCollection form)
         {
-            ListDictionary parameters = new ListDictionary();
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
 
             foreach (var column in Columns.Where(c => c.IsPrimaryKey == false))
             {
-
                 switch (column.DataType.Name)
                 {
                     case "Boolean":
-                        parameters[$"@{column.Name}"] = RequestHelper.FormValue(column.Name, "", form) == "on" ? 1 : 0;
+                        parameters[$"{column.Name}"] = RequestHelper.FormValue(column.Name, "", form) == "on" ? "1" : "0";
                         break;
                     default:
-                        parameters[$"@{column.Name}"] = RequestHelper.FormValue(column.Name, "", form);
+                        parameters[$"{column.Name}"] = RequestHelper.FormValue(column.Name, "", form);
                         break;
                 }
             }

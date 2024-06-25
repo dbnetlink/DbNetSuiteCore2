@@ -62,10 +62,10 @@ namespace DbNetTimeCore.Helpers
                 new EditColumnModel("description", "Description"){EditControlType = EditControlType.TextArea,  Required = true},
                 new EditColumnModel("release_year", "Year Of Release"),
                 new EditColumnModel("language_id", "Language") { Lookup = new QueryCommandConfig("select language_id, name from language order by 2")},
-                new EditColumnModel("rental_duration", "Duration") {Required = true },
-                new EditColumnModel("rental_rate", "Rental Rate") {Required = true },
-                new EditColumnModel("length", "Length") {Required = true },
-                new EditColumnModel("replacement_cost", "Replacement Cost") { Required = true },
+                new EditColumnModel("rental_duration", "Duration") {Required = true, DataType = typeof(Int32) },
+                new EditColumnModel("rental_rate", "Rental Rate") {Required = true, DataType = typeof(Double) },
+                new EditColumnModel("length", "Length") {Required = true, DataType = typeof(Int32) },
+                new EditColumnModel("replacement_cost", "Replacement Cost") { Required = true, DataType = typeof(Double) },
                 new EditColumnModel("rating", "Rating") {LookupEnum = typeof(FilmRating)},
                 new EditColumnModel("special_features", "Special Features") {EditControlType = EditControlType.MultiSelect, LookupEnum = typeof(SpecialFeature)},
             };
@@ -88,8 +88,8 @@ namespace DbNetTimeCore.Helpers
             return new List<EditColumnModel>()
             {
                 new EditColumnModel("actor_id", "ActorID") {IsPrimaryKey = true},
-                new EditColumnModel("first_name", "Forename"),
-                new EditColumnModel("last_name", "Surname")
+                new EditColumnModel("first_name", "Forename") { Required = true },
+                new EditColumnModel("last_name", "Surname") { Required = true }
             };
         }
     }

@@ -8,6 +8,7 @@ using DbNetTimeCore.Models;
 using System.Data;
 using DbNetTimeCore.Helpers;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Specialized;
 
 namespace DbNetTimeCore.Services
 {
@@ -49,7 +50,7 @@ namespace DbNetTimeCore.Services
         {
             var model = new IndexModel();
 
-            model.CustomersGrid = await CustomerGridViewModel( new GridModel() { Columns = ColumnInfoHelper.CustomerGridColumns().Cast<ColumnModel>().ToList() });
+            model.CustomersGrid = await CustomerGridViewModel(new GridModel() { Columns = ColumnInfoHelper.CustomerGridColumns().Cast<ColumnModel>().ToList() });
             model.FilmsGrid = await FilmsGridViewModel(new GridModel() { Columns = ColumnInfoHelper.FilmGridColumns().Cast<ColumnModel>().ToList() });
             model.ActorsGrid = await ActorsGridViewModel(new GridModel() { Columns = ColumnInfoHelper.ActorGridColumns().Cast<ColumnModel>().ToList() });
 
@@ -79,7 +80,7 @@ namespace DbNetTimeCore.Services
         {
             var formModel = GetFormModel();
             formModel.Columns = ColumnInfoHelper.CustomerEditColumns().Cast<ColumnModel>().ToList();
-            if  (Handler == "save")
+            if (Handler == "save")
             {
                 if (ValidateCustomerEditForm(formModel))
                 {
@@ -88,8 +89,7 @@ namespace DbNetTimeCore.Services
                 else
                 {
                     var formViewModel = await CustomerFormViewModel(formModel);
-                    UpdateDataGridWithFormValues(formModel, formViewModel);
-                    return await View("_formMarkup", formViewModel);
+                     return await View("_formMarkup", formViewModel);
                 }
             }
 
@@ -124,12 +124,11 @@ namespace DbNetTimeCore.Services
                 if (ValidateFilmEditForm(formModel))
                 {
                     await _dbNetTimeRepository.SaveFilm(formModel);
-                  }
+                }
                 else
                 {
                     var formViewModel = await FilmFormViewModel(formModel);
-                    UpdateDataGridWithFormValues(formModel, formViewModel);
-                    return await View("_formMarkup", formViewModel);
+                     return await View("_formMarkup", formViewModel);
                 }
             }
             return await View("_formMarkup", await FilmFormViewModel(formModel));
@@ -157,7 +156,7 @@ namespace DbNetTimeCore.Services
         {
             var formModel = GetFormModel();
             formModel.Columns = ColumnInfoHelper.ActorEditColumns().Cast<ColumnModel>().ToList();
-            
+
             if (Handler == "save")
             {
                 if (ValidateActorEditForm(formModel))
@@ -167,8 +166,7 @@ namespace DbNetTimeCore.Services
                 else
                 {
                     var formViewModel = await ActorFormViewModel(formModel);
-                    UpdateDataGridWithFormValues(formModel, formViewModel);
-                    return await View("_formMarkup", formViewModel);
+                     return await View("_formMarkup", formViewModel);
                 }
             }
             return await View("_formMarkup", await ActorFormViewModel(formModel));
@@ -216,12 +214,12 @@ namespace DbNetTimeCore.Services
             DataTable films = await _dbNetTimeRepository.GetFilm(gridModel);
             return new FormViewModel(films, "films", gridModel);
         }
-   
+
         private async Task<GridViewModel> ActorsGridViewModel(GridModel? gridModel = null)
         {
             gridModel = gridModel ?? new GridModel();
             gridModel.Columns = ColumnInfoHelper.ActorGridColumns().Cast<ColumnModel>().ToList();
-            DataTable actors =await _dbNetTimeRepository.GetActors(gridModel);
+            DataTable actors = await _dbNetTimeRepository.GetActors(gridModel);
             return new GridViewModel(actors, "actors", gridModel);
         }
 
@@ -236,7 +234,7 @@ namespace DbNetTimeCore.Services
             GridModel gridModel = new GridModel();
             try
             {
-                gridModel.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page","1", _context));
+                gridModel.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page", "1", _context));
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
                 gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
@@ -285,26 +283,28 @@ namespace DbNetTimeCore.Services
 
         private bool ValidateFilmEditForm(FormModel formModel)
         {
-            return CheckForRequired(formModel);
+            return StandardFormValidation(formModel);
         }
 
         private bool ValidateCustomerEditForm(FormModel formModel)
         {
-            return CheckForRequired(formModel);
+            return StandardFormValidation(formModel);
         }
 
         private bool ValidateActorEditForm(FormModel formModel)
         {
-            return CheckForRequired(formModel);
+            return StandardFormValidation(formModel);
         }
 
-        private bool CheckForRequired(FormModel formModel)
+        private bool StandardFormValidation(FormModel formModel)
         {
             var formValues = (FormCollection)_context.Request.Form;
 
+            formModel.SavedFormValues = new Dictionary<string,object>(formModel.FormValues((FormCollection)formValues));
+
             foreach (var column in formModel.EditColumns)
             {
-                if (column.Required && !string.IsNullOrEmpty(formValues[column.Name]))
+                if (column.Required && string.IsNullOrEmpty(formValues[column.Name]))
                 {
                     formModel.Message = "Highlighted column is required";
                     column.Invalid = true;
@@ -312,28 +312,33 @@ namespace DbNetTimeCore.Services
                 }
             }
 
-            return formModel.EditColumns.Any(c => c.Invalid) == false;
-        }
-
-        private void UpdateDataGridWithFormValues(FormModel formModel, FormViewModel formViewModel)
-        {
-            var formValues = (FormCollection)_context.Request.Form;
-
-            foreach (var column in formModel.Columns)
+            if (formModel.EditColumns.Any(c => c.Invalid))
             {
-                if (column.IsPrimaryKey)
+                return false;
+            }
+
+            foreach (var column in formModel.EditColumns)
+            {
+                var value = formValues[column.Name].ToString();
+                if (string.IsNullOrEmpty(value))
                 {
                     continue;
                 }
-                DataColumn? dataColumn = formViewModel.Columns.FirstOrDefault(c => c.ColumnName == column.Name);
-                DataRow? dataRow = formViewModel.Row;
 
-                if (dataRow != null && dataColumn != null)
+                try
                 {
-                    var formValue = formValues[column.Name];
-                    formViewModel.Row[dataColumn!] = formValue.ToString();
+                    var convertedValue = Convert.ChangeType(value, column.DataType);
+                }
+                catch
+                {
+                    formModel.Message = "Highlighted column is not in correct format";
+                    column.Invalid = true;
+                    break;
                 }
             }
+
+            var inValid = formModel.EditColumns.Any(c => c.Invalid);
+            return inValid == false;
         }
     }
 }

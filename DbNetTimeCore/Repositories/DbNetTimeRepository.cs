@@ -1,5 +1,7 @@
 ﻿using DbNetTimeCore.Helpers;
 using DbNetTimeCore.Models;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using static DbNetTimeCore.Utilities.DbNetDataCore;
 
@@ -26,9 +28,7 @@ namespace DbNetTimeCore.Repositories
 
         public async Task SaveCustomer(FormModel formModel)
         {
-            CommandConfig update = BuildUpdate("customer", formModel);
-            await ExecuteNonQuery(update);
-            formModel.Message = "Record updated";
+            await SaveEntity("customer", formModel);
         }
 
         public async Task<DataTable> GetFilms(GridModel gridModel)
@@ -46,9 +46,7 @@ namespace DbNetTimeCore.Repositories
 
         public async Task SaveFilm(FormModel formModel)
         {
-            CommandConfig update = BuildUpdate("film", formModel);
-            await ExecuteNonQuery(update);
-            formModel.Message = "Record updated";
+            await SaveEntity("film", formModel);
         }
 
         public async Task<DataTable> GetActors(GridModel gridModel)
@@ -65,9 +63,22 @@ namespace DbNetTimeCore.Repositories
 
         public async Task SaveActor(FormModel formModel)
         {
-            CommandConfig update = BuildUpdate("actor", formModel);
-            await ExecuteNonQuery(update);
-            formModel.Message = "Record updated";
+            await SaveEntity("actor", formModel);
+        }
+
+        public async Task SaveEntity(string entityName, FormModel formModel, ListDictionary? otherValues = null)
+        {
+            CommandConfig update = BuildUpdate(entityName, formModel, otherValues);
+            try
+            {
+                await ExecuteNonQuery(update);
+                formModel.Message = "Record updated";
+            }
+            catch (Exception ex)
+            {
+                formModel.Message = ex.Message;
+                formModel.Error = true;
+            }
         }
 
         private QueryCommandConfig BuildQuery(string fromPart, ComponentModel componentModel)
@@ -96,14 +107,29 @@ namespace DbNetTimeCore.Repositories
             return query;
         }
 
-        private CommandConfig BuildUpdate(string fromPart, FormModel formModel)
+        private CommandConfig BuildUpdate(string fromPart, FormModel formModel, ListDictionary? otherValues = null)
         {
-            string columns = string.Join(",", formModel.Columns.Where(c => c.IsPrimaryKey == false).Select(c => $"{c.Name} = @{c.Name}").ToList());
+            List<string> columns = formModel.Columns.Where(c => c.IsPrimaryKey == false).Select(c => $"{c.Name} = @{c.Name}").ToList();
 
-            var formValues = formModel.FormValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form);
+            if (otherValues != null)
+            {
+                columns.AddRange(otherValues.Keys.Cast<string>().Select(c => $"{c} = @{c}").ToList());
+            }
 
-            string sql = $"update {fromPart} set {columns}";
-            CommandConfig update = new CommandConfig(sql) { Params = formValues };
+            Dictionary<string,object> formValues = formModel.FormValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form);
+
+            if (otherValues != null)
+            {
+                foreach(string columnName in otherValues.Keys)
+                {
+                    formValues[$"{columnName}"] = otherValues[columnName]; 
+                }
+            }
+
+            Dictionary<string, object> parameters = formValues.Select(fv => new KeyValuePair<string, object>($"@{fv.Key}", fv.Value)).ToDictionary();
+
+            string sql = $"update {fromPart} set {string.Join(",",columns)}";
+            CommandConfig update = new CommandConfig(sql) { Params = parameters };
 
             AddPrimaryKeyFilterPart(update, formModel);
             return update;

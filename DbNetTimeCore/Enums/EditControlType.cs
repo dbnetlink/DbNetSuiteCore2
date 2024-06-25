@@ -3,6 +3,10 @@
     public enum EditControlType
     {
         MultiSelect,
-        TextArea
+        TextArea,
+        Lookup,
+        EnumLookup,
+        Checkbox,
+        Input
     };
 }

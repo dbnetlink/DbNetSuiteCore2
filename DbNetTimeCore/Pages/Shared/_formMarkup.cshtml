@@ -36,33 +36,28 @@
                                             continue;
                                         }
                                         <td class="align-top">
-                                            @if (editColumnModel.EditControlType != null)
-                                            {
-                                                switch (editColumnModel.EditControlType.Value)
+                                            @{
+                                                switch (editColumnModel.EditControlType)
                                                 {
-                                                    case DbNetTimeCore.Enums.EditControlType.MultiSelect:
+                                                    case EditControlType.MultiSelect:
                                                         RenderMultiSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
                                                         break;
-                                                    case DbNetTimeCore.Enums.EditControlType.TextArea:
+                                                    case EditControlType.Lookup:
+                                                        RenderSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
+                                                        break;
+                                                    case EditControlType.EnumLookup:
+                                                        RenderEnumSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
+                                                        break;
+                                                    case EditControlType.TextArea:
                                                         <textarea class="@editColumnModel.ClassNames" name="@col.ColumnName">@(Model.ColumnValue(col))</textarea>
                                                         break;
+                                                    case EditControlType.Checkbox:
+                                                        <input type="checkbox" name="@col.ColumnName" class="@editColumnModel.ClassNames" @(IsBoolean(Model.ColumnValue(col)) ? "checked" : null) />
+                                                        break;
+                                                    default:
+                                                        <input type="text" name="@col.ColumnName" class="@editColumnModel.ClassNames" @(editColumnModel.IsPrimaryKey ? "disabled" : null) value="@Html.Raw(Model.ColumnValue(col))" />
+                                                        break;
                                                 }
-                                            }
-                                            else if (editColumnModel.Lookup != null)
-                                            {
-                                                RenderSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
-                                            }
-                                            else if (editColumnModel.LookupEnum != null)
-                                            {
-                                                RenderEnumSelect(col.ColumnName, Model.ColumnValue(col), editColumnModel);
-                                            }
-                                            else if (editColumnModel.DataType == typeof(Boolean))
-                                            {
-                                                <input type="checkbox" name="@col.ColumnName" class="@editColumnModel.ClassNames" @(IsBoolean(row[col]) ? "checked" : null) />
-                                            }
-                                            else
-                                            {
-                                                <input type="text" name="@col.ColumnName" class="@editColumnModel.ClassNames" @(editColumnModel.IsPrimaryKey ? "disabled" : null) value="@Html.Raw(Model.ColumnValue(col))" />
                                             }
                                         </td>
                                     }
@@ -79,12 +74,26 @@
                     @if (!string.IsNullOrEmpty(Model.Message))
                     {
                         <script>
+                            var inErrorState = @(Model.InErrorState.ToString().ToLower());
                             me(".message").innerText = "@(Model.Message)";
-                            me(".message").classAdd("font-bold").classAdd("bg-teal-300");
+
+                            if (inErrorState) {
+                                me(".message").classAdd("font-bold").classAdd("bg-red-300");
+                                document.querySelector(".in-error").focus()
+                            }
+                            else {
+                                me(".message").classAdd("font-bold").classAdd("bg-teal-300");
+                            }
                             setTimeout(@(Model.GridId)clearMessage, 3000);
 
                             function @(Model.GridId)clearMessage() {
-                                me(".cancel-btn").click()
+                                if (inErrorState) {
+                                    me(".message").classRemove("bg-red-300").innerText = '';
+                                }
+                                else {
+                                    me(".cancel-btn").click();
+                                }
+                                
                             }
                         </script>
                     }

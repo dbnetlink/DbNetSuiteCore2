@@ -10,6 +10,7 @@ namespace DbNetTimeCore.Models
         public int ColSpan => _formModel.ColSpan;
       
         public string Message => _formModel.Message;
+        public bool InErrorState => _formModel.EditColumns.Any(c => c.Invalid) || _formModel.Error;
         public string SaveUrl(DataRow row)
         {
             return $"/{Id}/?handler=save&pk={PrimaryKeyValue(row)}";
@@ -33,7 +34,17 @@ namespace DbNetTimeCore.Models
 
         public string ColumnValue(DataColumn column)
         {
-            return Row[column]?.ToString() ?? string.Empty;
+            return InErrorState ? SavedFormValue(column.ColumnName) : Row[column]?.ToString() ?? string.Empty;
+        }
+
+        private string SavedFormValue(string columnName)
+        {
+            if (_formModel.SavedFormValues.ContainsKey(columnName))
+            {
+                return _formModel.SavedFormValues[columnName]?.ToString() ?? string.Empty;
+            }
+
+            return string.Empty;
         }
     }
 }

@@ -44,7 +44,7 @@ namespace DbNetTimeCore.Utilities
         public class CommandConfig
         {
             public string Sql = String.Empty;
-            public ListDictionary Params = new ListDictionary();
+            public Dictionary<string,object> Params = new Dictionary<string, object>();
 
             public CommandConfig()
                 : this("")
@@ -55,7 +55,7 @@ namespace DbNetTimeCore.Utilities
             {
                 this.Sql = sql;
             }
-            public CommandConfig(string sql, ListDictionary parameters)
+            public CommandConfig(string sql, Dictionary<string, object> parameters)
             {
                 this.Sql = sql;
                 this.Params = parameters;
@@ -73,13 +73,13 @@ namespace DbNetTimeCore.Utilities
                 : base(sql)
             {
             }
-            public QueryCommandConfig(string sql, ListDictionary parameters) : base(sql, parameters)
+            public QueryCommandConfig(string sql, Dictionary<string, object> parameters) : base(sql, parameters)
             {
             }
         }
         public class UpdateCommandConfig : CommandConfig
         {
-            public ListDictionary FilterParams = new ListDictionary();
+            public Dictionary<string, object> FilterParams = new Dictionary<string, object>();
 
             public UpdateCommandConfig()
                 : this("")
