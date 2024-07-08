@@ -103,7 +103,7 @@
 
     void RenderPageNumber(int pageNumber)
     {
-        <input class="input input-bordered input-sm w-10" readonly type="text" value="@pageNumber" />
+        <input class="input input-bordered input-sm" style="width:@(pageNumber.ToString().Length + 2)em" readonly type="text" value="@pageNumber" />
     }
 
     public static object? FormatValue(object? value, GridColumnModel? columnInfo)

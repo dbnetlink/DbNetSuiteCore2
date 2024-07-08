@@ -320,7 +320,7 @@ namespace DbNetTimeCore.Services
             foreach (var column in formModel.EditColumns)
             {
                 var value = formValues[column.Name].ToString();
-                if (string.IsNullOrEmpty(value))
+                if (string.IsNullOrEmpty(value) || column.DataType == typeof(bool))
                 {
                     continue;
                 }
