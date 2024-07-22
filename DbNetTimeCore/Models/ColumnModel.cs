@@ -18,5 +18,11 @@
             Name = name;
             Label = label;
         }
+
+        public ColumnModel(string name) 
+        {
+            Name = name;
+            Label = name;
+        }
     }
 }

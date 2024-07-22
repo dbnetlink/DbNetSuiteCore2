@@ -10,9 +10,11 @@
         }
         public GridColumnModel(string name, string label, bool searchable = false) : base (name, label) 
         {
-            Name = name;
-            Label = label;
             Searchable = searchable;
+        }
+
+        public GridColumnModel(string name) : base(name, name)
+        {
         }
     }
 }

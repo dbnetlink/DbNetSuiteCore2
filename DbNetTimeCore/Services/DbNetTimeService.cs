@@ -7,23 +7,23 @@ using DbNetTimeCore.Pages;
 using DbNetTimeCore.Models;
 using System.Data;
 using DbNetTimeCore.Helpers;
-using Microsoft.IdentityModel.Tokens;
-using System.Collections.Specialized;
 
 namespace DbNetTimeCore.Services
 {
     public class DbNetTimeService : IDbNetTimeService
     {
         private readonly IDbNetTimeRepository _dbNetTimeRepository;
+        private readonly ITimestreamRepository _timestreamRepository;
         private readonly RazorViewToStringRenderer _razorRendererService;
         private HttpContext? _context = null;
         private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
         private bool isAjaxCall => _context.Request.Headers["hx-request"] == "true";
 
-        public DbNetTimeService(IDbNetTimeRepository dbNetTimeRepository, RazorViewToStringRenderer razorRendererService)
+        public DbNetTimeService(IDbNetTimeRepository dbNetTimeRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository)
         {
             _dbNetTimeRepository = dbNetTimeRepository;
             _razorRendererService = razorRendererService;
+            _timestreamRepository = timestreamRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -33,6 +33,8 @@ namespace DbNetTimeCore.Services
             {
                 case "index":
                     return await IndexPage();
+                case "timestream":
+                    return await TimestreamPage();
                 case "customers":
                     return await CustomersView();
                 case "films":
@@ -41,6 +43,10 @@ namespace DbNetTimeCore.Services
                     return await ActorsView();
                 case "users":
                     return await UsersPage();
+                case "mt1_in_reg":
+                    return await TimestreamView("Kensa-Development", "MT2_IN_RAW");
+                case "mt2_in_raw":
+                    return await TimestreamView("Kensa-Development", "MT2_IN_RAW");
             }
 
             return GetResource(page);
@@ -55,6 +61,16 @@ namespace DbNetTimeCore.Services
             model.ActorsGrid = await ActorsGridViewModel(new GridModel() { Columns = ColumnInfoHelper.ActorGridColumns().Cast<ColumnModel>().ToList() });
 
             return await Page("index", model);
+        }
+
+        private async Task<Byte[]> TimestreamPage()
+        {
+            var model = new TimestreamModel();
+
+            model.MT2Grid = await TimestreamGridViewModel("Kensa-Development", "MT2_IN_RAW");
+            model.MT1Grid = await TimestreamGridViewModel("Kensa-Development", "MT1_IN_REG");
+
+            return await Page("timestream", model);
         }
 
         private async Task<Byte[]> CustomersView()
@@ -146,6 +162,13 @@ namespace DbNetTimeCore.Services
             }
         }
 
+        private async Task<Byte[]> TimestreamView(string databaseName, string tableName)
+        {
+            var gridModel = GetGridModel();
+            return await View("_gridMarkup", await TimestreamGridViewModel(databaseName, tableName));
+        }
+
+
         private async Task<Byte[]> ActorsGridView()
         {
             var gridModel = GetGridModel();
@@ -223,13 +246,22 @@ namespace DbNetTimeCore.Services
             return new GridViewModel(actors, "actors", gridModel);
         }
 
+        private async Task<GridViewModel> TimestreamGridViewModel(string databaseName, string tableName)
+        {
+            GridModel gridModel = GetGridModel() ?? new GridModel();
+            var columns = await _timestreamRepository.GetColumns(databaseName, tableName);
+            gridModel.Columns = columns.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c.ColumnName) { DataType = c.DataType, Searchable = c.DataType == typeof(string) }).Cast<ColumnModel>().ToList();
+            DataTable data = await _timestreamRepository.GetRecords(databaseName, tableName, gridModel);
+            return new GridViewModel(data, tableName, gridModel);
+        }
+
         private async Task<FormViewModel> ActorFormViewModel(FormModel? formModel = null)
         {
             formModel = formModel ?? new FormModel();
             DataTable actors = await _dbNetTimeRepository.GetActor(formModel);
             return new FormViewModel(actors, "actors", formModel);
         }
-        private GridModel GetGridModel()
+        private GridModel? GetGridModel()
         {
             GridModel gridModel = new GridModel();
             try
@@ -243,6 +275,7 @@ namespace DbNetTimeCore.Services
             }
             catch
             {
+                return null;
             }
 
             return gridModel;

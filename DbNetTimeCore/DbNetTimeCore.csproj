@@ -19,6 +19,7 @@
     <Content Remove="Pages\Shared\_formMarkup.cshtml" />
     <Content Remove="Pages\Shared\_gridControl.cshtml" />
     <Content Remove="Pages\Shared\_gridMarkup.cshtml" />
+    <Content Remove="Pages\timestream.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Pages\timestream.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\index.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -66,6 +70,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.TimestreamQuery" Version="3.7.301.35" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
