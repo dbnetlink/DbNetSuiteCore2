@@ -19,6 +19,7 @@
     <Content Remove="Pages\Shared\_formMarkup.cshtml" />
     <Content Remove="Pages\Shared\_gridControl.cshtml" />
     <Content Remove="Pages\Shared\_gridMarkup.cshtml" />
+    <Content Remove="Pages\Shared\_gridStyle.cshtml" />
     <Content Remove="Pages\timestream.cshtml" />
   </ItemGroup>
 
@@ -34,6 +35,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Pages\Shared\_gridControl.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Shared\_gridStyle.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\timestream.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -49,7 +56,7 @@
     <EmbeddedResource Include="Pages\Shared\_gridMarkup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_gridControl.cshtml">
+    <EmbeddedResource Include="Pages\Shared\_gridScript.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />

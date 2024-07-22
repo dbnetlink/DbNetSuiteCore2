@@ -61,19 +61,26 @@
                             {
                                 classes.Add("text-center");
                             }
-                          
-                           var value = FormatValue(row[col], columnInfo);
-                            if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
+
+                            if (col.DataType == typeof(Boolean))
                             {
-                                <td class="@(string.Join(" ",classes))">
-                                    <div class="tooltip" data-tip="@Html.Raw(value)">
-                                        @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
-                                    </div>
-                                </td>
+                                <td class="@(string.Join(" ",classes))">@Html.Raw(Convert.ToBoolean(row[col]) ? CheckedCheckboxIcon() : UncheckedCheckboxIcon())</td>
                             }
                             else
                             {
-                                <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                                var value = FormatValue(row[col], columnInfo);
+                                if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
+                                {
+                                    <td class="@(string.Join(" ",classes))">
+                                        <div class="tooltip" data-tip="@Html.Raw(value)">
+                                            @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
+                                        </div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                                }
                             }
                         }
                         @if (Model.HasPrimaryKey)
@@ -136,6 +143,7 @@
                 {
                     value = Convert.ToDouble(value).ToString(format);
                 }
+
                 break;
         }
 
@@ -203,6 +211,16 @@
     HtmlString ArrowUpIcon()
     {
         return IconSVG("M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18");
+    }
+
+    HtmlString CheckedCheckboxIcon()
+    {
+        return IconSVG("m424-312 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z");
+    }
+
+    HtmlString UncheckedCheckboxIcon()
+    {
+        return IconSVG("M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z");
     }
 
     HtmlString IconSVG(string data)

@@ -18,7 +18,8 @@ namespace DbNetTimeCore.Repositories
 
         public async Task<DataTable> GetRecords(string database, string table, GridModel gridModel)
         {
-            return await RunQuery($"SELECT * FROM \"{database}\".\"{table}\" LIMIT 1000");
+            var query = BuildQuery($"\"{database}\".\"{table}\"", gridModel);
+            return await RunQuery($"{query} LIMIT 1000");
         }
 
         public async Task<DataTable> GetColumns(string database, string table)
@@ -56,16 +57,19 @@ namespace DbNetTimeCore.Repositories
         {
             var gridModel = (GridModel)componentModel;
 
-            List<string> filterPart = new List<string>();
-
-            foreach (var col in gridModel.GridColumns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+            if (string.IsNullOrEmpty(gridModel.SearchInput) == false)
             {
-                filterPart.Add($"{col} like '%{gridModel.SearchInput}%'");
-            }
+                List<string> filterPart = new List<string>();
 
-            if (filterPart.Any())
-            {
-               sql += $" where {string.Join(" or ", filterPart)}";
+                foreach (var col in gridModel.GridColumns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+                {
+                    filterPart.Add($"{col} like '%{gridModel.SearchInput}%'");
+                }
+
+                if (filterPart.Any())
+                {
+                    sql += $" where {string.Join(" or ", filterPart)}";
+                }
             }
 
             return sql;

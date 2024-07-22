@@ -14,4 +14,9 @@
         @await Html.PartialAsync("~/Pages/Shared/_gridControl.cshtml", Model.MT1Grid)
     </div>
 </div>
+
+@await Html.PartialAsync("~/Pages/Shared/_gridScript.cshtml")
+
+@section Styles {
+    @await Html.PartialAsync("~/Pages/Shared/_gridStyle.cshtml")
 }

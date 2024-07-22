@@ -44,9 +44,8 @@ namespace DbNetTimeCore.Services
                 case "users":
                     return await UsersPage();
                 case "mt1_in_reg":
-                    return await TimestreamView("Kensa-Development", "MT2_IN_RAW");
                 case "mt2_in_raw":
-                    return await TimestreamView("Kensa-Development", "MT2_IN_RAW");
+                    return await TimestreamView("Kensa-Development", page);
             }
 
             return GetResource(page);
