@@ -2,6 +2,6 @@
 {
     public class ComponentModel
     {
-        public List<ColumnModel> Columns { get; set; } = new List<ColumnModel>();
+        public List<GridColumnModel> Columns { get; set; } = new List<GridColumnModel>();
     }
 }

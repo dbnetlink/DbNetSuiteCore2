@@ -20,15 +20,18 @@ namespace DbNetTimeCore.Repositories
         private DbCommand _command;
         private IDataReader _reader;
         private IDbTransaction _transaction;
-        private DataProvider _dataProvider;
+        private DataProvider _dataProvider = DataProvider.SqlClient;
 
 
         public DbRepository(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
             _env = env;
+        }
 
-            string connectionString = _configuration.GetConnectionString("dbnettime") ?? string.Empty;
+        public void Open(string database)
+        {
+            string connectionString = _configuration.GetConnectionString(database);
             connectionString = MapDatabasePath(connectionString);
 
             _dataProvider = Regex.IsMatch(connectionString, @"Data Source=(.*)\.db;", RegexOptions.IgnoreCase) ? DataProvider.SQLite : DataProvider.SqlClient;
@@ -45,39 +48,35 @@ namespace DbNetTimeCore.Repositories
             }
 
             _command = (DbCommand)_connection.CreateCommand();
-        }
-
-        public void Open()
-        {
             if (_connection.State != ConnectionState.Open)
             {
                 _connection.Open();
             }
         }
-        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig)
+        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database)
         {
             DataTable dataTable = new DataTable();
-            dataTable.Load(await ExecuteQuery(queryCommandConfig));
+            dataTable.Load(await ExecuteQuery(queryCommandConfig, database));
             return dataTable;
         }
 
-        public async Task<DbDataReader> ExecuteQuery(string sql)
+        public async Task<DbDataReader> ExecuteQuery(string sql, string database)
         {
-            return await ExecuteQuery(new QueryCommandConfig(sql));
+            return await ExecuteQuery(new QueryCommandConfig(sql), database);
         }
-        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query)
+        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, string database)
         {
-            ConfigureCommand(query.Sql, query.Params);
+            ConfigureCommand(query.Sql, query.Params, database);
             return await _command.ExecuteReaderAsync(CommandBehavior.Default);
         }
 
-        public async Task<int> ExecuteNonQuery(CommandConfig commandConfig)
+        public async Task<int> ExecuteNonQuery(CommandConfig commandConfig, string database)
         {
             if (Regex.Match(commandConfig.Sql, "^(delete|update) ", RegexOptions.IgnoreCase).Success)
                 if (!Regex.Match(commandConfig.Sql, " where ", RegexOptions.IgnoreCase).Success)
                     throw new Exception("Unqualified updates and deletes are not allowed.");
 
-            ConfigureCommand(commandConfig.Sql, commandConfig.Params);
+            ConfigureCommand(commandConfig.Sql, commandConfig.Params, database);
             int returnValue = 0;
 
             try
@@ -120,10 +119,10 @@ namespace DbNetTimeCore.Repositories
             return connectionString;
         }
 
-        private void ConfigureCommand(string sql, Dictionary<string,object> @params)
+        private void ConfigureCommand(string sql, Dictionary<string,object> @params, string database)
         {
             CloseReader();
-            Open();
+            Open(database);
             _command.CommandText = sql.Trim();
             _command.CommandType = CommandType.Text;
 

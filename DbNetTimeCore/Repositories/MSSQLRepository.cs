@@ -5,97 +5,40 @@ using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Repositories
 {
-    public class DbNetTimeRepository : DbRepository, IDbNetTimeRepository
+    public class MSSQLRepository : DbRepository, IMSSQLRepository
     {
         IHttpContextAccessor _httpContextAccessor;
-        public DbNetTimeRepository(IConfiguration configuration, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor) : base(configuration, env)
+        public MSSQLRepository(IConfiguration configuration, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor) : base(configuration, env)
         {
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<DataTable> GetCustomers(GridModel gridModel)
+        public async Task<DataTable> GetRecords(GridModel gridModel)
         {
-            QueryCommandConfig query = BuildQuery("customer join address on customer.address_id = address.address_id join city on city.city_id = address.city_id", gridModel);
-            return await GetDataTable(query);
+            QueryCommandConfig query = BuildQuery(gridModel);
+            return await GetDataTable(query, gridModel.ConnectionAlias);
         }
 
-        public async Task<DataTable> GetCustomer(FormModel formModel)
+        public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            QueryCommandConfig query = BuildQuery("customer", formModel);
-            return await GetDataTable(query);
+            QueryCommandConfig query = new QueryCommandConfig($"select * from {gridModel.TableName} where 1=2");
+            return await GetDataTable(query, gridModel.ConnectionAlias);
         }
 
-        public async Task SaveCustomer(FormModel formModel)
-        {
-            await SaveEntity("customer", formModel);
-        }
-
-        public async Task<DataTable> GetFilms(GridModel gridModel)
-        {
-            QueryCommandConfig query = BuildQuery("film join language on language.language_id = film.language_id", gridModel);
-            return await GetDataTable(query);
-        }
-
-        public async Task<DataTable> GetFilm(FormModel formModel)
-        {
-            QueryCommandConfig query = BuildQuery("film", formModel);
-            BuildLookups(formModel.EditColumns);
-            return await GetDataTable(query);
-        }
-
-        public async Task SaveFilm(FormModel formModel)
-        {
-            await SaveEntity("film", formModel);
-        }
-
-        public async Task<DataTable> GetActors(GridModel gridModel)
-        {
-            QueryCommandConfig query = BuildQuery("actor", gridModel);
-            return await GetDataTable(query);
-        }
-
-        public async Task<DataTable> GetActor(FormModel formModel)
-        {
-            QueryCommandConfig query = BuildQuery("actor", formModel);
-            return await GetDataTable(query);
-        }
-
-        public async Task SaveActor(FormModel formModel)
-        {
-            await SaveEntity("actor", formModel);
-        }
-
-        public async Task SaveEntity(string entityName, FormModel formModel, ListDictionary? otherValues = null)
-        {
-            CommandConfig update = BuildUpdate(entityName, formModel, otherValues);
-            try
-            {
-                await ExecuteNonQuery(update);
-                formModel.Message = "Record updated";
-            }
-            catch (Exception ex)
-            {
-                formModel.Message = ex.Message;
-                formModel.Error = true;
-            }
-        }
-
-        private QueryCommandConfig BuildQuery(string fromPart, ComponentModel componentModel)
+        private QueryCommandConfig BuildQuery(GridModel gridModel)
         {
             string columns = "*";
-            if (componentModel.Columns.Any())
+            if (gridModel.Columns.Any())
             {
-                columns = string.Join(",", componentModel.Columns.Select(c => c.Name).ToList());
+                columns = string.Join(",", gridModel.Columns.Select(c => c.Name).ToList());
             }
           
-            string sql = $"select {columns} from {fromPart}";
+            string sql = $"select {columns} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            AddFilterPart(query, componentModel);
+            AddFilterPart(query, gridModel);
 
-            if (componentModel is GridModel)
+            if (gridModel is GridModel)
             {
-                var gridModel = (GridModel)componentModel;
-               
                 if (!string.IsNullOrEmpty(gridModel.SortKey) || !string.IsNullOrEmpty(gridModel.CurrentSortKey))
                 {
                     AddOrderPart(query, gridModel);
@@ -147,16 +90,8 @@ namespace DbNetTimeCore.Repositories
             }
         }
 
-        private void AddFilterPart(CommandConfig query, ComponentModel componentModel)
+        private void AddFilterPart(CommandConfig query, GridModel gridModel)
         {
-            if (componentModel is FormModel)
-            {
-                AddPrimaryKeyFilterPart(query,(FormModel)componentModel);
-                return;
-            }
-
-            var gridModel = (GridModel)componentModel;
-
             List<string> filterPart = new List<string>();
 
             foreach (var col in gridModel.GridColumns.Where(c => c.Searchable).Select(c => c.Name).ToList())
@@ -181,7 +116,7 @@ namespace DbNetTimeCore.Repositories
         {
             foreach (EditColumnModel column in columns.Where(c => c.Lookup != null))
             {
-                column.LookupValues = await GetDataTable(column.Lookup);
+                column.LookupValues = await GetDataTable(column.Lookup, string.Empty);
             }
         }
     }

@@ -6,21 +6,17 @@ namespace DbNetTimeCore.Models
         public IEnumerable<DataColumn> Columns { get; set; } = new List<DataColumn>();
         private ComponentModel _componentModel;
 
-        public string GridId => $"{Id}Grid";
-        public string SearchUrl => $"/{Id}/?handler=search";
+        public string SearchUrl => $"/gridcontrol.htmx?handler=search";
         public string EditUrl(DataRow row)
         {
-            return $"/{Id}/?handler=edit&pk={PrimaryKeyValue(row)}";
+            return $"/gridcontrol.htmx?handler=edit&pk={PrimaryKeyValue(row)}";
         }
-
-        public string Id { get; set; } = string.Empty;
-       
-        public List<ColumnModel> ColumnInfo => _componentModel.Columns;
+      
+        public List<GridColumnModel> ColumnInfo => _componentModel.Columns;
         public bool HasPrimaryKey => ColumnInfo.Any(c => c.IsPrimaryKey);
         public ColumnModel? PrimaryKey => ColumnInfo.FirstOrDefault(c => c.IsPrimaryKey);
-        public ComponentViewModel(DataTable dataTable, string id, ComponentModel componentModel)
+        public ComponentViewModel(DataTable dataTable, ComponentModel componentModel)
         {
-            Id = id;
             _componentModel = componentModel;
             Columns = dataTable.Columns.Cast<DataColumn>();
 

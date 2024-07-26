@@ -10,6 +10,8 @@ namespace DbNetTimeCore.Models
         public string Message { get; set; } = string.Empty;
         public bool Error { get; set; } = false;
         public Dictionary<string, object> SavedFormValues { get; set; } = new Dictionary<string, object>();
+
+        public string Id { get; set; }
        
         public Dictionary<string, object> FormValues(FormCollection form)
         {

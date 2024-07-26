@@ -1,0 +1,24 @@
+﻿@page
+@using DbNetTimeCore.Enums
+@using DbNetTimeCore.Models
+@model IndexModel
+@{
+    Layout = "_Layout";
+}
+
+<div role="tablist" class="tabs tabs-lifted m-5  tabs-lg">
+    <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="MT2" checked />
+    <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.Timestream, ConnectionAlias = "AWS", TableName = "Kensa-Development.MT2_IN_RAW" }))
+    </div>
+
+    <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="MT1" />
+    <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.Timestream, ConnectionAlias = "AWS", TableName = "Kensa-Development.MT1_IN_REG" }))
+    </div>
+
+    <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Heatpumps" />
+    <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.MSSQL, ConnectionAlias = "Kensa", TableName = "dbo.Heatpumps" }))
+    </div>
+</div>

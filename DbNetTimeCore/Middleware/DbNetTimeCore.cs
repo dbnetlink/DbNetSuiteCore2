@@ -11,6 +11,7 @@ namespace DbNetLink.Middleware
     {
         private RequestDelegate _next;
         private IDbNetTimeService _dbNetTimeService;
+        private string _extension = ".htmx";
 
 
         public DbNetTimeCore(RequestDelegate next)
@@ -20,8 +21,15 @@ namespace DbNetLink.Middleware
 
         public async Task Invoke(HttpContext context, IDbNetTimeService dbNetTimeService )
         {
-            _dbNetTimeService = dbNetTimeService;
-            await GenerateResponse(context);
+            if (context.Request.Path.ToString().EndsWith(_extension))
+            {
+                _dbNetTimeService = dbNetTimeService;
+                await GenerateResponse(context);
+            }
+            else
+            {
+                await _next.Invoke(context);
+            }
         }
 
         private async Task GenerateResponse(HttpContext context)
@@ -29,7 +37,7 @@ namespace DbNetLink.Middleware
             var request = context.Request;
             var resp = context.Response;
 
-            string page = request.Path.ToString().Split('/')[1];
+            string page = request.Path.ToString().Split('/')[1].Replace(_extension,string.Empty);
 
             if (page == string.Empty)
             {
@@ -75,7 +83,7 @@ namespace DbNetLink.Middleware
             services.AddControllersWithViews();
             services.AddHttpContextAccessor();
             services.AddScoped<IDbNetTimeService, DbNetTimeService>();
-            services.AddScoped<IDbNetTimeRepository, DbNetTimeRepository>();
+            services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ITimestreamRepository, TimestreamRepository>();
             services.AddScoped<RazorViewToStringRenderer>();
             

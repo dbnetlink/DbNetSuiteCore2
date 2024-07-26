@@ -6,7 +6,10 @@ namespace DbNetTimeCore.Models
         private readonly FormModel _formModel = new FormModel();
         public DataRow Row { get; set; }
 
+        public string Id { get; set; }
+
         public string FormId => $"{Id}Form";
+
         public int ColSpan => _formModel.ColSpan;
       
         public string Message => _formModel.Message;
@@ -16,7 +19,7 @@ namespace DbNetTimeCore.Models
             return $"/{Id}/?handler=save&pk={PrimaryKeyValue(row)}";
         }
 
-        public FormViewModel(DataTable dataTable, string id, FormModel formModel) : base(dataTable, id, formModel)
+        public FormViewModel(DataTable dataTable, string id, FormModel formModel) : base(dataTable, formModel)
         {
             _formModel = formModel;
             if (dataTable.Rows.Count != 1)

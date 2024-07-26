@@ -2,6 +2,7 @@
 @using System.Data
 @using DbNetTimeCore.Models
 @using Microsoft.AspNetCore.Html
+@using System.Text.Json
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
@@ -43,7 +44,7 @@
                     }
                 </tr>
             </thead>
-            <tbody data-url="@Model.Id" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
+            <tbody data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
                 @foreach (DataRow row in Model.Rows)
                 {
                     <tr style="cursor:pointer" class="grid-row">
@@ -64,7 +65,7 @@
 
                             if (col.DataType == typeof(Boolean))
                             {
-                                <td class="@(string.Join(" ",classes))">@Html.Raw(Convert.ToBoolean(row[col]) ? CheckedCheckboxIcon() : UncheckedCheckboxIcon())</td>
+                                <td class="@(string.Join(" ",classes))"><div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(row[col]) ? CheckedIcon() : UncheckedIcon())</div></td>
                             }
                             else
                             {
@@ -97,12 +98,12 @@
         </table>
         <input type="hidden" name="currentSortKey" value="@Model.CurrentSortKey" />
         <input type="hidden" name="currentSortAscending" value="@Model.CurrentSortAscending.ToString()" />
+        <input type="hidden" name="model" value="@JsonSerializer.Serialize(Model.GridModel)">
     </div>
 </div>
 
 
 @functions {
-
     void RenderNavButton(bool enable, string url, HtmlString icon, string title)
     {
         <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled") hx-post="@url" hx-target="#@Model.GridId" hx-swap="innerHTML">@icon</button>
@@ -213,18 +214,23 @@
         return IconSVG("M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18");
     }
 
-    HtmlString CheckedCheckboxIcon()
+    HtmlString CheckedIcon()
     {
-        return IconSVG("m424-312 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z");
+        return MaterialSVG("m424-312 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z");
     }
 
-    HtmlString UncheckedCheckboxIcon()
+    HtmlString UncheckedIcon()
     {
-        return IconSVG("M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z");
+        return MaterialSVG("M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z");
     }
 
     HtmlString IconSVG(string data)
     {
         return new HtmlString("<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"2\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"{d}\"/></svg>".Replace("{d}", data));
+    }
+
+    HtmlString MaterialSVG(string data)
+    {
+        return new HtmlString("<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\" width=\"24px\" fill=\"#5f6368\"><path d=\"{d}\" /></svg>".Replace("{d}", data));
     }
 }

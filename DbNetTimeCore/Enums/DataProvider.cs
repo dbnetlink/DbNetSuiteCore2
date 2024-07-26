@@ -7,6 +7,7 @@
         Npgsql,
         SQLite,
         MySqlConnector,
-        DataTable
+        DataTable,
+        Timestream
     };
 }

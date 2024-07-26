@@ -1,14 +1,19 @@
-﻿using System.Data;
+﻿using DbNetTimeCore.Enums;
+using System.Data;
 namespace DbNetTimeCore.Models
 {
     public class GridViewModel : ComponentViewModel
     {
         private readonly GridModel _gridModel = new GridModel();
+
+        public GridModel GridModel => _gridModel;
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
         public int TotalPages { get; set; } = 0;
+        public string GridId => _gridModel.Id;
         public int CurrentPage => _gridModel.CurrentPage;
         public int PageSize { get; set; } = 20;
-        public string Id { get; set; } = string.Empty;
+        public string TableName => _gridModel.TableName;
+        public string ConnectionAlias => _gridModel.ConnectionAlias;
         public string SearchInput => _gridModel.SearchInput;
         public string SortColumn => _gridModel.SortColumn;
         public string SortKey => _gridModel.SortKey;
@@ -18,6 +23,7 @@ namespace DbNetTimeCore.Models
         public string LastPageUrl => NextPage ? PageUrl(TotalPages) : string.Empty;
         public string NextPageUrl => NextPage ? PageUrl(CurrentPage + 1) : string.Empty;
         public string PreviousPageUrl => PreviousPage ? PageUrl(CurrentPage - 1) : string.Empty;
+        public DataSourceType DataSourceType => _gridModel.DataSourceType;
 
         public bool IsSortColumn(ColumnModel columnInfo)
         {
@@ -25,10 +31,9 @@ namespace DbNetTimeCore.Models
         }
         public bool NextPage => CurrentPage < TotalPages;
         public bool PreviousPage => CurrentPage > 1;
-        public GridViewModel(DataTable dataTable, string id, GridModel gridModel) : base(dataTable, id, gridModel)
+        public GridViewModel(DataTable dataTable, GridModel gridModel) : base(dataTable, gridModel)
         {
             _gridModel = gridModel;
-            Id = id;
             TotalPages = (int)Math.Ceiling((double)dataTable.Rows.Count / PageSize);
 
             if (_gridModel.CurrentPage > TotalPages)
@@ -60,7 +65,7 @@ namespace DbNetTimeCore.Models
 
         private string PageUrl(int pageNumber)
         {
-            return $"/{Id}/?page={pageNumber}";
+            return $"/gridcontrol.htmx?page={pageNumber}";
         }
 
     }

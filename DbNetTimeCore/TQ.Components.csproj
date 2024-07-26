@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\Shared\**" />
+    <Content Remove="Pages\Shared\**" />
+    <EmbeddedResource Remove="Pages\Shared\**" />
+    <None Remove="Pages\Shared\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Models\DataColumn.cs" />
     <Compile Remove="Models\DataRow.cs" />
     <Compile Remove="Services\AspNetCoreServices.cs" />
@@ -15,19 +22,17 @@
 
   <ItemGroup>
     <Content Remove="Pages\index.cshtml" />
-    <Content Remove="Pages\Shared\_dropDownLookup.cshtml" />
-    <Content Remove="Pages\Shared\_formMarkup.cshtml" />
-    <Content Remove="Pages\Shared\_gridControl.cshtml" />
-    <Content Remove="Pages\Shared\_gridMarkup.cshtml" />
-    <Content Remove="Pages\Shared\_gridStyle.cshtml" />
     <Content Remove="Pages\timestream.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Resources\CSS\bootstrap.min.css" />
     <None Remove="Resources\CSS\daisyui.css" />
+    <None Remove="Resources\CSS\gridcontrol.css" />
+    <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bootstrap.min.js" />
+    <None Remove="Resources\JS\gridcontrol.js" />
     <None Remove="Resources\JS\htmx.min.js" />
     <None Remove="Resources\JS\jquery.min.js" />
     <None Remove="Resources\JS\surreal.js" />
@@ -35,28 +40,34 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Pages\Shared\_gridControl.cshtml">
+    <EmbeddedResource Include="Resources\CSS\gridcontrol.css" />
+    <EmbeddedResource Include="Resources\GIF\spinner.gif" />
+    <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
+    <EmbeddedResource Include="Views\_dropDownLookup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_gridStyle.cshtml">
+    <EmbeddedResource Include="Views\_formMarkup.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridControl.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridControlForm.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridMarkup.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridScript.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridStyle.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\timestream.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\index.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_dropDownLookup.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_formMarkup.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_gridMarkup.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\Shared\_gridScript.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />
@@ -67,10 +78,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Pages\Shared\_Layout.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\users.cshtml" />
     <EmbeddedResource Include="Resources\JS\jquery.min.js" />
     <EmbeddedResource Include="Resources\JS\surreal.js" />
     <EmbeddedResource Include="Resources\JS\tailwindcss.js" />

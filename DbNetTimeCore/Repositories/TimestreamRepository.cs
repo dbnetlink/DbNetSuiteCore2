@@ -7,43 +7,45 @@ using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Repositories
 {
-    public class TimestreamRepository : ITimestreamRepository   
+    public class TimestreamRepository : ITimestreamRepository
     {
-        private readonly AmazonTimestreamQueryClient _amazonTimestreamQueryClient;
-
+        private readonly IConfiguration _configuration;
         public TimestreamRepository(IConfiguration configuration)
         {
-            _amazonTimestreamQueryClient = new AmazonTimestreamQueryClient(configuration.GetValue<string>("AWS:AccessKeyId"), configuration.GetValue<string>("AWS:SecretAccessKey"), RegionEndpoint.GetBySystemName(configuration.GetValue<string>("AWS:Region")));
+            _configuration = configuration;
         }
 
-        public async Task<DataTable> GetRecords(string database, string table, GridModel gridModel)
+        public async Task<DataTable> GetRecords(GridModel gridModel)
         {
-            var query = BuildQuery($"\"{database}\".\"{table}\"", gridModel);
-            return await RunQuery($"{query} LIMIT 1000");
+            var query = BuildQuery(gridModel);
+            return await RunQuery(gridModel.ConnectionAlias, $"{query} LIMIT 1000");
         }
 
-        public async Task<DataTable> GetColumns(string database, string table)
+        public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            return await RunQuery($"SELECT * FROM \"{database}\".\"{table}\" WHERE 1=2");
+            return await RunQuery(gridModel.ConnectionAlias, $"SELECT * FROM {QuotedTableName(gridModel.TableName)} WHERE 1=2");
         }
 
-        private string BuildQuery(string fromPart, ComponentModel componentModel)
+        private string QuotedTableName(string tableName)
+        {
+            return $"\"{string.Join("\".\"", tableName.Split("."))}\"";
+        }
+
+        private string BuildQuery(GridModel gridModel)
         {
             string columns = "*";
-            if (componentModel.Columns.Any())
+            if (gridModel.Columns.Any())
             {
-                columns = string.Join(",", componentModel.Columns.Select(c => c.Name).ToList());
+                columns = string.Join(",", gridModel.Columns.Select(c => c.Name).ToList());
             }
 
-            string sql = $"select {columns} from {fromPart}";
+            string sql = $"select {columns} from {QuotedTableName(gridModel.TableName)}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            sql = AddFilterPart(sql, componentModel);
+            sql = AddFilterPart(sql, gridModel);
 
-            if (componentModel is GridModel)
+            if (gridModel is GridModel)
             {
-                var gridModel = (GridModel)componentModel;
-
                 if (!string.IsNullOrEmpty(gridModel.SortKey) || !string.IsNullOrEmpty(gridModel.CurrentSortKey))
                 {
                     sql = AddOrderPart(sql, gridModel);
@@ -80,23 +82,21 @@ namespace DbNetTimeCore.Repositories
             return $"{sql} order by {(!string.IsNullOrEmpty(gridModel.SortKey) ? gridModel.SortColumn : gridModel.CurrentSortColumn)} {gridModel.SortSequence}";
         }
 
-        private async Task<DataTable> RunQuery(string queryString)
+        private async Task<DataTable> RunQuery(string connectionAlias, string queryString)
         {
+            var amazonTimestreamQueryClient = new AmazonTimestreamQueryClient(_configuration.GetValue<string>($"{connectionAlias}:AccessKeyId"), _configuration.GetValue<string>($"{connectionAlias}:SecretAccessKey"), RegionEndpoint.GetBySystemName(_configuration.GetValue<string>($"{connectionAlias}:Region")));
             var dataTable = new DataTable();
-
             try
             {
                 QueryRequest queryRequest = new QueryRequest();
                 queryRequest.QueryString = queryString;
-
-                QueryResponse queryResponse = await _amazonTimestreamQueryClient.QueryAsync(queryRequest);
-
-                foreach(var column in queryResponse.ColumnInfo)
+                QueryResponse queryResponse = await amazonTimestreamQueryClient.QueryAsync(queryRequest);
+                foreach (var column in queryResponse.ColumnInfo)
                 {
                     dataTable.Columns.Add(new DataColumn(column.Name, ConvertTimestreamTypeSystemType(column.Type)));
                 }
-                
-                foreach(var row in queryResponse.Rows)
+
+                foreach (var row in queryResponse.Rows)
                 {
                     dataTable.Rows.Add(ConvertToDataRow(row, dataTable));
                 }
@@ -104,14 +104,15 @@ namespace DbNetTimeCore.Repositories
                 while (queryResponse.NextToken != null)
                 {
                     queryRequest.NextToken = queryResponse.NextToken;
-                    queryResponse = await _amazonTimestreamQueryClient.QueryAsync(queryRequest);
+                    queryResponse = await amazonTimestreamQueryClient.QueryAsync(queryRequest);
                     dataTable.Rows.Add(queryResponse.Rows);
                 }
             }
             catch (Exception ex)
             {
-                
+
             }
+            amazonTimestreamQueryClient.Dispose();
             return dataTable;
         }
 
@@ -144,7 +145,7 @@ namespace DbNetTimeCore.Repositories
                             break;
                     }
                 }
-                
+
                 i++;
             }
 

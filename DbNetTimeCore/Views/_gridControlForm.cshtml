@@ -1,0 +1,23 @@
+﻿@model DbNetTimeCore.Models.GridModel
+@using System.Text.Json
+<form hx-post="gridcontrol.htmx" hx-target="#@Model.Id" hx-trigger="load">
+    <input type="hidden" name="connectionAlias" value="@Model.ConnectionAlias">
+    <input type="hidden" name="tableName" value="@Model.TableName">
+    <input type="hidden" name="id" value="@Model.Id">
+    <input type="hidden" name="dataSourceType" value="@Model.DataSourceType">
+    <input type="hidden" name="model" value="@JsonSerializer.Serialize(Model)">
+</form>
+
+<form id="@Model.Id"></form>
+
+<script>
+    domReady(() => {
+        let gridControl = null
+        document.addEventListener('htmx:afterRequest', function (evt) {
+            if (gridControl == null) {
+                gridControl = new GridControl("@(Model.Id)");
+            }
+            gridControl.init(evt);
+        });
+    });
+</script>

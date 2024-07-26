@@ -1,7 +1,10 @@
-﻿namespace DbNetTimeCore.Models
+﻿using DbNetTimeCore.Enums;
+
+namespace DbNetTimeCore.Models
 {
     public class GridModel : ComponentModel
     {
+        public string Id => $"{new string(TableName.Where(c => char.IsLetterOrDigit(c)).ToArray())}Grid";
         public List<GridColumnModel> GridColumns => Columns.Cast<GridColumnModel>().ToList();
         public int CurrentPage { get; set; } = 1;
         public string SearchInput { get; set; } = string.Empty;
@@ -12,7 +15,9 @@
         public string CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey)?.Name ?? "1";
         public string SortSequence => GetSortSequence();
         public string? PrimaryKey { get; set; }
-       
+        public string TableName { get; set; } = string.Empty;
+        public string ConnectionAlias { get; set; } = string.Empty;
+        public DataSourceType DataSourceType { get; set; }
         private string GetSortSequence()
         {
             if (string.IsNullOrEmpty(SortKey))
