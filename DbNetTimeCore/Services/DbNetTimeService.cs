@@ -44,9 +44,12 @@ namespace DbNetTimeCore.Services
                     break;
             }
 
-            if (page.EndsWith(".js") || page.EndsWith(".css") || page.EndsWith(".gif"))
+            switch (page.Split(".").Last())
             {
-                return GetResource(page);
+                case "js":
+                case "css":
+                case "gif":
+                    return GetResource(page);
             }
 
             return new byte[0];
@@ -57,7 +60,7 @@ namespace DbNetTimeCore.Services
             return await View("_gridMarkup", await GetGridViewModel(gridModel));
         }
 
-      
+
         private async Task<Byte[]> View<TModel>(string viewName, TModel model)
         {
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
@@ -68,17 +71,40 @@ namespace DbNetTimeCore.Services
             DataTable columns;
             DataTable data;
 
-            if (gridModel.DataSourceType == DataSourceType.Timestream)
+            switch (gridModel.DataSourceType)
             {
-                columns = await _timestreamRepository.GetColumns(gridModel);
-                data = await _timestreamRepository.GetRecords(gridModel);
+                case DataSourceType.Timestream:
+                    columns = await _timestreamRepository.GetColumns(gridModel);
+                    data = await _timestreamRepository.GetRecords(gridModel);
+                    break;
+                default:
+                    columns = await _msSqlRepository.GetColumns(gridModel);
+                    data = await _msSqlRepository.GetRecords(gridModel);
+                    break;
             }
-            else
+
+            var unInitialisedColumns = new List<GridColumnModel>(gridModel.Columns.Where(c => c.Initialised == false));
+
+            if (gridModel.Columns.Any() == false || unInitialisedColumns.Any())
             {
-                columns = await _msSqlRepository.GetColumns(gridModel);
-                data = await _msSqlRepository.GetRecords(gridModel);
+                if (gridModel.Columns.Any() == false)
+                {
+                    gridModel.Columns = columns.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
+                }
+                else
+                {
+                    var dataColumns = columns.Columns.Cast<DataColumn>().ToList();
+                    for (var i = 0; i < dataColumns.Count; i++)
+                    {
+                        gridModel.Columns[i].Update(dataColumns[i]);
+                    }
+                }
+                for (var i = 0; i < gridModel.Columns.Count; i++)
+                {
+                    gridModel.Columns[i].Ordinal = i + 1;
+                }
             }
-            gridModel.Columns = columns.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c.ColumnName) { DataType = c.DataType, Searchable = c.DataType == typeof(string) }).Cast<GridColumnModel>().ToList();
+
             return new GridViewModel(data, gridModel);
         }
 
@@ -88,6 +114,7 @@ namespace DbNetTimeCore.Services
             try
             {
                 gridModel.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page", "1", _context));
+                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
                 gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
                 gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));

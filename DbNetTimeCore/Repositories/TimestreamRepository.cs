@@ -23,7 +23,12 @@ namespace DbNetTimeCore.Repositories
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            return await RunQuery(gridModel.ConnectionAlias, $"SELECT * FROM {QuotedTableName(gridModel.TableName)} WHERE 1=2");
+            return await RunQuery(gridModel.ConnectionAlias, $"SELECT {GetColumnNames(gridModel)} FROM {QuotedTableName(gridModel.TableName)} WHERE 1=2");
+        }
+
+        private string GetColumnNames(GridModel gridModel)
+        {
+            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.ColumnName).ToList()) : "*";
         }
 
         private string QuotedTableName(string tableName)
@@ -33,13 +38,7 @@ namespace DbNetTimeCore.Repositories
 
         private string BuildQuery(GridModel gridModel)
         {
-            string columns = "*";
-            if (gridModel.Columns.Any())
-            {
-                columns = string.Join(",", gridModel.Columns.Select(c => c.Name).ToList());
-            }
-
-            string sql = $"select {columns} from {QuotedTableName(gridModel.TableName)}";
+            string sql = $"select {GetColumnNames(gridModel)} from {QuotedTableName(gridModel.TableName)}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             sql = AddFilterPart(sql, gridModel);

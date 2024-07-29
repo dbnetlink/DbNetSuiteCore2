@@ -20,19 +20,18 @@ namespace DbNetTimeCore.Repositories
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            QueryCommandConfig query = new QueryCommandConfig($"select * from {gridModel.TableName} where 1=2");
+            QueryCommandConfig query = new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
             return await GetDataTable(query, gridModel.ConnectionAlias);
+        }
+
+        private string GetColumnExpressions(GridModel gridModel)
+        {
+            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
         }
 
         private QueryCommandConfig BuildQuery(GridModel gridModel)
         {
-            string columns = "*";
-            if (gridModel.Columns.Any())
-            {
-                columns = string.Join(",", gridModel.Columns.Select(c => c.Name).ToList());
-            }
-          
-            string sql = $"select {columns} from {gridModel.TableName}";
+            string sql = $"select {GetColumnExpressions(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             AddFilterPart(query, gridModel);
@@ -92,13 +91,16 @@ namespace DbNetTimeCore.Repositories
 
         private void AddFilterPart(CommandConfig query, GridModel gridModel)
         {
+            if (string.IsNullOrEmpty(gridModel.SearchInput))
+            {
+                return;
+            }
             List<string> filterPart = new List<string>();
 
-            foreach (var col in gridModel.GridColumns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+            foreach (var gridColumn in gridModel.GridColumns.Where(c => c.Searchable))
             {
-                string paramName = col.Replace(".", string.Empty);
-                query.Params[$"@{paramName}"] = $"%{gridModel.SearchInput}%";
-                filterPart.Add($"{col} like @{paramName}");
+                query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
+                filterPart.Add($"{gridColumn.Expression.Split(" ").First()} like @{gridColumn.ParamName}");
             }
 
             if (filterPart.Any())

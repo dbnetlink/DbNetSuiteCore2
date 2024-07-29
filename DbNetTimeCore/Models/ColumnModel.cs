@@ -5,6 +5,7 @@ namespace DbNetTimeCore.Models
     public class ColumnModel
     {
         public string Label { get; set; } = string.Empty;
+        public string Expression { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
         public string Key => Name.GetHashCode().ToString();
@@ -12,20 +13,21 @@ namespace DbNetTimeCore.Models
         [JsonIgnore]
         public Type DataType { get; set; } = typeof(String);
         public string Format { get; set; } = string.Empty;
+        public bool Initialised { get; set; } = false;
 
         public ColumnModel()
         {
         }
-        public ColumnModel(string name, string label)
+        public ColumnModel(string expression, string label)
         {
-            Name = name;
+            Expression = expression;
             Label = label;
         }
 
-        public ColumnModel(string name) 
+        public ColumnModel(string expression) 
         {
-            Name = name;
-            Label = name;
+            Expression = expression;
+            Label = expression.Split(" ").Last();
         }
     }
 }
