@@ -5,6 +5,7 @@ namespace DbNetTimeCore.Enums
     {
         SQlite,
         Timestream,
-        MSSQL
+        MSSQL,
+        JSON
     };
 }

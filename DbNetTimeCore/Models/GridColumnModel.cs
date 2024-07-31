@@ -1,4 +1,6 @@
-﻿using System.Data;
+﻿using DbNetTimeCore.Helpers;
+using System.Data;
+using System.Text.RegularExpressions;
 
 namespace DbNetTimeCore.Models
 {
@@ -35,7 +37,7 @@ namespace DbNetTimeCore.Models
             Name = dataColumn.ColumnName;
             if (string.IsNullOrEmpty(Label))
             {
-                Label = Name;
+                Label = TextHelper.GenerateLabel(Name);
             }
         }
     }

@@ -17,6 +17,7 @@ namespace DbNetTimeCore.Models
         public string? PrimaryKey { get; set; }
         public string TableName { get; set; } = string.Empty;
         public string ConnectionAlias { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
         public DataSourceType DataSourceType { get; set; }
         private string GetSortSequence()
         {
@@ -30,6 +31,23 @@ namespace DbNetTimeCore.Models
             }
 
             return "asc";
+        }
+
+        public GridModel()
+        {
+        }
+
+        public GridModel(DataSourceType dataSourceType, string url)
+        {
+            DataSourceType = dataSourceType;
+            Url = url;
+        }
+
+        public GridModel(DataSourceType dataSourceType, string connectionAlias, string tableName)
+        {
+            DataSourceType = dataSourceType;
+            ConnectionAlias = connectionAlias;
+            TableName = tableName;
         }
     }
 }

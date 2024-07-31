@@ -84,6 +84,8 @@ namespace DbNetLink.Middleware
             services.AddHttpContextAccessor();
             services.AddScoped<IDbNetTimeService, DbNetTimeService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
+            services.AddScoped<ISQLiteRepository, SQLiteRepository>();
+            services.AddScoped<IJSONRepository, JSONRepository>();
             services.AddScoped<ITimestreamRepository, TimestreamRepository>();
             services.AddScoped<RazorViewToStringRenderer>();
             

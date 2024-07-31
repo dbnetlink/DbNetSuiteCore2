@@ -14,18 +14,23 @@ namespace DbNetTimeCore.Services
     {
         private readonly IMSSQLRepository _msSqlRepository;
         private readonly ITimestreamRepository _timestreamRepository;
+        private readonly ISQLiteRepository _sqliteRepository;
         private readonly RazorViewToStringRenderer _razorRendererService;
+        private readonly IJSONRepository _jsonRepository;
+
         private HttpContext? _context = null;
         private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
         private bool isAjaxCall => _context.Request.Headers["hx-request"] == "true";
 
         private DataSourceType dataSourceType => Enum.Parse<DataSourceType>(RequestHelper.FormValue("dataSourceType", string.Empty, _context));
 
-        public DbNetTimeService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository)
+        public DbNetTimeService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
             _timestreamRepository = timestreamRepository;
+            _sqliteRepository = sqliteRepository;
+            _jsonRepository = jsonRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -38,13 +43,7 @@ namespace DbNetTimeCore.Services
                     return GetResources(page);
                 case "gridcontrol":
                     GridModel gridModel = GetGridModel() ?? new GridModel();
-                    switch (gridModel.DataSourceType)
-                    {
-                        case DataSourceType.Timestream:
-                        case DataSourceType.MSSQL:
-                            return await GridView(gridModel);
-                    }
-                    break;
+                    return await GridView(gridModel);
             }
 
             return new byte[0];
@@ -54,7 +53,6 @@ namespace DbNetTimeCore.Services
         {
             return await View("_gridMarkup", await GetGridViewModel(gridModel));
         }
-
 
         private async Task<Byte[]> View<TModel>(string viewName, TModel model)
         {
@@ -71,6 +69,14 @@ namespace DbNetTimeCore.Services
                 case DataSourceType.Timestream:
                     columns = await _timestreamRepository.GetColumns(gridModel);
                     data = await _timestreamRepository.GetRecords(gridModel);
+                    break;
+                case DataSourceType.SQlite:
+                    columns = await _sqliteRepository.GetColumns(gridModel);
+                    data = await _sqliteRepository.GetRecords(gridModel);
+                    break;
+                case DataSourceType.JSON:
+                    columns = await _jsonRepository.GetColumns(gridModel,_context);
+                    data = await _jsonRepository.GetRecords(gridModel, _context);
                     break;
                 default:
                     columns = await _msSqlRepository.GetColumns(gridModel);

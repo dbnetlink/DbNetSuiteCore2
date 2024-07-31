@@ -10,7 +10,7 @@ namespace DbNetTimeCore.Helpers
         {
             return new List<GridColumnModel>()
             {
-                new GridColumnModel("customer.customer_id", "CustomerID") {IsPrimaryKey = true},
+                new GridColumnModel("customer.customer_id", "CustomerID"),
                 new GridColumnModel("customer.first_name", "Forename", true),
                 new GridColumnModel("customer.last_name", "Surname", true),
                 new GridColumnModel("customer.email", "Email Address", true) {Format = "email" },
@@ -27,7 +27,7 @@ namespace DbNetTimeCore.Helpers
         {
             return new List<GridColumnModel>()
             {
-                new GridColumnModel("film.film_id", "FilmID") {IsPrimaryKey = true},
+                new GridColumnModel("film.film_id", "FilmID"),
                 new GridColumnModel("film.title", "Title", true),
                 new GridColumnModel("film.description", "Description", true) {MaxTextLength = 40},
                 new GridColumnModel("film.release_year", "Year Of Release"),
@@ -46,7 +46,7 @@ namespace DbNetTimeCore.Helpers
         {
             return new List<GridColumnModel>()
             {
-                new GridColumnModel("actor_id", "ActorID") {IsPrimaryKey = true},
+                new GridColumnModel("actor_id", "ActorID") ,
                 new GridColumnModel("first_name", "Forename", true),
                 new GridColumnModel("last_name", "Surname", true),
                 new GridColumnModel("last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},

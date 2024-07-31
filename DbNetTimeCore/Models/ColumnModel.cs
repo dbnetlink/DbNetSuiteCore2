@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using DbNetTimeCore.Helpers;
+using System.Data;
 using System.Text.Json.Serialization;
 
 namespace DbNetTimeCore.Models
@@ -22,7 +23,7 @@ namespace DbNetTimeCore.Models
          public ColumnModel(DataColumn dataColumn)
         {
             Expression = dataColumn.ColumnName;
-            Label = dataColumn.ColumnName;
+            Label = TextHelper.GenerateLabel(dataColumn.ColumnName); 
             Name = dataColumn.ColumnName;
             DataType = dataColumn.DataType;
         }
