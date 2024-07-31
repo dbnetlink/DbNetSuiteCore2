@@ -14,18 +14,82 @@
         new GridColumnModel("dbo.Accounts.Name AccountName", "Account Name"),
         new GridColumnModel("dbo.HeatPumpGroups.Name GroupName", "Group Name")
     };
+
+    var mt1Columns = new List<GridColumnModel>
+    {
+        new GridColumnModel("SerialNumber", "Serial No."),
+        new GridColumnModel("measure_name", "Measure"),
+        new GridColumnModel("time", "Timestamp"),
+        new GridColumnModel("gpModel", "GP Model"),
+        new GridColumnModel("lpModel", "LP Model"),
+        new GridColumnModel("refrigerantType", "Refrigerant Type"),
+        new GridColumnModel("wifiPassword", "WI-FI Password"),
+        new GridColumnModel("model", "Model"),
+        new GridColumnModel("firmwareVersion", "Firmware Vn"),
+        new GridColumnModel("numCompressors", "No. Compressors")
+    };
+
+    var mt2Columns = new List<GridColumnModel>
+    {
+        new GridColumnModel("SerialNumber", "Serial No."),
+        new GridColumnModel("measure_name", "Measure"),
+        new GridColumnModel("time", "Timestamp"),
+
+        new GridColumnModel("t1", "Load Return Temperature"),
+        new GridColumnModel("t2", "Load Outlet Temperature"),
+        new GridColumnModel("t4", "Ground Return Temperature"),
+        new GridColumnModel("t5", "Ground Outlet Temperature"),
+        new GridColumnModel("t7", "Discharge Temp"),
+        new GridColumnModel("t9", "Weather Compensation Temperature Probe"),
+
+        @*
+        new GridColumnModel("t3", "Load Outlet Temperatur For Twin Compressor Unit"),
+        new GridColumnModel("t6", "Ground Outlet Temperatur For Twin Compressor Unit"),
+        new GridColumnModel("t8", "Discharge Temperature Twin Compressor"),
+        *@
+
+        new GridColumnModel("p1", "Load Side Pressure"),
+        new GridColumnModel("p2", "Ground Side Pressure"),
+        new GridColumnModel("p3", "Suction Pipe Pressure"),
+        new GridColumnModel("p5", "Discharge Pipe Pressure"),
+        @*
+        new GridColumnModel("p4", "SuctionPipeOnTwinCompressor"),
+        new GridColumnModel("p6", "Discharge Pipe Twin Compressor"),
+        *@
+
+        new GridColumnModel("state", "State Of The Heat Pump"),
+        new GridColumnModel("comp1", "State Of Compressor 1"),
+        new GridColumnModel("comp2", "State Of Compressor 2"),
+        new GridColumnModel("reason", "Reason For Logging"),
+        new GridColumnModel("numFaults", "Number Of Faults"),
+        new GridColumnModel("faultCode", "Fault Code"),
+
+        new GridColumnModel("lpState", "Load Pump State"),
+        new GridColumnModel("gpState", "GroundPumpState"),
+        new GridColumnModel("pulse1", "Pulse Input Value 1"),
+        new GridColumnModel("pulse2", "Pulse Input Value 2"),
+
+        new GridColumnModel("cop", "Coefficient Of Performance"),
+        new GridColumnModel("scop", "Seasonal Coefficient Of Performance"),
+
+        new GridColumnModel("deltaLoad", "Load Side Differential"),
+        new GridColumnModel("deltaGround", "Ground Side Differential"),
+
+        new GridColumnModel("runHours1", "Run Hours 1"),
+        new GridColumnModel("runHours2", "Run Hours 2")
+    };
 }
 
 
 <div role="tablist" class="tabs tabs-lifted m-5  tabs-lg">
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="MT2" checked />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @*   @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.Timestream, ConnectionAlias = "AWS", TableName = "Kensa-Development.MT2_IN_RAW" }))*@
+        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.Timestream, ConnectionAlias = "AWS", TableName = "Kensa-Development.MT2_IN_RAW", Columns = mt2Columns }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="MT1" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @*@Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.Timestream, ConnectionAlias = "AWS", TableName = "Kensa-Development.MT1_IN_REG" }))*@
+        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.Timestream, ConnectionAlias = "AWS", TableName = "Kensa-Development.MT1_IN_REG", Columns = mt1Columns }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Heatpumps" />
@@ -35,6 +99,6 @@
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Person" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @* @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.MSSQL, ConnectionAlias = "AdventureWorks", TableName = "Person.Person" }))*@
+        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel() { DataSourceType = DataSourceType.MSSQL, ConnectionAlias = "AdventureWorks", TableName = "Person.Person" }))
     </div>
 </div>

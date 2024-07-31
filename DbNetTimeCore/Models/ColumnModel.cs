@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Data;
+using System.Text.Json.Serialization;
 
 namespace DbNetTimeCore.Models
 {
@@ -17,6 +18,13 @@ namespace DbNetTimeCore.Models
 
         public ColumnModel()
         {
+        }
+         public ColumnModel(DataColumn dataColumn)
+        {
+            Expression = dataColumn.ColumnName;
+            Label = dataColumn.ColumnName;
+            Name = dataColumn.ColumnName;
+            DataType = dataColumn.DataType;
         }
         public ColumnModel(string expression, string label)
         {

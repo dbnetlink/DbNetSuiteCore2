@@ -17,9 +17,8 @@ namespace DbNetTimeCore.Models
             Searchable = searchable;
         }
 
-        public GridColumnModel(DataColumn dataColumn) : base(dataColumn.ColumnName, dataColumn.ColumnName)
+        public GridColumnModel(DataColumn dataColumn) : base(dataColumn)
         {
-            DataType = dataColumn.DataType;
             Searchable = dataColumn.DataType == typeof(string);
             Initialised = true;
         }

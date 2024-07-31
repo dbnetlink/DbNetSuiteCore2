@@ -33,6 +33,9 @@ namespace DbNetTimeCore.Services
             _context = context;
             switch (page.ToLower())
             {
+                case "css":
+                case "js":
+                    return GetResources(page);
                 case "gridcontrol":
                     GridModel gridModel = GetGridModel() ?? new GridModel();
                     switch (gridModel.DataSourceType)
@@ -42,14 +45,6 @@ namespace DbNetTimeCore.Services
                             return await GridView(gridModel);
                     }
                     break;
-            }
-
-            switch (page.Split(".").Last())
-            {
-                case "js":
-                case "css":
-                case "gif":
-                    return GetResource(page);
             }
 
             return new byte[0];
@@ -127,22 +122,47 @@ namespace DbNetTimeCore.Services
             return gridModel;
         }
 
-        private Byte[] GetResource(string resource)
+        private Byte[] GetResources(string type)
         {
-            string folder = resource.Split(".").Last().ToUpper();
-            var assembly = Assembly.GetExecutingAssembly();
-
-            var resourceName = $"{assembly.FullName!.Split(",").First()}.Resources.{folder}.{resource}";
-
-            byte[] bytes = new byte[0];
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
-            using (var binaryReader = new BinaryReader(stream))
+            var resources = new string[] { };
+            switch(type)
             {
-                bytes = binaryReader.ReadBytes((int)stream.Length);
+                case "css":
+                    resources = ["daisyui","gridcontrol"];
+                    break;
+                case "js":
+                    resources = ["tailwindcss", "htmx.min", "surreal", "gridcontrol"];
+                    break;
             }
 
+            return GetResource(type, resources);
+        }
+
+        private Byte[] GetResource(string type, string[] resources)
+        {
+            byte[] bytes = new byte[0];
+            var assembly = Assembly.GetExecutingAssembly();
+
+            foreach (string resource in resources)
+            {
+                var resourceName = $"{assembly.FullName!.Split(",").First()}.Resources.{type.ToUpper()}.{resource}.{type}";
+
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
+                using (var binaryReader = new BinaryReader(stream))
+                {
+                    bytes = CombineByteArrays(bytes,binaryReader.ReadBytes((int)stream.Length));
+                    bytes = CombineByteArrays(bytes, Encoding.ASCII.GetBytes(Environment.NewLine));
+                }
+            }
             return bytes;
+        }
+
+        public static byte[] CombineByteArrays(byte[] first, byte[] second)
+        {
+            byte[] ret = new byte[first.Length + second.Length];
+            Buffer.BlockCopy(first, 0, ret, 0, first.Length);
+            Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
+            return ret;
         }
 
         private bool ValidateFilmEditForm(FormModel formModel)

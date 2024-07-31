@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DbNetTimeCore</title>
     <link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
-    <link rel="stylesheet" href="daisyui.css.htmx" />
-    <link rel="stylesheet" href="gridcontrol.css.htmx" />
+    <link rel="stylesheet" href="css.htmx" />
     @await RenderSectionAsync("Styles", required: false)
 
     <script>
@@ -22,10 +21,7 @@
     <main>
         @RenderBody()
     </main>
-    <script src="tailwindcss.js.htmx"></script>
-    <script src="htmx.min.js.htmx"></script>
-    <script src="surreal.js.htmx"></script>
-    <script src="gridcontrol.js.htmx"></script>
+    <script src="js.htmx"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Extensions\NewViewEngine.cs" />
+    <Compile Remove="Extensions\RazorEngine.cs" />
+    <Compile Remove="Extensions\ViewRender.cs" />
     <Compile Remove="Models\DataColumn.cs" />
     <Compile Remove="Models\DataRow.cs" />
     <Compile Remove="Services\AspNetCoreServices.cs" />

@@ -7,7 +7,7 @@ using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Repositories
 {
-    public class TimestreamRepository : ITimestreamRepository
+    public class TimestreamRepository : BaseRepository,ITimestreamRepository
     {
         private readonly IConfiguration _configuration;
         public TimestreamRepository(IConfiguration configuration)
@@ -23,12 +23,7 @@ namespace DbNetTimeCore.Repositories
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            return await RunQuery(gridModel.ConnectionAlias, $"SELECT {GetColumnNames(gridModel)} FROM {QuotedTableName(gridModel.TableName)} WHERE 1=2");
-        }
-
-        private string GetColumnNames(GridModel gridModel)
-        {
-            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.ColumnName).ToList()) : "*";
+            return await RunQuery(gridModel.ConnectionAlias, $"SELECT {GetColumnExpressions(gridModel)} FROM {QuotedTableName(gridModel.TableName)} WHERE 1=2");
         }
 
         private string QuotedTableName(string tableName)
@@ -38,7 +33,7 @@ namespace DbNetTimeCore.Repositories
 
         private string BuildQuery(GridModel gridModel)
         {
-            string sql = $"select {GetColumnNames(gridModel)} from {QuotedTableName(gridModel.TableName)}";
+            string sql = $"select {GetColumnExpressions(gridModel)} from {QuotedTableName(gridModel.TableName)}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             sql = AddFilterPart(sql, gridModel);

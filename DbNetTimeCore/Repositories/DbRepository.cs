@@ -1,7 +1,6 @@
 ﻿using DbNetTimeCore.Enums;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using System.Collections.Specialized;
 using System.Data;
 using System.Data.Common;
 using System.Reflection;
@@ -10,78 +9,71 @@ using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Repositories
 {
-    public class DbRepository
+    public class DbRepository : BaseRepository
     {
+        private readonly DataProvider _dataProvider;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
-        private Assembly _providerAssembly;
-        private IDbDataAdapter _adapter;
-        private IDbConnection _connection;
-        private DbCommand _command;
-        private IDataReader _reader;
-        private IDbTransaction _transaction;
-        private DataProvider _dataProvider = DataProvider.SqlClient;
 
-
-        public DbRepository(IConfiguration configuration, IWebHostEnvironment env)
+        public DbRepository(DataProvider dataProvider, IConfiguration configuration, IWebHostEnvironment env)
         {
+            _dataProvider = dataProvider;
             _configuration = configuration;
             _env = env;
         }
 
-        public void Open(string database)
+        public IDbConnection GetConnection(string database)
         {
             string connectionString = _configuration.GetConnectionString(database);
             connectionString = MapDatabasePath(connectionString);
 
-            _dataProvider = Regex.IsMatch(connectionString, @"Data Source=(.*)\.db;", RegexOptions.IgnoreCase) ? DataProvider.SQLite : DataProvider.SqlClient;
+            IDbConnection connection;
 
-            if (_dataProvider == DataProvider.SQLite)
+            switch (_dataProvider)
             {
-                _connection = new SqliteConnection(connectionString);
-                _providerAssembly = Assembly.GetAssembly(typeof(SqliteConnection));
-            }
-            else
-            {
-                _connection = new SqlConnection(connectionString);
-                _providerAssembly = Assembly.GetAssembly(typeof(SqlConnection));
+                case DataProvider.SQLite:
+                    connection = new SqliteConnection(connectionString);
+                    break;
+                default:
+                    connection = new SqlConnection(connectionString);
+                    break;
             }
 
-            _command = (DbCommand)_connection.CreateCommand();
-            if (_connection.State != ConnectionState.Open)
-            {
-                _connection.Open();
-            }
+            return connection;
         }
+
         public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database)
         {
+            var connection = GetConnection(database);
+            connection.Open();
             DataTable dataTable = new DataTable();
-            dataTable.Load(await ExecuteQuery(queryCommandConfig, database));
+            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection));
+            connection.Close();
             return dataTable;
         }
 
-        public async Task<DbDataReader> ExecuteQuery(string sql, string database)
+        public async Task<DbDataReader> ExecuteQuery(string sql, IDbConnection connection)
         {
-            return await ExecuteQuery(new QueryCommandConfig(sql), database);
+            return await ExecuteQuery(new QueryCommandConfig(sql), connection);
         }
-        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, string database)
+        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection)
         {
-            ConfigureCommand(query.Sql, query.Params, database);
-            return await _command.ExecuteReaderAsync(CommandBehavior.Default);
+            IDbCommand command = ConfigureCommand(query.Sql, query.Params, connection);
+            return await ((DbCommand)command).ExecuteReaderAsync(CommandBehavior.Default);
         }
 
-        public async Task<int> ExecuteNonQuery(CommandConfig commandConfig, string database)
+        public async Task<int> ExecuteNonQuery(CommandConfig commandConfig, IDbConnection connection)
         {
             if (Regex.Match(commandConfig.Sql, "^(delete|update) ", RegexOptions.IgnoreCase).Success)
                 if (!Regex.Match(commandConfig.Sql, " where ", RegexOptions.IgnoreCase).Success)
                     throw new Exception("Unqualified updates and deletes are not allowed.");
 
-            ConfigureCommand(commandConfig.Sql, commandConfig.Params, database);
+            IDbCommand command = ConfigureCommand(commandConfig.Sql, commandConfig.Params, connection);
             int returnValue = 0;
 
             try
             {
-                returnValue = await _command.ExecuteNonQueryAsync();
+                returnValue = await ((DbCommand)command).ExecuteNonQueryAsync();
             }
             catch (Exception Ex)
             {
@@ -119,18 +111,18 @@ namespace DbNetTimeCore.Repositories
             return connectionString;
         }
 
-        private void ConfigureCommand(string sql, Dictionary<string,object> @params, string database)
+        private IDbCommand ConfigureCommand(string sql, Dictionary<string,object> @params, IDbConnection connection)
         {
-            CloseReader();
-            Open(database);
-            _command.CommandText = sql.Trim();
-            _command.CommandType = CommandType.Text;
-
-            _command.Parameters.Clear();
-            AddCommandParameters(@params);
+            IDbCommand command = connection.CreateCommand();
+            command.CommandText = sql.Trim();
+            command.CommandType = CommandType.Text;
+            command.Parameters.Clear();
+            command.CommandText = sql.Trim();
+            AddCommandParameters(command, @params);
+            return command;
         }
 
-        private void AddCommandParameters(Dictionary<string, object> @params)
+        private void AddCommandParameters(IDbCommand command, Dictionary<string, object> @params)
         {
             if (@params == null)
                 return;
@@ -145,7 +137,7 @@ namespace DbNetTimeCore.Repositories
                 }
                 else
                 {
-                    dbParam = _command.CreateParameter();
+                    dbParam = command.CreateParameter();
                     dbParam.ParameterName = ParameterName(key);
                     dbParam.Value = @params[key];
                 }
@@ -155,26 +147,7 @@ namespace DbNetTimeCore.Repositories
                     dbParam.Value = DBNull.Value;
                 }
 
-                _command.Parameters.Add(dbParam);
-            }
-        }
-
-        private void CloseReader()
-        {
-            if (_reader is IDataReader)
-            {
-                if (!_reader.IsClosed)
-                {
-                    try
-                    {
-                        _command.Cancel();
-                    }
-                    catch (Exception)
-                    {
-                    }
-
-                    _reader.Close();
-                }
+                command.Parameters.Add(dbParam);
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using DbNetTimeCore.Models;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Specialized;
 using System.Data;
 using static DbNetTimeCore.Utilities.DbNetDataCore;
@@ -7,45 +8,21 @@ namespace DbNetTimeCore.Repositories
 {
     public class MSSQLRepository : DbRepository, IMSSQLRepository
     {
-        IHttpContextAccessor _httpContextAccessor;
-        public MSSQLRepository(IConfiguration configuration, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor) : base(configuration, env)
+        public MSSQLRepository(IConfiguration configuration, IWebHostEnvironment env) : base(Enums.DataProvider.SqlClient, configuration, env)
         {
-            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<DataTable> GetRecords(GridModel gridModel)
         {
-            QueryCommandConfig query = BuildQuery(gridModel);
+            QueryCommandConfig query = gridModel.BuildQuery();
             return await GetDataTable(query, gridModel.ConnectionAlias);
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            QueryCommandConfig query = new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
+            QueryCommandConfig query = gridModel.BuildEmptyQuery();
             return await GetDataTable(query, gridModel.ConnectionAlias);
         }
 
-        private string GetColumnExpressions(GridModel gridModel)
-        {
-            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
-        }
-
-        private QueryCommandConfig BuildQuery(GridModel gridModel)
-        {
-            string sql = $"select {GetColumnExpressions(gridModel)} from {gridModel.TableName}";
-            QueryCommandConfig query = new QueryCommandConfig(sql);
-
-            AddFilterPart(query, gridModel);
-
-            if (gridModel is GridModel)
-            {
-                if (!string.IsNullOrEmpty(gridModel.SortKey) || !string.IsNullOrEmpty(gridModel.CurrentSortKey))
-                {
-                    AddOrderPart(query, gridModel);
-                }
-            }
-
-            return query;
-        }
 
         private CommandConfig BuildUpdate(string fromPart, FormModel formModel, ListDictionary? otherValues = null)
         {
@@ -56,7 +33,7 @@ namespace DbNetTimeCore.Repositories
                 columns.AddRange(otherValues.Keys.Cast<string>().Select(c => $"{c} = @{c}").ToList());
             }
 
-            Dictionary<string,object> formValues = formModel.FormValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form);
+            Dictionary<string, object> formValues = new Dictionary<string, object>(); //formModel.FormValues((FormCollection)_httpContextAccessor.HttpContext.Request.Form);
 
             if (otherValues != null)
             {
@@ -89,30 +66,6 @@ namespace DbNetTimeCore.Repositories
             }
         }
 
-        private void AddFilterPart(CommandConfig query, GridModel gridModel)
-        {
-            if (string.IsNullOrEmpty(gridModel.SearchInput))
-            {
-                return;
-            }
-            List<string> filterPart = new List<string>();
-
-            foreach (var gridColumn in gridModel.GridColumns.Where(c => c.Searchable))
-            {
-                query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
-                filterPart.Add($"{gridColumn.Expression.Split(" ").First()} like @{gridColumn.ParamName}");
-            }
-
-            if (filterPart.Any())
-            {
-                query.Sql += $" where {string.Join(" or ", filterPart)}";
-            }
-        }
-
-        private void AddOrderPart(QueryCommandConfig query, GridModel gridModel)
-        {
-            query.Sql += $" order by {(!string.IsNullOrEmpty(gridModel.SortKey) ? gridModel.SortColumn : gridModel.CurrentSortColumn)} {gridModel.SortSequence}";
-        }
 
         private async Task BuildLookups(List<EditColumnModel> columns)
         {
