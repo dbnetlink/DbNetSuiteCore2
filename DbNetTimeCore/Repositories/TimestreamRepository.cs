@@ -3,7 +3,6 @@ using Amazon.TimestreamQuery;
 using Amazon.TimestreamQuery.Model;
 using Amazon;
 using DbNetTimeCore.Models;
-using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Repositories
 {

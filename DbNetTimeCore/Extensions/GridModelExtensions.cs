@@ -1,5 +1,5 @@
 ﻿using DbNetTimeCore.Models;
-using static DbNetTimeCore.Utilities.DbNetDataCore;
+using DbNetTimeCore.Repositories;
 
 
 namespace Microsoft.AspNetCore.Mvc

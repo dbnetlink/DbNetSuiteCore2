@@ -1,6 +1,6 @@
 ﻿using DbNetTimeCore.Enums;
+using DbNetTimeCore.Repositories;
 using System.Data;
-using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Models
 {

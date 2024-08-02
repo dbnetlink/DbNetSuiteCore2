@@ -70,7 +70,7 @@
                 <div class="flex m-2 justify-end gap-4">
                     <div id="@(Model.FormId)formMessage" class="message flex grow border-solid border border-slate-300 bg-slate-100 rounded-md px-2 align-middle items-center"></div>
                     <button class="btn btn-primary" type="button" hx-vals='{"colSpan":"@(Model.ColSpan)"}' hx-post="@Model.SaveUrl(Model.Row)" hx-target="closest tr" hx-swap="outerHTML">Save</button>
-                    <button class="btn cancel-btn" type="button" hx-post="@Model.SearchUrl" hx-target="#@Model.FormId" hx-swap="innerHTML">Cancel</button>
+                    <button class="btn cancel-btn" type="button" hx-post="@Model.SubmitUrl" hx-target="#@Model.FormId" hx-swap="innerHTML">Cancel</button>
                     @if (!string.IsNullOrEmpty(Model.Message))
                     {
                         <script>

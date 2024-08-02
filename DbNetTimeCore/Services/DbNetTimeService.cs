@@ -7,6 +7,10 @@ using System.Data;
 using DbNetTimeCore.Helpers;
 using DbNetTimeCore.Enums;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.StaticFiles;
+using ClosedXML.Excel;
+using Newtonsoft.Json;
 
 namespace DbNetTimeCore.Services
 {
@@ -21,6 +25,8 @@ namespace DbNetTimeCore.Services
         private HttpContext? _context = null;
         private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
         private bool isAjaxCall => _context.Request.Headers["hx-request"] == "true";
+
+        private string triggerName => _context.Request.Headers.Keys.Contains("hx-trigger-name") ? _context.Request.Headers["hx-trigger-name"] : "";
 
         private DataSourceType dataSourceType => Enum.Parse<DataSourceType>(RequestHelper.FormValue("dataSourceType", string.Empty, _context));
 
@@ -44,6 +50,8 @@ namespace DbNetTimeCore.Services
                 case "gridcontrol":
                     GridModel gridModel = GetGridModel() ?? new GridModel();
                     return await GridView(gridModel);
+                default:
+                    return GetResource(page.Split(".").Last(), page.Split(".").First());
             }
 
             return new byte[0];
@@ -51,7 +59,14 @@ namespace DbNetTimeCore.Services
 
         private async Task<Byte[]> GridView(GridModel gridModel)
         {
-            return await View("_gridMarkup", await GetGridViewModel(gridModel));
+            if (triggerName == "download")
+            {
+                return await ExportRecords(gridModel);
+            }
+            else
+            {
+                return await View("_gridMarkup", await GetGridViewModel(gridModel));
+            }
         }
 
         private async Task<Byte[]> View<TModel>(string viewName, TModel model)
@@ -61,28 +76,8 @@ namespace DbNetTimeCore.Services
 
         private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
         {
-            DataTable columns;
-            DataTable data;
-
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.Timestream:
-                    columns = await _timestreamRepository.GetColumns(gridModel);
-                    data = await _timestreamRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.SQlite:
-                    columns = await _sqliteRepository.GetColumns(gridModel);
-                    data = await _sqliteRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.JSON:
-                    columns = await _jsonRepository.GetColumns(gridModel,_context);
-                    data = await _jsonRepository.GetRecords(gridModel, _context);
-                    break;
-                default:
-                    columns = await _msSqlRepository.GetColumns(gridModel);
-                    data = await _msSqlRepository.GetRecords(gridModel);
-                    break;
-            }
+            DataTable columns = await GetColumns(gridModel);
+            DataTable data = await GetRecords(gridModel);
 
             var unInitialisedColumns = new List<GridColumnModel>(gridModel.Columns.Where(c => c.Initialised == false));
 
@@ -109,32 +104,261 @@ namespace DbNetTimeCore.Services
             return new GridViewModel(data, gridModel);
         }
 
+
+        private async Task<DataTable> GetRecords(GridModel gridModel)
+        {
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.Timestream:
+                    return await _timestreamRepository.GetRecords(gridModel);
+                case DataSourceType.SQlite:
+                    return await _sqliteRepository.GetRecords(gridModel);
+                case DataSourceType.JSON:
+                    return await _jsonRepository.GetRecords(gridModel, _context);
+                default:
+                    return await _msSqlRepository.GetRecords(gridModel);
+            }
+        }
+
+        private async Task<DataTable> GetColumns(GridModel gridModel)
+        {
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.Timestream:
+                    return await _timestreamRepository.GetColumns(gridModel);
+                case DataSourceType.SQlite:
+                    return await _sqliteRepository.GetColumns(gridModel);
+                case DataSourceType.JSON:
+                    return await _jsonRepository.GetColumns(gridModel, _context);
+                default:
+                    return await _msSqlRepository.GetColumns(gridModel);
+            }
+        }
+
+        private async Task<Byte[]> ExportRecords(GridModel gridModel)
+        {
+            DataTable data = await GetRecords(gridModel);
+            switch (gridModel.ExportFormat)
+            {
+                case "csv":
+                    return ConvertDataTableToCSV(data);
+                case "excel":
+                    return ConvertDataTableToSpreadsheet(data, gridModel);
+                case "json":
+                    return ConvertDataTableToJSON(data);
+                default:
+                    return await ConvertDataTableToHTML(data, gridModel);
+            }
+        }
+
+        private Byte[] ConvertDataTableToCSV(DataTable dt)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            IEnumerable<string> columnNames = dt.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
+            sb.AppendLine(string.Join(",", columnNames));
+
+            foreach (DataRow row in dt.Rows)
+            {
+                IEnumerable<string> fields = row.ItemArray.Select(field => string.Concat("\"", field.ToString().Replace("\"", "\"\""), "\""));
+                sb.AppendLine(string.Join(",", fields));
+            }
+            _context.Response.ContentType = GetMimeTypeForFileExtension(".csv");
+
+            return Encoding.UTF8.GetBytes(sb.ToString());
+        }
+
+        private async Task<Byte[]> ConvertDataTableToHTML(DataTable dt, GridModel gridModel)
+        {
+            gridModel.PageSize = dt.Rows.Count;
+            _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
+            return await View("_gridExport", await GetGridViewModel(gridModel));
+        }
+
+        private byte[] ConvertDataTableToJSON(DataTable dataTable)
+        {
+            var json = JsonConvert.SerializeObject(dataTable, Newtonsoft.Json.Formatting.Indented);
+            _context.Response.ContentType = GetMimeTypeForFileExtension(".json");
+            return Encoding.UTF8.GetBytes(json);
+        }
+
+        private byte[] ConvertDataTableToSpreadsheet(DataTable dataTable, GridModel gridModel)
+        {
+            using (XLWorkbook workbook = new XLWorkbook())
+            {
+                Dictionary<string, int> columnWidths = new Dictionary<string, int>();
+
+                var worksheet = workbook.Worksheets.Add(gridModel.Id);
+
+                var rowIdx = 1;
+                var colIdx = 1;
+                foreach (var column in gridModel.Columns)
+                {
+                    var cell = worksheet.Cell(rowIdx, colIdx);
+                    cell.Value = column.Label;
+                    cell.Style.Font.Bold = true;
+                    worksheet.Column(colIdx).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Left);
+
+                    if (column.IsNumeric)
+                    {
+                        worksheet.Column(colIdx).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right);
+                    }
+                    else
+                    {
+                        switch (column.DataTypeName)
+                        {
+                            case nameof(DateTime):
+                            case nameof(TimeSpan):
+                                worksheet.Column(colIdx).Width = 10;
+                                break;
+                            case nameof(System.Boolean):
+                                break;
+                            default:
+                                columnWidths[column.ColumnName] = 0;
+                                break;
+                        }
+                    }
+                    colIdx++;
+                }
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    rowIdx++;
+                    colIdx = 1;
+
+                    foreach (var column in gridModel.Columns)
+                    {
+                        
+                        object value = row[dataTable.Columns[colIdx - 1]];
+
+                        if (value == null || value == DBNull.Value)
+                        {
+                            worksheet.Cell(rowIdx, colIdx).Value = string.Empty;
+                        }
+                        else
+                        {
+
+                            var cell = worksheet.Cell(rowIdx, colIdx);
+
+                            switch (column.DataTypeName)
+                            {
+                                case nameof(Double):
+                                    cell.Value = Convert.ToDouble(value);
+                                    break;
+                                case nameof(Decimal):
+                                    cell.Value = Convert.ToDecimal(value);
+                                    break;
+                                case nameof(Int16):
+                                case nameof(Int32):
+                                case nameof(Int64):
+                                    cell.Value = Convert.ToInt64(value);
+                                    break;
+                                case nameof(DateTime):
+                                    cell.Value = Convert.ToDateTime(value);
+                                    break;
+                                case nameof(TimeSpan):
+                                    cell.Value = TimeSpan.Parse(value?.ToString() ?? string.Empty);
+                                    break;
+                                case nameof(System.Boolean):
+                                    cell.Value = Convert.ToBoolean(value);
+                                    break;
+                                default:
+                                    cell.Value = value.ToString();
+                                    break;
+                            }
+
+                            if (columnWidths.ContainsKey(column.ColumnName))
+                            {
+                                if (value.ToString().Length > columnWidths[column.ColumnName])
+                                {
+                                    columnWidths[column.ColumnName] = value.ToString().Length;
+                                }
+                            }
+                        }
+
+                        colIdx++;
+                    }
+                }
+
+                colIdx = 0;
+                foreach (var column in gridModel.Columns)
+                {
+                    colIdx++;
+
+                    if (columnWidths.ContainsKey(column.ColumnName))
+                    {
+                        var width = columnWidths[column.ColumnName];
+
+                        if (width < 10)
+                        {
+                            continue;
+                        }
+
+                        if (width > 50)
+                        {
+                            width = 50;
+                        }
+                        worksheet.Column(colIdx).Width = width * 0.8;
+                    }
+                }
+
+                _context.Response.ContentType = GetMimeTypeForFileExtension(".xlsx");
+                using (var memoryStream = new MemoryStream())
+                {
+                    workbook.SaveAs(memoryStream);
+                    _context.Response.ContentType = GetMimeTypeForFileExtension($".xlsx"); ;
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+                    return memoryStream.ToArray();
+                }
+            }
+        }
+
         private GridModel? GetGridModel()
         {
-            GridModel gridModel = JsonSerializer.Deserialize<GridModel>(RequestHelper.FormValue("model", string.Empty, _context)) ?? new GridModel();
+            GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(RequestHelper.FormValue("model", string.Empty, _context)) ?? new GridModel();
             try
             {
-                gridModel.CurrentPage = Convert.ToInt32(RequestHelper.QueryValue("page", "1", _context));
+                gridModel.CurrentPage = (triggerName == "page") ? Convert.ToInt32(RequestHelper.FormValue("page", "1", _context)) : Convert.ToInt32(RequestHelper.QueryValue("page", "1", _context));
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
                 gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
                 gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
+                gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
             }
             catch
             {
                 return null;
             }
 
+            if (triggerName == "search")
+            {
+                gridModel.CurrentPage = 1;
+            }
+
             return gridModel;
+        }
+
+        private string GetMimeTypeForFileExtension(string extension)
+        {
+            const string defaultContentType = "application/octet-stream";
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (!provider.TryGetContentType(extension, out string contentType))
+            {
+                contentType = defaultContentType;
+            }
+
+            return contentType;
         }
 
         private Byte[] GetResources(string type)
         {
             var resources = new string[] { };
-            switch(type)
+            switch (type)
             {
                 case "css":
-                    resources = ["daisyui","gridcontrol"];
+                    resources = ["daisyui", "gridcontrol"];
                     break;
                 case "js":
                     resources = ["tailwindcss", "htmx.min", "surreal", "gridcontrol"];
@@ -147,20 +371,27 @@ namespace DbNetTimeCore.Services
         private Byte[] GetResource(string type, string[] resources)
         {
             byte[] bytes = new byte[0];
-            var assembly = Assembly.GetExecutingAssembly();
 
             foreach (string resource in resources)
             {
-                var resourceName = $"{assembly.FullName!.Split(",").First()}.Resources.{type.ToUpper()}.{resource}.{type}";
-
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
-                using (var binaryReader = new BinaryReader(stream))
-                {
-                    bytes = CombineByteArrays(bytes,binaryReader.ReadBytes((int)stream.Length));
-                    bytes = CombineByteArrays(bytes, Encoding.ASCII.GetBytes(Environment.NewLine));
-                }
+                var resourceBytes = GetResource(type, resource);
+                bytes = CombineByteArrays(bytes, resourceBytes);
+                bytes = CombineByteArrays(bytes, Encoding.UTF8.GetBytes(Environment.NewLine));
             }
             return bytes;
+        }
+
+        private Byte[] GetResource(string type, string resource)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = $"{assembly.FullName!.Split(",").First()}.Resources.{type.ToUpper()}.{resource}.{type}";
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
+            using (var binaryReader = new BinaryReader(stream))
+            {
+                var bytes = binaryReader.ReadBytes((int)stream.Length);
+                return bytes;
+            }
         }
 
         public static byte[] CombineByteArrays(byte[] first, byte[] second)

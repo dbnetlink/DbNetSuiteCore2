@@ -1,0 +1,117 @@
+﻿@model DbNetTimeCore.Models.GridViewModel
+@using System.Data
+@using DbNetTimeCore.Models
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+<html>
+<head>
+    <style>
+        table, th, td {
+            border: 1px solid;
+            font-family:sans-serif;
+            font-size:medium;
+            border-collapse:collapse;
+            padding:2px;
+        }
+
+        th 
+        {
+            background-color:#cccccc;
+        }
+
+        tr:nth-child(even) {
+            background-color: #eeeeee;
+        }
+
+    </style>
+</head>
+<body>
+    <table class="htmx-table">
+        <thead>
+            <tr class="bg-slate-200">
+                @foreach (ColumnModel columnInfo in Model.ColumnInfo)
+                {
+                    <th class="text-base">
+                        <div class="flex flex-row justify-between items-center">@(columnInfo?.Label)</div>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
+            @foreach (DataRow row in Model.Rows)
+            {
+                <tr style="cursor:pointer" class="grid-row">
+                    @foreach (DataColumn col in Model.Columns)
+                    {
+                        GridColumnModel? columnInfo = Model.GetColumnInfo(col);
+                        var classes = new List<string>() { "text-base" };
+
+                        if (columnInfo.DataType == typeof(Int64) || col.DataType == typeof(Double))
+                        {
+                            classes.Add("text-right");
+                        }
+
+                        if (columnInfo.DataType == typeof(Boolean))
+                        {
+                            classes.Add("text-center");
+                        }
+
+                        var value = FormatValue(row[col], columnInfo);
+                        if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
+                        {
+                            <td class="@(string.Join(" ",classes))">
+                                <div class="tooltip" data-tip="@Html.Raw(value)">
+                                    @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
+                                </div>
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
+
+@functions {
+    public static object? FormatValue(object? value, GridColumnModel? columnInfo)
+    {
+        if (string.IsNullOrEmpty(columnInfo?.Format) || value == null)
+        {
+            return value;
+        }
+
+        string format = columnInfo!.Format;
+
+        switch (format)
+        {
+            case "email":
+                value = $"<a href=\"mailto:{value}\">{value}</a>";
+                break;
+            case "www":
+                value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
+                break;
+            default:
+                if (columnInfo?.DataType == typeof(DateTime))
+                {
+                    value = Convert.ToDateTime(value).ToString(format);
+                }
+                if (columnInfo?.DataType == typeof(Int64))
+                {
+                    value = Convert.ToInt64(value).ToString(format);
+                }
+                if (columnInfo?.DataType == typeof(Double))
+                {
+                    value = Convert.ToDouble(value).ToString(format);
+                }
+
+                break;
+        }
+
+        return value;
+    }
+}

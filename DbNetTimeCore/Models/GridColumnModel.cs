@@ -1,5 +1,6 @@
 ﻿using DbNetTimeCore.Helpers;
 using System.Data;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace DbNetTimeCore.Models

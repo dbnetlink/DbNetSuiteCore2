@@ -1,0 +1,13 @@
+﻿@page
+@using DbNetTimeCore.Enums
+@using DbNetTimeCore.Helpers
+@using DbNetTimeCore.Models
+@model TestModel
+@{
+    Layout = "_Layout";
+}
+
+ @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") 
+ { 
+     Columns = ColumnInfoHelper.CustomerGridColumns() 
+ }))

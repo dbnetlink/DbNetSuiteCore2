@@ -8,24 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Pages\Shared\**" />
-    <Content Remove="Pages\Shared\**" />
-    <EmbeddedResource Remove="Pages\Shared\**" />
-    <None Remove="Pages\Shared\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="Extensions\NewViewEngine.cs" />
     <Compile Remove="Extensions\RazorEngine.cs" />
     <Compile Remove="Extensions\ViewRender.cs" />
     <Compile Remove="Models\DataColumn.cs" />
     <Compile Remove="Models\DataRow.cs" />
+    <Compile Remove="Models\DbNetTimeCoreSettings.cs" />
+    <Compile Remove="Models\DbNetTimeRequest.cs" />
+    <Compile Remove="Models\DbNetTimeResponse.cs" />
     <Compile Remove="Services\AspNetCoreServices.cs" />
+    <Compile Remove="Utilities\DbNetDataCore.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Pages\index.cshtml" />
-    <Content Remove="Pages\timestream.cshtml" />
+    <Content Remove="Views\_gridExport.cshtml" />
+    <Content Remove="Views\_gridIndicator.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,12 +37,14 @@
     <None Remove="Resources\JS\jquery.min.js" />
     <None Remove="Resources\JS\surreal.js" />
     <None Remove="Resources\JS\tailwindcss.js" />
+    <None Remove="Resources\SVG\spinner.svg" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\CSS\gridcontrol.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
     <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
+    <EmbeddedResource Include="Resources\SVG\spinner.svg" />
     <EmbeddedResource Include="Views\_dropDownLookup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -58,19 +57,19 @@
     <EmbeddedResource Include="Views\_gridControlForm.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridExport.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\_gridMarkup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\_gridScript.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\_gridIndicator.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\_gridStyle.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\timestream.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\index.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />
@@ -88,6 +87,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.TimestreamQuery" Version="3.7.301.35" />
+    <PackageReference Include="ClosedXML" Version="0.102.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
@@ -95,6 +95,10 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Utilities\" />
   </ItemGroup>
 
 </Project>

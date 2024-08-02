@@ -8,7 +8,7 @@ namespace DbNetTimeCore.Enums
         G,
         [Description("NC-17")]
         NC17,
-        [Description("PG-17")]
+        [Description("PG-11")]
         PG13,
         R
     }

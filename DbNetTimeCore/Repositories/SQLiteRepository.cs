@@ -1,7 +1,6 @@
 ﻿using DbNetTimeCore.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
-using static DbNetTimeCore.Utilities.DbNetDataCore;
 
 namespace DbNetTimeCore.Repositories
 {

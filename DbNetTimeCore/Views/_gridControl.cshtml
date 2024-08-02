@@ -6,6 +6,7 @@
 
 <script>
     domReady(() => {
+        alert("ready")
         let gridControl = new GridControl("@(Model.GridId)");
         document.addEventListener('htmx:afterRequest', function (evt) {
             gridControl.init(evt);

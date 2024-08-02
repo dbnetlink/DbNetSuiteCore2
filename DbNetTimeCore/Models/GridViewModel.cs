@@ -10,8 +10,10 @@ namespace DbNetTimeCore.Models
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
         public int TotalPages { get; set; } = 0;
         public string GridId => _gridModel.Id;
+        public string IndicatorId => _gridModel.IndicatorId;
+        public string ContainerId => _gridModel.ContainerId;
         public int CurrentPage => _gridModel.CurrentPage;
-        public int PageSize { get; set; } = 20;
+        public int PageSize => _gridModel.PageSize;
         public string TableName => _gridModel.TableName;
         public string ConnectionAlias => _gridModel.ConnectionAlias;
         public string SearchInput => _gridModel.SearchInput;

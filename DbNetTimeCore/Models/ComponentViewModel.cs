@@ -6,7 +6,7 @@ namespace DbNetTimeCore.Models
         public IEnumerable<DataColumn> Columns { get; set; } = new List<DataColumn>();
         private ComponentModel _componentModel;
 
-        public string SearchUrl => $"/gridcontrol.htmx?handler=search";
+        public string SubmitUrl => $"/gridcontrol.htmx";
         public string EditUrl(DataRow row)
         {
             return $"/gridcontrol.htmx?handler=edit&pk={PrimaryKeyValue(row)}";

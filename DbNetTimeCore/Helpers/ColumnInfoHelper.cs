@@ -1,6 +1,6 @@
 ﻿using DbNetTimeCore.Enums;
 using DbNetTimeCore.Models;
-using static DbNetTimeCore.Utilities.DbNetDataCore;
+using DbNetTimeCore.Repositories;
 
 namespace DbNetTimeCore.Helpers
 {
@@ -17,7 +17,7 @@ namespace DbNetTimeCore.Helpers
                 new GridColumnModel("address.address", "Address", true),
                 new GridColumnModel("city.city", "City", true),
                 new GridColumnModel("address.postal_code", "Post Code", true),
-                new GridColumnModel("customer.active", "Active"),
+                new GridColumnModel("customer.active", "Active") {DataType = typeof(Boolean)},
                 new GridColumnModel("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
                 new GridColumnModel("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
             };
