@@ -1,4 +1,4 @@
-﻿namespace DbNetTimeCore.Models
+﻿namespace TQ.Models
 {
     public class ComponentModel
     {

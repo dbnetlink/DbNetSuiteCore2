@@ -1,23 +1,21 @@
-using DbNetLink.Middleware;
+using TQ.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Development.json");
-builder.Services.AddDbNetTimeCore();
+builder.Services.AddWebReporting();  // make web reporting part of the web application middleware
 
-// Add services to the container.
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseDbNetTimeCore();
+app.UseWebReporting(); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

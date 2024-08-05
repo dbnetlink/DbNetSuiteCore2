@@ -1,5 +1,5 @@
 ﻿using DbNetTimeCore.Enums;
-using DbNetTimeCore.Models;
+using TQ.Models;
 using DbNetTimeCore.Repositories;
 
 namespace DbNetTimeCore.Helpers

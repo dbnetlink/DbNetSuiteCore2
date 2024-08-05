@@ -2,7 +2,7 @@
 using Amazon.TimestreamQuery;
 using Amazon.TimestreamQuery.Model;
 using Amazon;
-using DbNetTimeCore.Models;
+using TQ.Models;
 
 namespace DbNetTimeCore.Repositories
 {

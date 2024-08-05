@@ -1,5 +1,5 @@
 ﻿using System.Data;
-namespace DbNetTimeCore.Models
+namespace TQ.Models
 {
     public class FormViewModel : ComponentViewModel
     {

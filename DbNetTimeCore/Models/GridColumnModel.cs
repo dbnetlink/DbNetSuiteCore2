@@ -3,7 +3,7 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace DbNetTimeCore.Models
+namespace TQ.Models
 {
     public class GridColumnModel : ColumnModel
     {

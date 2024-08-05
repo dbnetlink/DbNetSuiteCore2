@@ -1,4 +1,4 @@
-﻿@model DbNetTimeCore.Models.GridModel
+﻿@model TQ.Models.GridModel
 @using System.Text.Json
 <form hx-post="gridcontrol.htmx" hx-target="#@Model.Id" hx-trigger="load" hx-indicator="#@(Model.IndicatorId)">
     <input type="hidden" name="connectionAlias" value="@Model.ConnectionAlias">

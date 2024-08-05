@@ -1,13 +1,14 @@
-﻿@model DbNetTimeCore.Models.GridViewModel
+﻿@model TQ.Models.GridViewModel
 @using System.Data
-@using DbNetTimeCore.Models
+@using TQ.Models
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
+@using TQ.Components.Constants
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
         <input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput">
-        <button class="btn btn-sm mr-5 p-1" type="button" name="search" hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML" title="Search">@Html.Raw(SearchIcon())</button>
+        <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML" title="Search">@Html.Raw(SearchIcon())</button>
 
         @if (Model.TotalPages == 0)
         {

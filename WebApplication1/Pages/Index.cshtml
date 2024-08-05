@@ -1,7 +1,7 @@
 ﻿@page
 @using DbNetTimeCore.Enums
 @using DbNetTimeCore.Helpers
-@using DbNetTimeCore.Models
+@using TQ.Models
 @model IndexModel
 @{
     Layout = "_Layout";
@@ -114,41 +114,41 @@
 <div role="tablist" class="tabs tabs-lifted m-5  tabs-lg">
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="MT2" checked />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10}))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10}))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="MT1" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Heatpumps" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "Kensa", "dbo.Heatpumps left outer join dbo.Accounts on dbo.Heatpumps.AccountId = dbo.Accounts.Id left outer join dbo.HeatPumpGroups on dbo.HeatPumpGroups.Id = dbo.Heatpumps.HeatPumpGroupId") { Columns = heatPumpColumns }))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "Kensa", "dbo.Heatpumps left outer join dbo.Accounts on dbo.Heatpumps.AccountId = dbo.Accounts.Id left outer join dbo.HeatPumpGroups on dbo.HeatPumpGroups.Id = dbo.Heatpumps.HeatPumpGroupId") { Columns = heatPumpColumns }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Person" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Customers" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Films" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Actors" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
     </div>
 
     <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Employees" />
     <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-        @Html.Raw(await new DbNetTimeCore.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
+        @Html.Raw(await new TQ.Components.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
     </div>
 </div>

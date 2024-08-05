@@ -1,6 +1,6 @@
 ﻿using DbNetTimeCore.Helpers;
 
-namespace DbNetTimeCore.Models
+namespace TQ.Models
 {
     public class FormModel : ComponentModel
     {

@@ -1,4 +1,4 @@
-﻿using DbNetTimeCore.Models;
+﻿using TQ.Models;
 using System.Data;
 
 namespace DbNetTimeCore.Repositories

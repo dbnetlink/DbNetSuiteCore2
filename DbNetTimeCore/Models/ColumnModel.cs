@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace DbNetTimeCore.Models
+namespace TQ.Models
 {
     public class ColumnModel
     {

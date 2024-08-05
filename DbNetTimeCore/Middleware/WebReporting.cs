@@ -5,21 +5,21 @@ using DbNetTimeCore.Repositories;
 using DbNetTimeCore.Services.Interfaces;
 using DbNetTimeCore.Services;
 
-namespace DbNetLink.Middleware
+namespace TQ.Middleware
 {
-    public class DbNetTimeCore
+    public class WebReporting
     {
         private RequestDelegate _next;
-        private IDbNetTimeService _dbNetTimeService;
+        private IReportService _dbNetTimeService;
         private string _extension = ".htmx";
 
 
-        public DbNetTimeCore(RequestDelegate next)
+        public WebReporting(RequestDelegate next)
         {
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IDbNetTimeService dbNetTimeService )
+        public async Task Invoke(HttpContext context, IReportService dbNetTimeService )
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
@@ -62,19 +62,19 @@ namespace DbNetLink.Middleware
         }
     }
 
-    public static class DbNetTimeExtensions
+    public static class WebReportingExtensions
     {
-        public static IApplicationBuilder UseDbNetTimeCore(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseWebReporting(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<DbNetTimeCore>();
+            return builder.UseMiddleware<WebReporting>();
         }
 
-        public static IServiceCollection AddDbNetTimeCore(this IServiceCollection services)
+        public static IServiceCollection AddWebReporting(this IServiceCollection services)
         {
             services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
             {
                 //options.FileProviders.Clear();
-                var embeddedFileProvider = new EmbeddedFileProvider(typeof(DbNetTimeCore).Assembly);
+                var embeddedFileProvider = new EmbeddedFileProvider(typeof(WebReporting).Assembly);
                 options.FileProviders.Add(embeddedFileProvider);
             });
 
@@ -82,7 +82,7 @@ namespace DbNetLink.Middleware
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddControllersWithViews();
             services.AddHttpContextAccessor();
-            services.AddScoped<IDbNetTimeService, DbNetTimeService>();
+            services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();
             services.AddScoped<IJSONRepository, JSONRepository>();

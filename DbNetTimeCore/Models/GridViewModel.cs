@@ -1,6 +1,6 @@
 ﻿using DbNetTimeCore.Enums;
 using System.Data;
-namespace DbNetTimeCore.Models
+namespace TQ.Models
 {
     public class GridViewModel : ComponentViewModel
     {

@@ -1,6 +1,6 @@
-﻿using DbNetTimeCore.Models;
+﻿using TQ.Models;
 
-namespace DbNetTimeCore.Components
+namespace TQ.Components
 {
     public class GridControl
     {

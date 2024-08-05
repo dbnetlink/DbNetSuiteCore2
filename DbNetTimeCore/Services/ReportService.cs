@@ -2,19 +2,18 @@
 using DbNetTimeCore.Repositories;
 using System.Reflection;
 using System.Text;
-using DbNetTimeCore.Models;
+using TQ.Models;
 using System.Data;
 using DbNetTimeCore.Helpers;
 using DbNetTimeCore.Enums;
-using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.AspNetCore.StaticFiles;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
+using TQ.Components.Constants;
 
 namespace DbNetTimeCore.Services
 {
-    public class DbNetTimeService : IDbNetTimeService
+    public class ReportService : IReportService
     {
         private readonly IMSSQLRepository _msSqlRepository;
         private readonly ITimestreamRepository _timestreamRepository;
@@ -30,7 +29,7 @@ namespace DbNetTimeCore.Services
 
         private DataSourceType dataSourceType => Enum.Parse<DataSourceType>(RequestHelper.FormValue("dataSourceType", string.Empty, _context));
 
-        public DbNetTimeService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository)
+        public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -59,7 +58,7 @@ namespace DbNetTimeCore.Services
 
         private async Task<Byte[]> GridView(GridModel gridModel)
         {
-            if (triggerName == "download")
+            if (triggerName == TriggerNames.Download)
             {
                 return await ExportRecords(gridModel);
             }
@@ -330,7 +329,7 @@ namespace DbNetTimeCore.Services
                 return null;
             }
 
-            if (triggerName == "search")
+            if (triggerName == TriggerNames.Search)
             {
                 gridModel.CurrentPage = 1;
             }

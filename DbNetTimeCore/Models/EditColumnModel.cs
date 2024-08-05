@@ -2,7 +2,7 @@
 using DbNetTimeCore.Repositories;
 using System.Data;
 
-namespace DbNetTimeCore.Models
+namespace TQ.Models
 {
     public class EditColumnModel : ColumnModel
     {
