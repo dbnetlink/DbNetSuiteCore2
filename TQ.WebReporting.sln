@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TQ.Components", "DbNetTimeCore\TQ.Components.csproj", "{6DEE4878-5836-47A9-B3E4-7FD39F277D9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore", "DbNetSuiteCore\DbNetSuiteCore.csproj", "{6DEE4878-5836-47A9-B3E4-7FD39F277D9D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "WebApplication1\Demo.csproj", "{6B3D8D10-23B2-455B-B5A4-DEB02C8AD995}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.Web", "DbNetSuiteCore.Web\DbNetSuiteCore.Web.csproj", "{6B3D8D10-23B2-455B-B5A4-DEB02C8AD995}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

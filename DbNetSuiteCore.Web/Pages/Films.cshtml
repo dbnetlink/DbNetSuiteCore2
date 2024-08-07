@@ -1,0 +1,35 @@
+﻿@page
+@using DbNetTimeCore.Enums
+@using DbNetSuiteCore.Helpers
+@using TQ.Models
+
+@{
+    var ratings = new List<string> { "G", "NC-17", "PG", "PG-13", "R" };
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers</title>
+    <link rel="stylesheet" href="css.htmx" />
+</head>
+<body>
+    <main style="padding:20px">
+        <div role="tablist" class="tabs tabs-lifted m-5 tabs-lg grid-flow-col auto-cols-max">
+            @{
+                foreach (string rating in ratings)
+                {
+                    <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="@(rating) Rating" @(rating == ratings.First() ? "checked" : string.Empty) />
+                    <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                        @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns(), FixedFilter = $"rating = '{rating}'" }))
+                    </div>
+                }
+            }
+        </div>
+    </main>
+    <script src="js.htmx"></script>
+</body>
+</html>
+

@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DbNetSuiteCore</title>
+    <link rel="stylesheet" href="css.htmx" />
+    @await RenderSectionAsync("Styles", required: false)
+
+    <script>
+        function domReady(fn) {
+            document.addEventListener("DOMContentLoaded", fn);
+            if (document.readyState === "interactive" || document.readyState === "complete") {
+                fn();
+            }
+        }
+    </script>
+</head>
+<body>
+    <main>
+        @RenderBody()
+    </main>
+    <script src="js.htmx"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
