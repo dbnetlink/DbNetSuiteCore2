@@ -10,7 +10,7 @@ namespace TQ.Middleware
     public class WebReporting
     {
         private RequestDelegate _next;
-        private IReportService _dbNetTimeService;
+        private IReportService _reportService;
         private string _extension = ".htmx";
 
 
@@ -19,11 +19,11 @@ namespace TQ.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IReportService dbNetTimeService )
+        public async Task Invoke(HttpContext context, IReportService reportService)
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
-                _dbNetTimeService = dbNetTimeService;
+                _reportService = reportService;
                 await GenerateResponse(context);
             }
             else
@@ -39,12 +39,7 @@ namespace TQ.Middleware
 
             string page = request.Path.ToString().Split('/')[1].Replace(_extension,string.Empty);
 
-            if (page == string.Empty)
-            {
-                page = "index";
-            }
-
-            var response = await _dbNetTimeService.Process(context, page);
+            var response = await _reportService.Process(context, page);
 
             if (response == null)
             {

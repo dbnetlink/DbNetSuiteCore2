@@ -75,9 +75,14 @@ namespace DbNetTimeCore.Services
 
         private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
         {
-            DataTable columns = await GetColumns(gridModel);
+            await ConfigureGridColumns(gridModel);
             DataTable data = await GetRecords(gridModel);
+            return new GridViewModel(data, gridModel);
+        }
 
+        private async Task ConfigureGridColumns(GridModel gridModel)
+        {
+            DataTable columns = await GetColumns(gridModel);
             var unInitialisedColumns = new List<GridColumnModel>(gridModel.Columns.Where(c => c.Initialised == false));
 
             if (gridModel.Columns.Any() == false || unInitialisedColumns.Any())
@@ -99,10 +104,7 @@ namespace DbNetTimeCore.Services
                     gridModel.Columns[i].Ordinal = i + 1;
                 }
             }
-
-            return new GridViewModel(data, gridModel);
         }
-
 
         private async Task<DataTable> GetRecords(GridModel gridModel)
         {
