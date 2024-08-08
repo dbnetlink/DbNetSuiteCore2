@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Helpers;
+using DbNetTimeCore.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
@@ -30,20 +31,40 @@ namespace TQ.Models
                 };
             }
         }
+        public string DbDataType { get; set; } = string.Empty;
         public string UserDataType { get; set; } = string.Empty;
         public string Format { get; set; } = string.Empty;
         public bool Initialised { get; set; } = false;
-
+        public bool Valid { get; set; } = true;
         public ColumnModel()
         {
         }
-         public ColumnModel(DataColumn dataColumn)
+        public ColumnModel(DataColumn dataColumn)
         {
             Expression = dataColumn.ColumnName;
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName); 
             Name = dataColumn.ColumnName;
             DataType = dataColumn.DataType;
+            Initialised = true;
         }
+
+        public ColumnModel(DataRow dataRow,DataSourceType dataSourceType)
+        {
+            Expression = QualifyExpression((string)dataRow["ColumnName"], dataSourceType);
+            Label = TextHelper.GenerateLabel((string)dataRow["ColumnName"]);
+            Name = (string)dataRow["ColumnName"];
+            try
+            {
+                DataType = (Type)dataRow["DataType"];
+                DbDataType = ((Type)dataRow["ProviderSpecificDataType"]).Name;
+            }
+            catch (Exception)
+            {
+                Valid = false;
+            }
+            Initialised = true;
+        }
+
         public ColumnModel(string expression, string label)
         {
             Expression = expression;
@@ -55,6 +76,38 @@ namespace TQ.Models
             Expression = expression;
             Label = expression.Split(" ").Last();
         }
-      
+
+        public void Update(DataColumn dataColumn)
+        {
+            DataType = dataColumn.DataType;
+            Initialised = true;
+            Name = dataColumn.ColumnName;
+            if (string.IsNullOrEmpty(Label))
+            {
+                Label = TextHelper.GenerateLabel(Name);
+            }
+        }
+
+        public void Update(DataRow dataRow)
+        {
+            DataType = (Type)dataRow["DataType"];
+            Initialised = true;
+            Name = (string)dataRow["ColumnName"];
+            if (string.IsNullOrEmpty(Label))
+            {
+                Label = TextHelper.GenerateLabel(Name);
+            }
+        }
+
+        private string QualifyExpression(string columnName, DataSourceType dataSourceType)
+        {
+            switch(dataSourceType)
+            {
+                case DataSourceType.MSSQL:
+                    return $"[{columnName}]";
+                default:
+                    return columnName;  
+            }
+        }
     }
 }

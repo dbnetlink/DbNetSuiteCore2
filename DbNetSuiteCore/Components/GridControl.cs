@@ -15,7 +15,7 @@ namespace DbNetSuiteCore
         public async Task<string> Render(GridModel gridComponentModel)
         {
             var viewRenderService = _httpContext.RequestServices.GetService<RazorViewToStringRenderer>();
-            return await viewRenderService!.RenderViewToStringAsync("_gridControlForm", gridComponentModel);
+            return await viewRenderService!.RenderViewToStringAsync("GridControlForm", gridComponentModel);
         }
     }
 }

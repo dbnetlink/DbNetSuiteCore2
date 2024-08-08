@@ -69,7 +69,7 @@ namespace DbNetTimeCore.Services
             }
             else
             {
-                return await View("_gridMarkup", await GetGridViewModel(gridModel));
+                return await View("GridMarkup", await GetGridViewModel(gridModel));
             }
         }
 
@@ -87,21 +87,43 @@ namespace DbNetTimeCore.Services
 
         private async Task ConfigureGridColumns(GridModel gridModel)
         {
-            DataTable columns = await GetColumns(gridModel);
             var unInitialisedColumns = new List<GridColumnModel>(gridModel.Columns.Where(c => c.Initialised == false));
 
             if (gridModel.Columns.Any() == false || unInitialisedColumns.Any())
             {
+                DataTable schema = await GetColumns(gridModel);
+
                 if (gridModel.Columns.Any() == false)
                 {
-                    gridModel.Columns = columns.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
+                    switch (gridModel.DataSourceType)
+                    {
+                        case DataSourceType.MSSQL:
+                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r,gridModel.DataSourceType)).Cast<GridColumnModel>().Where(c => c.Valid).ToList();
+                            break;
+                        default:
+                            gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
+                            break;
+                    }
                 }
                 else
                 {
-                    var dataColumns = columns.Columns.Cast<DataColumn>().ToList();
-                    for (var i = 0; i < dataColumns.Count; i++)
+                    switch (gridModel.DataSourceType)
                     {
-                        gridModel.Columns[i].Update(dataColumns[i]);
+                        case DataSourceType.MSSQL:
+                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r,gridModel.DataSourceType)).Cast<GridColumnModel>().ToList();
+                            var dataRows = schema.Rows.Cast<DataRow>().ToList();
+                            for (var i = 0; i < dataRows.Count; i++)
+                            {
+                                gridModel.Columns[i].Update(dataRows[i]);
+                            }
+                            break;
+                        default:
+                            var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+                            for (var i = 0; i < dataColumns.Count; i++)
+                            {
+                                gridModel.Columns[i].Update(dataColumns[i]);
+                            }
+                            break;
                     }
                 }
                 for (var i = 0; i < gridModel.Columns.Count; i++)
@@ -178,7 +200,7 @@ namespace DbNetTimeCore.Services
         {
             gridModel.PageSize = dt.Rows.Count;
             _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
-            return await View("_gridExport", await GetGridViewModel(gridModel));
+            return await View("GridExport", await GetGridViewModel(gridModel));
         }
 
         private byte[] ConvertDataTableToJSON(DataTable dataTable)

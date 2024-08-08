@@ -9,10 +9,10 @@
 
         public static string FormValue(string key, string defaultValue, HttpContext httpContext)
         {
-            return FormValue(key,defaultValue, (FormCollection)httpContext.Request.Form);
+            return FormValue(key,defaultValue, httpContext.Request.Form);
         }
 
-        public static string FormValue(string key, string defaultValue, FormCollection form)
+        public static string FormValue(string key, string defaultValue, IFormCollection form)
         {
             try
             {

@@ -12,14 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             gridModel.AddFilterPart(query);
-
-            if (gridModel is GridModel)
-            {
-                if (!string.IsNullOrEmpty(gridModel.SortKey) || !string.IsNullOrEmpty(gridModel.CurrentSortKey))
-                {
-                    gridModel.AddOrderPart(query);
-                }
-            }
+            gridModel.AddOrderPart(query);
 
             return query;
         }
@@ -61,7 +54,25 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
         {
+            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
+            {
+                gridModel.SetInitialSort();
+            }
             query.Sql += $" order by {(!string.IsNullOrEmpty(gridModel.SortKey) ? gridModel.SortColumn : gridModel.CurrentSortColumn)} {gridModel.SortSequence}";
+        }
+
+        public static void SetInitialSort(this GridModel gridModel)
+        {
+            gridModel.CurrentSortKey = gridModel.Columns.First().Key;
+            gridModel.CurrentSortAscending = true;
+
+            var initialSortOrderColumn = gridModel.Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue);
+
+            if (initialSortOrderColumn != null)
+            {
+                gridModel.CurrentSortKey = initialSortOrderColumn.Key;
+                gridModel.CurrentSortAscending = initialSortOrderColumn.InitialSortOrder!.Value == DbNetTimeCore.Enums.SortOrder.Asc;
+            }
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)

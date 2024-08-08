@@ -15,7 +15,7 @@ namespace TQ.Models
         public bool CurrentSortAscending { get; set; } = true;
         public string SortColumn => Columns.FirstOrDefault(c => c.Key == SortKey)?.Ordinal.ToString() ?? "1";
         public string CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey)?.Ordinal.ToString() ?? "1";
-        public string SortSequence => GetSortSequence();
+        public SortOrder SortSequence => GetSortSequence();
         public string? PrimaryKey { get; set; }
         public string TableName { get; set; } = string.Empty;
         public string ExportFormat { get; set; } = string.Empty;
@@ -25,18 +25,18 @@ namespace TQ.Models
         public string FixedFilter { get; set; } = string.Empty;
         public int PageSize { get; set; } = 20;
         public DataSourceType DataSourceType { get; set; }
-        private string GetSortSequence()
+        private SortOrder GetSortSequence()
         {
             if (string.IsNullOrEmpty(SortKey))
             {
-                return CurrentSortAscending ? "asc" : "desc";
+                return CurrentSortAscending ? SortOrder.Asc : SortOrder.Desc;
             }
             if (SortKey == CurrentSortKey)
             {
-                return CurrentSortAscending ? "desc" : "asc";
+                return CurrentSortAscending ? SortOrder.Desc : SortOrder.Asc;
             }
 
-            return "asc";
+            return SortOrder.Asc;
         }
 
         public GridModel()

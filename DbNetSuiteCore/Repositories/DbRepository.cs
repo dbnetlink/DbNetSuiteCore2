@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Data.Common;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace DbNetTimeCore.Repositories
@@ -23,7 +22,7 @@ namespace DbNetTimeCore.Repositories
 
         public IDbConnection GetConnection(string database)
         {
-            string connectionString = _configuration.GetConnectionString(database);
+            string? connectionString = _configuration.GetConnectionString(database);
             connectionString = MapDatabasePath(connectionString);
 
             IDbConnection connection;
@@ -51,11 +50,21 @@ namespace DbNetTimeCore.Repositories
             return dataTable;
         }
 
+        public async Task<DataTable> GetSchemaTable(QueryCommandConfig queryCommandConfig, string database)
+        {
+            var connection = GetConnection(database);
+            connection.Open();
+            var reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
+            DataTable dataTable = reader.GetSchemaTable() ?? new DataTable();
+            connection.Close();
+            return dataTable;
+        }
+
         public async Task<DbDataReader> ExecuteQuery(string sql, IDbConnection connection)
         {
             return await ExecuteQuery(new QueryCommandConfig(sql), connection);
         }
-        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection)
+        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior Behaviour = CommandBehavior.Default)
         {
             IDbCommand command = ConfigureCommand(query.Sql, query.Params, connection);
             return await ((DbCommand)command).ExecuteReaderAsync(CommandBehavior.Default);
@@ -74,17 +83,17 @@ namespace DbNetTimeCore.Repositories
             {
                 returnValue = await ((DbCommand)command).ExecuteNonQueryAsync();
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
             }
 
             return returnValue;
         }
 
-        private string MapDatabasePath(string connectionString)
+        private string MapDatabasePath(string? connectionString)
         {
-            if (string.IsNullOrEmpty(connectionString) || connectionString.EndsWith(".json"))
-                return connectionString;
+            if (string.IsNullOrEmpty(connectionString))
+                return string.Empty;
 
             if (!connectionString.EndsWith(";"))
                 connectionString += ";";
@@ -92,7 +101,7 @@ namespace DbNetTimeCore.Repositories
             string dataDirectory = String.Empty;
 
             if (AppDomain.CurrentDomain.GetData("DataDirectory") != null)
-                dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory").ToString();
+                dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory")?.ToString() ?? string.Empty;
 
             if (connectionString.Contains("|DataDirectory|") && dataDirectory != String.Empty)
                 connectionString = connectionString.Replace("|DataDirectory|", dataDirectory);
@@ -132,7 +141,7 @@ namespace DbNetTimeCore.Repositories
 
                 if (@params[key] is IDbDataParameter)
                 {
-                    dbParam = @params[key] as IDbDataParameter;
+                    dbParam = (IDbDataParameter)@params[key];
                 }
                 else
                 {

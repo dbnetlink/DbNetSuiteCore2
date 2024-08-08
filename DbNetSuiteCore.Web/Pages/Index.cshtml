@@ -2,7 +2,6 @@
 @using DbNetTimeCore.Enums
 @using DbNetSuiteCore.Helpers
 @using TQ.Models
-@model IndexModel
 @{
     Layout = "_Layout";
 }
@@ -40,7 +39,7 @@
         new GridColumnModel("t2", "Load Outlet Temperature"),
         new GridColumnModel("t4", "Ground Return Temperature"),
         new GridColumnModel("t5", "Ground Outlet Temperature"),
-        new GridColumnModel("t7", "Discharge Temp"),
+        new GridColumnModel("t7", "Discharge Temp") { InitialSortOrder = SortOrder.Desc},
         new GridColumnModel("t9", "Weather Compensation Temperature Probe"),
 
     @*
@@ -58,7 +57,7 @@
         new GridColumnModel("p6", "Discharge Pipe Twin Compressor"),
         *@
 
-    new GridColumnModel("state", "State Of The Heat Pump"),
+        new GridColumnModel("state", "State Of The Heat Pump"),
         new GridColumnModel("comp1", "State Of Compressor 1"),
         new GridColumnModel("comp2", "State Of Compressor 2"),
         new GridColumnModel("reason", "Reason For Logging"),
@@ -87,7 +86,7 @@
         new GridColumnModel("SalesTerritoryKey", "Sales Territory"),
         new GridColumnModel("FirstName", "Forename"),
         new GridColumnModel("MiddleName", "Middle Name"),
-        new GridColumnModel("LastName", "Surname"),
+        new GridColumnModel("LastName", "Surname") {InitialSortOrder = SortOrder.Asc},
         new GridColumnModel("Title", "Title"),
         new GridColumnModel("HireDate", "Hire Date"),
         new GridColumnModel("BirthDate", "Birth Date"),

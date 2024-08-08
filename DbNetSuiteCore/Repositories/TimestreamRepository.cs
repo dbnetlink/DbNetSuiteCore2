@@ -3,6 +3,7 @@ using Amazon.TimestreamQuery;
 using Amazon.TimestreamQuery.Model;
 using Amazon;
 using TQ.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DbNetTimeCore.Repositories
 {
@@ -36,14 +37,7 @@ namespace DbNetTimeCore.Repositories
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             sql = AddFilterPart(sql, gridModel);
-
-            if (gridModel is GridModel)
-            {
-                if (!string.IsNullOrEmpty(gridModel.SortKey) || !string.IsNullOrEmpty(gridModel.CurrentSortKey))
-                {
-                    sql = AddOrderPart(sql, gridModel);
-                }
-            }
+            sql = AddOrderPart(sql, gridModel);
 
             return sql;
         }
@@ -72,6 +66,10 @@ namespace DbNetTimeCore.Repositories
 
         private string AddOrderPart(string sql, GridModel gridModel)
         {
+            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
+            {
+                gridModel.SetInitialSort();
+            }
             return $"{sql} order by {(!string.IsNullOrEmpty(gridModel.SortKey) ? gridModel.SortColumn : gridModel.CurrentSortColumn)} {gridModel.SortSequence}";
         }
 

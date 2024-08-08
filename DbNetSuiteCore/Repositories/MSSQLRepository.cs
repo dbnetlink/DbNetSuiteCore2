@@ -19,7 +19,7 @@ namespace DbNetTimeCore.Repositories
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
             QueryCommandConfig query = gridModel.BuildEmptyQuery();
-            return await GetDataTable(query, gridModel.ConnectionAlias);
+            return await GetSchemaTable(query, gridModel.ConnectionAlias);
         }
 
 

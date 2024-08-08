@@ -37,7 +37,14 @@ namespace TQ.Models
 
         protected ColumnModel? _GetColumnInfo(DataColumn column)
         {
-            return ColumnInfo.FirstOrDefault(c => c.Name.Split(".").Last() == column.ColumnName);
+            var columnInfo = ColumnInfo.FirstOrDefault(c => c.Name == column.ColumnName || c.Name.Split(".").Last() == column.ColumnName);
+
+            if (columnInfo == null)
+            {
+                throw new Exception(column.ColumnName); 
+            }
+
+            return columnInfo;
         }
 
 

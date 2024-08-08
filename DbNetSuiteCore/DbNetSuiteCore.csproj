@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Content Remove="Views\Error.cshtml" />
-    <Content Remove="Views\_gridExport.cshtml" />
+    <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\_gridIndicator.cshtml" />
   </ItemGroup>
 
@@ -61,13 +61,13 @@
     <EmbeddedResource Include="Views\_gridControl.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\_gridControlForm.cshtml">
+    <EmbeddedResource Include="Views\GridControlForm.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\_gridExport.cshtml">
+    <EmbeddedResource Include="Views\GridExport.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\_gridMarkup.cshtml">
+    <EmbeddedResource Include="Views\GridMarkup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\_gridScript.cshtml">

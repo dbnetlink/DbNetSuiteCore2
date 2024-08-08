@@ -1,6 +1,7 @@
 ﻿using TQ.Models;
 using Newtonsoft.Json;
 using System.Data;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DbNetTimeCore.Repositories
 {
@@ -25,7 +26,6 @@ namespace DbNetTimeCore.Repositories
         {
             return await BuildDataTable(gridModel, httpContext);
         }
-
 
         private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
         {
@@ -76,44 +76,13 @@ namespace DbNetTimeCore.Repositories
             return String.Join(" and ", filterParts);
         }
 
-        /*
-         * 
-        private string AddFilterPart(GridModel gridModel)
-        {
-            string filterPart = string.Empty;
-            List<string> filterParts = new List<string>();
-
-            if (!string.IsNullOrEmpty(gridModel.SearchInput))
-            {
-                List<string> quickSearchfilterPart = new List<string>();
-
-                foreach (var col in gridModel.GridColumns.Where(c => c.Searchable).Select(c => c.Name).ToList())
-                {
-                    quickSearchfilterPart.Add($"{col} like '%{gridModel.SearchInput}%'");
-                }
-
-                if (quickSearchfilterPart.Any())
-                {
-                    filterParts.Add($"{string.Join(" or ", quickSearchfilterPart)}");
-                }
-            }
-
-            if (!string.IsNullOrEmpty(gridModel.FixedFilter))
-            {
-                filterParts.Add(gridModel.FixedFilter);
-            }
-
-            if (filterParts.Any())
-            {
-                filterPart = $" where {string.Join(" and ", filterParts)}";
-            }
-
-            return filterPart;
-        }
-         */
-
         private string AddOrderPart(GridModel gridModel)
         {
+            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
+            {
+                gridModel.SetInitialSort();
+            }
+
             var sortColumn = gridModel.Columns[Convert.ToInt32(gridModel.SortColumn) - 1].ColumnName;
             var currentSortColumn = gridModel.Columns[Convert.ToInt32(gridModel.CurrentSortColumn) - 1].ColumnName;
 

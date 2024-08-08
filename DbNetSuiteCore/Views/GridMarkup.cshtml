@@ -40,11 +40,20 @@
         <table class="htmx-table">
             <thead>
                 <tr class="bg-slate-200">
-                    @foreach (ColumnModel columnInfo in Model.ColumnInfo)
+                    @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
                     {
-                        <th class="text-base" style="cursor:pointer" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-swap="innerHTML" hx-indicator="#@Model.IndicatorId">
-                            <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400">@SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</span></div>
-                        </th>
+                        if (columnInfo.Sortable)
+                        {
+                            <th class="text-base" style="cursor:pointer" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-swap="innerHTML" hx-indicator="#@Model.IndicatorId">
+                                <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400">@SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</span></div>
+                            </th>
+                        }
+                        else
+                        {
+                            <th class="text-base">
+                                <div class="flex flex-row justify-between items-center">@(columnInfo?.Label)</div>
+                            </th>
+                        }
                     }
                 </tr>
             </thead>
@@ -57,7 +66,7 @@
                             GridColumnModel? columnInfo = Model.GetColumnInfo(col);
                             var classes = new List<string>() { "text-base" };
 
-                            if (columnInfo.DataType == typeof(Int64) || col.DataType == typeof(Double))
+                            if (columnInfo.IsNumeric)
                             {
                                 classes.Add("text-right");
                             }
@@ -69,7 +78,12 @@
 
                             if (columnInfo.DataType == typeof(Boolean))
                             {
-                                <td class="@(string.Join(" ",classes))"><div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? CheckedIcon() : UncheckedIcon())</div></td>
+                                <td class="@(string.Join(" ",classes))">
+                                    @if (row[col] != System.DBNull.Value) 
+                                    {
+                                        <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? CheckedIcon() : UncheckedIcon())</div>
+                                    }
+                                </td>
                             }
                             else
                             {
@@ -138,7 +152,11 @@
 
     public static object? FormatValue(object? value, GridColumnModel? columnInfo)
     {
-        if (string.IsNullOrEmpty(columnInfo?.Format) || value == null)
+        if (value == null || value == System.DBNull.Value)
+        {
+            return "&nbsp;";
+        }
+        if (string.IsNullOrEmpty(columnInfo?.Format))
         {
             return value;
         }

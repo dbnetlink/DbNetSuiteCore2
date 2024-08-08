@@ -20,7 +20,7 @@ namespace TQ.Models
         public string SortColumn => _gridModel.SortColumn;
         public string SortKey => _gridModel.SortKey;
         public string CurrentSortKey => string.IsNullOrEmpty(SortKey) ? _gridModel.CurrentSortKey : SortKey;
-        public bool CurrentSortAscending => (_gridModel.SortSequence ?? "asc") == "asc";
+        public bool CurrentSortAscending => _gridModel.SortSequence == SortOrder.Asc;
         public string FirstPageUrl => PreviousPage ? PageUrl(1) : string.Empty;
         public string LastPageUrl => NextPage ? PageUrl(TotalPages) : string.Empty;
         public string NextPageUrl => NextPage ? PageUrl(CurrentPage + 1) : string.Empty;
