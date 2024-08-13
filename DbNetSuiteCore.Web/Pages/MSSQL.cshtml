@@ -4,9 +4,7 @@
 @using DbNetSuiteCore.Helpers
 @using System.Data
 @using TQ.Models
-@{
-    Layout = "_Layout";
-}
+
 <div style="padding:20px">
     <form method="post">
         <div class="flex flex-row">
@@ -41,7 +39,7 @@
         @{
             if (Model.TableName != string.Empty)
             {
-                @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, Model.ConnectionAlias, Model.TableName)))
+                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, Model.ConnectionAlias, Model.TableName)))
             }
         }
     </div>

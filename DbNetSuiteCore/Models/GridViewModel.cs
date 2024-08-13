@@ -1,5 +1,8 @@
-﻿using DbNetTimeCore.Enums;
+﻿using DbNetSuiteCore.Helpers;
+using DbNetTimeCore.Enums;
+using Microsoft.AspNetCore.Html;
 using System.Data;
+
 namespace TQ.Models
 {
     public class GridViewModel : ComponentViewModel
@@ -10,6 +13,8 @@ namespace TQ.Models
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
         public int TotalPages { get; set; } = 0;
         public string GridId => _gridModel.Id;
+
+        public string TbodyId => _gridModel.TbodyId;
         public string IndicatorId => _gridModel.IndicatorId;
         public string ContainerId => _gridModel.ContainerId;
         public int CurrentPage => _gridModel.CurrentPage;
@@ -21,18 +26,13 @@ namespace TQ.Models
         public string SortKey => _gridModel.SortKey;
         public string CurrentSortKey => string.IsNullOrEmpty(SortKey) ? _gridModel.CurrentSortKey : SortKey;
         public bool CurrentSortAscending => _gridModel.SortSequence == SortOrder.Asc;
-        public string FirstPageUrl => PreviousPage ? PageUrl(1) : string.Empty;
-        public string LastPageUrl => NextPage ? PageUrl(TotalPages) : string.Empty;
-        public string NextPageUrl => NextPage ? PageUrl(CurrentPage + 1) : string.Empty;
-        public string PreviousPageUrl => PreviousPage ? PageUrl(CurrentPage - 1) : string.Empty;
+        public HtmlString SortIcon => CurrentSortAscending ? IconHelper.ArrowUpIcon() : IconHelper.ArrowDownIcon();
         public DataSourceType DataSourceType => _gridModel.DataSourceType;
 
         public bool IsSortColumn(ColumnModel columnInfo)
         {
             return columnInfo.Key == CurrentSortKey;
         }
-        public bool NextPage => CurrentPage < TotalPages;
-        public bool PreviousPage => CurrentPage > 1;
         public GridViewModel(DataTable dataTable, GridModel gridModel) : base(dataTable, gridModel)
         {
             _gridModel = gridModel;

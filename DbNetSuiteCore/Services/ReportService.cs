@@ -69,7 +69,8 @@ namespace DbNetTimeCore.Services
             }
             else
             {
-                return await View("GridMarkup", await GetGridViewModel(gridModel));
+                string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
+                return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
 
@@ -87,9 +88,7 @@ namespace DbNetTimeCore.Services
 
         private async Task ConfigureGridColumns(GridModel gridModel)
         {
-            var unInitialisedColumns = new List<GridColumnModel>(gridModel.Columns.Where(c => c.Initialised == false));
-
-            if (gridModel.Columns.Any() == false || unInitialisedColumns.Any())
+            if (gridModel.Uninitialised)
             {
                 DataTable schema = await GetColumns(gridModel);
 
@@ -346,7 +345,7 @@ namespace DbNetTimeCore.Services
             GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context))) ?? new GridModel();
             try
             {
-                gridModel.CurrentPage = (triggerName == "page") ? Convert.ToInt32(RequestHelper.FormValue("page", "1", _context)) : Convert.ToInt32(RequestHelper.QueryValue("page", "1", _context));
+                gridModel.CurrentPage = GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
                 gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
@@ -358,13 +357,29 @@ namespace DbNetTimeCore.Services
                 return null;
             }
 
-            if (triggerName == TriggerNames.Search)
-            {
-                gridModel.CurrentPage = 1;
-            }
-
             return gridModel;
         }
+
+        private int GetPageNumber(GridModel gridModel)
+        {
+            switch (triggerName)
+            {
+                case TriggerNames.Page:
+                    return Convert.ToInt32(RequestHelper.FormValue("page", "1", _context));
+                case TriggerNames.Search:
+                case TriggerNames.First:
+                    return 1;
+                case TriggerNames.Next:
+                    return gridModel.CurrentPage + 1;
+                case TriggerNames.Previous:
+                    return gridModel.CurrentPage -1;
+                case TriggerNames.Last:
+                    return Int32.MaxValue;
+            }
+
+            return 1;
+        }
+
 
         private string GetMimeTypeForFileExtension(string extension)
         {
@@ -389,7 +404,7 @@ namespace DbNetTimeCore.Services
                     resources = ["daisyui", "gridcontrol"];
                     break;
                 case "js":
-                    resources = ["tailwindcss", "htmx.min", "surreal", "gridcontrol"];
+                    resources = ["tailwindcss", "htmx.min","gridcontrol"];
                     break;
             }
 

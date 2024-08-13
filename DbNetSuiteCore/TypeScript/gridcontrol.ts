@@ -1,76 +1,95 @@
 var gridControlArray = [];
 class GridControl {
+    gridId: string = "";
+    gridControl: HTMLFormElement;
+    gridContainer: HTMLElement;
+    eventHandlers = {};
+    private bgColourClass = "bg-cyan-600";
+    private textColourClass = "text-zinc-100";
+    private linkColourClass = "text-blue-500";
+
     constructor(gridId) {
-        this.gridId = "";
-        this.eventHandlers = {};
-        this.bgColourClass = "bg-cyan-600";
-        this.textColourClass = "text-zinc-100";
-        this.linkColourClass = "text-blue-500";
         this.gridId = gridId;
-        this.gridControl = document.querySelector(this.gridSelector());
-        this.gridContainer = this.gridControl.parentElement;
+        this.gridControl = document.querySelector(this.gridSelector())
+        this.gridContainer = this.gridControl.parentElement
     }
+
     init(evt) {
         if (evt.detail.target.id.startsWith(this.gridId) == false) {
-            return;
+            return
         }
+
         if (document.querySelector(this.errorSelector())) {
-            return;
+            return
         }
-        this.configureNavigation();
-        this.configureSortIcon();
-        if (evt.detail.target.id == this.gridId) {
-            this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard());
-            this.getButton("export").addEventListener("click", ev => this.download());
+
+        this.configureNavigation()
+        this.configureSortIcon()
+
+        if (evt.detail.target.id == this.gridId){
+            this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
+            this.getButton("export").addEventListener("click", ev => this.download())
             this.invokeEventHandler('Initialised');
         }
+
         document.querySelectorAll(this.linkSelector()).forEach((e) => {
             e.classList.add(this.linkColourClass);
-            e.classList.add("underline");
+            e.classList.add("underline")
         });
-        document.querySelectorAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow(ev.target.closest('tr'))); });
-        let row = document.querySelector(this.rowSelector());
+        document.querySelectorAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow((ev.target as HTMLElement).closest('tr'))) });
+        let row:HTMLElement = document.querySelector(this.rowSelector());
         if (row) {
             row.click();
         }
+
         this.invokeEventHandler('PageLoaded');
     }
+
     invokeEventHandler(eventName, args = {}) {
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return;
         }
         if (typeof this.eventHandlers[eventName] === 'function') {
-            this.eventHandlers[eventName](this, args);
+            this.eventHandlers[eventName](this, args)
         }
         else {
-            this.message(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
+            this.message(`Javascript function for event type '${eventName}' is not defined`, 'error', 3)
         }
     }
+
     configureNavigation() {
-        let tbody = document.querySelector(this.tbodySelector());
+        let tbody = document.querySelector(this.tbodySelector()) as HTMLElement;
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
+
         if (totalPages == 0) {
             return;
         }
-        let pageNumber = this.selectGridElement('[name="page"]');
+        let pageNumber = this.selectGridElement('[name="page"]') as HTMLSelectElement
         pageNumber.value = currentPage.toString();
+
         this.getButton("first").disabled = currentPage == 1;
         this.getButton("previous").disabled = currentPage == 1;
         this.getButton("next").disabled = currentPage == totalPages;
         this.getButton("last").disabled = currentPage == totalPages;
     }
+
     configureSortIcon() {
-        let tbody = document.querySelector(this.tbodySelector());
+        let tbody = document.querySelector(this.tbodySelector()) as HTMLElement;
         let sortKey = tbody.dataset.sortkey;
         let sortIcon = tbody.querySelector("span#sortIcon").innerHTML;
-        this.gridControl.querySelectorAll(`th[data-key] span`).forEach(e => e.innerHTML = '');
-        let span = this.gridControl.querySelector(`th[data-key="${sortKey}"] span`);
+
+        this.gridControl.querySelectorAll(`th[data-key] span`).forEach(e => e.innerHTML = '')
+
+        let span = this.gridControl.querySelector(`th[data-key="${sortKey}"] span`)
+
         if (!span) {
-            span = this.gridControl.querySelectorAll(`th[data-key] span`)[0];
+            span = this.gridControl.querySelectorAll(`th[data-key] span`)[0]
         }
-        span.innerHTML = sortIcon;
+
+        span.innerHTML = sortIcon
     }
+
     highlightRow(tr) {
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
@@ -78,6 +97,7 @@ class GridControl {
         tr.querySelectorAll("a").forEach(e => e.classList.remove(this.linkColourClass));
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
+
     clearHighlighting() {
         document.querySelectorAll(this.rowSelector()).forEach(e => {
             let tr = e.closest("tr");
@@ -86,26 +106,27 @@ class GridControl {
             tr.querySelectorAll("a").forEach(e => e.classList.add(this.linkColourClass));
         });
     }
+
     copyTableToClipboard() {
         var table = document.querySelector(this.tableSelector());
         try {
             this.copyElementToClipboard(table);
-            this.message("Page copied to clipboard");
-        }
-        catch (e) {
+            this.message("Page copied to clipboard")
+        } catch (e) {
             try {
                 const content = table.innerHTML;
                 const blobInput = new Blob([content], { type: 'text/html' });
                 const clipboardItemInput = new ClipboardItem({ 'text/html': blobInput });
                 navigator.clipboard.write([clipboardItemInput]);
-                this.message("Page copied to clipboard");
+                this.message("Page copied to clipboard")
             }
             catch (e) {
-                this.message("Copy failed", "error", 5);
-                return;
+                this.message("Copy failed","error", 5)
+                return
             }
         }
     }
+
     copyElementToClipboard(element) {
         window.getSelection().removeAllRanges();
         let range = document.createRange();
@@ -114,14 +135,17 @@ class GridControl {
         document.execCommand('copy');
         window.getSelection().removeAllRanges();
     }
+
     download() {
-        this.showIndicator();
+        this.showIndicator()
         const data = new URLSearchParams();
         for (let [key, val] of new FormData(this.gridControl)) {
-            data.append(key, val);
+            data.append(key, val as any);
         }
-        var exportOption = this.selectGridElement('[name="exportformat"]').value;
-        console.log(exportOption);
+
+        var exportOption = this.selectGridElement('[name="exportformat"]').value
+        console.log(exportOption)
+
         fetch("gridcontrol.htmx", {
             method: 'post',
             body: data,
@@ -131,20 +155,22 @@ class GridControl {
         })
             .then((response) => response.blob())
             .then((blob) => {
-            this.hideIndicator();
-            if (exportOption == "html") {
-                this.openWindow(blob);
-            }
-            else {
-                this.downloadFile(blob, exportOption);
-            }
-        });
+                this.hideIndicator()
+                if (exportOption == "html") {
+                    this.openWindow(blob)
+                }
+                else {
+                    this.downloadFile(blob, exportOption)
+                }
+            });
     }
+
     openWindow(response) {
         const url = window.URL.createObjectURL(response);
         const tab = window.open();
         tab.location.href = url;
     }
+
     downloadFile(response, extension) {
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(response);
@@ -152,57 +178,72 @@ class GridControl {
         link.download = `report_${new Date().getTime()}.${extension}`;
         link.click();
     }
+
     message(text, style = 'info', delay = 1) {
-        var toast = this.gridContainer.querySelector(".toast > div");
-        toast.classList.add(`alert-${style}`);
+        var toast = this.gridContainer.querySelector(".toast > div")
+        toast.classList.add(`alert-${style}`)
         toast.querySelector("span").innerText = text;
         if (text == "") {
-            toast.classList.remove(`alert-${style}`);
-            toast.parentElement.style.display = 'none';
-            return;
+            toast.classList.remove(`alert-${style}`)
+            toast.parentElement.style.display = 'none'
+            return
         }
-        toast.parentElement.style.display = 'block';
-        let self = this;
-        window.setTimeout(() => { self.message(""); }, delay * 1000);
+        toast.parentElement.style.display = 'block'
+        let self = this
+        window.setTimeout(() => { self.message("") }, delay * 1000)
     }
+
     showIndicator() {
         this.indicator().classList.add("htmx-request");
     }
+
     hideIndicator() {
         this.indicator().classList.remove("htmx-request");
     }
+
     indicator() {
         return this.gridContainer.children[1];
     }
+
     tableSelector() {
-        return `#${this.gridId} table`;
+        return `#${this.gridId} table`
     }
+
     rowSelector() {
-        return `#${this.gridId} tbody tr.grid-row`;
+        return `#${this.gridId} tbody tr.grid-row`
     }
+
     linkSelector() {
-        return `#${this.gridId} tbody a`;
+        return `#${this.gridId} tbody a`
     }
+
     tbodySelector() {
-        return `#${this.gridId} tbody`;
+        return `#${this.gridId} tbody`
     }
+
     gridSelector() {
-        return `#${this.gridId}`;
+        return `#${this.gridId}`
     }
+
     errorSelector() {
-        return `#${this.gridId} > div.alert-error`;
+        return `#${this.gridId} > div.alert-error`
     }
-    selectGridElement(selector) {
+
+    selectGridElement(selector): HTMLSelectElement {
         return document.querySelector(`#${this.gridId} ${selector}`);
     }
+
     buttonSelector(buttonType) {
-        return `#${this.gridId} button[button-type="${buttonType}"]`;
+        return `#${this.gridId} button[button-type="${buttonType}"]`
     }
+
     columnCells(columnName) {
-        let th = document.querySelector(`#${this.gridId} th[data-columnname='${columnName.toLowerCase()}']`);
-        return document.querySelectorAll(`#${this.gridId} td:nth-child(${(th.cellIndex + 1)})`);
+        let th: HTMLTableCellElement = document.querySelector(`#${this.gridId} th[data-columnname='${columnName.toLowerCase()}']`)
+        return document.querySelectorAll(`#${this.gridId} td:nth-child(${(th.cellIndex + 1)})`)
     }
-    getButton(name) {
-        return document.querySelector(this.buttonSelector(name));
+
+    getButton(name):HTMLButtonElement {
+        return document.querySelector(this.buttonSelector(name))
     }
+
 }

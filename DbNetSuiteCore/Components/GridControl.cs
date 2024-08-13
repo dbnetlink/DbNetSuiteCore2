@@ -1,4 +1,5 @@
-﻿using TQ.Models;
+﻿using Microsoft.AspNetCore.Html;
+using TQ.Models;
 
 namespace DbNetSuiteCore
 {
@@ -9,13 +10,11 @@ namespace DbNetSuiteCore
         {
             _httpContext = httpContext;
         }
-        public string ConnectionAlias { get; set; } = string.Empty;
-        public string TableName { get; set; } = string.Empty;
 
-        public async Task<string> Render(GridModel gridComponentModel)
+        public async Task<HtmlString> Render(GridModel gridModel)
         {
             var viewRenderService = _httpContext.RequestServices.GetService<RazorViewToStringRenderer>();
-            return await viewRenderService!.RenderViewToStringAsync("GridControlForm", gridComponentModel);
+            return new HtmlString(await viewRenderService!.RenderViewToStringAsync("GridControlForm", gridModel));
         }
     }
 }

@@ -5,6 +5,7 @@ namespace TQ.Models
     public class GridModel : ComponentModel
     {
         public string Id { get; set; } = string.Empty;
+        public string TbodyId => $"{Id}Rows";
         public string IndicatorId => $"{Id}Indicator";
         public string ContainerId => $"{Id}Container";
         public List<GridColumnModel> GridColumns => Columns.Cast<GridColumnModel>().ToList();
@@ -24,6 +25,9 @@ namespace TQ.Models
         public string Url { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;
         public int PageSize { get; set; } = 20;
+        public bool Uninitialised => GridColumns.Any() == false || GridColumns.Where(c => c.Initialised == false).Any();
+
+        public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
         private SortOrder GetSortSequence()
         {
@@ -61,5 +65,6 @@ namespace TQ.Models
         {
             return $"Grid{DateTime.Now.Ticks}";
         }
+
     }
 }

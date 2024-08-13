@@ -11,6 +11,7 @@ namespace TQ.Models
         public int? MaxTextLength { get; set; }
         public int Ordinal { get; set; }
         public SortOrder? InitialSortOrder { get; set; }
+        public bool Filter { get; set; } = false;
         public string ParamName => $"Param{Ordinal}";
         public GridColumnModel()
         {

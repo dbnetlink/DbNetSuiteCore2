@@ -8,30 +8,29 @@
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
-        <input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput">
-        <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML" title="Search">@Html.Raw(SearchIcon())</button>
-
+        <input class="input input-bordered input-sm" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML" />
+        <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.SearchIcon())</button> -->
         @if (Model.TotalPages == 0)
         {
             <div class="p-1 rounded-md border-solid border-slate-300 bg-slate-100 flex flex-row gap-2">
-                @Html.Raw(InfoIcon())
+                @Html.Raw(IconHelper.InfoIcon())
                 <span>No records found</span>
             </div>
         }
         else
         {
-            RenderNavButton(Model.PreviousPage, Model.FirstPageUrl, FirstIcon(), "First page");
-            RenderNavButton(Model.PreviousPage, Model.PreviousPageUrl, PreviousIcon(), "Previous page");
+            RenderNavButton(TriggerNames.First, IconHelper.FirstIcon(), "First page");
+            RenderNavButton(TriggerNames.Previous, IconHelper.PreviousIcon(), "Previous page");
             <span class="">Page</span>
             RenderPageNumber(Model.CurrentPage, Model.TotalPages);
             <span class="">of</span>
             RenderTotalPages(Model.TotalPages);
-            RenderNavButton(Model.NextPage, Model.NextPageUrl, NextIcon(), "Next page");
-            RenderNavButton(Model.NextPage, Model.LastPageUrl, LastIcon(), "Last page");
+            RenderNavButton(TriggerNames.Next, IconHelper.NextIcon(), "Next page");
+            RenderNavButton(TriggerNames.Last, IconHelper.LastIcon(), "Last page");
         }
 
-        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@Html.Raw(CopyIcon())</button>
-        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@Html.Raw(DownloadIcon())</button>
+        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@Html.Raw(IconHelper.CopyIcon())</button>
+        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@Html.Raw(IconHelper.DownloadIcon())</button>
         @{
             RenderExportOptions();
         }
@@ -44,8 +43,8 @@
                     {
                         if (columnInfo.Sortable)
                         {
-                            <th class="text-base" style="cursor:pointer" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-swap="innerHTML" hx-indicator="#@Model.IndicatorId">
-                                <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400">@SortIcon(Model.IsSortColumn(columnInfo), Model.CurrentSortAscending)</span></div>
+                            <th class="text-base" style="cursor:pointer" data-key="@(columnInfo.Key)" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="#@Model.TbodyId" hx-swap="outerHTML" hx-indicator="#@Model.IndicatorId">
+                                <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400"></span></div>
                             </th>
                         }
                         else
@@ -56,73 +55,39 @@
                         }
                     }
                 </tr>
-            </thead>
-            <tbody data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages">
-                @foreach (DataRow row in Model.Rows)
+
+                @if (Model.ColumnInfo.Any(c => c.Filter))
                 {
-                    <tr style="cursor:pointer" class="grid-row">
+                    <tr class="filter-row">
                         @foreach (DataColumn col in Model.Columns)
                         {
                             GridColumnModel? columnInfo = Model.GetColumnInfo(col);
-                            var classes = new List<string>() { "text-base" };
-
-                            if (columnInfo.IsNumeric)
+                            if (columnInfo.Filter)
                             {
-                                classes.Add("text-right");
-                            }
-
-                            if (columnInfo.DataType == typeof(Boolean))
-                            {
-                                classes.Add("text-center");
-                            }
-
-                            if (columnInfo.DataType == typeof(Boolean))
-                            {
-                                <td class="@(string.Join(" ",classes))">
-                                    @if (row[col] != System.DBNull.Value) 
-                                    {
-                                        <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? CheckedIcon() : UncheckedIcon())</div>
-                                    }
-                                </td>
+                                <th class="text-base"><input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML" /></th>
                             }
                             else
                             {
-                                var value = FormatValue(row[col], columnInfo);
-                                if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
-                                {
-                                    <td class="@(string.Join(" ",classes))">
-                                        <div class="tooltip" data-tip="@Html.Raw(value)">
-                                            @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
-                                        </div>
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
-                                }
+                                <th class="text-base"></th>
                             }
                         }
                     </tr>
                 }
-            </tbody>
+            </thead>
+            @await Html.PartialAsync("GridRows",Model)
         </table>
-        <input type="hidden" name="currentSortKey" value="@Model.CurrentSortKey" />
-        <input type="hidden" name="currentSortAscending" value="@Model.CurrentSortAscending.ToString()" />
-        <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model.GridModel))">
     </div>
-
-    <div></div>
 </div>
 
 @functions {
-    void RenderNavButton(bool enable, string url, HtmlString icon, string title)
+    void RenderNavButton(string name, HtmlString icon, string title)
     {
-        <button class="btn btn-sm p-1" type="button" title="@title" @(enable ? null : "disabled") hx-post="@url" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML">@icon</button>
+        <button class="btn btn-sm p-1" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML">@icon</button>
     }
 
     void RenderPageNumber(int pageNumber, int totalPages)
     {
-        <select class="select select-bordered select-sm" name="page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML">
+        <select class="select select-bordered select-sm" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML">
             @{
                 for (var i = 1; i <= totalPages; i++)
                 {
@@ -149,131 +114,4 @@
             }
         </select>
     }
-
-    public static object? FormatValue(object? value, GridColumnModel? columnInfo)
-    {
-        if (value == null || value == System.DBNull.Value)
-        {
-            return "&nbsp;";
-        }
-        if (string.IsNullOrEmpty(columnInfo?.Format))
-        {
-            return value;
-        }
-
-        string format = columnInfo!.Format;
-
-        switch (format)
-        {
-            case "email":
-                value = $"<a href=\"mailto:{value}\">{value}</a>";
-                break;
-            case "www":
-                value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
-                break;
-            default:
-                if (columnInfo?.DataType == typeof(DateTime))
-                {
-                    value = Convert.ToDateTime(value).ToString(format);
-                }
-                if (columnInfo?.DataType == typeof(Int64))
-                {
-                    value = Convert.ToInt64(value).ToString(format);
-                }
-                if (columnInfo?.DataType == typeof(Double))
-                {
-                    value = Convert.ToDouble(value).ToString(format);
-                }
-
-                break;
-        }
-
-        return value;
-    }
-
-    HtmlString InfoIcon()
-    {
-        return MaterialSVG("M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z");
-    }
-
-    HtmlString SortIcon(bool isSortColumn, bool sortAscending)
-    {
-        if (isSortColumn)
-        {
-            if (sortAscending)
-            {
-                return ArrowUpIcon();
-            }
-            else
-            {
-                return ArrowDownIcon();
-            }
-        }
-        else
-        {
-            return new HtmlString(string.Empty);
-        }
-    }
-
-
-
-    HtmlString SearchIcon()
-    {
-        return MaterialSVG("M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z");
-    }
-
-    HtmlString FirstIcon()
-    {
-        return MaterialSVG("M240-240v-480h80v480h-80Zm440 0L440-480l240-240 56 56-184 184 184 184-56 56Z");
-    }
-
-    HtmlString LastIcon()
-    {
-        return MaterialSVG("m280-240-56-56 184-184-184-184 56-56 240 240-240 240Zm360 0v-480h80v480h-80Z");
-    }
-
-    HtmlString PreviousIcon()
-    {
-        return MaterialSVG("M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z");
-    }
-
-    HtmlString NextIcon()
-    {
-        return MaterialSVG("M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z");
-    }
-    HtmlString ArrowDownIcon()
-    {
-        return MaterialSVG("M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z");
-    }
-
-    HtmlString ArrowUpIcon()
-    {
-        return MaterialSVG("M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z");
-    }
-
-    HtmlString CheckedIcon()
-    {
-        return MaterialSVG("m424-312 282-282-56-56-226 226-114-114-56 56 170 170ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z", "#666666");
-    }
-
-    HtmlString UncheckedIcon()
-    {
-        return MaterialSVG("M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z", "#666666");
-    }
-
-    HtmlString CopyIcon()
-    {
-        return MaterialSVG("M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z");
-    }
-
-    HtmlString DownloadIcon()
-    {
-        return MaterialSVG("M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z");
-    }
-
-    HtmlString MaterialSVG(string data, string colour = "#336699")
-    {
-        return new HtmlString($"<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\" width=\"24px\" fill=\"{colour}\"><path d=\"{data}\" /></svg>");
-    }
-
 }

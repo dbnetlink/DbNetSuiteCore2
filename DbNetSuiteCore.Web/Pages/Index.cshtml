@@ -2,9 +2,6 @@
 @using DbNetTimeCore.Enums
 @using DbNetSuiteCore.Helpers
 @using TQ.Models
-@{
-    Layout = "_Layout";
-}
 
 @{
 
@@ -122,25 +119,25 @@
                     switch(tab)
                     {
                         case "MT2":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10 }))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10 }))
                             break;
                         case "MT1":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
                             break;
                         case "Person":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
                             break;
                         case "Customers":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
                             break;
                         case "Films":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
                             break;
                         case "Actors":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
                             break;
                         case "Employees":
-                            @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
+                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
                             break;
                     }
                 }

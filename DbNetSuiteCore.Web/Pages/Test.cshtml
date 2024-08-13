@@ -4,6 +4,10 @@
 @using TQ.Models
 
 @{
+    Layout = null;
+}
+
+@{
     var customerColumns = new List<GridColumnModel>
     {
         new GridColumnModel("customer.customer_id", "CustomerID"),
@@ -17,6 +21,11 @@
         new GridColumnModel("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
         new GridColumnModel("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)}
     };
+
+    var customerGridModel = new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id");
+    customerGridModel.Columns = customerColumns;
+    customerGridModel.ClientEvents[ClientEvent.PageLoaded] = "customerGridPageLoaded";
+    customerGridModel.ClientEvents[ClientEvent.RowSelected] = "customerRowSelectedLoaded";
 }
 
 <!DOCTYPE html>
@@ -29,12 +38,17 @@
 </head>
 <body>
     <main style="padding:20px">
-        @Html.Raw(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id")
-   {
-       Columns = customerColumns
-   }))
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGridModel)));
     </main>
     <script src="js.htmx"></script>
+
+    <script>
+        function customerGridPageLoaded(gridControl) {
+        }
+
+      //  function customerRowSelectedLoaded(gridControl) {
+      //  }
+    </script>
 </body>
 </html>
 
