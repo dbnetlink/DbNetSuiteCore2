@@ -64,7 +64,7 @@
     <EmbeddedResource Include="Views\_formMarkup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\_gridControl.cshtml">
+    <EmbeddedResource Include="Views\NestedGrid.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\GridControlForm.cshtml">

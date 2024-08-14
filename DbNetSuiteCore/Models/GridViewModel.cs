@@ -13,7 +13,6 @@ namespace TQ.Models
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
         public int TotalPages { get; set; } = 0;
         public string GridId => _gridModel.Id;
-
         public string TbodyId => _gridModel.TbodyId;
         public string IndicatorId => _gridModel.IndicatorId;
         public string ContainerId => _gridModel.ContainerId;
@@ -63,6 +62,11 @@ namespace TQ.Models
         public GridColumnModel? GetColumnInfo(DataColumn column)
         {
             return (GridColumnModel)_GetColumnInfo(column);
+        }
+
+        public string PrimaryKey(DataRow dataRow)
+        {
+            return string.Empty;
         }
 
         private string PageUrl(int pageNumber)

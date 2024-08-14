@@ -4,6 +4,15 @@
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
     vertical-align: middle;
+    display:table-cell;
+}
+
+.htmx-table :where(tr) {
+    display: table-row 
+}
+
+.htmx-table {
+    display: table;
 }
 
 .htmx-indicator {

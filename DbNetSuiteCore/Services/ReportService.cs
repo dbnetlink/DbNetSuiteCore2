@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
+using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetTimeCore.Services
 {
@@ -63,14 +64,17 @@ namespace DbNetTimeCore.Services
 
         private async Task<Byte[]> GridView(GridModel gridModel)
         {
-            if (triggerName == TriggerNames.Download)
+            switch (triggerName)
             {
-                return await ExportRecords(gridModel);
-            }
-            else
-            {
-                string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
-                return await View(viewName, await GetGridViewModel(gridModel));
+                case TriggerNames.Download: 
+                    return await ExportRecords(gridModel);
+                case TriggerNames.NestedGrid:
+                    gridModel.NestedGrid!.IsNested = true;
+                    gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
+                    return await View("NestedGrid", gridModel.NestedGrid);
+                default:
+                    string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
+                    return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
 
@@ -351,6 +355,7 @@ namespace DbNetTimeCore.Services
                 gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
                 gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
+                gridModel.ColumnFilter = RequestHelper.FormValue("columnFilter", string.Empty, _context).Split(",").ToList();
             }
             catch
             {
@@ -368,6 +373,7 @@ namespace DbNetTimeCore.Services
                     return Convert.ToInt32(RequestHelper.FormValue("page", "1", _context));
                 case TriggerNames.Search:
                 case TriggerNames.First:
+                case TriggerNames.ColumnFilter:
                     return 1;
                 case TriggerNames.Next:
                     return gridModel.CurrentPage + 1;

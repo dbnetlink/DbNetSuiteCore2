@@ -9,5 +9,7 @@
         public const string Next = "next";
         public const string Previous = "previous";
         public const string Last = "last";
+        public const string ColumnFilter = "columnFilter";
+        public const string NestedGrid = "nestedGrid";
     }
 }

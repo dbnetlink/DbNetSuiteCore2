@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Html;
+using System.Drawing;
 
 namespace DbNetSuiteCore.Helpers
 {
     public static class IconHelper
     {
-        public const string MaterialSvgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\" width=\"24px\" fill=\"{colour}\"><path d=\"{data}\" /></svg>";
+        public const string MaterialSvgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"{size}\" viewBox=\"0 -960 960 960\" width=\"{size}\" fill=\"{colour}\"><path d=\"{data}\" /></svg>";
 
         public static HtmlString ArrowDownIcon()
         {
@@ -66,9 +67,19 @@ namespace DbNetSuiteCore.Helpers
             return MaterialSVG("M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z");
         }
 
-        private static HtmlString MaterialSVG(string data, string colour = "#336699")
+        public static HtmlString ExpandDownIcon()
         {
-            return new HtmlString(IconHelper.MaterialSvgTemplate.Replace("{data}", data).Replace("{colour}", colour));
+            return MaterialSVG("m480-328 190-189-79-78-111 111-111-111-79 78 190 189Zm0 266q-87 0-162.99-32.58-75.98-32.59-132.91-89.52-56.93-56.93-89.52-132.91Q62-393 62-480q0-88 32.58-163.49 32.59-75.48 89.52-132.41 56.93-56.93 132.91-89.52Q393-898 480-898q88 0 163.49 32.58 75.48 32.59 132.41 89.52 56.93 56.93 89.52 132.41Q898-568 898-480q0 87-32.58 162.99-32.59 75.98-89.52 132.91-56.93 56.93-132.41 89.52Q568-62 480-62Zm0-118q126 0 213-87t87-213q0-126-87-213t-213-87q-126 0-213 87t-87 213q0 126 87 213t213 87Zm0-300Z", "#336699", "20px");
+        }
+        
+        public static HtmlString ExpandUpIcon()
+        {
+            return MaterialSVG("m369-365 111-111 111 111 79-78-190-189-190 189 79 78ZM480-62q-87 0-162.99-32.58-75.98-32.59-132.91-89.52-56.93-56.93-89.52-132.91Q62-393 62-480q0-88 32.58-163.49 32.59-75.48 89.52-132.41 56.93-56.93 132.91-89.52Q393-898 480-898q88 0 163.49 32.58 75.48 32.59 132.41 89.52 56.93 56.93 89.52 132.41Q898-568 898-480q0 87-32.58 162.99-32.59 75.98-89.52 132.91-56.93 56.93-132.41 89.52Q568-62 480-62Zm0-118q126 0 213-87t87-213q0-126-87-213t-213-87q-126 0-213 87t-87 213q0 126 87 213t213 87Zm0-300Z", "#336699","20px");
+        }
+
+        private static HtmlString MaterialSVG(string data, string colour = "#336699", string size = "24px" )
+        {
+            return new HtmlString(IconHelper.MaterialSvgTemplate.Replace("{data}", data).Replace("{colour}", colour).Replace("{size}", size));
         }
     }
 }

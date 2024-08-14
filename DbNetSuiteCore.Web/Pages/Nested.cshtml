@@ -1,0 +1,58 @@
+﻿@page
+@using DbNetTimeCore.Enums
+@using DbNetSuiteCore.Helpers
+@using TQ.Models
+
+@{
+    Layout = null;
+}
+
+@{
+    var customerColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("customerid", "CustomerID") {PrimaryKey = true },
+        new GridColumnModel("firstname", "Forename"),
+        new GridColumnModel("lastname", "Surname"),
+        new GridColumnModel("email", "Email Address") {Format = "email" },
+        new GridColumnModel("address", "Address"),
+        new GridColumnModel("city", "City") { InitialSortOrder = SortOrder.Desc},
+        new GridColumnModel("postalcode", "Post Code"),
+    };
+
+    var invoiceColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("invoiceid", "InvoiceID"),
+        new GridColumnModel("customerid", "CustomerID") {ForeignKey = true },
+        new GridColumnModel("invoicedate", "Date"),
+        new GridColumnModel("billingaddress", "Address"),
+        new GridColumnModel("billingcity", "City"),
+        new GridColumnModel("billingstate", "State"),
+        new GridColumnModel("billingcountry", "Country"),
+        new GridColumnModel("billingpostalcode", "Post Code"),
+    };
+
+    var invoiceGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Invoices");
+    invoiceGridModel.Columns = invoiceColumns;
+
+    var customerGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Customers");
+    customerGridModel.Columns = customerColumns;
+    customerGridModel.NestedGrid = invoiceGridModel;
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main style="padding:20px">
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGridModel))
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

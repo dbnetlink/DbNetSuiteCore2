@@ -29,6 +29,8 @@ class GridControl {
         if (evt.detail.target.id == this.gridId){
             this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
             this.getButton("export").addEventListener("click", ev => this.download())
+
+            this.configureNestedGrid();
             this.invokeEventHandler('Initialised');
         }
 
@@ -75,6 +77,9 @@ class GridControl {
     }
 
     configureSortIcon() {
+        if (this.gridControl.querySelectorAll(`th[data-key]`).length == 0) {
+            return
+        }
         let tbody = document.querySelector(this.tbodySelector()) as HTMLElement;
         let sortKey = tbody.dataset.sortkey;
         let sortIcon = tbody.querySelector("span#sortIcon").innerHTML;
@@ -90,11 +95,36 @@ class GridControl {
         span.innerHTML = sortIcon
     }
 
+    configureNestedGrid() {
+        let tr = this.gridControl.closest('tr')
+        if (!tr || !tr.classList.contains('nested-grid-row')) {
+            return
+        }
+        let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button")
+
+        buttons[0].style.display = 'none'
+        buttons[2].style.display = 'block'
+
+        buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev,true));
+        buttons[2].addEventListener("click", ev => this.showHideNestedGrid(ev,false));
+    }
+
+    showHideNestedGrid(ev, show) {
+        let tr = ev.target.closest("tr")
+        tr.nextElementSibling.style.display = show ? null : "none"
+
+        let buttons = tr.firstElementChild.querySelectorAll("button")
+
+        buttons[1].style.display = show ? "none" : "block"
+        buttons[2].style.display = show ? "block" : "none"
+    }
+
     highlightRow(tr) {
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.remove(this.linkColourClass));
+        tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill","#ffffff"));
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
 
@@ -104,6 +134,7 @@ class GridControl {
             tr.classList.remove(this.bgColourClass);
             tr.classList.remove(this.textColourClass);
             tr.querySelectorAll("a").forEach(e => e.classList.add(this.linkColourClass));
+            tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill", "#666666"));
         });
     }
 

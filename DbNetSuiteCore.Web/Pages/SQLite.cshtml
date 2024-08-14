@@ -1,0 +1,46 @@
+﻿@page
+@model DbNetSuiteCore.Web.Pages.SQLiteModel
+@using DbNetTimeCore.Enums
+@using DbNetSuiteCore.Helpers
+@using System.Data
+@using TQ.Models
+
+<div style="padding:20px">
+    <form method="post">
+        <div class="flex flex-row">
+            <div>
+                <select class="select select-bordered select-sm mb-5" name="ConnectionAlias" onchange="this.form.submit()" value="@Model.ConnectionAlias">
+                    <option value="">Select connection</option>
+                    @foreach (string connection in Model.Connections)
+                    {
+                        var selected = (connection == Model.ConnectionAlias);
+                        <option value="@connection" selected="@selected">@connection</option>
+                    }
+                </select>
+            </div>
+            <div>
+                @if (string.IsNullOrEmpty(Model.ConnectionAlias) == false)
+                {
+                    <select class="select select-bordered select-sm mb-5" name="TableName" onchange="this.form.submit()" value="@Model.TableName" autofocus>
+                        <option value="">Select table</option>
+                        @foreach (DataRow dataRow in Model.Tables.Rows)
+                        {
+                            var tableName = $"{dataRow[0]}";
+                            var selected = (tableName == Model.TableName);
+                            <option value="@tableName" selected="@selected">@tableName</option>
+                        }
+                    </select>
+                }
+            </div>
+        </div>
+    </form>
+
+    <div>
+        @{
+            if (Model.TableName != string.Empty)
+            {
+                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, Model.ConnectionAlias, Model.TableName)))
+            }
+        }
+    </div>
+</div>

@@ -8,6 +8,8 @@ namespace TQ.Models
         public bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
         public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml);
         public bool Editable { get; set; } = false;
+        public bool PrimaryKey { get; set; } = false;
+        public bool ForeignKey { get; set; } = false;
         public int? MaxTextLength { get; set; }
         public int Ordinal { get; set; }
         public SortOrder? InitialSortOrder { get; set; }

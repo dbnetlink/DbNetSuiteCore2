@@ -36,9 +36,13 @@
         }
     </div>
     <div class="flex mt-2">
-        <table class="htmx-table">
+        <table class="table table-xs">
             <thead>
                 <tr class="bg-slate-200">
+                    @if (Model.GridModel.NestedGrid != null)
+                    {
+                        <th class="text-base w-12"></th>
+                    }
                     @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
                     {
                         if (columnInfo.Sortable)
@@ -59,12 +63,16 @@
                 @if (Model.ColumnInfo.Any(c => c.Filter))
                 {
                     <tr class="filter-row">
+                        @if (Model.GridModel.NestedGrid != null)
+                        {
+                            <th class="text-base w-12"></th>
+                        }
                         @foreach (DataColumn col in Model.Columns)
                         {
                             GridColumnModel? columnInfo = Model.GetColumnInfo(col);
                             if (columnInfo.Filter)
                             {
-                                <th class="text-base"><input class="input input-bordered input-sm" type="search" placeholder="Search" aria-label="Search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML" /></th>
+                                <th class="text-base"><input class="input input-bordered input-sm w-24" type="search" aria-label="Search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML" /></th>
                             }
                             else
                             {
@@ -74,7 +82,7 @@
                     </tr>
                 }
             </thead>
-            @await Html.PartialAsync("GridRows",Model)
+            @await Html.PartialAsync("GridRows", Model)
         </table>
     </div>
 </div>

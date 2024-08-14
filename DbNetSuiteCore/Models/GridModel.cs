@@ -24,9 +24,12 @@ namespace TQ.Models
         public string ConnectionAlias { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;
+        public List<string> ColumnFilter { get; set; } = new List<string>();
         public int PageSize { get; set; } = 20;
         public bool Uninitialised => GridColumns.Any() == false || GridColumns.Where(c => c.Initialised == false).Any();
-
+        public GridModel? NestedGrid { get; set; } = null;
+        public bool IsNested { get; set; } = false;
+        public int ColSpan { get; set; } = 0;
         public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
         private SortOrder GetSortSequence()

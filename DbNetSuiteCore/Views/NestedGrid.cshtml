@@ -1,0 +1,11 @@
+﻿@model TQ.Models.GridModel
+@using System.Data
+<tr class="nested-grid-row">
+    <td class="w-12"></td>
+    <td colspan="@Model.ColSpan">
+        <div>
+        @await Html.PartialAsync("GridControlForm", Model)
+        </div>
+    </td>
+</tr>
+

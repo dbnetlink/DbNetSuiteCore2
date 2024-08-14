@@ -24,20 +24,28 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.addEventListener('htmx:afterRequest', function (evt) {
-            if (!gridControlArray["@(Model.Id)"]) {
-                var gridControl = new GridControl("@(Model.Id)");
-
-    @{
-        foreach (var clientEvent in Model.ClientEvents.Keys)
-        {
-            <text>gridControl.eventHandlers['@(clientEvent.ToString())'] = window.@(Model.ClientEvents[clientEvent]); </text>
-        }
-    }
-                    gridControlArray["@(Model.Id)"] = gridControl;
+    @if (Model.IsNested == false) { 
+        <text>document.addEventListener("DOMContentLoaded", function () {
+            </text>
             }
-            gridControlArray["@(Model.Id)"].init(evt);
-        });
-    });
+
+                document.addEventListener('htmx:afterRequest', function (evt) {
+                    if (!gridControlArray["@(Model.Id)"]) {
+                        var gridControl = new GridControl("@(Model.Id)");
+
+                        @{
+                            foreach (var clientEvent in Model.ClientEvents.Keys)
+                            {
+                                <text>gridControl.eventHandlers['@(clientEvent.ToString())'] = window.@(Model.ClientEvents[clientEvent]); </text>
+                        }
+                            }
+                            gridControlArray["@(Model.Id)"] = gridControl;
+                    }
+                    gridControlArray["@(Model.Id)"].init(evt);
+                });
+            @if (Model.IsNested == false)
+                {
+                <text>});</text>
+    }
+    
 </script>
