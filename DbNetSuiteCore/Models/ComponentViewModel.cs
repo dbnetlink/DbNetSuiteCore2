@@ -7,14 +7,8 @@ namespace TQ.Models
         private ComponentModel _componentModel;
 
         public string SubmitUrl => $"/gridcontrol.htmx";
-        public string EditUrl(DataRow row)
-        {
-            return $"/gridcontrol.htmx?handler=edit&pk={PrimaryKeyValue(row)}";
-        }
       
         public List<GridColumnModel> ColumnInfo => _componentModel.Columns;
-        public bool HasPrimaryKey => ColumnInfo.Any(c => c.IsPrimaryKey);
-        public ColumnModel? PrimaryKey => ColumnInfo.FirstOrDefault(c => c.IsPrimaryKey);
         public ComponentViewModel(DataTable dataTable, ComponentModel componentModel)
         {
             _componentModel = componentModel;
@@ -45,27 +39,6 @@ namespace TQ.Models
             }
 
             return columnInfo;
-        }
-
-
-
-        public object? PrimaryKeyValue(DataRow dataRow)
-        {
-            if (!HasPrimaryKey)
-            {
-                return null;
-            }
-
-            ColumnModel column = PrimaryKey! as ColumnModel;
-
-            DataColumn? dataColumn = Columns.FirstOrDefault(c => c.ColumnName == column.Name.Split(".").Last());
-
-            if (dataColumn == null)
-            {
-                return null;
-            }
-
-            return dataRow[dataColumn];
         }
     }
 }

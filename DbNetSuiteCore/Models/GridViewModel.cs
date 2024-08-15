@@ -13,9 +13,6 @@ namespace TQ.Models
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
         public int TotalPages { get; set; } = 0;
         public string GridId => _gridModel.Id;
-        public string TbodyId => _gridModel.TbodyId;
-        public string IndicatorId => _gridModel.IndicatorId;
-        public string ContainerId => _gridModel.ContainerId;
         public int CurrentPage => _gridModel.CurrentPage;
         public int PageSize => _gridModel.PageSize;
         public string TableName => _gridModel.TableName;
@@ -64,8 +61,19 @@ namespace TQ.Models
             return (GridColumnModel)_GetColumnInfo(column);
         }
 
-        public string PrimaryKey(DataRow dataRow)
+        public string PrimaryKeyValue(DataRow dataRow)
         {
+            var primaryKeyColumn = GridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
+            if (primaryKeyColumn != null)
+            {
+                var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == primaryKeyColumn.Name || primaryKeyColumn.Name.Split(".").Last() == c.ColumnName);
+
+                if (dataColumn != null)
+                {
+                    return dataRow[dataColumn].ToString();
+                }
+            }
+
             return string.Empty;
         }
 

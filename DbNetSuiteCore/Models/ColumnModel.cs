@@ -14,7 +14,6 @@ namespace TQ.Models
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
         public string Key => Name.GetHashCode().ToString();
-        public bool IsPrimaryKey { get; set; } = false;
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
         public string DataTypeName => DataType.ToString().Split(".").Last();    
         [JsonIgnore]

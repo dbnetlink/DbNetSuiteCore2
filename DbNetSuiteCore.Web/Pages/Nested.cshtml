@@ -21,8 +21,8 @@
 
     var invoiceColumns = new List<GridColumnModel>
     {
-        new GridColumnModel("invoiceid", "InvoiceID"),
-        new GridColumnModel("customerid", "CustomerID") {ForeignKey = true },
+        new GridColumnModel("invoiceid", "Invoice ID") {PrimaryKey = true },
+        new GridColumnModel("customerid", "Customer ID") {ForeignKey = true },
         new GridColumnModel("invoicedate", "Date"),
         new GridColumnModel("billingaddress", "Address"),
         new GridColumnModel("billingcity", "City"),
@@ -31,8 +31,21 @@
         new GridColumnModel("billingpostalcode", "Post Code"),
     };
 
+    var invoiceItemColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("invoicelineid", "Invoice Line ID"),
+        new GridColumnModel("invoiceid", "Invoice ID") {ForeignKey = true },
+        new GridColumnModel("trackid", "Track ID"),
+        new GridColumnModel("unitprice", "Price"),
+        new GridColumnModel("quantity", "Qty"),
+    };
+
+    var invoiceLineGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Invoice_items");
+    invoiceLineGridModel.Columns = invoiceItemColumns;
+
     var invoiceGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Invoices");
     invoiceGridModel.Columns = invoiceColumns;
+    invoiceGridModel.NestedGrid = invoiceLineGridModel;
 
     var customerGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Customers");
     customerGridModel.Columns = customerColumns;

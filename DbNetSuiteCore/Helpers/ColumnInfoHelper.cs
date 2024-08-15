@@ -53,44 +53,5 @@ namespace DbNetSuiteCore.Helpers
             };
         }
 
-        public static List<EditColumnModel> FilmEditColumns()
-        {
-            return new List<EditColumnModel>()
-            {
-                new EditColumnModel("film_id", "FilmID") {IsPrimaryKey = true},
-                new EditColumnModel("title", "Title"),
-                new EditColumnModel("description", "Description"){EditControlType = EditControlType.TextArea,  Required = true},
-                new EditColumnModel("release_year", "Year Of Release"),
-                new EditColumnModel("language_id", "Language") { Lookup = new QueryCommandConfig("select language_id, name from language order by 2")},
-                new EditColumnModel("rental_duration", "Duration") {Required = true, DataType = typeof(Int32) },
-                new EditColumnModel("rental_rate", "Rental Rate") {Required = true, DataType = typeof(Double) },
-                new EditColumnModel("length", "Length") {Required = true, DataType = typeof(Int32) },
-                new EditColumnModel("replacement_cost", "Replacement Cost") { Required = true, DataType = typeof(Double) },
-                new EditColumnModel("rating", "Rating") {LookupEnum = typeof(FilmRating)},
-                new EditColumnModel("special_features", "Special Features") {EditControlType = EditControlType.MultiSelect, LookupEnum = typeof(SpecialFeature)},
-            };
-        }
-
-        public static List<EditColumnModel> CustomerEditColumns()
-        {
-            return new List<EditColumnModel>()
-            {
-                new EditColumnModel("customer_id", "CustomerID") {IsPrimaryKey = true},
-                new EditColumnModel("first_name", "Forename"),
-                new EditColumnModel("last_name", "Surname"),
-                new EditColumnModel("email", "Email Address") {Format = "email", ClassName = "w-80" },
-                new EditColumnModel("active", "Active") {DataType = typeof(Boolean)}
-            };
-        }
-
-        public static List<EditColumnModel> ActorEditColumns()
-        {
-            return new List<EditColumnModel>()
-            {
-                new EditColumnModel("actor_id", "ActorID") {IsPrimaryKey = true},
-                new EditColumnModel("first_name", "Forename") { Required = true },
-                new EditColumnModel("last_name", "Surname") { Required = true }
-            };
-        }
     }
 }

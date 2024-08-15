@@ -8,8 +8,8 @@
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
-        <input class="input input-bordered input-sm" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML" />
-        <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="#@Model.GridId" hx-indicator="#@Model.IndicatorId" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.SearchIcon())</button> -->
+        <input class="input input-bordered input-sm" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+        <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.SearchIcon())</button> -->
         @if (Model.TotalPages == 0)
         {
             <div class="p-1 rounded-md border-solid border-slate-300 bg-slate-100 flex flex-row gap-2">
@@ -47,7 +47,7 @@
                     {
                         if (columnInfo.Sortable)
                         {
-                            <th class="text-base" style="cursor:pointer" data-key="@(columnInfo.Key)" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="#@Model.TbodyId" hx-swap="outerHTML" hx-indicator="#@Model.IndicatorId">
+                            <th class="text-base" style="cursor:pointer" data-key="@(columnInfo.Key)" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
                                 <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400"></span></div>
                             </th>
                         }
@@ -72,7 +72,7 @@
                             GridColumnModel? columnInfo = Model.GetColumnInfo(col);
                             if (columnInfo.Filter)
                             {
-                                <th class="text-base"><input class="input input-bordered input-sm w-24" type="search" aria-label="Search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML" /></th>
+                                <th class="text-base"><input class="input input-bordered input-sm w-24" type="search" aria-label="Search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" /></th>
                             }
                             else
                             {
@@ -84,18 +84,24 @@
             </thead>
             @await Html.PartialAsync("GridRows", Model)
         </table>
+        @await Html.PartialAsync("HxIndicator")
+        <div class="toast toast-center toast-middle" style="display:none">
+            <div class="alert">
+                <span></span>
+            </div>
+        </div>
     </div>
 </div>
 
 @functions {
     void RenderNavButton(string name, HtmlString icon, string title)
     {
-        <button class="btn btn-sm p-1" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML">@icon</button>
+        <button class="btn btn-sm p-1" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
     }
 
     void RenderPageNumber(int pageNumber, int totalPages)
     {
-        <select class="select select-bordered select-sm" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="#@Model.TbodyId" hx-indicator="#@Model.IndicatorId" hx-swap="outerHTML">
+        <select class="select select-bordered select-sm" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
             @{
                 for (var i = 1; i <= totalPages; i++)
                 {

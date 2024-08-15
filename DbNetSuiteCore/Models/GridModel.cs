@@ -5,9 +5,6 @@ namespace TQ.Models
     public class GridModel : ComponentModel
     {
         public string Id { get; set; } = string.Empty;
-        public string TbodyId => $"{Id}Rows";
-        public string IndicatorId => $"{Id}Indicator";
-        public string ContainerId => $"{Id}Container";
         public List<GridColumnModel> GridColumns => Columns.Cast<GridColumnModel>().ToList();
         public int CurrentPage { get; set; } = 1;
         public string SearchInput { get; set; } = string.Empty;
@@ -30,6 +27,7 @@ namespace TQ.Models
         public GridModel? NestedGrid { get; set; } = null;
         public bool IsNested { get; set; } = false;
         public int ColSpan { get; set; } = 0;
+        public string ParentKey { get; set; } = string.Empty;
         public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
         private SortOrder GetSortSequence()

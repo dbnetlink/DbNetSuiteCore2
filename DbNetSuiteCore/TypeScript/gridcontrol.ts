@@ -15,7 +15,8 @@ class GridControl {
     }
 
     init(evt) {
-        if (evt.detail.target.id.startsWith(this.gridId) == false) {
+        let gridId = evt.target.closest("form").id;
+        if (gridId.startsWith(this.gridId) == false) {
             return
         }
 
@@ -26,11 +27,11 @@ class GridControl {
         this.configureNavigation()
         this.configureSortIcon()
 
-        if (evt.detail.target.id == this.gridId){
+        if (gridId == this.gridId){
             this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
             this.getButton("export").addEventListener("click", ev => this.download())
 
-            this.configureNestedGrid();
+            this.configureNestedGrid(evt.target);
             this.invokeEventHandler('Initialised');
         }
 
@@ -60,7 +61,7 @@ class GridControl {
     }
 
     configureNavigation() {
-        let tbody = document.querySelector(this.tbodySelector()) as HTMLElement;
+        let tbody = this.gridControl.querySelector("tbody") as HTMLElement;
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
 
@@ -95,11 +96,13 @@ class GridControl {
         span.innerHTML = sortIcon
     }
 
-    configureNestedGrid() {
-        let tr = this.gridControl.closest('tr')
-        if (!tr || !tr.classList.contains('nested-grid-row')) {
-            return
+    configureNestedGrid(target: HTMLElement) {
+        let tr = target.closest("tr")
+
+        if (!tr) {
+            return;
         }
+
         let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button")
 
         buttons[0].style.display = 'none'

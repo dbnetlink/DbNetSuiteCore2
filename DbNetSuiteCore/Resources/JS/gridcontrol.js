@@ -11,7 +11,8 @@ class GridControl {
         this.gridContainer = this.gridControl.parentElement;
     }
     init(evt) {
-        if (evt.detail.target.id.startsWith(this.gridId) == false) {
+        let gridId = evt.target.closest("form").id;
+        if (gridId.startsWith(this.gridId) == false) {
             return;
         }
         if (document.querySelector(this.errorSelector())) {
@@ -19,10 +20,10 @@ class GridControl {
         }
         this.configureNavigation();
         this.configureSortIcon();
-        if (evt.detail.target.id == this.gridId) {
+        if (gridId == this.gridId) {
             this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard());
             this.getButton("export").addEventListener("click", ev => this.download());
-            this.configureNestedGrid();
+            this.configureNestedGrid(evt.target);
             this.invokeEventHandler('Initialised');
         }
         document.querySelectorAll(this.linkSelector()).forEach((e) => {
@@ -48,7 +49,7 @@ class GridControl {
         }
     }
     configureNavigation() {
-        let tbody = document.querySelector(this.tbodySelector());
+        let tbody = this.gridControl.querySelector("tbody");
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
         if (totalPages == 0) {
@@ -75,9 +76,9 @@ class GridControl {
         }
         span.innerHTML = sortIcon;
     }
-    configureNestedGrid() {
-        let tr = this.gridControl.closest('tr');
-        if (!tr || !tr.classList.contains('nested-grid-row')) {
+    configureNestedGrid(target) {
+        let tr = target.closest("tr");
+        if (!tr) {
             return;
         }
         let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button");

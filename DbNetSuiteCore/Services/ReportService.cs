@@ -66,11 +66,12 @@ namespace DbNetTimeCore.Services
         {
             switch (triggerName)
             {
-                case TriggerNames.Download: 
+                case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.NestedGrid:
                     gridModel.NestedGrid!.IsNested = true;
                     gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
+                    gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey","",_context);
                     return await View("NestedGrid", gridModel.NestedGrid);
                 default:
                     string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
@@ -101,7 +102,7 @@ namespace DbNetTimeCore.Services
                     switch (gridModel.DataSourceType)
                     {
                         case DataSourceType.MSSQL:
-                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r,gridModel.DataSourceType)).Cast<GridColumnModel>().Where(c => c.Valid).ToList();
+                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r, gridModel.DataSourceType)).Cast<GridColumnModel>().Where(c => c.Valid).ToList();
                             break;
                         default:
                             gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
@@ -113,7 +114,7 @@ namespace DbNetTimeCore.Services
                     switch (gridModel.DataSourceType)
                     {
                         case DataSourceType.MSSQL:
-                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r,gridModel.DataSourceType)).Cast<GridColumnModel>().ToList();
+                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r, gridModel.DataSourceType)).Cast<GridColumnModel>().ToList();
                             var dataRows = schema.Rows.Cast<DataRow>().ToList();
                             for (var i = 0; i < dataRows.Count; i++)
                             {
@@ -259,7 +260,7 @@ namespace DbNetTimeCore.Services
 
                     foreach (var column in gridModel.Columns)
                     {
-                        
+
                         object value = row[dataTable.Columns[colIdx - 1]];
 
                         if (value == null || value == DBNull.Value)
@@ -378,7 +379,7 @@ namespace DbNetTimeCore.Services
                 case TriggerNames.Next:
                     return gridModel.CurrentPage + 1;
                 case TriggerNames.Previous:
-                    return gridModel.CurrentPage -1;
+                    return gridModel.CurrentPage - 1;
                 case TriggerNames.Last:
                     return Int32.MaxValue;
             }
@@ -410,7 +411,7 @@ namespace DbNetTimeCore.Services
                     resources = ["daisyui", "gridcontrol"];
                     break;
                 case "js":
-                    resources = ["tailwindcss", "htmx.min","gridcontrol"];
+                    resources = ["tailwindcss", "htmx.min", "gridcontrol"];
                     break;
             }
 
@@ -449,66 +450,6 @@ namespace DbNetTimeCore.Services
             Buffer.BlockCopy(first, 0, ret, 0, first.Length);
             Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
             return ret;
-        }
-
-        private bool ValidateFilmEditForm(FormModel formModel)
-        {
-            return StandardFormValidation(formModel);
-        }
-
-        private bool ValidateCustomerEditForm(FormModel formModel)
-        {
-            return StandardFormValidation(formModel);
-        }
-
-        private bool ValidateActorEditForm(FormModel formModel)
-        {
-            return StandardFormValidation(formModel);
-        }
-
-        private bool StandardFormValidation(FormModel formModel)
-        {
-            var formValues = (FormCollection)_context.Request.Form;
-
-            formModel.SavedFormValues = new Dictionary<string, object>(formModel.FormValues((FormCollection)formValues));
-
-            foreach (var column in formModel.EditColumns)
-            {
-                if (column.Required && string.IsNullOrEmpty(formValues[column.Name]))
-                {
-                    formModel.Message = "Highlighted column is required";
-                    column.Invalid = true;
-                    break;
-                }
-            }
-
-            if (formModel.EditColumns.Any(c => c.Invalid))
-            {
-                return false;
-            }
-
-            foreach (var column in formModel.EditColumns)
-            {
-                var value = formValues[column.Name].ToString();
-                if (string.IsNullOrEmpty(value) || column.DataType == typeof(bool))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var convertedValue = Convert.ChangeType(value, column.DataType);
-                }
-                catch
-                {
-                    formModel.Message = "Highlighted column is not in correct format";
-                    column.Invalid = true;
-                    break;
-                }
-            }
-
-            var inValid = formModel.EditColumns.Any(c => c.Invalid);
-            return inValid == false;
         }
     }
 }

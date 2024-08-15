@@ -41,6 +41,19 @@ namespace Microsoft.AspNetCore.Mvc
                 }
             }
 
+            if (gridModel.IsNested)
+            {
+                if (!string.IsNullOrEmpty(gridModel.ParentKey))
+                {
+                    var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
+                    if (foreignKeyColumn != null)
+                    {
+                        filterParts.Add($"({foreignKeyColumn.Expression.Split(" ").First()} = @{foreignKeyColumn.ParamName})");
+                        query.Params[$"@{foreignKeyColumn.ParamName}"] = gridModel.ParentKey;
+                    }
+                }
+            }
+
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
                 filterParts.Add($"({gridModel.FixedFilter})");

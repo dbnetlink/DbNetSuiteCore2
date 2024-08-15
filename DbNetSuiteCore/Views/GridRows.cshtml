@@ -6,14 +6,14 @@
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
 
-<tbody data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" id="@Model.TbodyId" data-sortkey="@Model.SortKey">
+<tbody data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey">
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row">
             @if (Model.GridModel.NestedGrid != null)
             {
                 <td class="text-base w-12">
-                    <button type="button" name="@TriggerNames.NestedGrid" class="btn btn-active btn-square btn-xs" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="#@Model.IndicatorId" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKey(row)"}'>
+                    <button type="button" name="@TriggerNames.NestedGrid" class="btn btn-active btn-square btn-xs" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}'>
                         @IconHelper.ExpandDownIcon()
                     </button>
                     <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
