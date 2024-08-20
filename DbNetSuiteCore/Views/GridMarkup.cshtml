@@ -8,7 +8,7 @@
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1 items-center">
-        <input class="input input-bordered input-sm" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+        <input class="input input-bordered input-sm" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
         <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.SearchIcon())</button> -->
         @if (Model.TotalPages == 0)
         {
@@ -29,8 +29,8 @@
             RenderNavButton(TriggerNames.Last, IconHelper.LastIcon(), "Last page");
         }
 
-        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@Html.Raw(IconHelper.CopyIcon())</button>
-        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@Html.Raw(IconHelper.DownloadIcon())</button>
+        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@IconHelper.CopyIcon()</button>
+        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@IconHelper.DownloadIcon()</button>
         @{
             RenderExportOptions();
         }
@@ -69,15 +69,7 @@
                         }
                         @foreach (DataColumn col in Model.Columns)
                         {
-                            GridColumnModel? columnInfo = Model.GetColumnInfo(col);
-                            if (columnInfo.Filter)
-                            {
-                                <th class="text-base"><input class="input input-bordered input-sm w-24" type="search" aria-label="Search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:500ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" /></th>
-                            }
-                            else
-                            {
-                                <th class="text-base"></th>
-                            }
+                            RenderColumnFilter(col);
                         }
                     </tr>
                 }
@@ -113,7 +105,7 @@
 
     void RenderTotalPages(int totalPages)
     {
-        <input class="input input-bordered input-sm" style="width:@(totalPages.ToString().Length + 2)em" readonly type="text" value="@totalPages" />
+        <input class="input input-bordered input-sm" style="width:@(totalPages.ToString().Length + 2)em" readonly type="text" data-type="total-pages" value="@totalPages" />
     }
 
     void RenderExportOptions()
@@ -128,4 +120,29 @@
             }
         </select>
     }
+
+    void RenderColumnFilter(DataColumn dataColumn)
+    {
+        GridColumnModel? columnInfo = Model.GetColumnInfo(dataColumn);
+        <th class="text-base">
+            @if (columnInfo?.Filter ?? false)
+            {
+                switch (columnInfo.DataTypeName)
+                {
+                    case nameof(Boolean):
+                        <select class="select select-bordered select-sm" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
+                            <option value=""></option>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                        break;
+                    default:
+                        <input class="input input-bordered input-sm w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+                        break;
+                }
+            }
+        </th>
+    }
+
+
 }

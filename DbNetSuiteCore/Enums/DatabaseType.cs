@@ -1,4 +1,4 @@
-﻿namespace DbNetTimeCore.Enums
+﻿namespace DbNetSuiteCore.Enums
 {
     public enum DatabaseType
     {

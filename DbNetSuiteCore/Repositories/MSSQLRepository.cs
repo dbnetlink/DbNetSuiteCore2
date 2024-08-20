@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Specialized;
 using System.Data;
 
-namespace DbNetTimeCore.Repositories
+namespace DbNetSuiteCore.Repositories
 {
     public class MSSQLRepository : DbRepository, IMSSQLRepository
     {

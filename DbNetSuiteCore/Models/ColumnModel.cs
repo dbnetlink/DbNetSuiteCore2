@@ -1,5 +1,5 @@
 ﻿using DbNetSuiteCore.Helpers;
-using DbNetTimeCore.Enums;
+using DbNetSuiteCore.Enums;
 using System.Data;
 using System.Text.Json.Serialization;
 

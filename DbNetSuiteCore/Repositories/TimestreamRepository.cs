@@ -5,7 +5,7 @@ using Amazon;
 using TQ.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DbNetTimeCore.Repositories
+namespace DbNetSuiteCore.Repositories
 {
     public class TimestreamRepository : BaseRepository,ITimestreamRepository
     {

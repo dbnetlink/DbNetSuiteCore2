@@ -1,4 +1,6 @@
-﻿namespace DbNetSuiteCore.Helpers
+﻿using Azure.Core;
+
+namespace DbNetSuiteCore.Helpers
 {
     public static class RequestHelper
     {
@@ -21,6 +23,11 @@
             catch {
                 return string.Empty;
             }
+        }
+
+        public static List<string> FormValueList(string key, HttpContext httpContext)
+        {
+            return [.. httpContext.Request.Form[key]];
         }
     }
 }

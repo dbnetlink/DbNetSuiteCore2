@@ -55,8 +55,8 @@ class GridControl {
         if (totalPages == 0) {
             return;
         }
-        let pageNumber = this.selectGridElement('[name="page"]');
-        pageNumber.value = currentPage.toString();
+        this.selectGridElement('[name="page"]').value = currentPage.toString();
+        this.selectGridElement('[data-type="total-pages"]').value = totalPages.toString();
         this.getButton("first").disabled = currentPage == 1;
         this.getButton("previous").disabled = currentPage == 1;
         this.getButton("next").disabled = currentPage == totalPages;
@@ -78,7 +78,7 @@ class GridControl {
     }
     configureNestedGrid(target) {
         let tr = target.closest("tr");
-        if (!tr) {
+        if (!tr || tr.classList.contains("nested-grid-row") == false) {
             return;
         }
         let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button");

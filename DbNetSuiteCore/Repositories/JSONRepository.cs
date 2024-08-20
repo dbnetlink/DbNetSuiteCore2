@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Data;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DbNetTimeCore.Repositories
+namespace DbNetSuiteCore.Repositories
 {
     public class JSONRepository : IJSONRepository
     {

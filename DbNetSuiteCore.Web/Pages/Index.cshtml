@@ -1,147 +1,54 @@
 ﻿@page
-@using DbNetTimeCore.Enums
+@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Helpers
 @using TQ.Models
 
 @{
-
-    var heatPumpColumns = new List<GridColumnModel>
-    {
-        new GridColumnModel("dbo.HeatPumps.Name HeatPumpName", "Name"),
-        new GridColumnModel("dbo.Accounts.Name AccountName", "Account Name"),
-        new GridColumnModel("dbo.HeatPumpGroups.Name GroupName", "Group Name")
-    };
-
-    var mt1Columns = new List<GridColumnModel>
-    {
-        new GridColumnModel("SerialNumber", "Serial No."),
-        new GridColumnModel("measure_name", "Measure"),
-        new GridColumnModel("time", "Timestamp"),
-        new GridColumnModel("gpModel", "GP Model"),
-        new GridColumnModel("lpModel", "LP Model"),
-        new GridColumnModel("refrigerantType", "Refrigerant Type"),
-        new GridColumnModel("wifiPassword", "WI-FI Password"),
-        new GridColumnModel("model", "Model"),
-        new GridColumnModel("firmwareVersion", "Firmware Vn"),
-        new GridColumnModel("numCompressors", "No. Compressors")
-    };
-
-    var mt2Columns = new List<GridColumnModel>
-    {
-        new GridColumnModel("SerialNumber", "Serial No."),
-        new GridColumnModel("measure_name", "Measure"),
-        new GridColumnModel("time", "Timestamp"),
-
-        new GridColumnModel("t1", "Load Return Temperature"),
-        new GridColumnModel("t2", "Load Outlet Temperature"),
-        new GridColumnModel("t4", "Ground Return Temperature"),
-        new GridColumnModel("t5", "Ground Outlet Temperature"),
-        new GridColumnModel("t7", "Discharge Temp") { InitialSortOrder = SortOrder.Desc},
-        new GridColumnModel("t9", "Weather Compensation Temperature Probe"),
-
-    @*
-        new GridColumnModel("t3", "Load Outlet Temperatur For Twin Compressor Unit"),
-        new GridColumnModel("t6", "Ground Outlet Temperatur For Twin Compressor Unit"),
-        new GridColumnModel("t8", "Discharge Temperature Twin Compressor"),
-        *@
-
-        new GridColumnModel("p1", "Load Side Pressure"),
-        new GridColumnModel("p2", "Ground Side Pressure"),
-        new GridColumnModel("p3", "Suction Pipe Pressure"),
-        new GridColumnModel("p5", "Discharge Pipe Pressure"),
-    @*
-        new GridColumnModel("p4", "SuctionPipeOnTwinCompressor"),
-        new GridColumnModel("p6", "Discharge Pipe Twin Compressor"),
-        *@
-
-        new GridColumnModel("state", "State Of The Heat Pump"),
-        new GridColumnModel("comp1", "State Of Compressor 1"),
-        new GridColumnModel("comp2", "State Of Compressor 2"),
-        new GridColumnModel("reason", "Reason For Logging"),
-        new GridColumnModel("numFaults", "Number Of Faults"),
-        new GridColumnModel("faultCode", "Fault Code"),
-
-        new GridColumnModel("lpState", "Load Pump State"),
-        new GridColumnModel("gpState", "GroundPumpState"),
-        new GridColumnModel("pulse1", "Pulse Input Value 1"),
-        new GridColumnModel("pulse2", "Pulse Input Value 2"),
-
-        new GridColumnModel("cop", "Coefficient Of Performance"),
-        new GridColumnModel("scop", "Seasonal Coefficient Of Performance"),
-
-        new GridColumnModel("deltaLoad", "Load Side Differential"),
-        new GridColumnModel("deltaGround", "Ground Side Differential"),
-
-        new GridColumnModel("runHours1", "Run Hours 1"),
-        new GridColumnModel("runHours2", "Run Hours 2")
-    };
-
-    var employeeColumns = new List<GridColumnModel>
-    {
-        new GridColumnModel("ParentEmployeeKey", "Id"),
-        new GridColumnModel("EmployeeNationalIDAlternateKey", "National Id"),
-        new GridColumnModel("SalesTerritoryKey", "Sales Territory"),
-        new GridColumnModel("FirstName", "Forename"),
-        new GridColumnModel("MiddleName", "Middle Name"),
-        new GridColumnModel("LastName", "Surname") {InitialSortOrder = SortOrder.Asc},
-        new GridColumnModel("Title", "Title"),
-        new GridColumnModel("HireDate", "Hire Date"),
-        new GridColumnModel("BirthDate", "Birth Date"),
-        new GridColumnModel("LoginID", "Login Id"),
-        new GridColumnModel("EmailAddress", "Email"),
-        new GridColumnModel("Phone", "Phone"),
-        new GridColumnModel("MaritalStatus", "Marital Status"),
-        new GridColumnModel("EmergencyContactName", "Contact Name"),
-        new GridColumnModel("EmergencyContactPhone", "Contact Phone"),
-        new GridColumnModel("SalariedFlag", "Salaried"),
-        new GridColumnModel("Gender", "Gender"),
-        new GridColumnModel("PayFrequency", "Pay Frequency"),
-        new GridColumnModel("BaseRate", "Base Rate"),
-        new GridColumnModel("VacationHours", "Vacation Hours"),
-        new GridColumnModel("SickLeaveHours", "Sick Leave Hours"),
-        new GridColumnModel("CurrentFlag", "Current"),
-        new GridColumnModel("SalesPersonFlag", "Sales Person"),
-        new GridColumnModel("DepartmentName", "Department"),
-        new GridColumnModel("StartDate", "Started"),
-        new GridColumnModel("Status", "Status")
-    };
-
-    var tabs = new List<string> { "MT2", "MT1", "Person", "Customers", "Films", "Actors", "Employees" };
+    Layout = null;
 }
 
-<div role="tablist" class="tabs tabs-lifted m-5 tabs-lg">
-    @{
-        foreach ( string tab in tabs)
-        {
-            <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="@tab" @(tab == tabs.First() ? "checked" : string.Empty) />
-            <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-                @{
-                    switch(tab)
-                    {
-                        case "MT2":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10 }))
-                            break;
-                        case "MT1":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
-                            break;
-                        case "Person":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
-                            break;
-                        case "Customers":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
-                            break;
-                        case "Films":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
-                            break;
-                        case "Actors":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
-                            break;
-                        case "Employees":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
-                            break;
-                    }
-                }
-            </div>
+@{
+    var customerColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("customer.customer_id", "CustomerID"),
+        new GridColumnModel("customer.first_name", "Forename"),
+        new GridColumnModel("customer.last_name", "Surname"),
+        new GridColumnModel("customer.email", "Email Address") {Format = "email" },
+        new GridColumnModel("address.address", "Address"),
+        new GridColumnModel("city.city", "City") { InitialSortOrder = SortOrder.Desc},
+        new GridColumnModel("address.postal_code", "Post Code"),
+        new GridColumnModel("customer.active", "Active") {DataType = typeof(Boolean)},
+        new GridColumnModel("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+        new GridColumnModel("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)}
+    };
+
+    var customerGridModel = new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id");
+    customerGridModel.Columns = customerColumns;
+    customerGridModel.ClientEvents[ClientEvent.PageLoaded] = "customerGridPageLoaded";
+    customerGridModel.ClientEvents[ClientEvent.RowSelected] = "customerRowSelectedLoaded";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers</title>
+    <link rel="stylesheet" href="css.htmx" />
+</head>
+<body>
+    <main style="padding:20px">
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGridModel))
+    </main>
+    <script src="js.htmx"></script>
+
+    <script>
+        function customerGridPageLoaded(gridControl) {
         }
-    }
-</div>
+
+        function customerRowSelectedLoaded(gridControl) {
+        }
+    </script>
+</body>
+</html>
+

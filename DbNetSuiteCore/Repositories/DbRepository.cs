@@ -1,11 +1,11 @@
-﻿using DbNetTimeCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 
-namespace DbNetTimeCore.Repositories
+namespace DbNetSuiteCore.Repositories
 {
     public class DbRepository : BaseRepository
     {

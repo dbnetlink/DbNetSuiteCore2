@@ -1,18 +1,19 @@
-﻿using DbNetTimeCore.Services.Interfaces;
-using DbNetTimeCore.Repositories;
+﻿using DbNetSuiteCore.Services.Interfaces;
+using DbNetSuiteCore.Repositories;
 using System.Reflection;
 using System.Text;
 using TQ.Models;
 using System.Data;
 using DbNetSuiteCore.Helpers;
-using DbNetTimeCore.Enums;
+using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.StaticFiles;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DocumentFormat.OpenXml.EMMA;
+using Azure.Core;
 
-namespace DbNetTimeCore.Services
+namespace DbNetSuiteCore.Services
 {
     public class ReportService : IReportService
     {
@@ -356,7 +357,7 @@ namespace DbNetTimeCore.Services
                 gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
                 gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
-                gridModel.ColumnFilter = RequestHelper.FormValue("columnFilter", string.Empty, _context).Split(",").ToList();
+                gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context);
             }
             catch
             {
@@ -365,6 +366,8 @@ namespace DbNetTimeCore.Services
 
             return gridModel;
         }
+
+       
 
         private int GetPageNumber(GridModel gridModel)
         {

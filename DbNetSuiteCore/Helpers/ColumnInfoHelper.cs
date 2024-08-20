@@ -1,6 +1,6 @@
-﻿using DbNetTimeCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 using TQ.Models;
-using DbNetTimeCore.Repositories;
+using DbNetSuiteCore.Repositories;
 
 namespace DbNetSuiteCore.Helpers
 {

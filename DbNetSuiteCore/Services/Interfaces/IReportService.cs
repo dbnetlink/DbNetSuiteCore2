@@ -1,4 +1,4 @@
-﻿namespace DbNetTimeCore.Services.Interfaces
+﻿namespace DbNetSuiteCore.Services.Interfaces
 {
     public interface IReportService
     {

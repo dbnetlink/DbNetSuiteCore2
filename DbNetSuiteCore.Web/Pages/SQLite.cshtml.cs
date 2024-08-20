@@ -1,4 +1,4 @@
-using DbNetTimeCore.Enums;
+using DbNetSuiteCore.Enums;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

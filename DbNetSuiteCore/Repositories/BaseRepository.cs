@@ -1,7 +1,7 @@
 ﻿using TQ.Models;
 using System.Data;
 
-namespace DbNetTimeCore.Repositories
+namespace DbNetSuiteCore.Repositories
 {
     public class BaseRepository
     { 

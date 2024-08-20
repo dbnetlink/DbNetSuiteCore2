@@ -68,8 +68,8 @@ class GridControl {
         if (totalPages == 0) {
             return;
         }
-        let pageNumber = this.selectGridElement('[name="page"]') as HTMLSelectElement
-        pageNumber.value = currentPage.toString();
+        (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = currentPage.toString();
+        (this.selectGridElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
 
         this.getButton("first").disabled = currentPage == 1;
         this.getButton("previous").disabled = currentPage == 1;
@@ -99,7 +99,7 @@ class GridControl {
     configureNestedGrid(target: HTMLElement) {
         let tr = target.closest("tr")
 
-        if (!tr) {
+        if (!tr || tr.classList.contains("nested-grid-row") == false) {
             return;
         }
 
@@ -263,7 +263,7 @@ class GridControl {
         return `#${this.gridId} > div.alert-error`
     }
 
-    selectGridElement(selector): HTMLSelectElement {
+    selectGridElement(selector): HTMLElement {
         return document.querySelector(`#${this.gridId} ${selector}`);
     }
 

@@ -1,4 +1,4 @@
-﻿using DbNetTimeCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 
 namespace TQ.Models
 {

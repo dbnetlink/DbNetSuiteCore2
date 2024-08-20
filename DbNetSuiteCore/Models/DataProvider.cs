@@ -1,4 +1,4 @@
-﻿namespace DbNetTimeCore.Models
+﻿namespace DbNetSuiteCore.Models
 {
     public class CustomDataProvider
     {

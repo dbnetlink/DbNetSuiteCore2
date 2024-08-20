@@ -1,5 +1,5 @@
-﻿using DbNetTimeCore.Enums;
-using DbNetTimeCore.Repositories;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Repositories;
 using System.Data;
 
 namespace TQ.Models

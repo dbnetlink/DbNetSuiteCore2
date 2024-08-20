@@ -1,4 +1,4 @@
-﻿using DbNetTimeCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 using System.Data;
 
 namespace TQ.Models
@@ -13,7 +13,7 @@ namespace TQ.Models
         public int? MaxTextLength { get; set; }
         public int Ordinal { get; set; }
         public SortOrder? InitialSortOrder { get; set; }
-        public bool Filter { get; set; } = false;
+        public bool Filter { get; set; } = true;
         public string ParamName => $"Param{Ordinal}";
         public GridColumnModel()
         {

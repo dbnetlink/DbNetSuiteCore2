@@ -1,5 +1,8 @@
 ﻿using TQ.Models;
-using DbNetTimeCore.Repositories;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Enums;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 
 namespace Microsoft.AspNetCore.Mvc
@@ -38,6 +41,33 @@ namespace Microsoft.AspNetCore.Mvc
                 if (quickSearchFilterPart.Any())
                 {
                     filterParts.Add($"({string.Join(" or ", quickSearchFilterPart)})");
+                }
+            }
+
+            if (gridModel.Columns.Any(c => c.Filter))
+            {
+                List<string> columnFilterPart = new List<string>();
+                for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
+                {
+                    if (string.IsNullOrEmpty(gridModel.ColumnFilter[i]))
+                    {
+                        continue;
+                    }
+
+                    var column = gridModel.Columns.Skip(i).First();
+
+                    var columnFilter = ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
+
+                    if (columnFilter != null)
+                    {
+                        columnFilterPart.Add($"{RefineSearchExpression(column, gridModel)} {columnFilter.Value.Key} @columnfilter{i}");
+                        query.Params[$"@columnfilter{i}"] = ParamValue(columnFilter.Value.Value,column, gridModel);
+                    }
+                }
+
+                if (columnFilterPart.Any())
+                {
+                    filterParts.Add($"({string.Join(" and ", columnFilterPart)})");
                 }
             }
 
@@ -84,13 +114,208 @@ namespace Microsoft.AspNetCore.Mvc
             if (initialSortOrderColumn != null)
             {
                 gridModel.CurrentSortKey = initialSortOrderColumn.Key;
-                gridModel.CurrentSortAscending = initialSortOrderColumn.InitialSortOrder!.Value == DbNetTimeCore.Enums.SortOrder.Asc;
+                gridModel.CurrentSortAscending = initialSortOrderColumn.InitialSortOrder!.Value == DbNetSuiteCore.Enums.SortOrder.Asc;
             }
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)
         {
             return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
+        }
+
+        private static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumnModel gridColumn)
+        {
+            string comparisionOperator = "=";
+
+            if (filterColumnValue.StartsWith(">=") || filterColumnValue.StartsWith("<="))
+            {
+                comparisionOperator = filterColumnValue.Substring(0, 2);
+            }
+            else if (filterColumnValue.StartsWith(">") || filterColumnValue.StartsWith("<"))
+            {
+                comparisionOperator = filterColumnValue.Substring(0, 1);
+            }
+
+            if (comparisionOperator != "=")
+            {
+                filterColumnValue = filterColumnValue.Substring(comparisionOperator.Length);
+            }
+
+            if (gridColumn.IsNumeric)
+            {
+                return new KeyValuePair<string, object>(comparisionOperator, filterColumnValue);
+            }
+            switch (gridColumn.DataTypeName)
+            {
+                case nameof(Boolean):
+                    return new KeyValuePair<string, object>("=", ParseBoolean(filterColumnValue));
+                case nameof(DateTime):
+                    try
+                    {
+                        return new KeyValuePair<string, object>(comparisionOperator, Convert.ToDateTime(filterColumnValue));
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                case nameof(TimeSpan):
+                    try
+                    {
+                        return new KeyValuePair<string, object>(comparisionOperator, TimeSpan.Parse(filterColumnValue ?? string.Empty));
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                default:
+                    return new KeyValuePair<string, object>("like", $"%{filterColumnValue}%");
+            }
+        }
+
+        private static string RefineSearchExpression(GridColumnModel col, GridModel gridModel)
+        {
+            string columnExpression = StripColumnRename(col.Expression);
+
+            if (col.DataType != typeof(DateTime))
+            {
+                return columnExpression;
+            }
+
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.MSSQL:
+                    if (col.DbDataType != "31") // "Date"
+                    {
+                        columnExpression = $"CONVERT(DATE,{columnExpression})";
+                    }
+                    break;
+                case DataSourceType.SQlite:
+                    columnExpression = $"DATE({columnExpression})";
+                    break;
+            }
+
+            return columnExpression;
+        }
+
+        private static string StripColumnRename(string columnExpression)
+        {
+            string[] columnParts = columnExpression.Split(')');
+            columnParts[columnParts.Length - 1] = Regex.Replace(columnParts[columnParts.Length - 1], " as .*", "", RegexOptions.IgnoreCase);
+            columnParts[0] = Regex.Replace(columnParts[0], "unique |distinct ", "", RegexOptions.IgnoreCase);
+
+            return String.Join(")", columnParts);
+        }
+
+        private static object ParamValue(object value, GridColumnModel column, GridModel gridModel)
+        {
+            var dataType = column.DataTypeName;
+            if (value == null)
+            {
+                if (dataType == "Byte[]")
+                    return new byte[0];
+                else
+                    return DBNull.Value;
+            }
+
+            if (string.IsNullOrEmpty(value.ToString()))
+            {
+                return DBNull.Value;
+            }
+
+            object paramValue = value.ToString();
+            try
+            {
+                switch (dataType)
+                {
+                    case nameof(String):
+                         break;
+                    case nameof(Boolean):
+                        paramValue = ParseBoolean(value.ToString());
+                        break;
+                    case nameof(TimeSpan):
+                        paramValue = TimeSpan.Parse(DateTime.Parse(value.ToString()).ToString(column.Format));
+                        break;
+                    case nameof(DateTime):
+                        if (string.IsNullOrEmpty(column.Format))
+                        {
+                            paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTime)}"));
+                        }
+                        else
+                        {
+                            try
+                            {
+                                paramValue = DateTime.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
+                            }
+                            catch
+                            {
+                                paramValue = DateTime.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                            }
+                        }
+                        break;
+                    case nameof(Byte):
+                        paramValue = value;
+                        break;
+                    case nameof(Guid):
+                        paramValue = new Guid(value.ToString());
+                        break;
+                    case nameof(Int16):
+                    case nameof(Int32):
+                    case nameof(Int64):
+                    case nameof(Decimal):
+                    case nameof(Single):
+                    case nameof(Double):
+                        if (string.IsNullOrEmpty(column.Format) == false)
+                        {
+                            var cultureInfo = Thread.CurrentThread.CurrentCulture;
+                            value = value.ToString().Replace(cultureInfo.NumberFormat.CurrencySymbol, "");
+                        }
+                        paramValue = Convert.ChangeType(value, GetColumnType(dataType));
+                        break;
+                    case nameof(UInt16):
+                    case nameof(UInt32):
+                    case nameof(UInt64):
+                        paramValue = Convert.ChangeType(value, GetColumnType(dataType.Replace("U", string.Empty)));
+                        break;
+                    default:
+                        paramValue = Convert.ChangeType(value, GetColumnType(dataType));
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"{e.Message} => : Value: {value.ToString()} DataType:{dataType}");
+            }
+
+            switch (dataType)
+            {
+                case nameof(DateTime):
+                    switch (gridModel.DataSourceType)
+                    {
+                        case DataSourceType.SQlite:
+                            paramValue = Convert.ToDateTime(paramValue).ToString("yyyy-MM-dd");
+                            break;
+                    }
+                    break;
+            }
+
+            return paramValue;
+        }
+
+        private static int ParseBoolean(string boolString)
+        {
+            switch (boolString.ToLower())
+            {
+                case "true":
+                case "1":
+                    return 1;
+                default:
+                    return 0;
+            }
+        }
+
+        private static Type GetColumnType(string typeName)
+        {
+            return Type.GetType("System." + typeName);
         }
     }
 }

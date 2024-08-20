@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
-using DbNetTimeCore.Repositories;
-using DbNetTimeCore.Services.Interfaces;
-using DbNetTimeCore.Services;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services.Interfaces;
+using DbNetSuiteCore.Services;
 
 namespace TQ.Middleware
 {
