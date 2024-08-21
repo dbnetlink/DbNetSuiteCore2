@@ -27,9 +27,11 @@ class GridControl {
         this.configureNavigation()
         this.configureSortIcon()
 
-        if (gridId == this.gridId){
-            this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
-            this.getButton("export").addEventListener("click", ev => this.download())
+        if (gridId == this.gridId) {
+            if (this.toolbarExists()) {
+                this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
+                this.getButton("export").addEventListener("click", ev => this.download())
+            }
 
             this.configureNestedGrid(evt.target);
             this.invokeEventHandler('Initialised');
@@ -65,22 +67,28 @@ class GridControl {
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
 
-        if (totalPages == 0) {
-            this.selectGridElement('#no-records').classList.remove("hidden");
-            this.selectGridElement('#toolbar').classList.add("hidden");
-        }
-        else {
-            this.selectGridElement('#no-records').classList.add("hidden");
-            this.selectGridElement('#toolbar').classList.remove("hidden");
-        }
+        if (this.toolbarExists()) {
+            if (totalPages == 0) {
+                this.selectGridElement('#no-records').classList.remove("hidden");
+                this.selectGridElement('#toolbar').classList.add("hidden");
+            }
+            else {
+                this.selectGridElement('#no-records').classList.add("hidden");
+                this.selectGridElement('#toolbar').classList.remove("hidden");
+            }
 
-        (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = currentPage.toString();
-        (this.selectGridElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
+            (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = currentPage.toString();
+            (this.selectGridElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
 
-        this.getButton("first").disabled = currentPage == 1;
-        this.getButton("previous").disabled = currentPage == 1;
-        this.getButton("next").disabled = currentPage == totalPages;
-        this.getButton("last").disabled = currentPage == totalPages;
+            this.getButton("first").disabled = currentPage == 1;
+            this.getButton("previous").disabled = currentPage == 1;
+            this.getButton("next").disabled = currentPage == totalPages;
+            this.getButton("last").disabled = currentPage == totalPages;
+        }
+    }
+
+    toolbarExists() {
+        return this.selectGridElement('#toolbar');
     }
 
     configureSortIcon() {

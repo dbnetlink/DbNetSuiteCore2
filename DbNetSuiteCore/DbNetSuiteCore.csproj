@@ -30,6 +30,7 @@
     <Content Remove="Views\Error.cshtml" />
     <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\GridRows.cshtml" />
+    <Content Remove="Views\GridToolbar.cshtml" />
     <Content Remove="Views\_gridIndicator.cshtml" />
   </ItemGroup>
 
@@ -55,6 +56,9 @@
     <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
     <EmbeddedResource Include="TypeScript\gridcontrol.ts" />
+    <EmbeddedResource Include="Views\GridToolbar.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\GridRows.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

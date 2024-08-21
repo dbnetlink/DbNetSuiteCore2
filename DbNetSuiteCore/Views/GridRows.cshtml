@@ -29,23 +29,32 @@
                 GridColumnModel? columnInfo = Model.GetColumnInfo(col);
                 var classes = new List<string>() { "text-base" };
 
-                if (columnInfo.IsNumeric)
+                if (row[col] == System.DBNull.Value || row[col] == null)
                 {
-                    classes.Add("text-right");
+                    <td class="text-base">&nbsp;</td>
+                    continue;
                 }
 
                 if (columnInfo.DataType == typeof(Boolean))
                 {
                     classes.Add("text-center");
                     <td class="@(string.Join(" ",classes))">
-                        @if (row[col] != System.DBNull.Value)
-                        {
-                            <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? IconHelper.CheckedIcon() : IconHelper.UncheckedIcon())</div>
-                        }
+                        <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? IconHelper.CheckedIcon() : IconHelper.UncheckedIcon())</div>
+                    </td>
+                }
+                else if (columnInfo.LookupOptions != null)
+                {
+                    <td class="@(string.Join(" ",classes))">
+                        @columnInfo.GetLookupValue(row[col])
                     </td>
                 }
                 else
                 {
+                    if (columnInfo.IsNumeric)
+                    {
+                        classes.Add("text-right");
+                    }
+
                     var value = FormatValue(row[col], columnInfo);
                     if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
                     {
@@ -79,10 +88,6 @@
 @functions {
     public static object? FormatValue(object? value, GridColumnModel? columnInfo)
     {
-        if (value == null || value == System.DBNull.Value)
-        {
-            return "&nbsp;";
-        }
         if (string.IsNullOrEmpty(columnInfo?.Format))
         {
             return value;
@@ -117,6 +122,4 @@
 
         return value;
     }
-
-
 }

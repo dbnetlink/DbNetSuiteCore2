@@ -15,7 +15,13 @@ namespace DbNetSuiteCore.Models
         public string ColumnName => Name.Split(".").Last();
         public string Key => Name.GetHashCode().ToString();
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
-        public Type? LookupEnum { get; set; } 
+        public List<KeyValuePair<string, string>>? LookupOptions { get; set; } = null;
+        [JsonIgnore]
+        public Type? LookupEnum
+        {
+            get { return null; }
+            set { LookupOptions = EnumHelper.GetEnumOptions(value!); }
+        }
         public string DataTypeName => DataType.ToString().Split(".").Last();    
         [JsonIgnore]
         public Type DataType
@@ -34,6 +40,13 @@ namespace DbNetSuiteCore.Models
         public string Format { get; set; } = string.Empty;
         public bool Initialised { get; set; } = false;
         public bool Valid { get; set; } = true;
+
+        [JsonIgnore]
+        public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
+        {
+            new KeyValuePair<string, string>("1","Yes"),
+            new KeyValuePair<string, string>("0","No"),
+        };
         public ColumnModel()
         {
         }
@@ -94,6 +107,23 @@ namespace DbNetSuiteCore.Models
             if (string.IsNullOrEmpty(Label))
             {
                 Label = TextHelper.GenerateLabel(Name);
+            }
+        }
+
+        public string GetLookupValue(object value)
+        {
+            if (LookupOptions == null)
+            {
+                return string.Empty;
+            }
+            KeyValuePair<string, string>? option = LookupOptions!.FirstOrDefault(p => p.Key.ToString() == value.ToString());
+            if (option.HasValue)
+            {
+                return option.Value.Value;
+            }
+            else
+            {
+                return value?.ToString() ?? string.Empty;
             }
         }
 

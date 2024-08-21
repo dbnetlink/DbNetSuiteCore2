@@ -31,7 +31,7 @@
         new GridColumnModel("OrderDate", "Ordered"),
         new GridColumnModel("RequiredDate", "Required "),
         new GridColumnModel("ShippedDate", "Shipped "),
-        new GridColumnModel("ShipVia", "Ship Via"),
+        new GridColumnModel("ShipVia", "Ship Via") {LookupEnum = typeof(ShipperEnum)}, 
         new GridColumnModel("Freight", "Freight"),
         new GridColumnModel("ShipName", "Ship Name"),
         new GridColumnModel("ShipAddress", "Ship Address"),

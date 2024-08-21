@@ -26,6 +26,8 @@ namespace DbNetSuiteCore.Models
         public HtmlString SortIcon => CurrentSortAscending ? IconHelper.ArrowUpIcon() : IconHelper.ArrowDownIcon();
         public DataSourceType DataSourceType => _gridModel.DataSourceType;
 
+        public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
+
         public bool IsSortColumn(ColumnModel columnInfo)
         {
             return columnInfo.Key == CurrentSortKey;
@@ -38,6 +40,11 @@ namespace DbNetSuiteCore.Models
             if (_gridModel.CurrentPage > TotalPages)
             {
                 _gridModel.CurrentPage = TotalPages;
+            }
+
+            if (_gridModel.ToolbarPosition == ToolbarPosition.Hidden)
+            {
+                _gridModel.PageSize = dataTable.Rows.Count;
             }
 
             Rows = dataTable.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);

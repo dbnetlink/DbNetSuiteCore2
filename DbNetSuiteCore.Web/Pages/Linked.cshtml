@@ -47,13 +47,14 @@
 
     var invoiceGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Invoices");
     invoiceGridModel.Columns = invoiceColumns;
-    invoiceGridModel.NestedGrid = invoiceLineGridModel;
+    invoiceGridModel.LinkedGrid = invoiceLineGridModel;
     invoiceGridModel.Caption = "Invoices";
-    invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+    invoiceGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
     var customerGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Customers");
     customerGridModel.Columns = customerColumns;
-    customerGridModel.NestedGrid = invoiceGridModel;
+    customerGridModel.LinkedGrid = invoiceGridModel;
+    customerGridModel.PageSize = 5;
 
 }
 
@@ -68,6 +69,8 @@
 <body>
     <main style="padding:20px">
         @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGridModel))
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGridModel))
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceLineGridModel))
     </main>
     @DbNetSuiteCore.Resources.ClientScript()
 </body>

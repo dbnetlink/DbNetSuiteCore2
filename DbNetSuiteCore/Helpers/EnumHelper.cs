@@ -11,7 +11,7 @@ namespace DbNetSuiteCore.Helpers
             foreach (Enum i in Enum.GetValues(enumType).Cast<Enum>())
             {
                 var description = GetEnumDescription(i);
-                options.Add(new KeyValuePair<string, string>(description, description));
+                options.Add(new KeyValuePair<string, string>(Convert.ToInt32(i).ToString(), description));
             }
 
             return options;

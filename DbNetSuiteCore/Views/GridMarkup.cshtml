@@ -5,38 +5,14 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
 
 <div class="flex flex-col m-1 p-1">
     <div class="flex flex-row text-lg">@Model.GridModel.Caption</div>
-    <div class="flex flex-row gap-1 items-center">
-        <input class="input input-bordered input-sm mr-5" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
-        <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.SearchIcon())</button> -->
-
-        <div id="no-records" class="p-1 rounded-md border-solid border-slate-300 bg-slate-100 flex flex-row gap-2 @(Model.TotalPages == 0 ? "" : "hidden")">
-            @IconHelper.InfoIcon()
-            <span>No records found</span>
-        </div>
-        <div id="toolbar" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
-            @{
-                RenderNavButton(TriggerNames.First, IconHelper.FirstIcon(), "First page");
-                RenderNavButton(TriggerNames.Previous, IconHelper.PreviousIcon(), "Previous page");
-                <span class="flex">Page</span>
-                RenderPageNumber(Model.CurrentPage, Model.TotalPages);
-                <span class="flex">of</span>
-                RenderTotalPages(Model.TotalPages);
-                RenderNavButton(TriggerNames.Next, IconHelper.NextIcon(), "Next page");
-                RenderNavButton(TriggerNames.Last, IconHelper.LastIcon(), "Last page");
-            }
-
-            <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@IconHelper.CopyIcon()</button>
-            <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@IconHelper.DownloadIcon()</button>
-            @{
-                RenderExportOptions();
-            }
-        </div>
-
-
-    </div>
+    @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Top)
+    {
+        @await Html.PartialAsync("GridToolbar", Model)
+    }
     <div class="flex mt-2">
         <table class="table table-xs">
             <thead>
@@ -78,6 +54,12 @@
             </thead>
             @await Html.PartialAsync("GridRows", Model)
         </table>
+    </div>
+    @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Bottom)
+    {
+        @await Html.PartialAsync("GridToolbar", Model)
+    }
+    <div class="flex"">
         @await Html.PartialAsync("HxIndicator")
         <div class="toast toast-center toast-middle" style="display:none">
             <div class="alert">
@@ -87,64 +69,43 @@
     </div>
 </div>
 
+
+
 @functions {
-    void RenderNavButton(string name, HtmlString icon, string title)
-    {
-        <button class="btn btn-sm p-1" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
-    }
-
-    void RenderPageNumber(int pageNumber, int totalPages)
-    {
-        <select class="select select-bordered select-sm" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
-            @{
-                for (var i = 1; i <= totalPages; i++)
-                {
-                    <option value="@i" @(i == pageNumber ? "selected" : string.Empty)>@i</option>
-                }
-            }
-        </select>
-    }
-
-    void RenderTotalPages(int totalPages)
-    {
-        <input class="input input-bordered input-sm" style="width:@(totalPages.ToString().Length + 2)em" readonly type="text" data-type="total-pages" value="@totalPages" />
-    }
-
-    void RenderExportOptions()
-    {
-        var options = new List<string>() { "CSV", "Excel", "HTML", "JSON" };
-        <select class="select select-bordered select-sm" name="exportformat">
-            @{
-                foreach (var option in options)
-                {
-                    <option value="@option.ToLower()">@option</option>
-                }
-            }
-        </select>
-    }
-
     void RenderColumnFilter(DataColumn dataColumn)
     {
         GridColumnModel? columnInfo = Model.GetColumnInfo(dataColumn);
         <th class="text-base">
             @if (columnInfo?.Filter ?? false)
             {
-                switch (columnInfo.DataTypeName)
+                if (columnInfo.LookupOptions != null)
                 {
-                    case nameof(Boolean):
-                        <select class="select select-bordered select-sm" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
-                            <option value=""></option>
-                            <option value="1">Yes</option>
-                            <option value="0">No</option>
-                        </select>
-                        break;
-                    default:
-                        <input class="input input-bordered input-sm w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
-                        break;
+                    RenderColumnSelectFilter(columnInfo.LookupOptions);
+                }
+                else
+                {
+                    switch (columnInfo.DataTypeName)
+                    {
+                        case nameof(Boolean):
+                            RenderColumnSelectFilter(GridColumnModel.BooleanFilterOptions);
+                            break;
+                        default:
+                            <input class="input input-bordered input-sm w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+                            break;
+                    }
                 }
             }
         </th>
     }
 
-
+    void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options)
+    {
+        <select class="select select-bordered select-sm" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
+            <option value=""></option>
+            @foreach (var option in options)
+            {
+                <option value="@option.Key">@option.Value</option>
+            }
+        </select>
+    }
 }

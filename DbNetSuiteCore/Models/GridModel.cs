@@ -4,6 +4,7 @@ namespace DbNetSuiteCore.Models
 {
     public class GridModel : ComponentModel
     {
+        private GridModel? _LinkedGrid;
         public string Id { get; set; } = string.Empty;
         public List<GridColumnModel> GridColumns => Columns.Cast<GridColumnModel>().ToList();
         public int CurrentPage { get; set; } = 1;
@@ -25,7 +26,13 @@ namespace DbNetSuiteCore.Models
         public int PageSize { get; set; } = 20;
         public bool Uninitialised => GridColumns.Any() == false || GridColumns.Where(c => c.Initialised == false).Any();
         public GridModel? NestedGrid { get; set; } = null;
+        public GridModel? LinkedGrid
+        {
+            get { return _LinkedGrid; }
+            set { _LinkedGrid = value; IsLinked = value != null; }
+        }
         public bool IsNested { get; set; } = false;
+        public bool IsLinked { get; set; } = false;
         public int ColSpan { get; set; } = 0;
         public string ParentKey { get; set; } = string.Empty;
         public string Caption { get; set; } = string.Empty;
@@ -44,6 +51,8 @@ namespace DbNetSuiteCore.Models
 
             return SortOrder.Asc;
         }
+
+        public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
 
         public GridModel()
         {
