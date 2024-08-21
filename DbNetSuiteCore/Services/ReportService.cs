@@ -2,7 +2,7 @@
 using DbNetSuiteCore.Repositories;
 using System.Reflection;
 using System.Text;
-using TQ.Models;
+using DbNetSuiteCore.Models;
 using System.Data;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Enums;
@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
-using DocumentFormat.OpenXml.EMMA;
-using Azure.Core;
 
 namespace DbNetSuiteCore.Services
 {
@@ -73,6 +71,7 @@ namespace DbNetSuiteCore.Services
                     gridModel.NestedGrid!.IsNested = true;
                     gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
                     gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey","",_context);
+                    gridModel.NestedGrid.SetId();
                     return await View("NestedGrid", gridModel.NestedGrid);
                 default:
                     string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";

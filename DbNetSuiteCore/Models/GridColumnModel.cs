@@ -1,7 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using System.Data;
 
-namespace TQ.Models
+namespace DbNetSuiteCore.Models
 {
     public class GridColumnModel : ColumnModel
     {

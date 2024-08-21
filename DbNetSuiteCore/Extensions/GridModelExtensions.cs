@@ -1,4 +1,4 @@
-﻿using TQ.Models;
+﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
 using System.Text.RegularExpressions;
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc
             return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
         }
 
-        private static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumnModel gridColumn)
+        public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumnModel gridColumn)
         {
             string comparisionOperator = "=";
 

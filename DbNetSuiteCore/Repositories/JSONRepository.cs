@@ -1,7 +1,9 @@
-﻿using TQ.Models;
+﻿using DbNetSuiteCore.Models;
 using Newtonsoft.Json;
 using System.Data;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using DocumentFormat.OpenXml.Office2021.Excel.NamedSheetViews;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -19,7 +21,13 @@ namespace DbNetSuiteCore.Repositories
         {
             var dataTable = await BuildDataTable(gridModel, httpContext);
 
-            return dataTable.Select(AddFilterPart(gridModel), AddOrderPart(gridModel)).CopyToDataTable();
+            var rows = dataTable.Select(AddFilterPart(gridModel), AddOrderPart(gridModel));
+
+            if (rows.Any()) 
+            { 
+                return rows.CopyToDataTable(); 
+            }
+            return new DataTable();
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext)
@@ -42,7 +50,7 @@ namespace DbNetSuiteCore.Repositories
             {
                 return dataTable;
             }
-            dataTable = JsonConvert.DeserializeObject<DataTable>(json);
+            dataTable = Tabulate(json);
 
             if (gridModel.Columns.Any())
             {
@@ -52,6 +60,27 @@ namespace DbNetSuiteCore.Repositories
 
             }
             return dataTable;
+        }
+
+        private DataTable Tabulate(string json)
+        {
+            JArray srcArray = JArray.Parse(json);
+            JArray trgArray = new JArray();
+            foreach (JObject row in srcArray.Children<JObject>())
+            {
+                var cleanRow = new JObject();
+                foreach (JProperty column in row.Properties())
+                {
+                    if (column.Value is JValue)
+                    {
+                        cleanRow.Add(column.Name, column.Value);
+                    }
+                }
+
+                trgArray.Add(cleanRow);
+            }
+
+            return JsonConvert.DeserializeObject<DataTable>(trgArray.ToString());
         }
 
         private string AddFilterPart(GridModel gridModel)
@@ -73,7 +102,55 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
+            if (gridModel.Columns.Any(c => c.Filter))
+            {
+                List<string> columnFilterPart = new List<string>();
+                for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
+                {
+                    if (string.IsNullOrEmpty(gridModel.ColumnFilter[i]))
+                    {
+                        continue;
+                    }
+
+                    var column = gridModel.Columns.Skip(i).First();
+
+                    var columnFilter = GridModelExtensions.ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
+
+                    if (columnFilter != null)
+                    {
+                        columnFilterPart.Add($"{column.Name} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
+                    }
+                }
+
+                if (columnFilterPart.Any())
+                {
+                    filterParts.Add($"({string.Join(" and ", columnFilterPart)})");
+                }
+            }
+
+            if (gridModel.IsNested)
+            {
+                if (!string.IsNullOrEmpty(gridModel.ParentKey))
+                {
+                    var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
+                    if (foreignKeyColumn != null)
+                    {
+                        filterParts.Add($"({foreignKeyColumn.Name} = {Quoted(foreignKeyColumn)}{gridModel.ParentKey}{Quoted(foreignKeyColumn)})");
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(gridModel.FixedFilter))
+            {
+                filterParts.Add($"({gridModel.FixedFilter})");
+            }
+
             return String.Join(" and ", filterParts);
+        }
+
+        private string Quoted(GridColumnModel column)
+        {
+            return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
         }
 
         private string AddOrderPart(GridModel gridModel)

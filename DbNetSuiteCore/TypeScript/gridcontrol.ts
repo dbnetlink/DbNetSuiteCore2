@@ -66,8 +66,14 @@ class GridControl {
         let totalPages = parseInt(tbody.dataset.totalpages);
 
         if (totalPages == 0) {
-            return;
+            this.selectGridElement('#no-records').classList.remove("hidden");
+            this.selectGridElement('#toolbar').classList.add("hidden");
         }
+        else {
+            this.selectGridElement('#no-records').classList.add("hidden");
+            this.selectGridElement('#toolbar').classList.remove("hidden");
+        }
+
         (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = currentPage.toString();
         (this.selectGridElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
 
@@ -132,7 +138,7 @@ class GridControl {
     }
 
     clearHighlighting() {
-        document.querySelectorAll(this.rowSelector()).forEach(e => {
+        this.gridControl.querySelectorAll(this.rowSelector()).forEach(e => {
             let tr = e.closest("tr");
             tr.classList.remove(this.bgColourClass);
             tr.classList.remove(this.textColourClass);
@@ -142,7 +148,7 @@ class GridControl {
     }
 
     copyTableToClipboard() {
-        var table = document.querySelector(this.tableSelector());
+        var table = this.gridControl.querySelector(this.tableSelector());
         try {
             this.copyElementToClipboard(table);
             this.message("Page copied to clipboard")
@@ -177,7 +183,7 @@ class GridControl {
             data.append(key, val as any);
         }
 
-        var exportOption = this.selectGridElement('[name="exportformat"]').value
+        var exportOption = (this.selectGridElement('[name="exportformat"]') as HTMLSelectElement).value
         console.log(exportOption)
 
         fetch("gridcontrol.htmx", {
@@ -244,7 +250,7 @@ class GridControl {
     }
 
     rowSelector() {
-        return `#${this.gridId} tbody tr.grid-row`
+        return `#tbody${this.gridId} > tr.grid-row`
     }
 
     linkSelector() {

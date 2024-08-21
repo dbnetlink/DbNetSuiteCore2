@@ -53,7 +53,12 @@ class GridControl {
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
         if (totalPages == 0) {
-            return;
+            this.selectGridElement('#no-records').classList.remove("hidden");
+            this.selectGridElement('#toolbar').classList.add("hidden");
+        }
+        else {
+            this.selectGridElement('#no-records').classList.add("hidden");
+            this.selectGridElement('#toolbar').classList.remove("hidden");
         }
         this.selectGridElement('[name="page"]').value = currentPage.toString();
         this.selectGridElement('[data-type="total-pages"]').value = totalPages.toString();
@@ -103,7 +108,7 @@ class GridControl {
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
     clearHighlighting() {
-        document.querySelectorAll(this.rowSelector()).forEach(e => {
+        this.gridControl.querySelectorAll(this.rowSelector()).forEach(e => {
             let tr = e.closest("tr");
             tr.classList.remove(this.bgColourClass);
             tr.classList.remove(this.textColourClass);
@@ -112,7 +117,7 @@ class GridControl {
         });
     }
     copyTableToClipboard() {
-        var table = document.querySelector(this.tableSelector());
+        var table = this.gridControl.querySelector(this.tableSelector());
         try {
             this.copyElementToClipboard(table);
             this.message("Page copied to clipboard");
@@ -203,7 +208,7 @@ class GridControl {
         return `#${this.gridId} table`;
     }
     rowSelector() {
-        return `#${this.gridId} tbody tr.grid-row`;
+        return `#tbody${this.gridId} > tr.grid-row`;
     }
     linkSelector() {
         return `#${this.gridId} tbody a`;

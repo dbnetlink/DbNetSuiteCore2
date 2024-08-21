@@ -1,0 +1,42 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var employeeColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("ParentEmployeeKey", "Id"),
+        new GridColumnModel("EmployeeNationalIDAlternateKey", "National Id"),
+        new GridColumnModel("SalesTerritoryKey", "Sales Territory"),
+        new GridColumnModel("FirstName", "Forename"),
+        new GridColumnModel("MiddleName", "Middle Name"),
+        new GridColumnModel("LastName", "Surname") {InitialSortOrder = SortOrder.Asc},
+        new GridColumnModel("Title", "Title"),
+        new GridColumnModel("HireDate", "Hire Date"),
+        new GridColumnModel("BirthDate", "Birth Date"),
+        new GridColumnModel("LoginID", "Login Id"),
+        new GridColumnModel("EmailAddress", "Email"),
+        new GridColumnModel("Phone", "Phone"),
+        new GridColumnModel("MaritalStatus", "Marital Status"),
+        new GridColumnModel("EmergencyContactName", "Contact Name"),
+        new GridColumnModel("EmergencyContactPhone", "Contact Phone"),
+        new GridColumnModel("SalariedFlag", "Salaried"),
+        new GridColumnModel("Gender", "Gender"),
+        new GridColumnModel("PayFrequency", "Pay Frequency"),
+        new GridColumnModel("BaseRate", "Base Rate"),
+        new GridColumnModel("VacationHours", "Vacation Hours"),
+        new GridColumnModel("SickLeaveHours", "Sick Leave Hours"),
+        new GridColumnModel("CurrentFlag", "Current"),
+        new GridColumnModel("SalesPersonFlag", "Sales Person"),
+        new GridColumnModel("DepartmentName", "Department"),
+        new GridColumnModel("StartDate", "Started"),
+        new GridColumnModel("Status", "Status")
+    };
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { 
+        Columns = employeeColumns,
+        Caption = "Employees"
+    }))
+}
+

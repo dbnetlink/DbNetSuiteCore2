@@ -3,7 +3,7 @@ using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Html;
 using System.Data;
 
-namespace TQ.Models
+namespace DbNetSuiteCore.Models
 {
     public class GridViewModel : ComponentViewModel
     {
@@ -13,6 +13,7 @@ namespace TQ.Models
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
         public int TotalPages { get; set; } = 0;
         public string GridId => _gridModel.Id;
+        public string TBodyId => $"tbody{_gridModel.Id}";
         public int CurrentPage => _gridModel.CurrentPage;
         public int PageSize => _gridModel.PageSize;
         public string TableName => _gridModel.TableName;

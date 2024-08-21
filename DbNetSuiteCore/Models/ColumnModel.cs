@@ -3,7 +3,7 @@ using DbNetSuiteCore.Enums;
 using System.Data;
 using System.Text.Json.Serialization;
 
-namespace TQ.Models
+namespace DbNetSuiteCore.Models
 {
     public class ColumnModel
     {
@@ -15,6 +15,7 @@ namespace TQ.Models
         public string ColumnName => Name.Split(".").Last();
         public string Key => Name.GetHashCode().ToString();
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
+        public Type? LookupEnum { get; set; } 
         public string DataTypeName => DataType.ToString().Split(".").Last();    
         [JsonIgnore]
         public Type DataType

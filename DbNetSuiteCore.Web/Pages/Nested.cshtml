@@ -1,7 +1,7 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Helpers
-@using TQ.Models
+@using DbNetSuiteCore.Models
 
 @{
     Layout = null;
@@ -42,10 +42,12 @@
 
     var invoiceLineGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Invoice_items");
     invoiceLineGridModel.Columns = invoiceItemColumns;
+    invoiceLineGridModel.Caption = "Invoice Lines";
 
     var invoiceGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Invoices");
     invoiceGridModel.Columns = invoiceColumns;
     invoiceGridModel.NestedGrid = invoiceLineGridModel;
+    invoiceGridModel.Caption = "Invoices";
 
     var customerGridModel = new GridModel(DataSourceType.SQlite, "Chinook", "Customers");
     customerGridModel.Columns = customerColumns;

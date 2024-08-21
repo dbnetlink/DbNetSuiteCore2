@@ -1,12 +1,12 @@
-﻿@model TQ.Models.GridViewModel
+﻿@model DbNetSuiteCore.Models.GridViewModel
 @using System.Data
 @using DbNetSuiteCore.Helpers
-@using TQ.Models
+@using DbNetSuiteCore.Models
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
 
-<tbody data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey">
+<tbody id="@Model.TBodyId" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey">
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row">

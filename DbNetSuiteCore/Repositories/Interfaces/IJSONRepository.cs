@@ -1,4 +1,4 @@
-﻿using TQ.Models;
+﻿using DbNetSuiteCore.Models;
 using System.Data;
 
 namespace DbNetSuiteCore.Repositories

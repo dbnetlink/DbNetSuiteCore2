@@ -1,0 +1,69 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    Layout = null;
+}
+
+@{
+    var customerColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("CustomerID", "CustomerID") {PrimaryKey = true },
+        new GridColumnModel("CompanyName", "Company Name"),
+        new GridColumnModel("ContactName", "Contact Name"),
+        new GridColumnModel("ContactTitle", "Contact Title"),
+        new GridColumnModel("Address", "Address"),
+        new GridColumnModel("City", "City") {},
+        new GridColumnModel("PostalCode", "Post Code"),
+        new GridColumnModel("Country", "Country"),
+        new GridColumnModel("Phone", "Phone"),
+        new GridColumnModel("Fax", "Fax")
+    };
+
+    var orderColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("OrderID", "Invoice ID") ,
+        new GridColumnModel("CustomerID", "Customer ID") {ForeignKey = true },
+        new GridColumnModel("EmployeeID", "Employee ID"),
+        new GridColumnModel("OrderDate", "Ordered"),
+        new GridColumnModel("RequiredDate", "Required "),
+        new GridColumnModel("ShippedDate", "Shipped "),
+        new GridColumnModel("ShipVia", "Ship Via"),
+        new GridColumnModel("Freight", "Freight"),
+        new GridColumnModel("ShipName", "Ship Name"),
+        new GridColumnModel("ShipAddress", "Ship Address"),
+        new GridColumnModel("ShipCity", "Ship City"),
+        new GridColumnModel("ShipRegion", "Ship Region"),
+        new GridColumnModel("ShipPostalCode", "Ship Postal Code"),
+        new GridColumnModel("ShipCountry", "Ship Country")
+    };
+
+
+    var ordersGridModel = new GridModel(DataSourceType.JSON, "/data/orders.json");
+    ordersGridModel.Columns = orderColumns;
+
+    var customerGridModel = new GridModel(DataSourceType.JSON, "/data/customers.json");
+    customerGridModel.Columns = customerColumns;
+    customerGridModel.NestedGrid = ordersGridModel;
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main style="padding:20px">
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGridModel))
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

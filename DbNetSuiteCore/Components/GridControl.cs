@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Html;
-using TQ.Models;
+using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore
 {

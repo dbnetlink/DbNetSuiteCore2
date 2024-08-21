@@ -1,4 +1,4 @@
-﻿namespace TQ.Models
+﻿namespace DbNetSuiteCore.Models
 {
     public class ComponentModel
     {

@@ -1,5 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
-using TQ.Models;
+using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 
 namespace DbNetSuiteCore.Helpers

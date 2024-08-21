@@ -1,6 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 
-namespace TQ.Models
+namespace DbNetSuiteCore.Models
 {
     public class GridModel : ComponentModel
     {
@@ -28,6 +28,7 @@ namespace TQ.Models
         public bool IsNested { get; set; } = false;
         public int ColSpan { get; set; } = 0;
         public string ParentKey { get; set; } = string.Empty;
+        public string Caption { get; set; } = string.Empty;
         public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
         private SortOrder GetSortSequence()
@@ -62,10 +63,14 @@ namespace TQ.Models
             TableName = tableName;
         }
 
-        public string GeneratedId()
+        private string GeneratedId()
         {
             return $"Grid{DateTime.Now.Ticks}";
         }
 
+        public void SetId()
+        {
+            Id = $"Grid{DateTime.Now.Ticks}";
+        }
     }
 }
