@@ -14,7 +14,7 @@
         @await Html.PartialAsync("GridToolbar", Model)
     }
     <div class="flex mt-2">
-        <table class="table table-xs">
+        <table class="table table-xs" data-linkedgridid="@Model.LinkedGridId">
             <thead>
                 <tr class="bg-slate-200">
                     @if (Model.GridModel.NestedGrid != null)
@@ -45,9 +45,9 @@
                         {
                             <th class="text-base w-12"></th>
                         }
-                        @foreach (DataColumn col in Model.Columns)
+                        @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
                         {
-                            RenderColumnFilter(col);
+                            RenderColumnFilter(columnInfo);
                         }
                     </tr>
                 }
@@ -72,13 +72,12 @@
 
 
 @functions {
-    void RenderColumnFilter(DataColumn dataColumn)
+    void RenderColumnFilter(GridColumnModel columnInfo)
     {
-        GridColumnModel? columnInfo = Model.GetColumnInfo(dataColumn);
         <th class="text-base">
             @if (columnInfo?.Filter ?? false)
             {
-                if (columnInfo.LookupOptions != null)
+                if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
                     RenderColumnSelectFilter(columnInfo.LookupOptions);
                 }

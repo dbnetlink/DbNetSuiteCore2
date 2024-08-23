@@ -6,6 +6,7 @@ namespace DbNetSuiteCore.Enums
         SQlite,
         Timestream,
         MSSQL,
-        JSON
+        JSON,
+        FileSystem
     };
 }

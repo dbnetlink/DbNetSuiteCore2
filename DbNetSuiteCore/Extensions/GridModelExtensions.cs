@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc
                 }
             }
 
-            if (gridModel.IsNested)
+            if (gridModel.IsNested || gridModel.IsLinked)
             {
                 if (!string.IsNullOrEmpty(gridModel.ParentKey))
                 {
@@ -81,6 +81,10 @@ namespace Microsoft.AspNetCore.Mvc
                         filterParts.Add($"({foreignKeyColumn.Expression.Split(" ").First()} = @{foreignKeyColumn.ParamName})");
                         query.Params[$"@{foreignKeyColumn.ParamName}"] = gridModel.ParentKey;
                     }
+                }
+                else
+                {
+                    filterParts.Add($"(1=2)");
                 }
             }
 
@@ -114,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (initialSortOrderColumn != null)
             {
                 gridModel.CurrentSortKey = initialSortOrderColumn.Key;
-                gridModel.CurrentSortAscending = initialSortOrderColumn.InitialSortOrder!.Value == DbNetSuiteCore.Enums.SortOrder.Asc;
+                gridModel.CurrentSortAscending = initialSortOrderColumn.InitialSortOrder!.Value == SortOrder.Asc;
             }
         }
 

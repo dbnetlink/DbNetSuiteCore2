@@ -29,7 +29,14 @@ namespace DbNetSuiteCore.Models
         public GridModel? LinkedGrid
         {
             get { return _LinkedGrid; }
-            set { _LinkedGrid = value; IsLinked = value != null; }
+            set 
+            { 
+                _LinkedGrid = value; 
+                if (value != null)
+                {
+                    value.IsLinked = true;
+                }
+            }
         }
         public bool IsNested { get; set; } = false;
         public bool IsLinked { get; set; } = false;
@@ -51,7 +58,7 @@ namespace DbNetSuiteCore.Models
 
             return SortOrder.Asc;
         }
-
+        public string HxFormTrigger => IsLinked ? "submit" : "load";
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
 
         public GridModel()

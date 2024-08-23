@@ -1,8 +1,8 @@
-using TQ.Middleware;
+using DbNetSuiteCore.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Development.json");
-builder.Services.AddWebReporting();  // make web reporting part of the web application middleware
+builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
 
 
 builder.Services.AddRazorPages();
@@ -15,7 +15,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseWebReporting(); // configure web application middleware
+app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

@@ -1,18 +1,19 @@
 ﻿using DbNetSuiteCore.Models;
-using Newtonsoft.Json;
+using DbNetSuiteCore.Enums;
 using System.Data;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using DocumentFormat.OpenXml.Office2021.Excel.NamedSheetViews;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class JSONRepository : IJSONRepository
+    public class FileSystemRepository : IFileSystemRepository
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
         private static readonly HttpClient _httpClient = new HttpClient();
-        public JSONRepository(IConfiguration configuration, IWebHostEnvironment env)
+        public FileSystemRepository(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
             _env = env;
@@ -35,52 +36,67 @@ namespace DbNetSuiteCore.Repositories
             return await BuildDataTable(gridModel, httpContext);
         }
 
-        private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
+        public static void UpdateUrl(GridModel gridModel)
         {
-            var url = gridModel.Url;
+            var urlParts = gridModel.Url.Split("/");
 
-            if (url.StartsWith("http") == false)
+            if (string.IsNullOrEmpty(gridModel.ParentKey) == false)
             {
-                url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
+                urlParts = urlParts.Append(gridModel.ParentKey).ToArray();
+                gridModel.Url = string.Join("/", urlParts.ToArray());
+                gridModel.ParentKey = string.Empty;
             }
-            string json = await _httpClient.GetStringAsync(url);
-
-            DataTable? dataTable = new();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return dataTable;
-            }
-            dataTable = Tabulate(json);
-
-            if (gridModel.Columns.Any())
-            {
-                string[] selectedColumns = gridModel.Columns.Select(c => c.Expression).ToArray();
-
-                dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
-
-            }
-            return dataTable;
         }
 
-        private DataTable Tabulate(string json)
+        private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
         {
-            JArray srcArray = JArray.Parse(json);
-            JArray trgArray = new JArray();
-            foreach (JObject row in srcArray.Children<JObject>())
-            {
-                var cleanRow = new JObject();
-                foreach (JProperty column in row.Properties())
-                {
-                    if (column.Value is JValue)
-                    {
-                        cleanRow.Add(column.Name, column.Value);
-                    }
-                }
+            var pathParts = _env.WebRootPath.Split("\\");
+            var urlParts = gridModel.Url.Split("/");
 
-                trgArray.Add(cleanRow);
+            foreach (var part in urlParts)
+            {
+                if (part == "..")
+                {
+                    pathParts = pathParts.Take(pathParts.Count() - 1).ToArray();
+                }
+                else
+                {
+                    pathParts = pathParts.Append(part).ToArray();
+                }
             }
 
-            return JsonConvert.DeserializeObject<DataTable>(trgArray.ToString());
+            var path = string.Join("\\", pathParts);
+
+            var provider = new PhysicalFileProvider(path);
+            var contents = provider.GetDirectoryContents(string.Empty);
+
+            return Tabulate(contents);
+        }
+
+        private DataTable Tabulate(IDirectoryContents directoryContents)
+        {
+            DataTable dataTable = new DataTable();
+            dataTable.Clear();
+            dataTable.Columns.Add(FileSystemColumn.Icon.ToString(), typeof(bool));
+            dataTable.Columns.Add(FileSystemColumn.IsDirectory.ToString(), typeof(bool));
+            dataTable.Columns.Add(FileSystemColumn.Name.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.Extension.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.Length.ToString(), typeof(Int64));
+            dataTable.Columns.Add(FileSystemColumn.LastModified.ToString(), typeof(DateTime));
+
+            foreach (IFileInfo file in directoryContents)
+            {
+                DataRow dataRow = dataTable.NewRow();
+                dataRow[FileSystemColumn.Icon.ToString()] = file.IsDirectory;
+                dataRow[FileSystemColumn.IsDirectory.ToString()] = file.IsDirectory;
+                dataRow[FileSystemColumn.Name.ToString()] = file.Name;
+                dataRow[FileSystemColumn.Extension.ToString()] = file.IsDirectory ? string.Empty : file.Name.Split(".").Last();
+                dataRow[FileSystemColumn.Length.ToString()] = file.IsDirectory ? System.DBNull.Value : file.Length;
+                dataRow[FileSystemColumn.LastModified.ToString()] = file.LastModified.UtcDateTime;
+                dataTable.Rows.Add(dataRow);
+            };
+
+            return dataTable;
         }
 
         private string AddFilterPart(GridModel gridModel)
@@ -128,22 +144,6 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (gridModel.IsNested || gridModel.IsLinked)
-            {
-                if (!string.IsNullOrEmpty(gridModel.ParentKey))
-                {
-                    var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
-                    if (foreignKeyColumn != null)
-                    {
-                        filterParts.Add($"({foreignKeyColumn.Name} = {Quoted(foreignKeyColumn)}{gridModel.ParentKey}{Quoted(foreignKeyColumn)})");
-                    }
-                }
-                else
-                {
-                    filterParts.Add("(1=2)");
-                }
-            }
-
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
                 filterParts.Add($"({gridModel.FixedFilter})");
@@ -172,7 +172,7 @@ namespace DbNetSuiteCore.Repositories
                 return string.Empty;
             }
 
-            return $"{(!string.IsNullOrEmpty(gridModel.SortKey) ? sortColumn : currentSortColumn)} {gridModel.SortSequence}";
+            return $"IsDirectory desc, {(!string.IsNullOrEmpty(gridModel.SortKey) ? sortColumn : currentSortColumn)} {gridModel.SortSequence}";
         }
     }
 }

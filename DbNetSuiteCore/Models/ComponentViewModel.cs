@@ -28,15 +28,16 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-
         protected ColumnModel? _GetColumnInfo(DataColumn column)
         {
             var columnInfo = ColumnInfo.FirstOrDefault(c => c.Name == column.ColumnName || c.Name.Split(".").Last() == column.ColumnName);
 
+            /*
             if (columnInfo == null)
             {
                 throw new Exception(column.ColumnName); 
             }
+            */
 
             return columnInfo;
         }

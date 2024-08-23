@@ -2,6 +2,7 @@
 @using System.Data
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Enums
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
@@ -9,24 +10,34 @@
 <tbody id="@Model.TBodyId" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey">
     @foreach (DataRow row in Model.Rows)
     {
-        <tr style="cursor:pointer" class="grid-row">
+        <tr style="cursor:pointer" class="grid-row" data-id="@Model.PrimaryKeyValue(row)" >
             @if (Model.GridModel.NestedGrid != null)
             {
-                <td class="text-base w-12">
-                    <button type="button" name="@TriggerNames.NestedGrid" class="btn btn-active btn-square btn-xs" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}'>
-                        @IconHelper.ExpandDownIcon()
-                    </button>
-                    <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
-                        @IconHelper.ExpandDownIcon()
-                    </button>
-                    <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
-                        @IconHelper.ExpandUpIcon()
-                    </button>
-                </td>
+                if (Model.DataSourceType == DataSourceType.FileSystem)
+                {
+                    <td class="text-base w-12" data-isfolder="Model.IsFolder(row).ToString().ToLower()">
+                        @if (Model.IsFolder(row))
+                        {
+                            RenderNestedButtons(row, IconHelper.FolderOpen(), IconHelper.Folder());
+                        }
+                        else
+                        {
+                            @IconHelper.Document();
+                        }
+                    </td>
+                }
+                else
+                {
+                    <td class="text-base w-12">
+                        @{
+                            RenderNestedButtons(row, IconHelper.ExpandDown(), IconHelper.ExpandUp());
+                        }
+                    </td>
+                }
             }
-            @foreach (DataColumn col in Model.Columns)
+            @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
             {
-                GridColumnModel? columnInfo = Model.GetColumnInfo(col);
+                DataColumn col = Model.GetDataColumn(columnInfo);
                 var classes = new List<string>() { "text-base" };
 
                 if (row[col] == System.DBNull.Value || row[col] == null)
@@ -39,10 +50,10 @@
                 {
                     classes.Add("text-center");
                     <td class="@(string.Join(" ",classes))">
-                        <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? IconHelper.CheckedIcon() : IconHelper.UncheckedIcon())</div>
+                        <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
-                else if (columnInfo.LookupOptions != null)
+                else if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
                     <td class="@(string.Join(" ",classes))">
                         @columnInfo.GetLookupValue(row[col])
@@ -79,6 +90,10 @@
                 <input type="hidden" name="currentSortAscending" value="@Model.CurrentSortAscending.ToString()" />
                 <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model.GridModel))" />
                 <span style="display:none" id="sortIcon">@Model.SortIcon</span>
+                @if (Model.GridModel.IsLinked || Model.GridModel.IsNested)
+                {
+                    <input type="hidden" name="primaryKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator" value="@Model.GridModel.ParentKey" />
+                }
             </div>
         </td>
 
@@ -121,5 +136,18 @@
         }
 
         return value;
+    }
+
+    public void RenderNestedButtons(DataRow row, HtmlString openIcon, HtmlString closedIcon)
+    {
+        <button type="button" name="@TriggerNames.NestedGrid" class="btn btn-active btn-square btn-xs" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}'>
+            @openIcon
+        </button>
+        <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
+            @openIcon
+        </button>
+        <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
+            @closedIcon
+        </button>
     }
 }

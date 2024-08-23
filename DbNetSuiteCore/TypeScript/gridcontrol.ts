@@ -1,4 +1,18 @@
-var gridControlArray = [];
+var DbNetSuiteCore: any = {};
+DbNetSuiteCore.gridControlArray = {}
+DbNetSuiteCore.createGridControl = function (gridId, clientEvents) {
+    document.addEventListener('htmx:afterRequest', function (evt) {
+        if (!DbNetSuiteCore.gridControlArray[gridId]) {
+            var gridControl = new GridControl(gridId);
+
+            for (const [key, value] of Object.entries(clientEvents)) {
+                gridControl.eventHandlers[key] = window[value.toString()]
+            }
+            DbNetSuiteCore.gridControlArray[gridId] = gridControl;
+        }
+        DbNetSuiteCore.gridControlArray[gridId].init(evt);
+    });
+}
 class GridControl {
     gridId: string = "";
     gridControl: HTMLFormElement;
@@ -20,7 +34,7 @@ class GridControl {
             return
         }
 
-        if (document.querySelector(this.errorSelector())) {
+        if (htmx.find(this.errorSelector())) {
             return
         }
 
@@ -37,12 +51,12 @@ class GridControl {
             this.invokeEventHandler('Initialised');
         }
 
-        document.querySelectorAll(this.linkSelector()).forEach((e) => {
+        htmx.findAll(this.linkSelector()).forEach((e) => {
             e.classList.add(this.linkColourClass);
             e.classList.add("underline")
         });
-        document.querySelectorAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow((ev.target as HTMLElement).closest('tr'))) });
-        let row:HTMLElement = document.querySelector(this.rowSelector());
+        htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow((ev.target as HTMLElement).closest('tr'))) });
+        let row: HTMLElement = document.querySelector(this.rowSelector());
         if (row) {
             row.click();
         }
@@ -67,17 +81,21 @@ class GridControl {
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
 
+        if (totalPages == 0) {
+            this.updateLinkedGrids('');
+        }
+
         if (this.toolbarExists()) {
             if (totalPages == 0) {
-                this.selectGridElement('#no-records').classList.remove("hidden");
-                this.selectGridElement('#toolbar').classList.add("hidden");
+                this.removeClass('#no-records', "hidden");
+                this.addClass('#toolbar', "hidden");
             }
             else {
-                this.selectGridElement('#no-records').classList.add("hidden");
-                this.selectGridElement('#toolbar').classList.remove("hidden");
+                this.addClass('#no-records', "hidden");
+                this.removeClass('#toolbar', "hidden");
             }
 
-            (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = currentPage.toString();
+            this.setPageNumber(currentPage);
             (this.selectGridElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
 
             this.getButton("first").disabled = currentPage == 1;
@@ -85,6 +103,18 @@ class GridControl {
             this.getButton("next").disabled = currentPage == totalPages;
             this.getButton("last").disabled = currentPage == totalPages;
         }
+    }
+
+    removeClass(selector: string, className: string) {
+        this.selectGridElement(selector).classList.remove(className);
+    }
+
+    addClass(selector: string, className: string) {
+        this.selectGridElement(selector).classList.add(className);
+    }
+
+    setPageNumber(pageNumber: number) {
+        (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = pageNumber.toString();
     }
 
     toolbarExists() {
@@ -117,13 +147,14 @@ class GridControl {
             return;
         }
 
+        (tr.previousElementSibling as HTMLElement).click()
         let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button")
 
         buttons[0].style.display = 'none'
         buttons[2].style.display = 'block'
 
-        buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev,true));
-        buttons[2].addEventListener("click", ev => this.showHideNestedGrid(ev,false));
+        buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
+        buttons[2].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
     }
 
     showHideNestedGrid(ev, show) {
@@ -136,13 +167,46 @@ class GridControl {
         buttons[2].style.display = show ? "block" : "none"
     }
 
+    loadFromParent(primaryKey: string) {
+        let selector = `#${this.gridId} input[name="primaryKey"]`
+        let pk = htmx.find(selector) as HTMLInputElement
+
+        console.log(primaryKey)
+        this.gridControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }))
+
+        if (pk) {
+            htmx.trigger(selector, "changed");
+        }
+        else {
+            htmx.trigger(`#${this.gridId}`, "submit");
+        }
+    }
+
+    isElementLoaded = async selector => {
+        while (document.querySelector(selector) === null) {
+            await new Promise(resolve => requestAnimationFrame(resolve))
+        }
+        return document.querySelector(selector);
+    };
+
     highlightRow(tr) {
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.remove(this.linkColourClass));
-        tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill","#ffffff"));
+        tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill", "#ffffff"));
+        this.updateLinkedGrids(tr.dataset.id);
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
+    }
+
+    updateLinkedGrids(primaryKey: string) {
+        let table = this.gridControl.querySelector("table") as HTMLElement;
+
+        if (table.dataset.linkedgridid) {
+            this.isElementLoaded(`#${table.dataset.linkedgridid}`).then((selector) => {
+                DbNetSuiteCore.gridControlArray[table.dataset.linkedgridid].loadFromParent(primaryKey);
+            })
+        }
     }
 
     clearHighlighting() {
@@ -169,7 +233,7 @@ class GridControl {
                 this.message("Page copied to clipboard")
             }
             catch (e) {
-                this.message("Copy failed","error", 5)
+                this.message("Copy failed", "error", 5)
                 return
             }
         }
@@ -290,7 +354,7 @@ class GridControl {
         return document.querySelectorAll(`#${this.gridId} td:nth-child(${(th.cellIndex + 1)})`)
     }
 
-    getButton(name):HTMLButtonElement {
+    getButton(name): HTMLButtonElement {
         return document.querySelector(this.buttonSelector(name))
     }
 

@@ -5,16 +5,16 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Services;
 
-namespace TQ.Middleware
+namespace DbNetSuiteCore.Middleware
 {
-    public class WebReporting
+    public class DbNetSuiteCore
     {
         private RequestDelegate _next;
-        private IReportService _reportService;
+        private IReportService _reportService = null;
         private string _extension = ".htmx";
 
 
-        public WebReporting(RequestDelegate next)
+        public DbNetSuiteCore(RequestDelegate next)
         {
             _next = next;
         }
@@ -37,7 +37,7 @@ namespace TQ.Middleware
             var request = context.Request;
             var resp = context.Response;
 
-            string page = request.Path.ToString().Split('/')[1].Replace(_extension,string.Empty);
+            string page = request.Path.ToString().Split('/').Last().Replace(_extension,string.Empty);
 
             var response = await _reportService.Process(context, page);
 
@@ -59,17 +59,17 @@ namespace TQ.Middleware
 
     public static class WebReportingExtensions
     {
-        public static IApplicationBuilder UseWebReporting(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDbNetSuiteCore(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<WebReporting>();
+            return builder.UseMiddleware<DbNetSuiteCore>();
         }
 
-        public static IServiceCollection AddWebReporting(this IServiceCollection services)
+        public static IServiceCollection AddDbNetSuiteCore(this IServiceCollection services)
         {
             services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
             {
                 //options.FileProviders.Clear();
-                var embeddedFileProvider = new EmbeddedFileProvider(typeof(WebReporting).Assembly);
+                var embeddedFileProvider = new EmbeddedFileProvider(typeof(DbNetSuiteCore).Assembly);
                 options.FileProviders.Add(embeddedFileProvider);
             });
 
@@ -82,6 +82,7 @@ namespace TQ.Middleware
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();
             services.AddScoped<IJSONRepository, JSONRepository>();
             services.AddScoped<ITimestreamRepository, TimestreamRepository>();
+            services.AddScoped<IFileSystemRepository, FileSystemRepository>();
             services.AddScoped<RazorViewToStringRenderer>();
             
             return services;

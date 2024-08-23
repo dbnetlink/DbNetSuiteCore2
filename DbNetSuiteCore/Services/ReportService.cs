@@ -20,6 +20,7 @@ namespace DbNetSuiteCore.Services
         private readonly ISQLiteRepository _sqliteRepository;
         private readonly RazorViewToStringRenderer _razorRendererService;
         private readonly IJSONRepository _jsonRepository;
+        private readonly IFileSystemRepository _fileSystemRepository;
 
         private HttpContext? _context = null;
         private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
@@ -29,13 +30,14 @@ namespace DbNetSuiteCore.Services
 
         private DataSourceType dataSourceType => Enum.Parse<DataSourceType>(RequestHelper.FormValue("dataSourceType", string.Empty, _context));
 
-        public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository)
+        public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
             _timestreamRepository = timestreamRepository;
             _sqliteRepository = sqliteRepository;
             _jsonRepository = jsonRepository;
+            _fileSystemRepository = fileSystemRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -72,6 +74,11 @@ namespace DbNetSuiteCore.Services
                     gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
                     gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey","",_context);
                     gridModel.NestedGrid.SetId();
+
+                    if (gridModel.DataSourceType == DataSourceType.FileSystem)
+                    {
+                        gridModel.NestedGrid.NestedGrid = gridModel.NestedGrid.DeepCopy();
+                    }
                     return await View("NestedGrid", gridModel.NestedGrid);
                 default:
                     string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
@@ -86,6 +93,10 @@ namespace DbNetSuiteCore.Services
 
         private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
         {
+            if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentKey) == false)
+            {
+                FileSystemRepository.UpdateUrl(gridModel);
+            }
             await ConfigureGridColumns(gridModel);
             DataTable data = await GetRecords(gridModel);
             return new GridViewModel(data, gridModel);
@@ -123,9 +134,20 @@ namespace DbNetSuiteCore.Services
                             break;
                         default:
                             var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-                            for (var i = 0; i < dataColumns.Count; i++)
+
+                            if (gridModel.DataSourceType == DataSourceType.FileSystem)
                             {
-                                gridModel.Columns[i].Update(dataColumns[i]);
+                                foreach (GridColumnModel gridColumn in gridModel.Columns)
+                                {
+                                    gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
+                                }
+                            }
+                            else
+                            {
+                                for (var i = 0; i < dataColumns.Count; i++)
+                                {
+                                    gridModel.Columns[i].Update(dataColumns[i]);
+                                }
                             }
                             break;
                     }
@@ -147,6 +169,8 @@ namespace DbNetSuiteCore.Services
                     return await _sqliteRepository.GetRecords(gridModel);
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetRecords(gridModel, _context);
+                case DataSourceType.FileSystem:
+                    return await _fileSystemRepository.GetRecords(gridModel, _context);
                 default:
                     return await _msSqlRepository.GetRecords(gridModel);
             }
@@ -162,6 +186,8 @@ namespace DbNetSuiteCore.Services
                     return await _sqliteRepository.GetColumns(gridModel);
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetColumns(gridModel, _context);
+                case DataSourceType.FileSystem:
+                    return await _fileSystemRepository.GetColumns(gridModel, _context);
                 default:
                     return await _msSqlRepository.GetColumns(gridModel);
             }
@@ -357,6 +383,12 @@ namespace DbNetSuiteCore.Services
                 gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context);
+                string primaryKey = RequestHelper.FormValue("primaryKey", string.Empty, _context);
+                if (!string.IsNullOrEmpty(primaryKey))
+                {
+                    gridModel.ParentKey = primaryKey;
+                }
+                
             }
             catch
             {
@@ -413,7 +445,7 @@ namespace DbNetSuiteCore.Services
                     resources = ["daisyui", "gridcontrol"];
                     break;
                 case "js":
-                    resources = ["tailwindcss", "htmx.min", "gridcontrol"];
+                    resources = ["tailwindcss", "htmx", "gridcontrol"];
                     break;
             }
 

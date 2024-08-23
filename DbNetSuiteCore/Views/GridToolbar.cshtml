@@ -8,26 +8,26 @@
 
 <div class="flex flex-row gap-1 items-center">
     <input class="input input-bordered input-sm mr-5" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
-    <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.SearchIcon())</button> -->
+    <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.Search())</button> -->
 
     <div id="no-records" class="p-1 rounded-md border-solid border-slate-300 bg-slate-100 flex flex-row gap-2 @(Model.TotalPages == 0 ? "" : "hidden")">
-        @IconHelper.InfoIcon()
+        @IconHelper.Info()
         <span>No records found</span>
     </div>
     <div id="toolbar" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
         @{
-            RenderNavButton(TriggerNames.First, IconHelper.FirstIcon(), "First page");
-            RenderNavButton(TriggerNames.Previous, IconHelper.PreviousIcon(), "Previous page");
+            RenderNavButton(TriggerNames.First, IconHelper.First(), "First page");
+            RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), "Previous page");
             <span class="flex">Page</span>
             RenderPageNumber(Model.CurrentPage, Model.TotalPages);
             <span class="flex">of</span>
             RenderTotalPages(Model.TotalPages);
-            RenderNavButton(TriggerNames.Next, IconHelper.NextIcon(), "Next page");
-            RenderNavButton(TriggerNames.Last, IconHelper.LastIcon(), "Last page");
+            RenderNavButton(TriggerNames.Next, IconHelper.Next(), "Next page");
+            RenderNavButton(TriggerNames.Last, IconHelper.Last(), "Last page");
         }
 
-        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@IconHelper.CopyIcon()</button>
-        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@IconHelper.DownloadIcon()</button>
+        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@IconHelper.Copy()</button>
+        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@IconHelper.Download()</button>
         @{
             RenderExportOptions();
         }

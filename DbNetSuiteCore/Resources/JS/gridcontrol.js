@@ -1,4 +1,17 @@
-var gridControlArray = [];
+var DbNetSuiteCore = {};
+DbNetSuiteCore.gridControlArray = {};
+DbNetSuiteCore.createGridControl = function (gridId, clientEvents) {
+    document.addEventListener('htmx:afterRequest', function (evt) {
+        if (!DbNetSuiteCore.gridControlArray[gridId]) {
+            var gridControl = new GridControl(gridId);
+            for (const [key, value] of Object.entries(clientEvents)) {
+                gridControl.eventHandlers[key] = window[value.toString()];
+            }
+            DbNetSuiteCore.gridControlArray[gridId] = gridControl;
+        }
+        DbNetSuiteCore.gridControlArray[gridId].init(evt);
+    });
+};
 class GridControl {
     constructor(gridId) {
         this.gridId = "";
@@ -6,6 +19,12 @@ class GridControl {
         this.bgColourClass = "bg-cyan-600";
         this.textColourClass = "text-zinc-100";
         this.linkColourClass = "text-blue-500";
+        this.isElementLoaded = async (selector) => {
+            while (document.querySelector(selector) === null) {
+                await new Promise(resolve => requestAnimationFrame(resolve));
+            }
+            return document.querySelector(selector);
+        };
         this.gridId = gridId;
         this.gridControl = document.querySelector(this.gridSelector());
         this.gridContainer = this.gridControl.parentElement;
@@ -15,7 +34,7 @@ class GridControl {
         if (gridId.startsWith(this.gridId) == false) {
             return;
         }
-        if (document.querySelector(this.errorSelector())) {
+        if (htmx.find(this.errorSelector())) {
             return;
         }
         this.configureNavigation();
@@ -28,11 +47,11 @@ class GridControl {
             this.configureNestedGrid(evt.target);
             this.invokeEventHandler('Initialised');
         }
-        document.querySelectorAll(this.linkSelector()).forEach((e) => {
+        htmx.findAll(this.linkSelector()).forEach((e) => {
             e.classList.add(this.linkColourClass);
             e.classList.add("underline");
         });
-        document.querySelectorAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow(ev.target.closest('tr'))); });
+        htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow(ev.target.closest('tr'))); });
         let row = document.querySelector(this.rowSelector());
         if (row) {
             row.click();
@@ -54,22 +73,34 @@ class GridControl {
         let tbody = this.gridControl.querySelector("tbody");
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
+        if (totalPages == 0) {
+            this.updateLinkedGrids('');
+        }
         if (this.toolbarExists()) {
             if (totalPages == 0) {
-                this.selectGridElement('#no-records').classList.remove("hidden");
-                this.selectGridElement('#toolbar').classList.add("hidden");
+                this.removeClass('#no-records', "hidden");
+                this.addClass('#toolbar', "hidden");
             }
             else {
-                this.selectGridElement('#no-records').classList.add("hidden");
-                this.selectGridElement('#toolbar').classList.remove("hidden");
+                this.addClass('#no-records', "hidden");
+                this.removeClass('#toolbar', "hidden");
             }
-            this.selectGridElement('[name="page"]').value = currentPage.toString();
+            this.setPageNumber(currentPage);
             this.selectGridElement('[data-type="total-pages"]').value = totalPages.toString();
             this.getButton("first").disabled = currentPage == 1;
             this.getButton("previous").disabled = currentPage == 1;
             this.getButton("next").disabled = currentPage == totalPages;
             this.getButton("last").disabled = currentPage == totalPages;
         }
+    }
+    removeClass(selector, className) {
+        this.selectGridElement(selector).classList.remove(className);
+    }
+    addClass(selector, className) {
+        this.selectGridElement(selector).classList.add(className);
+    }
+    setPageNumber(pageNumber) {
+        this.selectGridElement('[name="page"]').value = pageNumber.toString();
     }
     toolbarExists() {
         return this.selectGridElement('#toolbar');
@@ -93,6 +124,7 @@ class GridControl {
         if (!tr || tr.classList.contains("nested-grid-row") == false) {
             return;
         }
+        tr.previousElementSibling.click();
         let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button");
         buttons[0].style.display = 'none';
         buttons[2].style.display = 'block';
@@ -106,13 +138,34 @@ class GridControl {
         buttons[1].style.display = show ? "none" : "block";
         buttons[2].style.display = show ? "block" : "none";
     }
+    loadFromParent(primaryKey) {
+        let selector = `#${this.gridId} input[name="primaryKey"]`;
+        let pk = htmx.find(selector);
+        console.log(primaryKey);
+        this.gridControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
+        if (pk) {
+            htmx.trigger(selector, "changed");
+        }
+        else {
+            htmx.trigger(`#${this.gridId}`, "submit");
+        }
+    }
     highlightRow(tr) {
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.remove(this.linkColourClass));
         tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill", "#ffffff"));
+        this.updateLinkedGrids(tr.dataset.id);
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
+    }
+    updateLinkedGrids(primaryKey) {
+        let table = this.gridControl.querySelector("table");
+        if (table.dataset.linkedgridid) {
+            this.isElementLoaded(`#${table.dataset.linkedgridid}`).then((selector) => {
+                DbNetSuiteCore.gridControlArray[table.dataset.linkedgridid].loadFromParent(primaryKey);
+            });
+        }
     }
     clearHighlighting() {
         this.gridControl.querySelectorAll(this.rowSelector()).forEach(e => {

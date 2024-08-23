@@ -79,7 +79,7 @@ namespace DbNetSuiteCore.Models
         public ColumnModel(string expression, string label)
         {
             Expression = expression;
-            Label = label;
+            Label = TextHelper.GenerateLabel(label);
         }
 
         public ColumnModel(string expression) 
