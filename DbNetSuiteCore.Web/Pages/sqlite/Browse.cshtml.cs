@@ -7,12 +7,13 @@ using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Text.RegularExpressions;
 
-namespace DbNetSuiteCore.Web.Pages
+namespace DbNetSuiteCore.Web.Pages.sqlite
 {
-    public class SQLiteModel : PageModel
+    [IgnoreAntiforgeryToken]
+    public class BrowseModel : PageModel
     {
         public DataTable Tables { get; set; } = new DataTable();
-        public List<string> Connections { get; set; } = new List<string>() { "Sakila","Chinook"};
+        public List<string> Connections { get; set; } = new List<string>() { "Sakila", "Chinook" };
 
         [BindProperty]
         public string TableName { get; set; } = string.Empty;
@@ -21,7 +22,7 @@ namespace DbNetSuiteCore.Web.Pages
 
         private IConfiguration configuration;
         private IWebHostEnvironment env;
-        public SQLiteModel(IConfiguration configuration, IWebHostEnvironment env)
+        public BrowseModel(IConfiguration configuration, IWebHostEnvironment env)
         {
             this.configuration = configuration;
             this.env = env;
@@ -44,9 +45,17 @@ namespace DbNetSuiteCore.Web.Pages
             }
             var connection = GetConnection();
             connection.Open();
-  
+
             var command = ConfigureCommand("SELECT name FROM sqlite_master WHERE type = 'table' order by 1", connection);
             Tables.Load(command.ExecuteReader(CommandBehavior.Default));
+
+            if (string.IsNullOrEmpty(TableName) == false)
+            {
+                if (Tables.Select($"name = '{TableName}'").Length == 0)
+                {
+                    TableName = string.Empty;
+                }
+            }
             connection.Close();
         }
 
@@ -62,7 +71,7 @@ namespace DbNetSuiteCore.Web.Pages
 
         private SqliteConnection GetConnection()
         {
-            string? connectionString = this.configuration.GetConnectionString(ConnectionAlias);
+            string? connectionString = configuration.GetConnectionString(ConnectionAlias);
             connectionString = MapDatabasePath(connectionString);
             SqliteConnection connection = new SqliteConnection(connectionString);
             return connection;
@@ -76,17 +85,17 @@ namespace DbNetSuiteCore.Web.Pages
             if (!connectionString.EndsWith(";"))
                 connectionString += ";";
 
-            string dataDirectory = String.Empty;
+            string dataDirectory = string.Empty;
 
             if (AppDomain.CurrentDomain.GetData("DataDirectory") != null)
                 dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory")?.ToString() ?? string.Empty;
 
-            if (connectionString.Contains("|DataDirectory|") && dataDirectory != String.Empty)
+            if (connectionString.Contains("|DataDirectory|") && dataDirectory != string.Empty)
                 connectionString = connectionString.Replace("|DataDirectory|", dataDirectory);
 
             connectionString = Regex.Replace(connectionString, @"DataProvider=(.*?);", "", RegexOptions.IgnoreCase);
 
-            string currentPath = env.WebRootPath; 
+            string currentPath = env.WebRootPath;
 
             string dataSourcePropertyName = "data source";
 

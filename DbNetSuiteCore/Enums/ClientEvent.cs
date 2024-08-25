@@ -3,6 +3,7 @@
     public enum ClientEvent
     {
         PageLoaded,
-        RowSelected
+        RowSelected,
+        CellRendered
     };
 }

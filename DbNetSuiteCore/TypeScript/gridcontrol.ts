@@ -61,6 +61,8 @@ class GridControl {
             row.click();
         }
 
+        htmx.findAll(this.cellSelector()).forEach((cell) => { this.invokeEventHandler('CellRendered', { cell: (cell as HTMLTableCellElement) })});
+
         this.invokeEventHandler('PageLoaded');
     }
 
@@ -323,6 +325,10 @@ class GridControl {
 
     rowSelector() {
         return `#tbody${this.gridId} > tr.grid-row`
+    }
+
+    cellSelector() {
+        return `#tbody${this.gridId} td[data-columnname]`
     }
 
     linkSelector() {

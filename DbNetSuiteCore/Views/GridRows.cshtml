@@ -7,10 +7,10 @@
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
 
-<tbody id="@Model.TBodyId" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey">
+<tbody id="@Model.TBodyId" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey" data-url="@Model.GridModel.Url">
     @foreach (DataRow row in Model.Rows)
     {
-        <tr style="cursor:pointer" class="grid-row" data-id="@Model.PrimaryKeyValue(row)" >
+        <tr style="cursor:pointer" class="grid-row" data-id="@Model.PrimaryKeyValue(row)">
             @if (Model.GridModel.NestedGrid != null)
             {
                 if (Model.DataSourceType == DataSourceType.FileSystem)
@@ -42,20 +42,21 @@
 
                 if (row[col] == System.DBNull.Value || row[col] == null)
                 {
-                    <td class="text-base">&nbsp;</td>
+                    <td class="text-base" data-columnname="@col.ColumnName">&nbsp;</td>
                     continue;
                 }
 
                 if (columnInfo.DataType == typeof(Boolean))
                 {
                     classes.Add("text-center");
-                    <td class="@(string.Join(" ",classes))">
-                        <div class="flex justify-center items-center">@Html.Raw(Convert.ToBoolean(Convert.ToInt16(row[col])) ? IconHelper.Checked() : IconHelper.Unchecked())</div>
+                    var boolValue = Convert.ToBoolean(Convert.ToInt16(row[col]));
+                    <td class="@(string.Join(" ",classes))" data-value="@boolValue" data-columnname="@col.ColumnName">
+                        <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
                 else if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
-                    <td class="@(string.Join(" ",classes))">
+                    <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">
                         @columnInfo.GetLookupValue(row[col])
                     </td>
                 }
@@ -69,7 +70,7 @@
                     var value = FormatValue(row[col], columnInfo);
                     if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
                     {
-                        <td class="@(string.Join(" ",classes))">
+                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">
                             <div class="tooltip" data-tip="@Html.Raw(value)">
                                 @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
                             </div>
@@ -77,7 +78,7 @@
                     }
                     else
                     {
-                        <td class="@(string.Join(" ",classes))">@Html.Raw(value)</td>
+                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">@Html.Raw(value)</td>
                     }
                 }
             }

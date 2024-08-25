@@ -8,7 +8,10 @@
 @using DbNetSuiteCore.Enums
 
 <div class="flex flex-col m-1 p-1">
-    <div class="flex flex-row text-lg">@Model.GridModel.Caption</div>
+    @if (string.IsNullOrEmpty(Model.GridModel.Caption) == false)
+    {
+        <div class="flex flex-row text-lg caption">@Model.GridModel.Caption</div>
+    }
     @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Top)
     {
         @await Html.PartialAsync("GridToolbar", Model)
@@ -16,7 +19,7 @@
     <div class="flex mt-2">
         <table class="table table-xs" data-linkedgridid="@Model.LinkedGridId">
             <thead>
-                <tr class="bg-slate-200">
+                <tr class="bg-slate-200 heading-row">
                     @if (Model.GridModel.NestedGrid != null)
                     {
                         <th class="text-base w-12"></th>

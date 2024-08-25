@@ -1,14 +1,38 @@
+dbnetsuite-grid {
+    background-color: whitesmoke;
+    border: 1px solid gainsboro;
+    border-radius: 5px;
+}
+
+    dbnetsuite-grid div.caption {
+        background-color: #ffffff;
+        border: 1px solid gainsboro;
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+        padding-left: 0.5rem;
+        font-weight: bold;
+    }
+
+    dbnetsuite-grid table.table {
+        width: auto;
+    }
+
+    dbnetsuite-grid tr.heading-row {
+        border: 1px solid gainsboro;
+        border-radius: 5px;
+    }
+
 .htmx-table :where(th,td) {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
     vertical-align: middle;
-    display:table-cell;
+    display: table-cell;
 }
 
 .htmx-table :where(tr) {
-    display: table-row 
+    display: table-row
 }
 
 .htmx-table {

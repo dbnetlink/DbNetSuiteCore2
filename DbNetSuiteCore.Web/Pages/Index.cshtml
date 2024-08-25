@@ -10,7 +10,24 @@
     };
     var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "../Pages", FixedFilter = "IsDirectory = 1 or Name like '%.cshtml'" };
     gridModel.Columns = columns;
+    gridModel.ClientEvents[ClientEvent.CellRendered] = "createLink";
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }
 
+<script>
+    function createLink(gridControl, args) {
+        var tbody = args.cell.closest("tbody")
+        var url = tbody.dataset.url.toString().toLowerCase().replace('../pages', '')
+        
+        switch (args.cell.dataset.columnname.toString()) 
+        { 
+            case "Name":
+                var name = args.cell.dataset.value.toString()
+                if (name.endsWith(".cshtml") && name.startsWith("_") == false) {
+                    args.cell.innerHTML = `<a target='_blank' href='${window.location.origin}${url}/${name.replace(".cshtml", "")}'>${name.replace(".cshtml", "")}</a>`
+                }
+                break;
+        }
+    }
+</script>

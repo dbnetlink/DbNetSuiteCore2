@@ -1,5 +1,5 @@
 ﻿@page
-@model DbNetSuiteCore.Web.Pages.SQLiteModel
+@model DbNetSuiteCore.Web.Pages.mssql.BrowseModel
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Helpers
 @using System.Data
@@ -9,7 +9,7 @@
     <form method="post">
         <div class="flex flex-row">
             <div>
-                <select class="select select-bordered select-sm mb-5" name="ConnectionAlias" onchange="this.form.submit()" value="@Model.ConnectionAlias">
+                <select class="select select-bordered select-sm mb-5" name="ConnectionAlias" onchange="this.form.submit()" value="@Model.TableName">
                     <option value="">Select connection</option>
                     @foreach (string connection in Model.Connections)
                     {
@@ -25,7 +25,7 @@
                         <option value="">Select table</option>
                         @foreach (DataRow dataRow in Model.Tables.Rows)
                         {
-                            var tableName = $"{dataRow[0]}";
+                            var tableName = $"{dataRow[1]}.[{dataRow[2]}]";
                             var selected = (tableName == Model.TableName);
                             <option value="@tableName" selected="@selected">@tableName</option>
                         }
@@ -39,7 +39,7 @@
         @{
             if (Model.TableName != string.Empty)
             {
-                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, Model.ConnectionAlias, Model.TableName)))
+                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, Model.ConnectionAlias, Model.TableName)))
             }
         }
     </div>
