@@ -7,10 +7,10 @@
 @using DbNetSuiteCore.Models
 
 <div style="padding:20px">
-    <form method="post" action="/sqlite/SQLite">
+    <form method="post" action="/sqlite/browse">
         <div class="flex flex-row">
             <div>
-                <select class="select select-bordered select-sm mb-5" name="ConnectionAlias" onchange="this.form.submit()" value="@Model.ConnectionAlias">
+                <select class="form-select" name="ConnectionAlias" onchange="this.form.submit()" value="@Model.ConnectionAlias">
                     <option value="">Select connection</option>
                     @foreach (string connection in Model.Connections)
                     {
@@ -22,7 +22,7 @@
             <div>
                 @if (string.IsNullOrEmpty(Model.ConnectionAlias) == false)
                 {
-                    <select class="select select-bordered select-sm mb-5" name="TableName" onchange="this.form.submit()" value="@Model.TableName" autofocus>
+                    <select class="form-select" name="TableName" onchange="this.form.submit()" value="@Model.TableName" autofocus>
                         <option value="">Select table</option>
                         @foreach (DataRow dataRow in Model.Tables.Rows)
                         {

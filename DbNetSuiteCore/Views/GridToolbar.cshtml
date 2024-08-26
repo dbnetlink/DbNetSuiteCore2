@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Constants
 
 <div class="flex flex-row gap-1 items-center">
-    <input class="input input-bordered input-sm mr-5" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+    <input class="w-20" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
     <!-- <button class="btn btn-sm mr-5 p-1" type="button" name="@(TriggerNames.Search)" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" title="Search">@Html.Raw(IconHelper.Search())</button> -->
 
     <div id="no-records" class="p-1 rounded-md border-solid border-slate-300 bg-slate-100 flex flex-row gap-2 @(Model.TotalPages == 0 ? "" : "hidden")">
@@ -26,8 +26,8 @@
             RenderNavButton(TriggerNames.Last, IconHelper.Last(), "Last page");
         }
 
-        <button class="btn btn-sm ml-5 p-1" button-type="copy" type="button" title="Copy">@IconHelper.Copy()</button>
-        <button class="btn btn-sm p-1" button-type="export" type="button" title="Export">@IconHelper.Download()</button>
+        <button class="" button-type="copy" type="button" title="Copy">@IconHelper.Copy()</button>
+        <button class="" button-type="export" type="button" title="Export">@IconHelper.Download()</button>
         @{
             RenderExportOptions();
         }
@@ -37,12 +37,12 @@
 @functions {
     void RenderNavButton(string name, HtmlString icon, string title)
     {
-        <button class="btn btn-sm p-1" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
+        <button class="" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
     }
 
     void RenderPageNumber(int pageNumber, int totalPages)
     {
-        <select class="select select-bordered select-sm" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
+        <select class="" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" style="width:@(totalPages.ToString().Length + 2)em">
             @{
                 for (var i = 1; i <= totalPages; i++)
                 {
@@ -54,13 +54,13 @@
 
     void RenderTotalPages(int totalPages)
     {
-        <input class="input input-bordered input-sm" style="width:@(totalPages.ToString().Length + 2)em" readonly type="text" data-type="total-pages" value="@totalPages" />
+        <input class="text-center" style="width:@(totalPages.ToString().Length + 1)em" readonly type="text" data-type="total-pages" value="@totalPages" />
     }
 
     void RenderExportOptions()
     {
         var options = new List<string>() { "CSV", "Excel", "HTML", "JSON" };
-        <select class="select select-bordered select-sm" name="exportformat">
+        <select class="" name="exportformat" style="width:5rem">
             @{
                 foreach (var option in options)
                 {

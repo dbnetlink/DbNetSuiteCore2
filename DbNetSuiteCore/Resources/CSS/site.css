@@ -1,0 +1,45 @@
+﻿/*! @import */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    .dbnetsuite [type="text"],
+    .dbnetsuite [type="email"],
+    .dbnetsuite [type="url"],
+    .dbnetsuite [type="password"],
+    .dbnetsuite [type="number"],
+    .dbnetsuite [type="date"],
+    .dbnetsuite [type="datetime-local"],
+    .dbnetsuite [type="month"],
+    .dbnetsuite [type="search"],
+    .dbnetsuite [type="tel"],
+    .dbnetsuite [type="time"],
+    .dbnetsuite [type="week"],
+    .dbnetsuite [multiple],
+    .dbnetsuite textarea,
+    .dbnetsuite select {
+        @apply border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1 px-1;
+    }
+
+    .dbnetsuite [type="checkbox"],
+    .dbnetsuite [type="radio"] {
+        @apply border-gray-300 rounded text-indigo-600 focus:ring-indigo-500 py-1 px-1;
+    }
+
+    .dbnetsuite button {
+        @apply bg-slate-200 hover:bg-slate-100 text-white font-bold py-1 px-1 border-solid border-slate-300 rounded inline-flex items-center;
+    }
+
+        .dbnetsuite button:disabled {
+            @apply bg-slate-100 border-solid border-slate-200;
+        }
+
+        .dbnetsuite button.btn-sm {
+            @apply py-0.5 px-0.5;
+        }
+
+    .dbnetsuite td, .dbnetsuite th {
+        @apply border-y border-slate-300 py-0.5 px-0.5;
+    }
+}

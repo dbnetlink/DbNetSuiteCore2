@@ -38,6 +38,9 @@
     <None Remove="Resources\CSS\bootstrap.min.css" />
     <None Remove="Resources\CSS\daisyui.css" />
     <None Remove="Resources\CSS\gridcontrol.css" />
+    <None Remove="Resources\CSS\output.css" />
+    <None Remove="Resources\CSS\pico.min.css" />
+    <None Remove="Resources\CSS\site.css" />
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bootstrap.min.js" />
@@ -53,6 +56,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\CSS\gridcontrol.css" />
+    <EmbeddedResource Include="Resources\CSS\output.css" />
+    <EmbeddedResource Include="Resources\CSS\pico.min.css" />
+    <EmbeddedResource Include="Resources\CSS\site.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
     <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
@@ -115,5 +121,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
   </ItemGroup>
+
+  <Target Name="Tailwind" BeforeTargets="Build">
+    <Exec Command="npm run css:build" />
+  </Target>
 
 </Project>

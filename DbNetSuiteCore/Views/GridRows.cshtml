@@ -84,7 +84,7 @@
             }
         </tr>
     }
-    <tr>
+    <tr style="display:none">
         <td>
             <div>
                 <input type="hidden" name="currentSortKey" value="@Model.CurrentSortKey" />
@@ -141,13 +141,13 @@
 
     public void RenderNestedButtons(DataRow row, HtmlString openIcon, HtmlString closedIcon)
     {
-        <button type="button" name="@TriggerNames.NestedGrid" class="btn btn-active btn-square btn-xs" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}'>
+        <button type="button" name="@TriggerNames.NestedGrid" class="btn-sm" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}'>
             @openIcon
         </button>
-        <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
+        <button type="button" style="display:none" class="btn-sm">
             @openIcon
         </button>
-        <button type="button" style="display:none" class="btn btn-active btn-square btn-xs">
+        <button type="button" style="display:none" class="btn-sm">
             @closedIcon
         </button>
     }

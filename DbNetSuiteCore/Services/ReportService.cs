@@ -442,10 +442,10 @@ namespace DbNetSuiteCore.Services
             switch (type)
             {
                 case "css":
-                    resources = ["daisyui", "gridcontrol"];
+                    resources = ["output", "gridcontrol"];
                     break;
                 case "js":
-                    resources = ["tailwindcss", "htmx", "gridcontrol"];
+                    resources = ["htmx", "gridcontrol"];
                     break;
             }
 

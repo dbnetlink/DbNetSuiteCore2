@@ -17,7 +17,7 @@
         @await Html.PartialAsync("GridToolbar", Model)
     }
     <div class="flex mt-2">
-        <table class="table table-xs" data-linkedgridid="@Model.LinkedGridId">
+        <table class="table-auto border-collapse" data-linkedgridid="@Model.LinkedGridId">
             <thead>
                 <tr class="bg-slate-200 heading-row">
                     @if (Model.GridModel.NestedGrid != null)
@@ -92,7 +92,7 @@
                             RenderColumnSelectFilter(GridColumnModel.BooleanFilterOptions);
                             break;
                         default:
-                            <input class="input input-bordered input-sm w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+                            <input class="w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
                             break;
                     }
                 }
