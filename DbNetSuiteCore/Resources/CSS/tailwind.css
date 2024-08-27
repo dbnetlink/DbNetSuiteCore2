@@ -19,20 +19,36 @@
     .dbnetsuite [multiple],
     .dbnetsuite textarea,
     .dbnetsuite select {
-        @apply border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-1 px-1;
+        @apply border-gray-300 rounded-lg shadow-sm focus:border-cyan-700 focus:ring-cyan-700 py-1 px-1 font-normal;
     }
 
     .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {
-        @apply border-gray-300 rounded text-indigo-600 focus:ring-indigo-500 py-1 px-1;
+        @apply border-gray-300 rounded text-cyan-700 focus:ring-cyan-700 py-1 px-1;
     }
 
+    form.dbnetsuite {
+        @apply py-1 px-1 w-fit;
+    }
+
+    .dbnetsuite .toast-message {
+        @apply flex bg-sky-200 border border-solid border-sky-600 text-sky-800 rounded py-3 px-3;
+    }
+
+    .dbnetsuite a {
+        @apply font-medium text-blue-600 dark:text-blue-500 hover:underline font-normal;
+    }
+
+        .dbnetsuite a.selected {
+            @apply text-white;
+        }
+
     .dbnetsuite button {
-        @apply bg-slate-200 hover:bg-slate-100 text-white font-bold py-1 px-1 border-solid border-slate-300 rounded inline-flex items-center;
+        @apply bg-slate-200 hover:bg-slate-100 text-white font-bold py-1 px-1 border border-solid border-slate-300 rounded inline-flex items-center;
     }
 
         .dbnetsuite button:disabled {
-            @apply bg-slate-100 border-solid border-slate-200;
+            @apply bg-slate-100 border border-solid border-slate-200;
         }
 
         .dbnetsuite button.btn-sm {

@@ -7,15 +7,22 @@
     var ratings = new List<string> { "G", "NC-17", "PG", "PG-13", "R" };
 }
 
-<div role="tablist" class="tabs tabs-lifted m-5 tabs-lg grid-flow-col auto-cols-max">
+<ul class="nav nav-tabs">
     @{
-        foreach (string rating in ratings)
+        foreach (string tab in ratings)
         {
-            <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="@(rating) Rating" @(rating == ratings.First() ? "checked" : string.Empty) />
-            <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns(), FixedFilter = $"rating = '{rating}'" }))
-            </div>
+            <li class="nav-item">
+                <button class="nav-link @(tab == ratings.First() ? "active" : string.Empty)" id="@(tab)-tab" data-bs-toggle="tab" data-bs-target="#@(tab)-pane" type="button" role="tab" aria-controls="@tab" aria-selected="true">@tab</button>
+            </li>
         }
     }
-</div>
+</ul>
 
+<div class="tab-content" id="tabContent">
+    @foreach (string tab in ratings)
+    {
+        <div class="tab-pane fade @(tab == ratings.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
+            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns(), FixedFilter = $"rating = '{tab}'" }))
+        </div>
+    }
+</div>

@@ -7,18 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\css\**" />
-    <Compile Remove="wwwroot\js\**" />
     <Compile Remove="wwwroot\lib\**" />
-    <Content Remove="wwwroot\css\**" />
-    <Content Remove="wwwroot\js\**" />
     <Content Remove="wwwroot\lib\**" />
-    <EmbeddedResource Remove="wwwroot\css\**" />
-    <EmbeddedResource Remove="wwwroot\js\**" />
     <EmbeddedResource Remove="wwwroot\lib\**" />
-    <None Remove="wwwroot\css\**" />
-    <None Remove="wwwroot\js\**" />
     <None Remove="wwwroot\lib\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\css\boostrap.icons.min.css" />
+    <Content Remove="wwwroot\css\bootstrap.min.css" />
+    <Content Remove="wwwroot\js\bootstrap.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\css\bootstrap.min.css" />
+    <None Include="wwwroot\js\bootstrap.min.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +38,14 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\NewFolder\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\css\boostrap.icons.min.css" />
   </ItemGroup>
 
 </Project>

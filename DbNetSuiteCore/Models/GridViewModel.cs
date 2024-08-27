@@ -102,6 +102,11 @@ namespace DbNetSuiteCore.Models
             return Convert.ToBoolean(RowValue(dataRow, "IsDirectory", false));
         }
 
+        public int SelectWidth(List<KeyValuePair<string, string>> options)
+        {
+            return options.Select(o => o.Value.Length).OrderByDescending(l => l).First();
+        }
+
         private object RowValue(DataRow dataRow, string columnName, object defaultValue)
         {
             var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == columnName);

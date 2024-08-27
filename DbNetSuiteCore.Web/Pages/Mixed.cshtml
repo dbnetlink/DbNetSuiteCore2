@@ -109,39 +109,48 @@
     var tabs = new List<string> { "MT2", "MT1", "Person", "Customers", "Films", "Actors", "Employees" };
 }
 
-<div role="tablist" class="tabs tabs-lifted m-5 tabs-lg">
+<ul class="nav nav-tabs">
     @{
-        foreach ( string tab in tabs)
+        foreach (string tab in tabs)
         {
-            <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="@tab" @(tab == tabs.First() ? "checked" : string.Empty) />
-            <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-                @{
-                    switch(tab)
-                    {
-                        case "MT2":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10 }))
-                            break;
-                        case "MT1":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
-                            break;
-                        case "Person":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
-                            break;
-                        case "Customers":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
-                            break;
-                        case "Films":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
-                            break;
-                        case "Actors":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
-                            break;
-                        case "Employees":
-                            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
-                            break;
-                    }
-                }
-            </div>
+            <li class="nav-item">
+                <button class="nav-link @(tab == tabs.First() ? "active" : string.Empty)" id="@(tab)-tab" data-bs-toggle="tab" data-bs-target="#@(tab)-pane" type="button" role="tab" aria-controls="@tab" aria-selected="true">@tab</button>
+            </li>
         }
+    }
+</ul>
+
+<div class="tab-content" id="tabContent">
+    @foreach (string tab in tabs)
+    {
+        <div class="tab-pane fade @(tab == tabs.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
+            @{
+                switch (tab)
+                {
+                    case "MT2":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT2_IN_RAW") { Columns = mt2Columns, PageSize = 10 }))
+                        break;
+                    case "MT1":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
+                        break;
+                    case "Person":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks", "Person.Person")))
+                        break;
+                    case "Customers":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
+                        break;
+                    case "Films":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
+                        break;
+                    case "Actors":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
+                        break;
+                    case "Employees":
+                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
+                        break;
+                }
+            }
+
+        </div>
     }
 </div>

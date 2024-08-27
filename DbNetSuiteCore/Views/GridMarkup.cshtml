@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="flex flex-col m-1 p-1">
+<div class="flex flex-col m-1 p-1 relative">
     @if (string.IsNullOrEmpty(Model.GridModel.Caption) == false)
     {
         <div class="flex flex-row text-lg caption">@Model.GridModel.Caption</div>
@@ -62,12 +62,13 @@
     {
         @await Html.PartialAsync("GridToolbar", Model)
     }
-    <div class="flex"">
+    <div class="flex">
         @await Html.PartialAsync("HxIndicator")
-        <div class="toast toast-center toast-middle" style="display:none">
-            <div class="alert">
-                <span></span>
-            </div>
+    </div>
+    <div class="absolute flex flex-row" style="left:50%;top:50%;display:none">
+        <div id="toastMessage" class="toast-message">
+            @IconHelper.Info()
+            <span class="pl-1"></span>
         </div>
     </div>
 </div>
@@ -102,7 +103,9 @@
 
     void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options)
     {
-        <select class="select select-bordered select-sm" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
+        var length = Model.SelectWidth(options) +1;
+
+        <select class="" style="width:@(length)rem" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
             <option value=""></option>
             @foreach (var option in options)
             {

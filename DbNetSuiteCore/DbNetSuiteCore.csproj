@@ -35,15 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources\CSS\bootstrap.min.css" />
-    <None Remove="Resources\CSS\daisyui.css" />
     <None Remove="Resources\CSS\gridcontrol.css" />
     <None Remove="Resources\CSS\output.css" />
-    <None Remove="Resources\CSS\pico.min.css" />
-    <None Remove="Resources\CSS\site.css" />
+    <None Remove="Resources\CSS\tailwind.css" />
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
-    <None Remove="Resources\JS\bootstrap.min.js" />
     <None Remove="Resources\JS\gridcontrol.js" />
     <None Remove="Resources\JS\htmx.js" />
     <None Remove="Resources\JS\htmx.min.js" />
@@ -57,8 +53,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\CSS\gridcontrol.css" />
     <EmbeddedResource Include="Resources\CSS\output.css" />
-    <EmbeddedResource Include="Resources\CSS\pico.min.css" />
-    <EmbeddedResource Include="Resources\CSS\site.css" />
+    <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
     <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
@@ -97,10 +92,7 @@
     <EmbeddedResource Include="Views\HxIndicator.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\CSS\bootstrap.min.css" />
-    <EmbeddedResource Include="Resources\CSS\daisyui.css" />
     <EmbeddedResource Include="Resources\ICO\favicon.ico" />
-    <EmbeddedResource Include="Resources\JS\bootstrap.min.js" />
     <EmbeddedResource Include="Resources\JS\htmx.min.js" />
   </ItemGroup>
 

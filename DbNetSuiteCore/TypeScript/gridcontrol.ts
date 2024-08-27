@@ -20,7 +20,6 @@ class GridControl {
     eventHandlers = {};
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
-    private linkColourClass = "text-blue-500";
 
     constructor(gridId) {
         this.gridId = gridId;
@@ -52,7 +51,7 @@ class GridControl {
         }
 
         htmx.findAll(this.linkSelector()).forEach((e) => {
-            e.classList.add(this.linkColourClass);
+            e.classList.remove("selected");
             e.classList.add("underline")
         });
         htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow((ev.target as HTMLElement).closest('tr'))) });
@@ -90,11 +89,11 @@ class GridControl {
         if (this.toolbarExists()) {
             if (totalPages == 0) {
                 this.removeClass('#no-records', "hidden");
-                this.addClass('#toolbar', "hidden");
+                this.addClass('#navigation', "hidden");
             }
             else {
                 this.addClass('#no-records', "hidden");
-                this.removeClass('#toolbar', "hidden");
+                this.removeClass('#navigation', "hidden");
             }
 
             this.setPageNumber(currentPage);
@@ -120,7 +119,7 @@ class GridControl {
     }
 
     toolbarExists() {
-        return this.selectGridElement('#toolbar');
+        return this.selectGridElement('#navigation');
     }
 
     configureSortIcon() {
@@ -173,7 +172,6 @@ class GridControl {
         let selector = `#${this.gridId} input[name="primaryKey"]`
         let pk = htmx.find(selector) as HTMLInputElement
 
-        console.log(primaryKey)
         this.gridControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }))
 
         if (pk) {
@@ -195,8 +193,8 @@ class GridControl {
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);
-        tr.querySelectorAll("a").forEach(e => e.classList.remove(this.linkColourClass));
-        tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill", "#ffffff"));
+        tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
+        tr.querySelectorAll("td[data-columnname] > div > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
         this.updateLinkedGrids(tr.dataset.id);
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
@@ -216,8 +214,8 @@ class GridControl {
             let tr = e.closest("tr");
             tr.classList.remove(this.bgColourClass);
             tr.classList.remove(this.textColourClass);
-            tr.querySelectorAll("a").forEach(e => e.classList.add(this.linkColourClass));
-            tr.querySelectorAll("svg").forEach(e => e.setAttribute("fill", "#666666"));
+            tr.querySelectorAll("a").forEach(e => e.classList.remove("selected"));
+            tr.querySelectorAll("td[data-columnname] > div > svg").forEach(e => e.setAttribute("fill", "#666666"));
         });
     }
 
@@ -294,11 +292,12 @@ class GridControl {
     }
 
     message(text, style = 'info', delay = 1) {
-        var toast = this.gridContainer.querySelector(".toast > div")
-        toast.classList.add(`alert-${style}`)
+        var toast = this.gridContainer.querySelector("#toastMessage") as HTMLElement
+        //toast.classList.add(`alert-${style}`)
         toast.querySelector("span").innerText = text;
         if (text == "") {
-            toast.classList.remove(`alert-${style}`)
+            toast.parentElement.style.marginLeft = `-${toast.parentElement.clientWidth / 2}px`
+            toast.parentElement.style.marginTop = `-${toast.parentElement.clientHeight / 2}px`
             toast.parentElement.style.display = 'none'
             return
         }
