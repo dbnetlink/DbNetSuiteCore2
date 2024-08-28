@@ -1,21 +1,25 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Extensions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml.InkML;
+using System.Reflection;
 
 namespace DbNetSuiteCore.Repositories
 {
     public class DbRepository : BaseRepository
     {
-        private readonly DataProvider _dataProvider;
+        private readonly DataSourceType _dataSourceType;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
 
-        public DbRepository(DataProvider dataProvider, IConfiguration configuration, IWebHostEnvironment env)
+        public DbRepository(DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment env)
         {
-            _dataProvider = dataProvider;
+            _dataSourceType = dataSourceType;
             _configuration = configuration;
             _env = env;
         }
@@ -23,14 +27,18 @@ namespace DbNetSuiteCore.Repositories
         public IDbConnection GetConnection(string database)
         {
             string? connectionString = _configuration.GetConnectionString(database);
-            connectionString = MapDatabasePath(connectionString);
+            connectionString = MapDatabasePath(connectionString,_env);
 
             IDbConnection connection;
 
-            switch (_dataProvider)
+            switch (_dataSourceType)
             {
-                case DataProvider.SQLite:
+                case DataSourceType.SQlite:
                     connection = new SqliteConnection(connectionString);
+                    break;
+                case DataSourceType.PostgreSql:
+                case DataSourceType.MySql:
+                    connection = GetCustomDbConnection(_dataSourceType, connectionString);
                     break;
                 default:
                     connection = new SqlConnection(connectionString);
@@ -38,6 +46,25 @@ namespace DbNetSuiteCore.Repositories
             }
 
             return connection;
+        }
+
+        public async Task<DataTable> GetRecords(GridModel gridModel)
+        {
+            QueryCommandConfig query = gridModel.BuildQuery();
+            return await GetDataTable(query, gridModel.ConnectionAlias);
+        }
+
+        public async Task<DataTable> GetColumns(GridModel gridModel)
+        {
+            QueryCommandConfig query = gridModel.BuildEmptyQuery();
+
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.MSSQL:
+                    return await GetSchemaTable(query, gridModel.ConnectionAlias);
+                default:
+                    return await GetDataTable(query, gridModel.ConnectionAlias);
+            }
         }
 
         public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database)
@@ -66,7 +93,7 @@ namespace DbNetSuiteCore.Repositories
         }
         public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior Behaviour = CommandBehavior.Default)
         {
-            IDbCommand command = ConfigureCommand(query.Sql, query.Params, connection);
+            IDbCommand command = ConfigureCommand(query.Sql, connection, query.Params );
             return await ((DbCommand)command).ExecuteReaderAsync(CommandBehavior.Default);
         }
 
@@ -76,7 +103,7 @@ namespace DbNetSuiteCore.Repositories
                 if (!Regex.Match(commandConfig.Sql, " where ", RegexOptions.IgnoreCase).Success)
                     throw new Exception("Unqualified updates and deletes are not allowed.");
 
-            IDbCommand command = ConfigureCommand(commandConfig.Sql, commandConfig.Params, connection);
+            IDbCommand command = ConfigureCommand(commandConfig.Sql, connection, commandConfig.Params);
             int returnValue = 0;
 
             try
@@ -90,7 +117,7 @@ namespace DbNetSuiteCore.Repositories
             return returnValue;
         }
 
-        private string MapDatabasePath(string? connectionString)
+        public static string MapDatabasePath(string? connectionString, IWebHostEnvironment env)
         {
             if (string.IsNullOrEmpty(connectionString))
                 return string.Empty;
@@ -110,8 +137,8 @@ namespace DbNetSuiteCore.Repositories
 
             string currentPath = "";
 
-            if (_env != null)
-                currentPath = _env.WebRootPath;
+            if (env != null)
+                currentPath = env.WebRootPath;
 
             string dataSourcePropertyName = "data source";
 
@@ -119,7 +146,7 @@ namespace DbNetSuiteCore.Repositories
             return connectionString;
         }
 
-        private IDbCommand ConfigureCommand(string sql, Dictionary<string,object> @params, IDbConnection connection)
+        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null )
         {
             IDbCommand command = connection.CreateCommand();
             command.CommandText = sql.Trim();
@@ -130,7 +157,7 @@ namespace DbNetSuiteCore.Repositories
             return command;
         }
 
-        private void AddCommandParameters(IDbCommand command, Dictionary<string, object> @params)
+        public static void AddCommandParameters(IDbCommand command, Dictionary<string, object>? @params)
         {
             if (@params == null)
                 return;
@@ -159,7 +186,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private string ParameterName(string key, bool parameterValue = false)
+        public static string ParameterName(string key, bool parameterValue = false)
         {
             var temmplate = "@{0}";
             if (key.Length > 0)
@@ -169,10 +196,49 @@ namespace DbNetSuiteCore.Repositories
             return temmplate.Replace("{0}", CleanParameterName(key));
         }
 
-        private string CleanParameterName(string key)
+        public static string CleanParameterName(string key)
         {
             key = Regex.Replace(key, "[^a-zA-Z0-9_]", "_");
             return key;
+        
+        }
+
+        public static IDbConnection GetCustomDbConnection(DataSourceType dataSourceType, string connectionString)
+        {
+            Assembly providerAssembly;
+            string assemblyName = string.Empty;
+            string connectionName = string.Empty;
+
+            switch (dataSourceType)
+            {
+                case DataSourceType.PostgreSql:
+                    assemblyName = "Npgsql";
+                    connectionName = "NpgsqlConnection";
+                    break;
+                case DataSourceType.MySql:
+                    assemblyName = "MySqlConnector";
+                    connectionName = "MySqlConnection";
+                    break;
+                default:
+                    throw new NotImplementedException($"Custom connection not supported for {dataSourceType} data source type");
+            }
+
+            try
+            {
+                providerAssembly = Assembly.Load(assemblyName);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}. {ex.Message}");
+            }
+            Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
+            //Type adapterType = ProviderAssembly.GetType(customDataProvider.AdapterTypeName, true);
+            //Adapter = (IDbDataAdapter)Activator.CreateInstance(adapterType!);
+
+            Object[] args = new Object[1];
+            args[0] = connectionString;
+
+            return (IDbConnection)Activator.CreateInstance(connectionType!, args);
         }
     }
 }

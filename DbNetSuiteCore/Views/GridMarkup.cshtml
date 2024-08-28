@@ -18,6 +18,16 @@
     }
     <div class="flex mt-2">
         <table class="table-auto border-collapse" data-linkedgridid="@Model.LinkedGridId">
+            <colgroup>
+                @if (Model.GridModel.NestedGrid != null)
+                {
+                    <col />
+                }
+                @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
+                {
+                    <col data-datatype="@columnInfo.DataTypeName" data-dbdatatype="@columnInfo.DbDataType" />
+                }
+            </colgroup>
             <thead>
                 <tr class="bg-slate-200 heading-row">
                     @if (Model.GridModel.NestedGrid != null)
@@ -103,7 +113,7 @@
 
     void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options)
     {
-        var length = Model.SelectWidth(options) +1;
+        var length = Model.SelectWidth(options) + 1;
 
         <select class="" style="width:@(length)rem" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
             <option value=""></option>

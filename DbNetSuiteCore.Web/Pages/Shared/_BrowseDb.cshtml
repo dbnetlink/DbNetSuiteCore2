@@ -1,0 +1,58 @@
+﻿@model DbNetSuiteCore.Web.ViewModels.BrowseDbModel
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContext
+@using System.Data
+@using DbNetSuiteCore.Models
+
+<div style="padding:20px">
+    <form method="post">
+        <div class="d-flex align-items-center" style="gap:10px">
+            <div>Database</div>
+            <div>
+                <select class="form-select" name="ConnectionAlias" onchange="this.form.submit()" value="@Model.TableName">
+                    <option value="">Select connection</option>
+                    @foreach (string connection in Model.Connections)
+                    {
+                        var selected = (connection == Model.ConnectionAlias);
+                        <option value="@connection" selected="@selected">@connection</option>
+                    }
+                </select>
+            </div>
+            <div>Table/View</div>
+            <div>
+                <select class="form-select" name="TableName" onchange="this.form.submit()" value="@Model.TableName" autofocus>
+                    @if (string.IsNullOrEmpty(Model.ConnectionAlias) == false)
+                    {
+                        <option value="">Select table</option>
+                        <option value="All">All</option>
+                        @foreach (string tableName in Model.Tables)
+                        {
+                            var selected = (tableName == Model.TableName);
+                            <option value="@tableName" selected="@selected">@tableName</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <div>
+        @{
+            if (Model.TableName != string.Empty)
+            {
+                if (Model.TableName == "All")
+                {
+                    @foreach (string tableName in Model.Tables.Take(32))
+                    {
+                        @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { Caption = tableName }))
+                        
+                    }
+                }
+                else
+                {
+                    @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName)))
+                }
+            }
+        }
+    </div>
+</div>

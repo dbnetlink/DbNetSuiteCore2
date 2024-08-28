@@ -1,11 +1,6 @@
-﻿using DbNetSuiteCore.Models;
-using System.Data;
-
-namespace DbNetSuiteCore.Repositories
+﻿namespace DbNetSuiteCore.Repositories
 {
-    public interface IMSSQLRepository
+    public interface IMSSQLRepository : ISqlRepository
     {
-        public Task<DataTable> GetRecords(GridModel gridModel);
-        public Task<DataTable> GetColumns(GridModel gridModel);
     }
 }

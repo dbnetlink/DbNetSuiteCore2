@@ -1,13 +1,15 @@
 ﻿namespace DbNetSuiteCore.Enums
 {
+    /*
     public enum DataProvider
     {
         SqlClient,
         MySql,
-        Npgsql,
+        PostgreSql,
         SQLite,
         MySqlConnector,
         DataTable,
         Timestream
     };
+    */
 }

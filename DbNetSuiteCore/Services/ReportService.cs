@@ -21,6 +21,8 @@ namespace DbNetSuiteCore.Services
         private readonly RazorViewToStringRenderer _razorRendererService;
         private readonly IJSONRepository _jsonRepository;
         private readonly IFileSystemRepository _fileSystemRepository;
+        private readonly IMySqlRepository _mySqlRepository;
+        private readonly IPostgreSqlRepository _postgreSqlRepository;
 
         private HttpContext? _context = null;
         private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
@@ -30,7 +32,7 @@ namespace DbNetSuiteCore.Services
 
         private DataSourceType dataSourceType => Enum.Parse<DataSourceType>(RequestHelper.FormValue("dataSourceType", string.Empty, _context));
 
-        public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository)
+        public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -38,6 +40,8 @@ namespace DbNetSuiteCore.Services
             _sqliteRepository = sqliteRepository;
             _jsonRepository = jsonRepository;
             _fileSystemRepository = fileSystemRepository;
+            _mySqlRepository = mySqlRepository;
+            _postgreSqlRepository = postgreSqlRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -167,6 +171,10 @@ namespace DbNetSuiteCore.Services
                     return await _timestreamRepository.GetRecords(gridModel);
                 case DataSourceType.SQlite:
                     return await _sqliteRepository.GetRecords(gridModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.GetRecords(gridModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.GetRecords(gridModel);
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetRecords(gridModel, _context);
                 case DataSourceType.FileSystem:
@@ -184,6 +192,10 @@ namespace DbNetSuiteCore.Services
                     return await _timestreamRepository.GetColumns(gridModel);
                 case DataSourceType.SQlite:
                     return await _sqliteRepository.GetColumns(gridModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.GetColumns(gridModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.GetColumns(gridModel);
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetColumns(gridModel, _context);
                 case DataSourceType.FileSystem:

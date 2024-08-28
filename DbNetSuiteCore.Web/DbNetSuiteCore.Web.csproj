@@ -14,12 +14,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\mssql\BrowseDb.cshtml" />
+    <Content Remove="Pages\mysql\BrowseDb.cshtml" />
+    <Content Remove="Pages\postgresql\BrowseDb.cshtml" />
     <Content Remove="wwwroot\css\boostrap.icons.min.css" />
     <Content Remove="wwwroot\css\bootstrap.min.css" />
     <Content Remove="wwwroot\js\bootstrap.min.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Pages\mssql\BrowseDb.cshtml" />
+    <None Include="Pages\mysql\BrowseDb.cshtml" />
+    <None Include="Pages\postgresql\BrowseDb.cshtml" />
     <None Include="wwwroot\css\bootstrap.min.css" />
     <None Include="wwwroot\js\bootstrap.min.js" />
   </ItemGroup>
@@ -46,6 +52,19 @@
 
   <ItemGroup>
     <None Include="wwwroot\css\boostrap.icons.min.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Pages\mssql\BrowseDb.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\mssql\BrowseDb.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="2.3.7" />
+    <PackageReference Include="Npgsql" Version="8.0.3" />
   </ItemGroup>
 
 </Project>

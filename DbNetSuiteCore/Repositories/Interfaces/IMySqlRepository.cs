@@ -1,6 +1,6 @@
 ﻿namespace DbNetSuiteCore.Repositories
 {
-    public interface ISQLiteRepository : ISqlRepository
+    public interface IMySqlRepository : ISqlRepository
     {
     }
 }

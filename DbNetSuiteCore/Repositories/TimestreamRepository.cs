@@ -3,7 +3,7 @@ using Amazon.TimestreamQuery;
 using Amazon.TimestreamQuery.Model;
 using Amazon;
 using DbNetSuiteCore.Models;
-using Microsoft.AspNetCore.Mvc;
+using DbNetSuiteCore.Extensions;
 
 namespace DbNetSuiteCore.Repositories
 {

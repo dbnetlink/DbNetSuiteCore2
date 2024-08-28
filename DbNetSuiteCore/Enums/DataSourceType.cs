@@ -7,6 +7,8 @@ namespace DbNetSuiteCore.Enums
         Timestream,
         MSSQL,
         JSON,
-        FileSystem
+        FileSystem,
+        MySql,
+        PostgreSql
     };
 }

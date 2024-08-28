@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 
 
-namespace Microsoft.AspNetCore.Mvc
+namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
@@ -305,15 +305,16 @@ namespace Microsoft.AspNetCore.Mvc
             return paramValue;
         }
 
-        private static int ParseBoolean(string boolString)
+        private static bool ParseBoolean(string boolString)
         {
             switch (boolString.ToLower())
             {
+                case "yes":
                 case "true":
                 case "1":
-                    return 1;
+                    return true;
                 default:
-                    return 0;
+                    return false;
             }
         }
 

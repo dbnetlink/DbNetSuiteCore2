@@ -7,7 +7,7 @@ namespace DbNetSuiteCore.Models
 {
     public class ColumnModel
     {
-        private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16) };
+        private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte) };
         private Type? _DataType = null;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
