@@ -50,6 +50,8 @@ class GridControl {
             this.invokeEventHandler('Initialised');
         }
 
+        htmx.findAll(this.cellSelector()).forEach((cell) => { this.invokeEventHandler('CellRendered', { cell: (cell as HTMLTableCellElement) }) });
+
         htmx.findAll(this.linkSelector()).forEach((e) => {
             e.classList.remove("selected");
             e.classList.add("underline")
@@ -59,8 +61,6 @@ class GridControl {
         if (row) {
             row.click();
         }
-
-        htmx.findAll(this.cellSelector()).forEach((cell) => { this.invokeEventHandler('CellRendered', { cell: (cell as HTMLTableCellElement) })});
 
         this.invokeEventHandler('PageLoaded');
     }
@@ -190,11 +190,12 @@ class GridControl {
     };
 
     highlightRow(tr) {
+        console.log(`highlight row => ${tr.querySelector("td[data-columnname]").innerText}`)
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
-        tr.querySelectorAll("td[data-columnname] > div > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
+        tr.querySelectorAll("td[data-columnname] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
         this.updateLinkedGrids(tr.dataset.id);
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
@@ -215,7 +216,7 @@ class GridControl {
             tr.classList.remove(this.bgColourClass);
             tr.classList.remove(this.textColourClass);
             tr.querySelectorAll("a").forEach(e => e.classList.remove("selected"));
-            tr.querySelectorAll("td[data-columnname] > div > svg").forEach(e => e.setAttribute("fill", "#666666"));
+            tr.querySelectorAll("td[data-columnname] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#666666"));
         });
     }
 

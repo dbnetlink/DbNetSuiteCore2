@@ -35,7 +35,7 @@ namespace DbNetSuiteCore.Extensions
                 foreach (var gridColumn in gridModel.GridColumns.Where(c => c.Searchable))
                 {
                     query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
-                    quickSearchFilterPart.Add($"{gridColumn.Expression.Split(" ").First()} like @{gridColumn.ParamName}");
+                    quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)} like @{gridColumn.ParamName}");
                 }
 
                 if (quickSearchFilterPart.Any())
@@ -125,6 +125,29 @@ namespace DbNetSuiteCore.Extensions
         private static string GetColumnExpressions(this GridModel gridModel)
         {
             return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
+        }
+
+        public static void QualifyColumnExpressions(this GridModel gridModel)
+        {
+            gridModel.GridColumns.ForEach(c => c.Expression = QualifyExpression(c.Expression, gridModel.DataSourceType));
+        }
+        private static string QualifyExpression(string expression, DataSourceType dataSourceType)
+        {
+            return QualifyTemplate(dataSourceType).Replace("@", expression);
+        }
+        private static string QualifyTemplate(DataSourceType dataSourceType)
+        {
+            switch (dataSourceType)
+            {
+                case DataSourceType.MSSQL:
+                case DataSourceType.SQlite:
+                    return $"[@]";
+                case DataSourceType.MySql:
+                    return $"`@`";
+                case DataSourceType.PostgreSql:
+                    return $"\"@\"";
+            }
+            return "@";
         }
 
         public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumnModel gridColumn)

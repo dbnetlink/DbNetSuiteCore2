@@ -11,6 +11,7 @@ namespace DbNetSuiteCore.Models
         private Type? _DataType = null;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
+   
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
         public string Key => Name.GetHashCode().ToString();
@@ -59,9 +60,9 @@ namespace DbNetSuiteCore.Models
             Initialised = true;
         }
 
-        public ColumnModel(DataRow dataRow,DataSourceType dataSourceType)
+        public ColumnModel(DataRow dataRow)
         {
-            Expression = QualifyExpression((string)dataRow["ColumnName"], dataSourceType);
+            Expression = (string)dataRow["ColumnName"];
             Label = TextHelper.GenerateLabel((string)dataRow["ColumnName"]);
             Name = (string)dataRow["ColumnName"];
             try
@@ -127,15 +128,5 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        private string QualifyExpression(string columnName, DataSourceType dataSourceType)
-        {
-            switch(dataSourceType)
-            {
-                case DataSourceType.MSSQL:
-                    return $"[{columnName}]";
-                default:
-                    return columnName;  
-            }
-        }
     }
 }

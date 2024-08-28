@@ -3,6 +3,7 @@ using DbNetSuiteCore.Repositories;
 using System.Reflection;
 using System.Text;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Extensions;
 using System.Data;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Enums;
@@ -123,6 +124,8 @@ namespace DbNetSuiteCore.Services
                             gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
                             break;
                     }
+
+                    gridModel.QualifyColumnExpressions();
                 }
                 else
                 {

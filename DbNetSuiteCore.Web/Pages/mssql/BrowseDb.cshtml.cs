@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public MsSqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.MSSQL;
-            Connections = new List<string>{ "AdventureWorks", "Northwind" };
+            Connections = new List<string>{ "AdventureWorks(mssql)", "Northwind(mssql)" };
         }
     }
 }

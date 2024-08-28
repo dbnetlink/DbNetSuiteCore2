@@ -15,10 +15,10 @@
             {
                 if (Model.DataSourceType == DataSourceType.FileSystem)
                 {
-                    <td class="text-base w-12" data-isfolder="Model.IsFolder(row).ToString().ToLower()">
+                    <td class="text-base w-12" data-isfolder="@Model.IsFolder(row).ToString().ToLower()">
                         @if (Model.IsFolder(row))
                         {
-                            RenderNestedButtons(row, IconHelper.FolderOpen(), IconHelper.Folder());
+                            RenderNestedButtons(row, IconHelper.Folder(), IconHelper.FolderOpen());
                         }
                         else
                         {

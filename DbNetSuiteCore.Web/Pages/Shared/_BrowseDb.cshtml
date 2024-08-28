@@ -3,6 +3,7 @@
 @inject IHttpContextAccessor _httpContext
 @using System.Data
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Helpers
 
 <div style="padding:20px">
     <form method="post">
@@ -24,7 +25,7 @@
                     @if (string.IsNullOrEmpty(Model.ConnectionAlias) == false)
                     {
                         <option value="">Select table</option>
-                        <option value="All">All</option>
+                        <option value="All" selected="@("All" == Model.TableName)">All</option>
                         @foreach (string tableName in Model.Tables)
                         {
                             var selected = (tableName == Model.TableName);
@@ -42,11 +43,24 @@
             {
                 if (Model.TableName == "All")
                 {
-                    @foreach (string tableName in Model.Tables.Take(32))
-                    {
-                        @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { Caption = tableName }))
-                        
-                    }
+                    <ul class="nav nav-tabs">
+                        @foreach (string tableName in Model.Tables)
+                        {
+                            var tab = CleanTableName(tableName);
+                            <li class="nav-item">
+                                <button class="nav-link @(tab == CleanTableName(Model.Tables.First()) ? "active" : string.Empty)" id="@(tab)-tab" data-bs-toggle="tab" data-bs-target="#@(tab)-pane" type="button" role="tab" aria-controls="@tab" aria-selected="true">@TextHelper.GenerateLabel(tab)</button>
+                            </li>
+                        }
+                    </ul>
+                    <div class="tab-content" id="tabContent">
+                        @foreach (string tableName in Model.Tables)
+                        {
+                            var tab = CleanTableName(tableName);
+                            <div class="tab-pane fade @(tab == CleanTableName(Model.Tables.First()) ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
+                                @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { Caption = tableName }))
+                            </div>
+                        }
+                    </div>
                 }
                 else
                 {
@@ -56,3 +70,11 @@
         }
     </div>
 </div>
+
+@functions
+{
+    string CleanTableName(string tableName)
+    {
+        return tableName.Split(".").Last().Replace("[", "").Replace("]", "").Replace(" ","");
+    }
+}

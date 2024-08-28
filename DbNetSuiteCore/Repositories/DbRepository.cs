@@ -6,7 +6,6 @@ using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
-using DocumentFormat.OpenXml.InkML;
 using System.Reflection;
 
 namespace DbNetSuiteCore.Repositories
