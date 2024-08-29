@@ -47,10 +47,19 @@ namespace DbNetSuiteCore.Repositories
             return connection;
         }
 
-        public async Task<DataTable> GetRecords(GridModel gridModel)
+        public async Task GetRecords(GridModel gridModel)
         {
             QueryCommandConfig query = gridModel.BuildQuery();
-            return await GetDataTable(query, gridModel.ConnectionAlias);
+            gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
+
+            foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
+            {
+                query = new QueryCommandConfig();
+                var lookup = gridColumn.Lookup;
+                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+                var dt =  await GetDataTable(query, gridModel.ConnectionAlias);
+                gridColumn.LookupOptions = dt.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+            }
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel)

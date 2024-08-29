@@ -103,8 +103,8 @@ namespace DbNetSuiteCore.Services
                 FileSystemRepository.UpdateUrl(gridModel);
             }
             await ConfigureGridColumns(gridModel);
-            DataTable data = await GetRecords(gridModel);
-            return new GridViewModel(data, gridModel);
+            await GetRecords(gridModel);
+            return new GridViewModel(gridModel);
         }
 
         private async Task ConfigureGridColumns(GridModel gridModel)
@@ -166,24 +166,31 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<DataTable> GetRecords(GridModel gridModel)
+        private async Task GetRecords(GridModel gridModel)
         {
             switch (gridModel.DataSourceType)
             {
                 case DataSourceType.Timestream:
-                    return await _timestreamRepository.GetRecords(gridModel);
+                    await _timestreamRepository.GetRecords(gridModel);
+                    break;
                 case DataSourceType.SQlite:
-                    return await _sqliteRepository.GetRecords(gridModel);
+                    await _sqliteRepository.GetRecords(gridModel);
+                    break;
                 case DataSourceType.MySql:
-                    return await _mySqlRepository.GetRecords(gridModel);
+                    await _mySqlRepository.GetRecords(gridModel);
+                    break;
                 case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetRecords(gridModel);
+                    await _postgreSqlRepository.GetRecords(gridModel);
+                    break;
                 case DataSourceType.JSON:
-                    return await _jsonRepository.GetRecords(gridModel, _context);
+                    await _jsonRepository.GetRecords(gridModel, _context);
+                    break;
                 case DataSourceType.FileSystem:
-                    return await _fileSystemRepository.GetRecords(gridModel, _context);
+                    await _fileSystemRepository.GetRecords(gridModel, _context);
+                    break;
                 default:
-                    return await _msSqlRepository.GetRecords(gridModel);
+                    await _msSqlRepository.GetRecords(gridModel);
+                    break;
             }
         }
 
@@ -210,17 +217,17 @@ namespace DbNetSuiteCore.Services
 
         private async Task<Byte[]> ExportRecords(GridModel gridModel)
         {
-            DataTable data = await GetRecords(gridModel);
+            await GetRecords(gridModel);
             switch (gridModel.ExportFormat)
             {
                 case "csv":
-                    return ConvertDataTableToCSV(data);
+                    return ConvertDataTableToCSV(gridModel.Data);
                 case "excel":
-                    return ConvertDataTableToSpreadsheet(data, gridModel);
+                    return ConvertDataTableToSpreadsheet(gridModel);
                 case "json":
-                    return ConvertDataTableToJSON(data);
+                    return ConvertDataTableToJSON(gridModel.Data);
                 default:
-                    return await ConvertDataTableToHTML(data, gridModel);
+                    return await ConvertDataTableToHTML(gridModel);
             }
         }
 
@@ -241,11 +248,13 @@ namespace DbNetSuiteCore.Services
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
-        private async Task<Byte[]> ConvertDataTableToHTML(DataTable dt, GridModel gridModel)
+        private async Task<Byte[]> ConvertDataTableToHTML(GridModel gridModel)
         {
-            gridModel.PageSize = dt.Rows.Count;
+            gridModel.PageSize = gridModel.Data.Rows.Count;
             _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
-            return await View("GridExport", await GetGridViewModel(gridModel));
+            var gridViewModel = await GetGridViewModel(gridModel);
+            gridViewModel.RenderMode = RenderMode.Export;
+            return await View("GridExport", gridViewModel);
         }
 
         private byte[] ConvertDataTableToJSON(DataTable dataTable)
@@ -255,7 +264,7 @@ namespace DbNetSuiteCore.Services
             return Encoding.UTF8.GetBytes(json);
         }
 
-        private byte[] ConvertDataTableToSpreadsheet(DataTable dataTable, GridModel gridModel)
+        private byte[] ConvertDataTableToSpreadsheet(GridModel gridModel)
         {
             using (XLWorkbook workbook = new XLWorkbook())
             {
@@ -294,7 +303,7 @@ namespace DbNetSuiteCore.Services
                     colIdx++;
                 }
 
-                foreach (DataRow row in dataTable.Rows)
+                foreach (DataRow row in gridModel.Data.Rows)
                 {
                     rowIdx++;
                     colIdx = 1;
@@ -302,7 +311,7 @@ namespace DbNetSuiteCore.Services
                     foreach (var column in gridModel.Columns)
                     {
 
-                        object value = row[dataTable.Columns[colIdx - 1]];
+                        object value = row[gridModel.Data.Columns[colIdx - 1]];
 
                         if (value == null || value == DBNull.Value)
                         {

@@ -25,6 +25,7 @@ namespace DbNetSuiteCore.Models
         public bool CurrentSortAscending => _gridModel.SortSequence == SortOrder.Asc;
         public HtmlString SortIcon => CurrentSortAscending ? IconHelper.ArrowUp() : IconHelper.ArrowDown();
         public DataSourceType DataSourceType => _gridModel.DataSourceType;
+        public RenderMode RenderMode { get; set; } = RenderMode.Page;
 
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
@@ -32,10 +33,10 @@ namespace DbNetSuiteCore.Models
         {
             return columnInfo.Key == CurrentSortKey;
         }
-        public GridViewModel(DataTable dataTable, GridModel gridModel) : base(dataTable, gridModel)
+        public GridViewModel(GridModel gridModel) : base(gridModel)
         {
             _gridModel = gridModel;
-            TotalPages = (int)Math.Ceiling((double)dataTable.Rows.Count / PageSize);
+            TotalPages = (int)Math.Ceiling((double)gridModel.Data.Rows.Count / PageSize);
 
             if (_gridModel.CurrentPage > TotalPages)
             {
@@ -44,11 +45,11 @@ namespace DbNetSuiteCore.Models
 
             if (_gridModel.ToolbarPosition == ToolbarPosition.Hidden)
             {
-                _gridModel.PageSize = dataTable.Rows.Count;
+                _gridModel.PageSize = gridModel.Data.Rows.Count;
             }
 
-            Rows = dataTable.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-            Columns = dataTable.Columns.Cast<DataColumn>();
+            Rows = gridModel.Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+            Columns = gridModel.Data.Columns.Cast<DataColumn>();
 
             foreach (DataColumn column in Columns)
             {

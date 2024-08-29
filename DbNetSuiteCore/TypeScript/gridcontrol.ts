@@ -29,9 +29,11 @@ class GridControl {
 
     init(evt) {
         let gridId = evt.target.closest("form").id;
-        if (gridId.startsWith(this.gridId) == false) {
+        if (gridId.startsWith(this.gridId) == false || evt.detail.elt.name == "nestedGrid") {
             return
         }
+
+        //console.log(`init => event:${gridId} control:${this.gridId} trigger-name:${evt.detail.elt.name}`)
 
         if (htmx.find(this.errorSelector())) {
             return
@@ -46,9 +48,15 @@ class GridControl {
                 this.getButton("export").addEventListener("click", ev => this.download())
             }
 
-            this.configureNestedGrid(evt.target);
             this.invokeEventHandler('Initialised');
         }
+
+        this.gridControl.querySelectorAll(".nested-buttons").forEach((div) => {
+            let buttons = div.querySelectorAll("button")
+
+            buttons[0].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
+            buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
+        });
 
         htmx.findAll(this.cellSelector()).forEach((cell) => { this.invokeEventHandler('CellRendered', { cell: (cell as HTMLTableCellElement) }) });
 
@@ -56,11 +64,13 @@ class GridControl {
             e.classList.remove("selected");
             e.classList.add("underline")
         });
-        htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow((ev.target as HTMLElement).closest('tr'))) });
+        htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow(ev)) });
         let row: HTMLElement = document.querySelector(this.rowSelector());
         if (row) {
             row.click();
         }
+
+        
 
         this.invokeEventHandler('PageLoaded');
     }
@@ -141,31 +151,23 @@ class GridControl {
         span.innerHTML = sortIcon
     }
 
-    configureNestedGrid(target: HTMLElement) {
-        let tr = target.closest("tr")
-
-        if (!tr || tr.classList.contains("nested-grid-row") == false) {
-            return;
-        }
-
-        (tr.previousElementSibling as HTMLElement).click()
-        let buttons = tr.previousElementSibling.firstElementChild.querySelectorAll("button")
-
-        buttons[0].style.display = 'none'
-        buttons[2].style.display = 'block'
-
-        buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
-        buttons[2].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
-    }
-
-    showHideNestedGrid(ev, show) {
-        let tr = ev.target.closest("tr")
-        tr.nextElementSibling.style.display = show ? null : "none"
+    showHideNestedGrid(ev: Event, show) {
+        ev.stopPropagation();
+        let tr = (ev.target as HTMLElement).closest("tr") as HTMLTableRowElement
 
         let buttons = tr.firstElementChild.querySelectorAll("button")
 
-        buttons[1].style.display = show ? "none" : "block"
-        buttons[2].style.display = show ? "block" : "none"
+        let siblingRow = tr.nextElementSibling as HTMLElement;
+
+        if (siblingRow && siblingRow.classList.contains("nested-grid-row")) {
+            siblingRow.style.display = show ? null : "none"
+        }
+        else if (show) {
+            htmx.trigger(buttons[2], "click")
+        }
+
+        buttons[0].style.display = show ? "none" : "block"
+        buttons[1].style.display = show ? "block" : "none"
     }
 
     loadFromParent(primaryKey: string) {
@@ -189,8 +191,15 @@ class GridControl {
         return document.querySelector(selector);
     };
 
-    highlightRow(tr) {
-        console.log(`highlight row => ${tr.querySelector("td[data-columnname]").innerText}`)
+    highlightRow(ev: Event) {
+        
+        let tr = (ev.target as HTMLElement).closest('tr')
+        if (tr.classList.contains(this.bgColourClass)) {
+            return;
+        }
+        // console.log(`current target => ${ev.currentTarget}`)
+        // console.log(`target => ${ev.target}`)
+        console.log(`highlight row => ${(tr.querySelector("td[data-columnname]") as HTMLTableCellElement).innerText}`)
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);

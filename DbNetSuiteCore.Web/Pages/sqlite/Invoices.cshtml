@@ -1,0 +1,25 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+
+    var invoiceColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("InvoiceId", "Invoice ID"),
+        new GridColumnModel("CustomerID", "Customer") {Lookup = new LookupModel("Customers","CustomerID","LastName || ', ' || FirstName")},
+        new GridColumnModel("InvoiceDate", "Date"),
+        new GridColumnModel("BillingAddress", "Address"),
+        new GridColumnModel("BillingCity", "City"),
+        new GridColumnModel("BillingState", "State") {LookupEnum = typeof(StateEnum)},
+        new GridColumnModel("BillingCountry", "Country"),
+        new GridColumnModel("BillingPostalCode", "Postal Code"),
+        new GridColumnModel("Total", "Total") { Format = "C"},
+
+    };
+
+    var invoiceGrid = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "invoices");
+    invoiceGrid.Columns = invoiceColumns;
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
+}

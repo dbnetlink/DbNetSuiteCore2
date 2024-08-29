@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.Data;
 
 namespace DbNetSuiteCore.Models
 {

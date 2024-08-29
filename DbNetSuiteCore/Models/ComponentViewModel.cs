@@ -9,10 +9,10 @@ namespace DbNetSuiteCore.Models
         public string SubmitUrl => $"/gridcontrol.htmx";
       
         public List<GridColumnModel> ColumnInfo => _componentModel.Columns;
-        public ComponentViewModel(DataTable dataTable, ComponentModel componentModel)
+        public ComponentViewModel(ComponentModel componentModel)
         {
             _componentModel = componentModel;
-            Columns = dataTable.Columns.Cast<DataColumn>();
+            Columns = componentModel.Data.Columns.Cast<DataColumn>();
 
             foreach (DataColumn column in Columns)
             {

@@ -964,20 +964,12 @@ form.dbnetsuite {
   display: none;
 }
 
-.h-6 {
-  height: 1.5rem;
-}
-
 .h-8 {
   height: 2rem;
 }
 
 .w-12 {
   width: 3rem;
-}
-
-.w-6 {
-  width: 1.5rem;
 }
 
 .w-8 {
@@ -990,10 +982,6 @@ form.dbnetsuite {
 
 .max-w-xs {
   max-width: 20rem;
-}
-
-.shrink-0 {
-  flex-shrink: 0;
 }
 
 .table-auto {
@@ -1054,8 +1042,17 @@ form.dbnetsuite {
   border-width: 1px;
 }
 
+.border-2 {
+  border-width: 2px;
+}
+
 .border-solid {
   border-style: solid;
+}
+
+.border-red-700 {
+  --tw-border-opacity: 1;
+  border-color: rgb(185 28 28 / var(--tw-border-opacity));
 }
 
 .border-sky-400 {
@@ -1071,6 +1068,11 @@ form.dbnetsuite {
 .bg-cyan-600 {
   --tw-bg-opacity: 1;
   background-color: rgb(8 145 178 / var(--tw-bg-opacity));
+}
+
+.bg-red-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 68 68 / var(--tw-bg-opacity));
 }
 
 .bg-sky-100 {
@@ -1092,10 +1094,6 @@ form.dbnetsuite {
   fill: #2563eb;
 }
 
-.stroke-current {
-  stroke: currentColor;
-}
-
 .p-1 {
   padding: 0.25rem;
 }
@@ -1105,9 +1103,19 @@ form.dbnetsuite {
   padding-right: 0.25rem;
 }
 
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
 .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+}
+
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 .pl-1 {
@@ -1145,6 +1153,11 @@ form.dbnetsuite {
 .text-slate-400 {
   --tw-text-opacity: 1;
   color: rgb(148 163 184 / var(--tw-text-opacity));
+}
+
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
 .text-zinc-100 {

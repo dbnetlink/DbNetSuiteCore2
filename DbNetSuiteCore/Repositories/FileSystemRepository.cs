@@ -2,8 +2,6 @@
 using DbNetSuiteCore.Enums;
 using System.Data;
 using DbNetSuiteCore.Extensions;
-using Newtonsoft.Json.Linq;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
 
 namespace DbNetSuiteCore.Repositories
@@ -18,17 +16,20 @@ namespace DbNetSuiteCore.Repositories
             _configuration = configuration;
             _env = env;
         }
-        public async Task<DataTable> GetRecords(GridModel gridModel, HttpContext httpContext)
+        public async Task GetRecords(GridModel gridModel, HttpContext httpContext)
         {
             var dataTable = await BuildDataTable(gridModel, httpContext);
 
             var rows = dataTable.Select(AddFilterPart(gridModel), AddOrderPart(gridModel));
 
             if (rows.Any()) 
-            { 
-                return rows.CopyToDataTable(); 
+            {
+                gridModel.Data = rows.CopyToDataTable(); 
             }
-            return new DataTable();
+            else
+            {
+                gridModel.Data = new DataTable();
+            }
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext)

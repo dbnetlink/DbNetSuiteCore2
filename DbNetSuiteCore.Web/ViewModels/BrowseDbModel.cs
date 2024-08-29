@@ -7,6 +7,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using DbNetSuiteCore.Repositories;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DbNetSuiteCore.Extensions;
 
 namespace DbNetSuiteCore.Web.ViewModels
 {
@@ -78,18 +79,6 @@ namespace DbNetSuiteCore.Web.ViewModels
         {
             var schemaTable = connection.GetSchema("Tables").Select(string.Empty, "TABLE_SCHEMA,TABLE_NAME").CopyToDataTable();
 
-            /*
-            if (string.IsNullOrEmpty(TableName) == false && TableName != "All")
-            {
-                var tableSchema = TableName.Split(".").First();
-                var tableName = TableName.Split(".").Skip(1).First().Replace("[", string.Empty).Replace("]", string.Empty);
-                if (schemaTable.Select($"TABLE_SCHEMA = '{tableSchema}' and TABLE_NAME = '{tableName}'").Length == 0)
-                {
-                    TableName = string.Empty;
-                }
-            }
-            */
-
             foreach (DataRow dataRow in schemaTable.Rows)
             {
                 Tables.Add($"{dataRow[1]}.[{dataRow[2]}]");
@@ -98,6 +87,7 @@ namespace DbNetSuiteCore.Web.ViewModels
         private void LoadSqliteTables(SqliteConnection connection)
         {
             LoadSchemaTables("SELECT name FROM sqlite_master WHERE type = 'table' order by 1", connection);
+            Tables = Tables.Select(t => GridModelExtensions.QualifyExpression(t, DataSourceType.SQlite)).ToList();
         }
 
         private void LoadPostreSqlTables(IDbConnection connection)

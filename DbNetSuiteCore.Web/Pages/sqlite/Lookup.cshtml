@@ -1,0 +1,20 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+
+    var orderDetailColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("orderid", "Order ID"),
+        new GridColumnModel("ProductID", "Product") {Lookup = new LookupModel("Products","ProductID","ProductName")},
+        new GridColumnModel("UnitPrice", "Unit Price") { Format = "C"},
+        new GridColumnModel("Quantity", "Qty"),
+        new GridColumnModel("Discount", "Discount"),
+    };
+
+    var orderDetailGrid = new GridModel(DataSourceType.SQlite, "Northwind(sqlite)", "[order details]");
+    orderDetailGrid.Columns = orderDetailColumns;
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid))
+}
+

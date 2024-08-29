@@ -131,11 +131,11 @@ namespace DbNetSuiteCore.Extensions
         {
             gridModel.GridColumns.ForEach(c => c.Expression = QualifyExpression(c.Expression, gridModel.DataSourceType));
         }
-        private static string QualifyExpression(string expression, DataSourceType dataSourceType)
+        public static string QualifyExpression(string expression, DataSourceType dataSourceType)
         {
             return QualifyTemplate(dataSourceType).Replace("@", expression);
         }
-        private static string QualifyTemplate(DataSourceType dataSourceType)
+        public static string QualifyTemplate(DataSourceType dataSourceType)
         {
             switch (dataSourceType)
             {

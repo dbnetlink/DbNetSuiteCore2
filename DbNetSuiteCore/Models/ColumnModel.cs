@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Enums;
 using System.Data;
 using System.Text.Json.Serialization;
 
@@ -9,6 +8,7 @@ namespace DbNetSuiteCore.Models
     {
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte) };
         private Type? _DataType = null;
+        private List<KeyValuePair<string, string>>? _LookupOptions = null;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
    
@@ -16,13 +16,14 @@ namespace DbNetSuiteCore.Models
         public string ColumnName => Name.Split(".").Last();
         public string Key => Name.GetHashCode().ToString();
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
-        public List<KeyValuePair<string, string>>? LookupOptions { get; set; } = null;
         [JsonIgnore]
-        public Type? LookupEnum
+        public List<KeyValuePair<string, string>>? LookupOptions
         {
-            get { return null; }
-            set { LookupOptions = EnumHelper.GetEnumOptions(value!); }
+            get { return LookupEnum != null ? EnumHelper.GetEnumOptions(LookupEnum, DataType) : _LookupOptions; }
+            set { _LookupOptions = value; }
         }
+        [JsonIgnore]
+        public Type? LookupEnum { get; set; } = null;
         public string DataTypeName => DataType.ToString().Split(".").Last();    
         [JsonIgnore]
         public Type DataType
@@ -41,6 +42,7 @@ namespace DbNetSuiteCore.Models
         public string Format { get; set; } = string.Empty;
         public bool Initialised { get; set; } = false;
         public bool Valid { get; set; } = true;
+        public LookupModel? Lookup { get; set; }
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()

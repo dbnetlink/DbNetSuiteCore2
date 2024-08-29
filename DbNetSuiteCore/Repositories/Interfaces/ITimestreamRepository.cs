@@ -5,7 +5,7 @@ namespace DbNetSuiteCore.Repositories
 {
     public interface ITimestreamRepository
     {
-        public Task<DataTable> GetRecords(GridModel gridModel);
+        public Task GetRecords(GridModel gridModel);
         public Task<DataTable> GetColumns(GridModel gridModel);
     }
 }

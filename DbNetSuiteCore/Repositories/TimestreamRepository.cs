@@ -15,10 +15,10 @@ namespace DbNetSuiteCore.Repositories
             _configuration = configuration;
         }
 
-        public async Task<DataTable> GetRecords(GridModel gridModel)
+        public async Task GetRecords(GridModel gridModel)
         {
             var query = BuildQuery(gridModel);
-            return await RunQuery(gridModel.ConnectionAlias, $"{query} LIMIT 1000");
+            gridModel.Data = await RunQuery(gridModel.ConnectionAlias, $"{query} LIMIT 1000");
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
