@@ -3,6 +3,7 @@
     public class TriggerNames
     {
         public const string Search = "search";
+        public const string Sort = "sort";
         public const string Download = "download";
         public const string Page = "page";
         public const string First = "first";

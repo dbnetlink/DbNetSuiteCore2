@@ -8,22 +8,33 @@ namespace DbNetSuiteCore.Models
     {
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte) };
         private Type? _DataType = null;
-        private List<KeyValuePair<string, string>>? _LookupOptions = null;
+        private List<KeyValuePair<string, string>>? _EnumOptions;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
-   
+
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
-        public string Key => Name.GetHashCode().ToString();
+        public string Key { get; set; }
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
+        public List<KeyValuePair<string, string>>? LookupOptions => (DbLookupOptions ?? EnumOptions);
         [JsonIgnore]
-        public List<KeyValuePair<string, string>>? LookupOptions
+        public List<KeyValuePair<string, string>>? DbLookupOptions { get; set; } = null;
+        [JsonIgnore]
+        public Type? LookupEnum { get; set; }
+        public string ParamName => $"Param{Ordinal}";
+        public int Ordinal { get; set; }
+        public List<KeyValuePair<string, string>>? EnumOptions 
         {
-            get { return LookupEnum != null ? EnumHelper.GetEnumOptions(LookupEnum, DataType) : _LookupOptions; }
-            set { _LookupOptions = value; }
+            get 
+            {
+                if (LookupEnum != null)
+                {
+                    _EnumOptions = EnumHelper.GetEnumOptions(LookupEnum!, DataType);
+                 };
+                return _EnumOptions;
+            }
+            set { _EnumOptions = value; }
         }
-        [JsonIgnore]
-        public Type? LookupEnum { get; set; } = null;
         public string DataTypeName => DataType.ToString().Split(".").Last();    
         [JsonIgnore]
         public Type DataType
@@ -52,8 +63,9 @@ namespace DbNetSuiteCore.Models
         };
         public ColumnModel()
         {
+            Key = Guid.NewGuid().ToString().Split("-").First();
         }
-        public ColumnModel(DataColumn dataColumn)
+        public ColumnModel(DataColumn dataColumn) : this()
         {
             Expression = dataColumn.ColumnName;
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName); 
@@ -62,7 +74,7 @@ namespace DbNetSuiteCore.Models
             Initialised = true;
         }
 
-        public ColumnModel(DataRow dataRow)
+        public ColumnModel(DataRow dataRow) : this()
         {
             Expression = (string)dataRow["ColumnName"];
             Label = TextHelper.GenerateLabel((string)dataRow["ColumnName"]);
@@ -79,13 +91,13 @@ namespace DbNetSuiteCore.Models
             Initialised = true;
         }
 
-        public ColumnModel(string expression, string label)
+        public ColumnModel(string expression, string label) : this()
         {
             Expression = expression;
             Label = TextHelper.GenerateLabel(label);
         }
 
-        public ColumnModel(string expression) 
+        public ColumnModel(string expression) : this()
         {
             Expression = expression;
             Label = expression.Split(" ").Last();
@@ -120,7 +132,7 @@ namespace DbNetSuiteCore.Models
                 return string.Empty;
             }
             KeyValuePair<string, string>? option = LookupOptions!.FirstOrDefault(p => p.Key.ToString() == value.ToString());
-            if (option.HasValue)
+            if (option.Value.Key != null)
             {
                 return option.Value.Value;
             }

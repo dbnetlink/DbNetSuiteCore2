@@ -11,10 +11,10 @@ namespace DbNetSuiteCore.Models
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
         public int? MaxTextLength { get; set; }
-        public int Ordinal { get; set; }
-        public SortOrder? InitialSortOrder { get; set; }
+
+        public SortOrder? InitialSortOrder { get; set; } = null;
         public bool Filter { get; set; } = true;
-        public string ParamName => $"Param{Ordinal}";
+
         public GridColumnModel()
         {
         }

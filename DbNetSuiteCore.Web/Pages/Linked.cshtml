@@ -35,7 +35,7 @@
     {
         new GridColumnModel("invoicelineid", "Invoice Line ID"),
         new GridColumnModel("invoiceid", "Invoice ID") {ForeignKey = true },
-        new GridColumnModel("trackid", "Track ID"),
+        new GridColumnModel("trackid", "Track ID") {Lookup = new LookupModel("tracks","trackid","name")},
         new GridColumnModel("unitprice", "Price"),
         new GridColumnModel("quantity", "Qty"),
     };

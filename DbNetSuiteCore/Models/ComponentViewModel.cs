@@ -3,8 +3,8 @@ namespace DbNetSuiteCore.Models
 {
     public class ComponentViewModel
     {
-        public IEnumerable<DataColumn> Columns { get; set; } = new List<DataColumn>();
         private ComponentModel _componentModel;
+        public IEnumerable<DataColumn> Columns => _componentModel.Data.Columns.Cast<DataColumn>();
 
         public string SubmitUrl => $"/gridcontrol.htmx";
       
@@ -12,7 +12,6 @@ namespace DbNetSuiteCore.Models
         public ComponentViewModel(ComponentModel componentModel)
         {
             _componentModel = componentModel;
-            Columns = componentModel.Data.Columns.Cast<DataColumn>();
 
             foreach (DataColumn column in Columns)
             {

@@ -90,7 +90,7 @@ class GridControl {
                 this.addClass('#no-records', "hidden");
                 this.removeClass('#navigation', "hidden");
             }
-            this.setPageNumber(currentPage);
+            this.setPageNumber(currentPage, totalPages);
             this.selectGridElement('[data-type="total-pages"]').value = totalPages.toString();
             this.getButton("first").disabled = currentPage == 1;
             this.getButton("previous").disabled = currentPage == 1;
@@ -104,8 +104,18 @@ class GridControl {
     addClass(selector, className) {
         this.selectGridElement(selector).classList.add(className);
     }
-    setPageNumber(pageNumber) {
-        this.selectGridElement('[name="page"]').value = pageNumber.toString();
+    setPageNumber(pageNumber, totalPages) {
+        var select = this.selectGridElement('[name="page"]');
+        if (select.childElementCount != totalPages) {
+            select.querySelectorAll('option').forEach(option => option.remove());
+            for (var i = 1; i <= totalPages; i++) {
+                var opt = document.createElement('option');
+                opt.value = i.toString();
+                opt.text = i.toString();
+                select.appendChild(opt);
+            }
+        }
+        select.value = pageNumber.toString();
     }
     toolbarExists() {
         return this.selectGridElement('#navigation');
@@ -225,16 +235,25 @@ class GridControl {
                 'hx-trigger-name': 'download'
             },
         })
-            .then((response) => response.blob())
-            .then((blob) => {
+            .then((response) => {
             this.hideIndicator();
-            if (exportOption == "html") {
-                this.openWindow(blob);
+            if (!response.headers.has("error")) {
+                return response.blob();
             }
             else {
-                this.downloadFile(blob, exportOption);
+                throw new Error(response.headers.get("error"));
             }
-        });
+        })
+            .then((blob) => {
+            if (blob) {
+                if (exportOption == "html") {
+                    this.openWindow(blob);
+                }
+                else {
+                    this.downloadFile(blob, exportOption);
+                }
+            }
+        }).catch((e) => console.log(`Critical failure: ${e.message}`));
     }
     openWindow(response) {
         const url = window.URL.createObjectURL(response);

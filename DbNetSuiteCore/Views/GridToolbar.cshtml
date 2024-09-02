@@ -19,7 +19,7 @@
             RenderNavButton(TriggerNames.First, IconHelper.First(), "First page");
             RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), "Previous page");
             <span class="flex">Page</span>
-            RenderPageNumber(Model.CurrentPage, Model.TotalPages);
+            RenderPageNumber(Model.GridModel.CurrentPage, Model.TotalPages);
             <span class="flex">of</span>
             RenderTotalPages(Model.TotalPages);
             RenderNavButton(TriggerNames.Next, IconHelper.Next(), "Next page");

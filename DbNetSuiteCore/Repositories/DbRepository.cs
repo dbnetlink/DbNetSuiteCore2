@@ -54,12 +54,42 @@ namespace DbNetSuiteCore.Repositories
 
             foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
             {
-                query = new QueryCommandConfig();
-                var lookup = gridColumn.Lookup;
-                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
-                var dt =  await GetDataTable(query, gridModel.ConnectionAlias);
-                gridColumn.LookupOptions = dt.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+                await GetLookupOptions(gridModel, gridColumn);
             }
+
+            gridModel.ConvertEnumLookups();
+
+            if (gridModel.SortColumn != null && gridModel.SortColumn.LookupOptions != null && gridModel.Data.Rows.Count > 0)
+            {
+                gridModel.Data = gridModel.Data.Select(string.Empty, gridModel.AddDataTableOrderPart()).CopyToDataTable();
+            }
+        }
+
+        private async Task GetLookupOptions(GridModel gridModel, GridColumnModel gridColumn)
+        {
+            DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+
+            if (dataColumn == null)
+            {
+                return;
+            }
+
+            var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+
+            QueryCommandConfig query = new QueryCommandConfig();
+            var lookup = gridColumn.Lookup!;
+
+            var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => ParameterName($"param{i}")).ToList();
+
+            int i = 0;
+            paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
+
+            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {lookup.KeyColumn} in ({String.Join(",",paramNames)}) order by 2";
+
+            var dt = await GetDataTable(query, gridModel.ConnectionAlias);
+            gridColumn.DbLookupOptions = dt.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+            
+            gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
@@ -240,8 +270,6 @@ namespace DbNetSuiteCore.Repositories
                 throw new Exception($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}. {ex.Message}");
             }
             Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
-            //Type adapterType = ProviderAssembly.GetType(customDataProvider.AdapterTypeName, true);
-            //Adapter = (IDbDataAdapter)Activator.CreateInstance(adapterType!);
 
             Object[] args = new Object[1];
             args[0] = connectionString;

@@ -10,10 +10,11 @@ namespace DbNetSuiteCore.Helpers
 
             if (enumType != null)
             {
+                bool enumHasDescription = EnumHasDescription(enumType);
                 foreach (Enum i in Enum.GetValues(enumType).Cast<Enum>())
                 {
                     var description = GetEnumDescription(i);
-                    var value = (dataType == typeof(String)) ? i.ToString() : Convert.ToInt32(i).ToString();
+                    var value = (dataType == typeof(String) && enumHasDescription) ? i.ToString() : Convert.ToInt32(i).ToString();
                     {
                         options.Add(new KeyValuePair<string, string>(value, description));
                     }
@@ -28,6 +29,11 @@ namespace DbNetSuiteCore.Helpers
 
             DescriptionAttribute? attribute = value.GetType().GetField(value.ToString())?.GetCustomAttributes(typeof(DescriptionAttribute), false).SingleOrDefault() as DescriptionAttribute;
             return attribute == null ? value.ToString() : attribute.Description;
+        }
+
+        public static bool EnumHasDescription(Type enumType)
+        {
+            return Enum.GetValues(enumType).Cast<Enum>().Any(e => GetEnumDescription(e) != e.ToString());
         }
     }
 }

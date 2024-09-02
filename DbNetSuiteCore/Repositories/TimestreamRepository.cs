@@ -66,11 +66,7 @@ namespace DbNetSuiteCore.Repositories
 
         private string AddOrderPart(string sql, GridModel gridModel)
         {
-            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
-            {
-                gridModel.SetInitialSort();
-            }
-            return $"{sql} order by {(!string.IsNullOrEmpty(gridModel.SortKey) ? gridModel.SortColumn : gridModel.CurrentSortColumn)} {gridModel.SortSequence}";
+            return $"{sql} order by {gridModel.SortColumnOrdinal} {gridModel.SortSequence}";
         }
 
         private async Task<DataTable> RunQuery(string connectionAlias, string queryString)

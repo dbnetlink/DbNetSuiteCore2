@@ -2,6 +2,7 @@
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
 
 @{
     var employeeColumns = new List<GridColumnModel>
@@ -18,12 +19,12 @@
         new GridColumnModel("LoginID", "Login Id"),
         new GridColumnModel("EmailAddress", "Email"),
         new GridColumnModel("Phone", "Phone"),
-        new GridColumnModel("MaritalStatus", "Marital Status"),
+        new GridColumnModel("MaritalStatus", "Marital Status") {LookupEnum = typeof(MaritalStatusEnum)},
         new GridColumnModel("EmergencyContactName", "Contact Name"),
         new GridColumnModel("EmergencyContactPhone", "Contact Phone"),
         new GridColumnModel("SalariedFlag", "Salaried"),
-        new GridColumnModel("Gender", "Gender"),
-        new GridColumnModel("PayFrequency", "Pay Frequency"),
+        new GridColumnModel("Gender", "Gender") {LookupEnum = typeof(GenderEnum)},
+        new GridColumnModel("PayFrequency", "Pay Frequency") {LookupEnum = typeof(PaymentEnum), DataType = typeof(Int32)},
         new GridColumnModel("BaseRate", "Base Rate"),
         new GridColumnModel("VacationHours", "Vacation Hours"),
         new GridColumnModel("SickLeaveHours", "Sick Leave Hours"),

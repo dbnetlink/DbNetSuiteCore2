@@ -5,17 +5,30 @@ namespace DbNetSuiteCore.Models
 {
     public class GridModel : ComponentModel
     {
+        private string _SortKey = string.Empty;
+        private SortOrder? _SortSequence = null;
         private GridModel? _LinkedGrid;
         public string Id { get; set; } = string.Empty;
         public List<GridColumnModel> GridColumns => Columns.Cast<GridColumnModel>().ToList();
         public int CurrentPage { get; set; } = 1;
         public string SearchInput { get; set; } = string.Empty;
-        public string SortKey { get; set; } = string.Empty;
+        public string SortKey  
+        { 
+            get { return string.IsNullOrEmpty(_SortKey) ? GridColumns.FirstOrDefault()?.Key ?? string.Empty : _SortKey; } 
+            set { _SortKey = value; } 
+        }
         public string CurrentSortKey { get; set; } = string.Empty;
-        public bool CurrentSortAscending { get; set; } = true;
-        public string SortColumn => Columns.FirstOrDefault(c => c.Key == SortKey)?.Ordinal.ToString() ?? "1";
-        public string CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey)?.Ordinal.ToString() ?? "1";
-        public SortOrder SortSequence => GetSortSequence();
+        public bool CurrentSortAscending => SortSequence == SortOrder.Asc;
+        public string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
+        public string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
+        public GridColumnModel? SortColumn => ((Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn);
+        public GridColumnModel? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
+        public GridColumnModel? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
+        public SortOrder? SortSequence 
+        { 
+            get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; } 
+            set { _SortSequence = value; } 
+        }
         public string? PrimaryKey { get; set; }
         public string TableName { get; set; } = string.Empty;
         public string ExportFormat { get; set; } = string.Empty;
@@ -46,19 +59,6 @@ namespace DbNetSuiteCore.Models
         public string Caption { get; set; } = string.Empty;
         public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
-        private SortOrder GetSortSequence()
-        {
-            if (string.IsNullOrEmpty(SortKey))
-            {
-                return CurrentSortAscending ? SortOrder.Asc : SortOrder.Desc;
-            }
-            if (SortKey == CurrentSortKey)
-            {
-                return CurrentSortAscending ? SortOrder.Desc : SortOrder.Asc;
-            }
-
-            return SortOrder.Asc;
-        }
         public string HxFormTrigger => IsLinked ? "submit" : "load";
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
 
@@ -66,7 +66,6 @@ namespace DbNetSuiteCore.Models
         {
             Id = GeneratedId();
         }
-
         public GridModel(DataSourceType dataSourceType, string url) :this()
         {
             DataSourceType = dataSourceType;
@@ -88,6 +87,34 @@ namespace DbNetSuiteCore.Models
         public void SetId()
         {
             Id = $"Grid{DateTime.Now.Ticks}";
+        }
+
+        public DataColumn? GetDataColumn(GridColumnModel column)
+        {
+            return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName == column.Name || c.ColumnName == column.ColumnName);
+        }
+
+        public void ConfigureSort(string sortKey)
+        {
+            if (string.IsNullOrEmpty(sortKey) == false)
+            {
+                if (sortKey != CurrentSortKey)
+                {
+                    SortSequence = SortOrder.Asc;
+                    CurrentSortKey = sortKey;
+                }
+                else
+                {
+                    SortSequence = SortSequence == SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(CurrentSortKey))
+                {
+                    CurrentSortKey = InitalSortColumn?.Key ?? string.Empty;
+                }
+            }
         }
     }
 }

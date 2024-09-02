@@ -160,20 +160,12 @@ namespace DbNetSuiteCore.Repositories
 
         private string AddOrderPart(GridModel gridModel)
         {
-            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
-            {
-                gridModel.SetInitialSort();
-            }
-
-            var sortColumn = gridModel.Columns[Convert.ToInt32(gridModel.SortColumn) - 1].ColumnName;
-            var currentSortColumn = gridModel.Columns[Convert.ToInt32(gridModel.CurrentSortColumn) - 1].ColumnName;
-
-            if (sortColumn == String.Empty)
+            if (string.IsNullOrEmpty(gridModel.SortColumnName))
             {
                 return string.Empty;
             }
 
-            return $"IsDirectory desc, {(!string.IsNullOrEmpty(gridModel.SortKey) ? sortColumn : currentSortColumn)} {gridModel.SortSequence}";
+            return $"IsDirectory desc, {gridModel.SortColumnName} {gridModel.SortSequence}";
         }
     }
 }

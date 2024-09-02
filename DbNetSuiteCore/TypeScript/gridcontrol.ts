@@ -70,8 +70,6 @@ class GridControl {
             row.click();
         }
 
-        
-
         this.invokeEventHandler('PageLoaded');
     }
 
@@ -106,7 +104,7 @@ class GridControl {
                 this.removeClass('#navigation', "hidden");
             }
 
-            this.setPageNumber(currentPage);
+            this.setPageNumber(currentPage,totalPages);
             (this.selectGridElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
 
             this.getButton("first").disabled = currentPage == 1;
@@ -124,8 +122,20 @@ class GridControl {
         this.selectGridElement(selector).classList.add(className);
     }
 
-    setPageNumber(pageNumber: number) {
-        (this.selectGridElement('[name="page"]') as HTMLSelectElement).value = pageNumber.toString();
+    setPageNumber(pageNumber: number, totalPages:number) {
+        var select = this.selectGridElement('[name="page"]') as HTMLSelectElement;
+
+        if (select.childElementCount != totalPages) {
+            select.querySelectorAll('option').forEach(option => option.remove())
+            for (var i = 1; i <= totalPages; i++) {
+                var opt = document.createElement('option') as HTMLOptionElement;
+                opt.value = i.toString();
+                opt.text = i.toString();
+                select.appendChild(opt);
+            }
+        }
+
+        select.value = pageNumber.toString();
     }
 
     toolbarExists() {
@@ -192,7 +202,6 @@ class GridControl {
     };
 
     highlightRow(ev: Event) {
-        
         let tr = (ev.target as HTMLElement).closest('tr')
         if (tr.classList.contains(this.bgColourClass)) {
             return;
@@ -275,16 +284,25 @@ class GridControl {
                 'hx-trigger-name': 'download'
             },
         })
-            .then((response) => response.blob())
-            .then((blob) => {
+            .then((response) => {
                 this.hideIndicator()
-                if (exportOption == "html") {
-                    this.openWindow(blob)
+                if (!response.headers.has("error")) {
+                    return response.blob()
                 }
                 else {
-                    this.downloadFile(blob, exportOption)
+                    throw new Error(response.headers.get("error"))
                 }
-            });
+             })
+            .then((blob) => {
+                if (blob) {
+                    if (exportOption == "html") {
+                        this.openWindow(blob)
+                    }
+                    else {
+                        this.downloadFile(blob, exportOption)
+                    }
+                }
+            }).catch((e) => console.log(`Critical failure: ${e.message}`));
     }
 
     openWindow(response) {

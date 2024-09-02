@@ -14,29 +14,18 @@ namespace DbNetSuiteCore.Models
         public string GridId => _gridModel.Id;
         public string TBodyId => $"tbody{_gridModel.Id}";
         public string LinkedGridId => _gridModel.LinkedGrid?.Id ?? string.Empty;
-        public int CurrentPage => _gridModel.CurrentPage;
-        public int PageSize => _gridModel.PageSize;
-        public string TableName => _gridModel.TableName;
-        public string ConnectionAlias => _gridModel.ConnectionAlias;
         public string SearchInput => _gridModel.SearchInput;
-        public string SortColumn => _gridModel.SortColumn;
-        public string SortKey => _gridModel.SortKey;
-        public string CurrentSortKey => string.IsNullOrEmpty(SortKey) ? _gridModel.CurrentSortKey : SortKey;
-        public bool CurrentSortAscending => _gridModel.SortSequence == SortOrder.Asc;
-        public HtmlString SortIcon => CurrentSortAscending ? IconHelper.ArrowUp() : IconHelper.ArrowDown();
+        public string CurrentSortKey => _gridModel.CurrentSortKey;
+        public HtmlString SortIcon => _gridModel.CurrentSortAscending ? IconHelper.ArrowUp() : IconHelper.ArrowDown();
         public DataSourceType DataSourceType => _gridModel.DataSourceType;
         public RenderMode RenderMode { get; set; } = RenderMode.Page;
 
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
-        public bool IsSortColumn(ColumnModel columnInfo)
-        {
-            return columnInfo.Key == CurrentSortKey;
-        }
         public GridViewModel(GridModel gridModel) : base(gridModel)
         {
             _gridModel = gridModel;
-            TotalPages = (int)Math.Ceiling((double)gridModel.Data.Rows.Count / PageSize);
+            TotalPages = (int)Math.Ceiling((double)gridModel.Data.Rows.Count / gridModel.PageSize);
 
             if (_gridModel.CurrentPage > TotalPages)
             {
@@ -48,8 +37,7 @@ namespace DbNetSuiteCore.Models
                 _gridModel.PageSize = gridModel.Data.Rows.Count;
             }
 
-            Rows = gridModel.Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-            Columns = gridModel.Data.Columns.Cast<DataColumn>();
+            Rows = gridModel.Data.AsEnumerable().Skip((GridModel.CurrentPage - 1) * GridModel.PageSize).Take(GridModel.PageSize);
 
             foreach (DataColumn column in Columns)
             {
@@ -72,7 +60,7 @@ namespace DbNetSuiteCore.Models
 
         public DataColumn? GetDataColumn(GridColumnModel column)
         {
-            return Columns.FirstOrDefault(c => c.ColumnName == column.Name || c.ColumnName == column.ColumnName);
+            return _gridModel.GetDataColumn(column);
         }
 
         public string? PrimaryKeyValue(DataRow dataRow)

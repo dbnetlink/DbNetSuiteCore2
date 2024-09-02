@@ -56,20 +56,24 @@ namespace DbNetSuiteCore.Services
                     case "js":
                         return GetResources(page);
                     case "gridcontrol":
-                        GridModel gridModel = GetGridModel() ?? new GridModel();
-                        return await GridView(gridModel);
+                        return await GridView();
                     default:
                         return GetResource(page.Split(".").Last(), page.Split(".").First());
                 }
+
+
             }
             catch (Exception ex)
             {
+                context.Response.Headers.Append("error", ex.Message);
                 return await View("Error", ex);
             }
         }
 
-        private async Task<Byte[]> GridView(GridModel gridModel)
+        private async Task<Byte[]> GridView()
         {
+            GridModel gridModel = GetGridModel() ?? new GridModel();
+
             switch (triggerName)
             {
                 case TriggerNames.Download:
@@ -77,7 +81,7 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.NestedGrid:
                     gridModel.NestedGrid!.IsNested = true;
                     gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
-                    gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey","",_context);
+                    gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
                     gridModel.NestedGrid.SetId();
 
                     if (gridModel.DataSourceType == DataSourceType.FileSystem)
@@ -104,6 +108,9 @@ namespace DbNetSuiteCore.Services
             }
             await ConfigureGridColumns(gridModel);
             await GetRecords(gridModel);
+
+            gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
+
             return new GridViewModel(gridModel);
         }
 
@@ -168,6 +175,8 @@ namespace DbNetSuiteCore.Services
 
         private async Task GetRecords(GridModel gridModel)
         {
+            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
+
             switch (gridModel.DataSourceType)
             {
                 case DataSourceType.Timestream:
@@ -221,7 +230,7 @@ namespace DbNetSuiteCore.Services
             switch (gridModel.ExportFormat)
             {
                 case "csv":
-                    return ConvertDataTableToCSV(gridModel.Data);
+                    return ConvertDataTableToCSV(gridModel);
                 case "excel":
                     return ConvertDataTableToSpreadsheet(gridModel);
                 case "json":
@@ -231,16 +240,52 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private Byte[] ConvertDataTableToCSV(DataTable dt)
+        private DataTable TransformData(GridModel gridModel)
+        {
+            DataTable dataTable = gridModel.Data.Clone();
+            foreach (DataColumn dataColumn in dataTable.Columns)
+            {
+                dataColumn.DataType = typeof(String);
+            }
+
+            foreach (DataRow row in gridModel.Data.Rows)
+            {
+                DataRow dataRow = dataTable.NewRow();
+
+                foreach (GridColumnModel columnModel in gridModel.Columns)
+                {
+                    DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
+
+                    if (dataColumn != null)
+                    {
+                        dataRow[dataColumn] = columnModel.FormatValue(row[dataColumn]);
+                    }
+                }
+                dataTable.Rows.Add(dataRow);
+            }
+
+            return dataTable;
+        }
+        private Byte[] ConvertDataTableToCSV(GridModel gridModel)
         {
             StringBuilder sb = new StringBuilder();
 
-            IEnumerable<string> columnNames = dt.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
+            IEnumerable<string> columnNames = gridModel.Data.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
             sb.AppendLine(string.Join(",", columnNames));
 
-            foreach (DataRow row in dt.Rows)
+            foreach (DataRow row in gridModel.Data.Rows)
             {
-                IEnumerable<string> fields = row.ItemArray.Select(field => string.Concat("\"", field.ToString().Replace("\"", "\"\""), "\""));
+                IEnumerable<string> fields = new List<string>();
+                foreach (GridColumnModel columnModel in gridModel.Columns)
+                {
+                    DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
+
+                    if (dataColumn != null)
+                    {
+                        string value = string.Concat("\"", columnModel.FormatValue(row[dataColumn])?.ToString()?.Replace("\"", "\"\""), "\"") ?? string.Empty;
+                        fields = fields.Append(value);
+                    }
+                }
                 sb.AppendLine(string.Join(",", fields));
             }
             _context.Response.ContentType = GetMimeTypeForFileExtension(".csv");
@@ -310,51 +355,22 @@ namespace DbNetSuiteCore.Services
 
                     foreach (var column in gridModel.Columns)
                     {
+                        DataColumn? dataColumn = gridModel.GetDataColumn(column);
 
-                        object value = row[gridModel.Data.Columns[colIdx - 1]];
-
-                        if (value == null || value == DBNull.Value)
+                        if (dataColumn == null)
                         {
-                            worksheet.Cell(rowIdx, colIdx).Value = string.Empty;
+                            continue;
                         }
-                        else
+
+                        object value = row[dataColumn];
+                        var cell = worksheet.Cell(rowIdx, colIdx);
+                        cell.Value = column.FormatValue(value)?.ToString() ?? string.Empty;
+
+                        if (columnWidths.ContainsKey(column.ColumnName))
                         {
-
-                            var cell = worksheet.Cell(rowIdx, colIdx);
-
-                            switch (column.DataTypeName)
+                            if (value.ToString().Length > columnWidths[column.ColumnName])
                             {
-                                case nameof(Double):
-                                    cell.Value = Convert.ToDouble(value);
-                                    break;
-                                case nameof(Decimal):
-                                    cell.Value = Convert.ToDecimal(value);
-                                    break;
-                                case nameof(Int16):
-                                case nameof(Int32):
-                                case nameof(Int64):
-                                    cell.Value = Convert.ToInt64(value);
-                                    break;
-                                case nameof(DateTime):
-                                    cell.Value = Convert.ToDateTime(value);
-                                    break;
-                                case nameof(TimeSpan):
-                                    cell.Value = TimeSpan.Parse(value?.ToString() ?? string.Empty);
-                                    break;
-                                case nameof(System.Boolean):
-                                    cell.Value = Convert.ToBoolean(value);
-                                    break;
-                                default:
-                                    cell.Value = value.ToString();
-                                    break;
-                            }
-
-                            if (columnWidths.ContainsKey(column.ColumnName))
-                            {
-                                if (value.ToString().Length > columnWidths[column.ColumnName])
-                                {
-                                    columnWidths[column.ColumnName] = value.ToString().Length;
-                                }
+                                columnWidths[column.ColumnName] = value.ToString().Length;
                             }
                         }
 
@@ -388,42 +404,31 @@ namespace DbNetSuiteCore.Services
                 using (var memoryStream = new MemoryStream())
                 {
                     workbook.SaveAs(memoryStream);
-                    _context.Response.ContentType = GetMimeTypeForFileExtension($".xlsx"); ;
-                    memoryStream.Seek(0, SeekOrigin.Begin);
+                     memoryStream.Seek(0, SeekOrigin.Begin);
                     return memoryStream.ToArray();
                 }
             }
         }
 
-        private GridModel? GetGridModel()
+        private GridModel GetGridModel()
         {
-            GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context))) ?? new GridModel();
             try
             {
+                var json = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
+                GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(json) ?? new GridModel();
                 gridModel.CurrentPage = GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
-                gridModel.SortKey = RequestHelper.FormValue("sortKey", string.Empty, _context);
-                gridModel.CurrentSortKey = RequestHelper.FormValue("currentSortKey", string.Empty, _context);
-                gridModel.CurrentSortAscending = Convert.ToBoolean(RequestHelper.FormValue("currentSortAscending", "false", _context));
+                gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context);
-                string primaryKey = RequestHelper.FormValue("primaryKey", string.Empty, _context);
-                if (!string.IsNullOrEmpty(primaryKey))
-                {
-                    gridModel.ParentKey = primaryKey;
-                }
-                
+                gridModel.ParentKey = RequestHelper.FormValue("primaryKey", gridModel.ParentKey, _context);
+                return gridModel;
             }
             catch
             {
-                return null;
+                return new GridModel();
             }
-
-            return gridModel;
         }
-
-       
-
         private int GetPageNumber(GridModel gridModel)
         {
             switch (triggerName)

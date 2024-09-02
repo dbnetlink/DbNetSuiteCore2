@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System.Data;
 using DbNetSuiteCore.Extensions;
 using Newtonsoft.Json.Linq;
-using DocumentFormat.OpenXml.Office2021.Excel.NamedSheetViews;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -24,7 +23,8 @@ namespace DbNetSuiteCore.Repositories
 
             if (rows.Any()) 
             {
-                gridModel.Data = rows.CopyToDataTable(); 
+                gridModel.Data = rows.CopyToDataTable();
+                gridModel.ConvertEnumLookups();
             }
             else
             {
@@ -59,8 +59,8 @@ namespace DbNetSuiteCore.Repositories
                 string[] selectedColumns = gridModel.Columns.Select(c => c.Expression).ToArray();
 
                 dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
-
             }
+
             return dataTable;
         }
 
@@ -161,20 +161,12 @@ namespace DbNetSuiteCore.Repositories
 
         private string AddOrderPart(GridModel gridModel)
         {
-            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
-            {
-                gridModel.SetInitialSort();
-            }
-
-            var sortColumn = gridModel.Columns[Convert.ToInt32(gridModel.SortColumn) - 1].ColumnName;
-            var currentSortColumn = gridModel.Columns[Convert.ToInt32(gridModel.CurrentSortColumn) - 1].ColumnName;
-
-            if (sortColumn == String.Empty)
+            if (string.IsNullOrEmpty(gridModel.SortColumnName))
             {
                 return string.Empty;
             }
 
-            return $"{(!string.IsNullOrEmpty(gridModel.SortKey) ? sortColumn : currentSortColumn)} {gridModel.SortSequence}";
+            return $"{gridModel.SortColumnName} {gridModel.SortSequence}";
         }
     }
 }

@@ -3,6 +3,7 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Data;
 
 
 namespace DbNetSuiteCore.Extensions
@@ -101,25 +102,20 @@ namespace DbNetSuiteCore.Extensions
 
         private static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
         {
-            if (string.IsNullOrEmpty(gridModel.CurrentSortKey))
+            if (string.IsNullOrEmpty(gridModel.SortColumnOrdinal))
             {
-                gridModel.SetInitialSort();
+                return;
             }
-            query.Sql += $" order by {(!string.IsNullOrEmpty(gridModel.SortKey) ? gridModel.SortColumn : gridModel.CurrentSortColumn)} {gridModel.SortSequence}";
+            query.Sql += $" order by {gridModel.SortColumnOrdinal} {gridModel.SortSequence}";
         }
 
-        public static void SetInitialSort(this GridModel gridModel)
+        public static string AddDataTableOrderPart(this GridModel gridModel)
         {
-            gridModel.CurrentSortKey = gridModel.Columns.First().Key;
-            gridModel.CurrentSortAscending = true;
-
-            var initialSortOrderColumn = gridModel.Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue);
-
-            if (initialSortOrderColumn != null)
+            if (string.IsNullOrEmpty(gridModel.SortColumnName))
             {
-                gridModel.CurrentSortKey = initialSortOrderColumn.Key;
-                gridModel.CurrentSortAscending = initialSortOrderColumn.InitialSortOrder!.Value == SortOrder.Asc;
+                return string.Empty;
             }
+            return $"{gridModel.SortColumnName} {gridModel.SortSequence}";
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)
@@ -196,6 +192,15 @@ namespace DbNetSuiteCore.Extensions
                     }
                 default:
                     return new KeyValuePair<string, object>("like", $"%{filterColumnValue}%");
+            }
+        }
+
+        public static void ConvertEnumLookups(this GridModel gridModel)
+        {
+            foreach (var gridColumn in gridModel.Columns.Where(c => c.LookupOptions != null && c.Lookup == null))
+            {
+                DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+                gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
             }
         }
 

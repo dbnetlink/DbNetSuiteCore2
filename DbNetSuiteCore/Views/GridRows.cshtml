@@ -3,11 +3,12 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
 
-<tbody id="@Model.TBodyId" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.SortKey" data-url="@Model.GridModel.Url">
+<tbody id="@Model.TBodyId" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row" data-id="@Model.PrimaryKeyValue(row)">
@@ -57,7 +58,7 @@
                 else if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
                     <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">
-                        @columnInfo.GetLookupValue(row[col])
+                        @row[col]
                     </td>
                 }
                 else
@@ -67,7 +68,7 @@
                         classes.Add("text-right");
                     }
 
-                    var value = FormatValue(row[col], columnInfo);
+                    var value = columnInfo.FormatValue(row[col]!);
                     if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
                     {
                         <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">
@@ -90,8 +91,6 @@
         <tr style="display:none">
             <td>
                 <div>
-                    <input type="hidden" name="currentSortKey" value="@Model.CurrentSortKey" />
-                    <input type="hidden" name="currentSortAscending" value="@Model.CurrentSortAscending.ToString()" />
                     <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model.GridModel))" />
                     <span style="display:none" id="sortIcon">@Model.SortIcon</span>
                     @if (Model.GridModel.IsLinked || Model.GridModel.IsNested)
