@@ -3,6 +3,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
@@ -93,13 +94,25 @@
                 <div>
                     <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model.GridModel))" />
                     <span style="display:none" id="sortIcon">@Model.SortIcon</span>
-                    @if (Model.GridModel.IsLinked || Model.GridModel.IsNested)
+                    @if (Model.GridModel.IsLinked)
                     {
-                        <input type="hidden" name="primaryKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator" value="@Model.GridModel.ParentKey" />
+                        <input type="hidden" name="@TriggerNames.LinkedGrid" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator" value="@Model.GridModel.ParentKey" />
                     }
                 </div>
             </td>
 
+        </tr>
+    }
+
+    @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.LinkedGrid)
+    {
+        <tr style="display:none" class="column-filter-refresh">
+            <td>
+                @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
+                {
+                    RenderColumnSelectFilter(gridColumn.LookupOptions, gridColumn.Key);
+                }
+            </td>
         </tr>
     }
 </tbody>
@@ -154,5 +167,16 @@
             <button type="button" name="@TriggerNames.NestedGrid" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}' hx-trigger="click once" style="display:none">
             </button>
         </div>
+    }
+
+    public void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, string key)
+    {
+        <select data-key="@key">
+            <option value=""></option>
+            @foreach (var option in options)
+            {
+                <option value="@option.Key">@option.Value</option>
+            }
+        </select>
     }
 }

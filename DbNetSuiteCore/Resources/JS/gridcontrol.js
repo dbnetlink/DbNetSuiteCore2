@@ -61,6 +61,10 @@ class GridControl {
         if (row) {
             row.click();
         }
+        this.gridControl.querySelectorAll("tr.column-filter-refresh select").forEach((select) => {
+            let filter = this.gridControl.querySelector(`thead select[data-key="${select.dataset.key}"]`);
+            filter.innerHTML = select.innerHTML;
+        });
         this.invokeEventHandler('PageLoaded');
     }
     invokeEventHandler(eventName, args = {}) {

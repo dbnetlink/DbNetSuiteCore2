@@ -60,12 +60,10 @@ namespace DbNetSuiteCore.Services
                     default:
                         return GetResource(page.Split(".").Last(), page.Split(".").First());
                 }
-
-
             }
             catch (Exception ex)
             {
-                context.Response.Headers.Append("error", ex.Message);
+                context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
                 return await View("Error", ex);
             }
         }
@@ -74,27 +72,19 @@ namespace DbNetSuiteCore.Services
         {
             GridModel gridModel = GetGridModel() ?? new GridModel();
 
+            gridModel.TriggerName = triggerName;
+
             switch (triggerName)
             {
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.NestedGrid:
-                    gridModel.NestedGrid!.IsNested = true;
-                    gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
-                    gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
-                    gridModel.NestedGrid.SetId();
-
-                    if (gridModel.DataSourceType == DataSourceType.FileSystem)
-                    {
-                        gridModel.NestedGrid.NestedGrid = gridModel.NestedGrid.DeepCopy();
-                    }
-                    return await View("NestedGrid", gridModel.NestedGrid);
+                    return await View("NestedGrid", ConfigureNestedGrid(gridModel));
                 default:
                     string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
                     return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
-
         private async Task<Byte[]> View<TModel>(string viewName, TModel model)
         {
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
@@ -112,6 +102,21 @@ namespace DbNetSuiteCore.Services
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
 
             return new GridViewModel(gridModel);
+        }
+
+        private GridModel ConfigureNestedGrid(GridModel gridModel)
+        {
+            gridModel.NestedGrid!.IsNested = true;
+            gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
+            gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
+            gridModel.NestedGrid.SetId();
+
+            if (gridModel.DataSourceType == DataSourceType.FileSystem)
+            {
+                gridModel.NestedGrid.NestedGrid = gridModel.NestedGrid.DeepCopy();
+            }
+
+            return gridModel.NestedGrid;
         }
 
         private async Task ConfigureGridColumns(GridModel gridModel)
@@ -176,6 +181,11 @@ namespace DbNetSuiteCore.Services
         private async Task GetRecords(GridModel gridModel)
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
+
+            if (gridModel.TriggerName == TriggerNames.LinkedGrid)
+            {
+                gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
+            }
 
             switch (gridModel.DataSourceType)
             {

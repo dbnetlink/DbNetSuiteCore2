@@ -1,0 +1,58 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+
+    var orderColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("id") {PrimaryKey = true},
+        new GridColumnModel("employee_id","Employee"){ Lookup = new LookupModel("employees", "id", "concat(last_name,', ',first_name)")},
+        new GridColumnModel("customer_id","Customer"){ Lookup = new LookupModel("customers", "id", "company")},
+        new GridColumnModel("order_date"),
+        new GridColumnModel("shipped_date"),
+        new GridColumnModel("shipper_id"){ Lookup = new LookupModel("shippers", "id", "company")},
+        new GridColumnModel("ship_name"),
+        new GridColumnModel("ship_address"),
+        new GridColumnModel("ship_city"),
+        new GridColumnModel("ship_state_province"),
+        new GridColumnModel("ship_zip_postal_code"),
+        new GridColumnModel("ship_country_region"),
+        new GridColumnModel("shipping_fee"),
+        new GridColumnModel("taxes"),
+        new GridColumnModel("payment_type"),
+        new GridColumnModel("paid_date"),
+        new GridColumnModel("notes"),
+        new GridColumnModel("tax_rate"),
+        new GridColumnModel("tax_status_id"),
+        new GridColumnModel("status_id"){ Lookup = new LookupModel("orders_status", "id", "status_name")},
+    };
+
+    var orderDetailColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("id"),
+        new GridColumnModel("order_id") {ForeignKey = true},
+        new GridColumnModel("product_id") {Lookup = new LookupModel("products","id","product_name")},
+        new GridColumnModel("Quantity"),
+        new GridColumnModel("Unit_Price"),
+        new GridColumnModel("Discount"),
+        new GridColumnModel("status_id"){ Lookup = new LookupModel("order_details_status", "id", "status_name")},
+        new GridColumnModel("Date_Allocated"),
+        new GridColumnModel("Purchase_Order_Id"),
+        new GridColumnModel("Inventory_Id")
+    };
+
+
+
+    var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5 };
+    orderDetailGrid.Columns = orderDetailColumns;
+
+    var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.orders") { PageSize = 5 };
+    ordersGrid.Columns = orderColumns;
+    ordersGrid.LinkedGrid = orderDetailGrid;
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid));
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid));
+}

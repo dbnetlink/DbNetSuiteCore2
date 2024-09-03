@@ -80,7 +80,7 @@ namespace DbNetSuiteCore.Extensions
                     if (foreignKeyColumn != null)
                     {
                         filterParts.Add($"({foreignKeyColumn.Expression.Split(" ").First()} = @{foreignKeyColumn.ParamName})");
-                        query.Params[$"@{foreignKeyColumn.ParamName}"] = gridModel.ParentKey;
+                        query.Params[$"@{foreignKeyColumn.ParamName}"] = foreignKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
                     }
                 }
                 else

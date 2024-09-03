@@ -38,7 +38,7 @@
                     {
                         if (columnInfo.Sortable)
                         {
-                            <th class="text-base" name="@TriggerNames.Sort" style="cursor:pointer" data-key="@(columnInfo.Key)" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
+                            <th class="text-base" style="cursor:pointer" data-key="@(columnInfo.Key)" data-columnname="@(columnInfo.ColumnName)" hx-vals='{"sortKey":"@(columnInfo.Key)"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
                                 <div class="flex flex-row justify-between items-center">@(columnInfo?.Label) <span class="text-slate-400"></span></div>
                             </th>
                         }
@@ -83,8 +83,6 @@
     </div>
 </div>
 
-
-
 @functions {
     void RenderColumnFilter(GridColumnModel columnInfo)
     {
@@ -93,14 +91,14 @@
             {
                 if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
-                    RenderColumnSelectFilter(columnInfo.LookupOptions);
+                    RenderColumnSelectFilter(columnInfo.LookupOptions, columnInfo.Key);
                 }
                 else
                 {
                     switch (columnInfo.DataTypeName)
                     {
                         case nameof(Boolean):
-                            RenderColumnSelectFilter(GridColumnModel.BooleanFilterOptions);
+                            RenderColumnSelectFilter(GridColumnModel.BooleanFilterOptions,string.Empty);
                             break;
                         default:
                             <input class="w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
@@ -111,11 +109,11 @@
         </th>
     }
 
-    void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options)
+    void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, string key)
     {
         var length = Model.SelectWidth(options) + 1;
 
-        <select class="" style="width:@(length)rem" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">
+        <select class="" style="width:@(length)rem" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" data-key="@key">
             <option value=""></option>
             @foreach (var option in options)
             {

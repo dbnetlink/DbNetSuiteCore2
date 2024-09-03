@@ -70,6 +70,11 @@ class GridControl {
             row.click();
         }
 
+        this.gridControl.querySelectorAll("tr.column-filter-refresh select").forEach((select:HTMLSelectElement) => {
+            let filter: HTMLSelectElement = this.gridControl.querySelector(`thead select[data-key="${select.dataset.key}"]`)
+            filter.innerHTML = select.innerHTML;
+        });
+
         this.invokeEventHandler('PageLoaded');
     }
 

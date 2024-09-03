@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using DbNetSuiteCore.Constants;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -26,7 +27,7 @@ namespace DbNetSuiteCore.Repositories
         public IDbConnection GetConnection(string database)
         {
             string? connectionString = _configuration.GetConnectionString(database);
-            connectionString = MapDatabasePath(connectionString,_env);
+            connectionString = MapDatabasePath(connectionString, _env);
 
             IDbConnection connection;
 
@@ -52,7 +53,7 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = gridModel.BuildQuery();
             gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
 
-            foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
+            foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
             {
                 await GetLookupOptions(gridModel, gridColumn);
             }
@@ -69,7 +70,9 @@ namespace DbNetSuiteCore.Repositories
         {
             DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
 
-            if (dataColumn == null)
+            gridColumn.DbLookupOptions = new List<KeyValuePair<string, string>>();
+
+            if (dataColumn == null || gridModel.Data.Rows.Count == 0)
             {
                 return;
             }
@@ -84,11 +87,11 @@ namespace DbNetSuiteCore.Repositories
             int i = 0;
             paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
 
-            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {lookup.KeyColumn} in ({String.Join(",",paramNames)}) order by 2";
+            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {lookup.KeyColumn} in ({String.Join(",", paramNames)}) order by 2";
 
             var dt = await GetDataTable(query, gridModel.ConnectionAlias);
             gridColumn.DbLookupOptions = dt.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
-            
+
             gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
         }
 
@@ -131,7 +134,7 @@ namespace DbNetSuiteCore.Repositories
         }
         public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior Behaviour = CommandBehavior.Default)
         {
-            IDbCommand command = ConfigureCommand(query.Sql, connection, query.Params );
+            IDbCommand command = ConfigureCommand(query.Sql, connection, query.Params);
             return await ((DbCommand)command).ExecuteReaderAsync(CommandBehavior.Default);
         }
 
@@ -184,7 +187,7 @@ namespace DbNetSuiteCore.Repositories
             return connectionString;
         }
 
-        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null )
+        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null)
         {
             IDbCommand command = connection.CreateCommand();
             command.CommandText = sql.Trim();
@@ -238,7 +241,7 @@ namespace DbNetSuiteCore.Repositories
         {
             key = Regex.Replace(key, "[^a-zA-Z0-9_]", "_");
             return key;
-        
+
         }
 
         public static IDbConnection GetCustomDbConnection(DataSourceType dataSourceType, string connectionString)

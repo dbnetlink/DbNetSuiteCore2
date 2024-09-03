@@ -60,6 +60,7 @@ namespace DbNetSuiteCore.Models
         public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
         public string HxFormTrigger => IsLinked ? "submit" : "load";
+        public string TriggerName { get; set; } = string.Empty;
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
 
         public GridModel()
