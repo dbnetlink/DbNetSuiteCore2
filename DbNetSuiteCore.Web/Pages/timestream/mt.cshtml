@@ -4,14 +4,6 @@
 @using DbNetSuiteCore.Models
 
 @{
-
-    var heatPumpColumns = new List<GridColumnModel>
-    {
-        new GridColumnModel("dbo.HeatPumps.Name HeatPumpName", "Name"),
-        new GridColumnModel("dbo.Accounts.Name AccountName", "Account Name"),
-        new GridColumnModel("dbo.HeatPumpGroups.Name GroupName", "Group Name")
-    };
-
     var mt1Columns = new List<GridColumnModel>
     {
         new GridColumnModel("SerialNumber", "Serial No."),
@@ -76,37 +68,9 @@
         new GridColumnModel("runHours2", "Run Hours 2")
     };
 
-    var employeeColumns = new List<GridColumnModel>
-    {
-        new GridColumnModel("ParentEmployeeKey", "Id"),
-        new GridColumnModel("EmployeeNationalIDAlternateKey", "National Id"),
-        new GridColumnModel("SalesTerritoryKey", "Sales Territory"),
-        new GridColumnModel("FirstName", "Forename"),
-        new GridColumnModel("MiddleName", "Middle Name"),
-        new GridColumnModel("LastName", "Surname") {InitialSortOrder = SortOrder.Asc},
-        new GridColumnModel("Title", "Title"),
-        new GridColumnModel("HireDate", "Hire Date"),
-        new GridColumnModel("BirthDate", "Birth Date"),
-        new GridColumnModel("LoginID", "Login Id"),
-        new GridColumnModel("EmailAddress", "Email"),
-        new GridColumnModel("Phone", "Phone"),
-        new GridColumnModel("MaritalStatus", "Marital Status"),
-        new GridColumnModel("EmergencyContactName", "Contact Name"),
-        new GridColumnModel("EmergencyContactPhone", "Contact Phone"),
-        new GridColumnModel("SalariedFlag", "Salaried"),
-        new GridColumnModel("Gender", "Gender"),
-        new GridColumnModel("PayFrequency", "Pay Frequency"),
-        new GridColumnModel("BaseRate", "Base Rate"),
-        new GridColumnModel("VacationHours", "Vacation Hours"),
-        new GridColumnModel("SickLeaveHours", "Sick Leave Hours"),
-        new GridColumnModel("CurrentFlag", "Current"),
-        new GridColumnModel("SalesPersonFlag", "Sales Person"),
-        new GridColumnModel("DepartmentName", "Department"),
-        new GridColumnModel("StartDate", "Started"),
-        new GridColumnModel("Status", "Status")
-    };
+   
 
-    var tabs = new List<string> { "MT2", "MT1", "Person", "Customers", "Films", "Actors", "Employees" };
+    var tabs = new List<string> { "MT2", "MT1"};
 }
 
 <ul class="nav nav-tabs">
@@ -132,21 +96,6 @@
                         break;
                     case "MT1":
                         @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Timestream, "AWS", "Kensa-Development.MT1_IN_REG") { Columns = mt1Columns }))
-                        break;
-                    case "Person":
-                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.MSSQL, "AdventureWorks(mssql)", "Person.Person")))
-                        break;
-                    case "Customers":
-                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila(sqlite)", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id") { Columns = ColumnInfoHelper.CustomerGridColumns() }))
-                        break;
-                    case "Films":
-                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila(sqlite)", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns() }))
-                        break;
-                    case "Actors":
-                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQlite, "Sakila(sqlite)", "Actor") { Columns = ColumnInfoHelper.ActorGridColumns() }))
-                        break;
-                    case "Employees":
-                        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { Columns = employeeColumns }))
                         break;
                 }
             }

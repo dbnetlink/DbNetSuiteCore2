@@ -46,6 +46,11 @@ namespace DbNetSuiteCore.Web.ViewModels
                 return;
             }
             var connection = GetConnection();
+
+            if (connection == null)
+            {
+                return;
+            }
             connection.Open();
 
             switch(DataSourceType)

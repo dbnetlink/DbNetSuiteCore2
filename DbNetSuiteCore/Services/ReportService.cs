@@ -24,14 +24,8 @@ namespace DbNetSuiteCore.Services
         private readonly IFileSystemRepository _fileSystemRepository;
         private readonly IMySqlRepository _mySqlRepository;
         private readonly IPostgreSqlRepository _postgreSqlRepository;
-
         private HttpContext? _context = null;
-        private string Handler => RequestHelper.QueryValue("handler", string.Empty, _context);
-        private bool isAjaxCall => _context.Request.Headers["hx-request"] == "true";
-
-        private string triggerName => _context.Request.Headers.Keys.Contains("hx-trigger-name") ? _context.Request.Headers["hx-trigger-name"] : "";
-
-        private DataSourceType dataSourceType => Enum.Parse<DataSourceType>(RequestHelper.FormValue("dataSourceType", string.Empty, _context));
+        private string triggerName => _context.Request.Headers.Keys.Contains(HeaderNames.HxTriggerName) ? _context.Request.Headers[HeaderNames.HxTriggerName] : string.Empty;
 
         public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
         {
