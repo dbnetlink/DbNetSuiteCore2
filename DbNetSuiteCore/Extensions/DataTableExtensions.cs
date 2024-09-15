@@ -12,6 +12,8 @@ namespace DbNetSuiteCore.Extensions
                 return;
             }
 
+            dataTable.PrimaryKey = null;
+
             if (currentColumn.DataType != typeof(string))
             {
                 using (DataColumn newColumn = new DataColumn($"{currentColumn.ColumnName}_lookup_", typeof(string)))

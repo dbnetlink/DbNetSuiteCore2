@@ -1,9 +1,0 @@
-﻿@model DataTable
-@using System.Data
-
-<select class="select select-bordered w-full max-w-xs">
-    @foreach (DataRow row in Model.Rows)
-    {
-        <option value="@row[0].ToString()">@row[1].ToString()</option>
-    }
-</select>

@@ -14,7 +14,7 @@
     }
     @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Top)
     {
-        @await Html.PartialAsync("GridToolbar", Model)
+        @await Html.PartialAsync("Grid/Toolbar", Model)
     }
     <div class="flex mt-2">
         <table class="table-auto border-collapse" data-linkedgridid="@Model.LinkedGridId">
@@ -65,12 +65,12 @@
                     </tr>
                 }
             </thead>
-            @await Html.PartialAsync("GridRows", Model)
+            @await Html.PartialAsync("Grid/Rows", Model)
         </table>
     </div>
     @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Bottom)
     {
-        @await Html.PartialAsync("GridToolbar", Model)
+        @await Html.PartialAsync("Grid/Toolbar", Model)
     }
     <div class="flex">
         @await Html.PartialAsync("HxIndicator")

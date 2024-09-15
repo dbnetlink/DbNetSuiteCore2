@@ -50,7 +50,7 @@
 
     var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.orders") { PageSize = 5 };
     ordersGrid.Columns = orderColumns;
-    ordersGrid.LinkedGrid = orderDetailGrid;
+    ordersGrid.AddLinkedGrid(orderDetailGrid);
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid));
 

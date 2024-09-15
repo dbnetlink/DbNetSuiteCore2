@@ -73,9 +73,9 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.NestedGrid:
-                    return await View("NestedGrid", ConfigureNestedGrid(gridModel));
+                    return await View("Grid/Nested", ConfigureNestedGrid(gridModel));
                 default:
-                    string viewName = gridModel.Uninitialised ? "GridMarkup" : "GridRows";
+                    string viewName = gridModel.Uninitialised ? "Grid/Markup" : "Grid/Rows";
                     return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
@@ -90,6 +90,7 @@ namespace DbNetSuiteCore.Services
             {
                 FileSystemRepository.UpdateUrl(gridModel);
             }
+
             await ConfigureGridColumns(gridModel);
             await GetRecords(gridModel);
 
@@ -104,10 +105,15 @@ namespace DbNetSuiteCore.Services
             gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
             gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
             gridModel.NestedGrid.SetId();
-
+           
             if (gridModel.DataSourceType == DataSourceType.FileSystem)
             {
                 gridModel.NestedGrid.NestedGrid = gridModel.NestedGrid.DeepCopy();
+            }
+            else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
+            {
+                gridModel.NestedGrid.ConnectionAlias = gridModel.ConnectionAlias;
+                gridModel.NestedGrid.DataSourceType = gridModel.DataSourceType;
             }
 
             return gridModel.NestedGrid;
@@ -303,7 +309,7 @@ namespace DbNetSuiteCore.Services
             _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
             var gridViewModel = await GetGridViewModel(gridModel);
             gridViewModel.RenderMode = RenderMode.Export;
-            return await View("GridExport", gridViewModel);
+            return await View("Grid/Export", gridViewModel);
         }
 
         private byte[] ConvertDataTableToJSON(DataTable dataTable)

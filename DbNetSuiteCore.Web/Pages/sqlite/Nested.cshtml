@@ -5,9 +5,7 @@
 
 @{
     Layout = null;
-}
 
-@{
     var customerColumns = new List<GridColumnModel>
     {
         new GridColumnModel("customerid", "CustomerID") {PrimaryKey = true },
@@ -40,12 +38,12 @@
         new GridColumnModel("quantity", "Qty"),
     };
 
-    var invoiceLineGridModel = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "Invoice_items");
+    var invoiceLineGridModel = new GridModel("Invoice_items");
     invoiceLineGridModel.Columns = invoiceItemColumns;
     invoiceLineGridModel.Caption = "Invoice Lines";
     invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
-    var invoiceGridModel = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "Invoices");
+    var invoiceGridModel = new GridModel("Invoices");
     invoiceGridModel.Columns = invoiceColumns;
     invoiceGridModel.NestedGrid = invoiceLineGridModel;
     invoiceGridModel.Caption = "Invoices";
@@ -54,7 +52,6 @@
     var customerGridModel = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "Customers");
     customerGridModel.Columns = customerColumns;
     customerGridModel.NestedGrid = invoiceGridModel;
-
 }
 
 <!DOCTYPE html>

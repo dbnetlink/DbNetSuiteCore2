@@ -29,12 +29,12 @@
         new GridColumnModel("last_update")
     };
 
-    var filmCategoryGrid = new GridModel(DataSourceType.PostgreSql, "sakila(postgresql)", "film_category") { PageSize = 5 };
+    var filmCategoryGrid = new GridModel("film_category") { PageSize = 5 };
     filmCategoryGrid.Columns = filmCategoryColumns;
 
     var filmsGrid = new GridModel(DataSourceType.PostgreSql, "sakila(postgresql)", "film") { PageSize = 5 };
     filmsGrid.Columns = filmColumns;
-    filmsGrid.LinkedGrid = filmCategoryGrid;
+    filmsGrid.AddLinkedGrid(filmCategoryGrid);
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmsGrid));
 

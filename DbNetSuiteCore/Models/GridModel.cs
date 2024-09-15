@@ -80,6 +80,11 @@ namespace DbNetSuiteCore.Models
             TableName = tableName;
         }
 
+        public GridModel(string tableName) : this()
+        {
+            TableName = tableName;
+        }
+
         private string GeneratedId()
         {
             return $"Grid{DateTime.Now.Ticks}";
@@ -88,6 +93,25 @@ namespace DbNetSuiteCore.Models
         public void SetId()
         {
             Id = $"Grid{DateTime.Now.Ticks}";
+        }
+
+        public void AddLinkedGrid(GridModel gridModel)
+        {
+            _LinkedGrid = gridModel;
+            gridModel.IsLinked = true;
+
+            var linkedGrid = gridModel;
+
+            while (linkedGrid != null)
+            {
+                if (string.IsNullOrEmpty(ConnectionAlias) == false)
+                {
+                    linkedGrid.ConnectionAlias = ConnectionAlias;
+                    linkedGrid.DataSourceType = DataSourceType;
+                }
+                
+                linkedGrid = linkedGrid.LinkedGrid;
+            }
         }
 
         public DataColumn? GetDataColumn(GridColumnModel column)

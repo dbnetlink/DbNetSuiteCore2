@@ -48,7 +48,7 @@
 
     var customerGridModel = new GridModel(DataSourceType.JSON, "/data/customers.json");
     customerGridModel.Columns = customerColumns;
-    customerGridModel.LinkedGrid = ordersGridModel;
+    customerGridModel.AddLinkedGrid(ordersGridModel);
     customerGridModel.PageSize = 10;
 
 }

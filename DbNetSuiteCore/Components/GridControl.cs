@@ -20,7 +20,7 @@ namespace DbNetSuiteCore
                 gridModel.NestedGrid = gridModel.DeepCopy();
             }
             var viewRenderService = _httpContext.RequestServices.GetService<RazorViewToStringRenderer>();
-            return new HtmlString(await viewRenderService!.RenderViewToStringAsync("GridControlForm", gridModel));
+            return new HtmlString(await viewRenderService!.RenderViewToStringAsync("Grid/ControlForm", gridModel));
         }
     }
     public static class ExtensionMethods

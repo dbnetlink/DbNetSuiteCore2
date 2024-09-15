@@ -952,6 +952,10 @@ form.dbnetsuite {
   margin-top: 0.5rem;
 }
 
+.block {
+  display: block;
+}
+
 .flex {
   display: flex;
 }
@@ -978,10 +982,6 @@ form.dbnetsuite {
 
 .w-full {
   width: 100%;
-}
-
-.max-w-xs {
-  max-width: 20rem;
 }
 
 .table-auto {
@@ -1140,11 +1140,6 @@ form.dbnetsuite {
   line-height: 1.75rem;
 }
 
-.text-blue-500 {
-  --tw-text-opacity: 1;
-  color: rgb(59 130 246 / var(--tw-text-opacity));
-}
-
 .text-gray-200 {
   --tw-text-opacity: 1;
   color: rgb(229 231 235 / var(--tw-text-opacity));
@@ -1167,6 +1162,10 @@ form.dbnetsuite {
 
 .underline {
   text-decoration-line: underline;
+}
+
+.filter {
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 @media (prefers-color-scheme: dark) {
