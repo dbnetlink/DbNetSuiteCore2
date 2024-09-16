@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Helpers;
 using System.Data;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Models
 {
@@ -69,7 +70,7 @@ namespace DbNetSuiteCore.Models
         {
             Expression = dataColumn.ColumnName;
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName); 
-            Name = dataColumn.ColumnName;
+            Name = CleanColumnName(dataColumn.ColumnName);
             DataType = dataColumn.DataType;
             Initialised = true;
         }
@@ -78,7 +79,7 @@ namespace DbNetSuiteCore.Models
         {
             Expression = (string)dataRow["ColumnName"];
             Label = TextHelper.GenerateLabel((string)dataRow["ColumnName"]);
-            Name = (string)dataRow["ColumnName"];
+            Name = CleanColumnName((string)dataRow["ColumnName"]);
             try
             {
                 DataType = (Type)dataRow["DataType"];
@@ -107,7 +108,7 @@ namespace DbNetSuiteCore.Models
         {
             DataType = dataColumn.DataType;
             Initialised = true;
-            Name = dataColumn.ColumnName;
+            Name = CleanColumnName(dataColumn.ColumnName);
             if (string.IsNullOrEmpty(Label))
             {
                 Label = TextHelper.GenerateLabel(Name);
@@ -118,7 +119,7 @@ namespace DbNetSuiteCore.Models
         {
             DataType = (Type)dataRow["DataType"];
             Initialised = true;
-            Name = (string)dataRow["ColumnName"];
+            Name = CleanColumnName(string.IsNullOrEmpty((string)dataRow["ColumnName"]) ? Expression :(string)dataRow["ColumnName"]);
             if (string.IsNullOrEmpty(Label))
             {
                 Label = TextHelper.GenerateLabel(Name);
@@ -142,5 +143,9 @@ namespace DbNetSuiteCore.Models
             }
         }
 
+        private string CleanColumnName(string columnName)
+        {
+            return new Regex("[^a-zA-Z0-9_]").Replace(columnName,string.Empty);
+        }
     }
 }

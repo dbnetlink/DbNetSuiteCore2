@@ -91,7 +91,7 @@ namespace DbNetSuiteCore.Web.ViewModels
         }
         private void LoadSqliteTables(SqliteConnection connection)
         {
-            LoadSchemaTables("SELECT name FROM sqlite_master WHERE type = 'table' order by 1", connection);
+            LoadSchemaTables("SELECT name FROM sqlite_master WHERE type in ('table','view') order by 1", connection);
             Tables = Tables.Select(t => GridModelExtensions.QualifyExpression(t, DataSourceType.SQlite)).ToList();
         }
 

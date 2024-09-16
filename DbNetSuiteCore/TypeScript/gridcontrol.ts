@@ -33,9 +33,7 @@ class GridControl {
             return
         }
 
-        //console.log(`init => event:${gridId} control:${this.gridId} trigger-name:${evt.detail.elt.name}`)
-
-        if (htmx.find(this.errorSelector())) {
+        if (!this.gridControl.querySelector("tbody")) {
             return
         }
 
@@ -58,7 +56,7 @@ class GridControl {
             buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
 
-        htmx.findAll(this.cellSelector()).forEach((cell) => { this.invokeEventHandler('CellRendered', { cell: (cell as HTMLTableCellElement) }) });
+        htmx.findAll(this.cellSelector()).forEach((cell: HTMLTableCellElement) => { this.invokeCellRendered(cell)});
 
         htmx.findAll(this.linkSelector()).forEach((e) => {
             e.classList.remove("selected");
@@ -78,6 +76,12 @@ class GridControl {
         this.invokeEventHandler('PageLoaded');
     }
 
+    invokeCellRendered(cell: HTMLTableCellElement) {
+        var columnName = (this.gridControl.querySelector("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
+        var args = { cell: (cell as HTMLTableCellElement), columnName: columnName }
+        this.invokeEventHandler('CellRendered', args)
+    };
+
     invokeEventHandler(eventName, args = {}) {
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return;
@@ -92,6 +96,7 @@ class GridControl {
 
     configureNavigation() {
         let tbody = this.gridControl.querySelector("tbody") as HTMLElement;
+
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
 
@@ -211,9 +216,7 @@ class GridControl {
         if (tr.classList.contains(this.bgColourClass)) {
             return;
         }
-        // console.log(`current target => ${ev.currentTarget}`)
-        // console.log(`target => ${ev.target}`)
-        console.log(`highlight row => ${(tr.querySelector("td[data-columnname]") as HTMLTableCellElement).innerText}`)
+
         this.clearHighlighting();
         tr.classList.add(this.bgColourClass);
         tr.classList.add(this.textColourClass);
@@ -280,7 +283,6 @@ class GridControl {
         }
 
         var exportOption = (this.selectGridElement('[name="exportformat"]') as HTMLSelectElement).value
-        console.log(exportOption)
 
         fetch("gridcontrol.htmx", {
             method: 'post',
@@ -360,7 +362,7 @@ class GridControl {
     }
 
     cellSelector() {
-        return `#tbody${this.gridId} td[data-columnname]`
+        return `#tbody${this.gridId} td[data-value]`
     }
 
     linkSelector() {
@@ -373,10 +375,6 @@ class GridControl {
 
     gridSelector() {
         return `#${this.gridId}`
-    }
-
-    errorSelector() {
-        return `#${this.gridId} > div.alert-error`
     }
 
     selectGridElement(selector): HTMLElement {

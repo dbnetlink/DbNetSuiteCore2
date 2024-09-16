@@ -44,7 +44,7 @@
 
                 if (row[col] == System.DBNull.Value || row[col] == null)
                 {
-                    <td class="text-base" data-columnname="@col.ColumnName">&nbsp;</td>
+                    <td class="text-base" data-value="">&nbsp;</td>
                     continue;
                 }
 
@@ -52,13 +52,13 @@
                 {
                     classes.Add("text-center");
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[col]));
-                    <td class="@(string.Join(" ",classes))" data-value="@boolValue" data-columnname="@col.ColumnName">
+                    <td class="@(string.Join(" ",classes))" data-value="@boolValue">
                         <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
                 else if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
-                    <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">
+                    <td class="@(string.Join(" ",classes))" data-value="@row[col]">
                         @row[col]
                     </td>
                 }
@@ -72,7 +72,7 @@
                     var value = columnInfo.FormatValue(row[col]!);
                     if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
                     {
-                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">
+                        <td class="@(string.Join(" ",classes))" data-value="@row[col]">
                             <div class="tooltip" data-tip="@Html.Raw(value)">
                                 @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
                             </div>
@@ -80,7 +80,7 @@
                     }
                     else
                     {
-                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" data-columnname="@col.ColumnName">@Html.Raw(value)</td>
+                        <td class="@(string.Join(" ",classes))" data-value="@row[col]">@Html.Raw(value)</td>
                     }
                 }
             }

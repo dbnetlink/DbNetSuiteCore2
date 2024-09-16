@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
 <form class="dbnetsuite dbnetsuite-grid" hx-post="gridcontrol.htmx" hx-trigger="@Model.HxFormTrigger" hx-indicator="find .htmx-indicator" hx-target="this" id="@Model.Id" name="@TriggerNames.InitialLoad">
-    <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model))">
+    <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model))"/>
     @await Html.PartialAsync("HxIndicator")
 </form>
 

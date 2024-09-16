@@ -1,5 +1,7 @@
 using DbNetSuiteCore.Middleware;
-using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Web.Helpers;
+using DocumentFormat.OpenXml.Bibliography;
+using static System.Net.Mime.MediaTypeNames;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Development.json");
@@ -21,10 +23,16 @@ app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.MapGet("/customers", () =>
+    FileHelper.GetJson("/data/customers.json", builder.Environment));
+app.MapGet("/employees", () =>
+    FileHelper.GetJson("/data/employees.json", builder.Environment));
+app.MapGet("/orders", () =>
+    FileHelper.GetJson("/data/orders.json", builder.Environment));
+
 app.UseRouting();
 
 app.UseAuthorization();
-
 app.MapRazorPages();
 
 app.Run();

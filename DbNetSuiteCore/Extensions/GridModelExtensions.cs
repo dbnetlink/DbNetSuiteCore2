@@ -5,17 +5,18 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Data;
 
-
 namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
         public static QueryCommandConfig BuildQuery(this GridModel gridModel)
         {
-            string sql = $"select {gridModel.GetColumnExpressions()} from {gridModel.TableName}";
+            string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             gridModel.AddFilterPart(query);
+            gridModel.AddGroupByPart(query);
+            gridModel.AddHavingPart(query);
             gridModel.AddOrderPart(query);
 
             return query;
@@ -24,6 +25,33 @@ namespace DbNetSuiteCore.Extensions
         {
             return new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
         }
+
+        private static string AddSelectPart(this GridModel gridModel)
+        {
+            if (gridModel.GridColumns.Any() == false)
+            {
+                return "*";
+            }
+
+            List<string> selectPart = new List<string>();
+
+            foreach (var gridColumn in gridModel.GridColumns)
+            {
+                var columnExpression = gridColumn.Expression;
+                if (gridColumn.Aggregate != AggregateType.None)
+                {
+                    columnExpression = $"{AggregateExpression(gridColumn)} as {gridColumn.ColumnName}";
+                }
+                selectPart.Add(columnExpression);
+            }
+            return string.Join(",", selectPart);
+        }
+
+        private static string GetColumnExpressions(this GridModel gridModel)
+        {
+            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
+        }
+
 
         private static void AddFilterPart(this GridModel gridModel, CommandConfig query)
         {
@@ -45,31 +73,11 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
-            if (gridModel.Columns.Any(c => c.Filter))
+            List<string> columnFilterParts = ColumnFilterParts(gridModel, query);
+
+            if (columnFilterParts.Any())
             {
-                List<string> columnFilterPart = new List<string>();
-                for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
-                {
-                    if (string.IsNullOrEmpty(gridModel.ColumnFilter[i]))
-                    {
-                        continue;
-                    }
-
-                    var column = gridModel.Columns.Skip(i).First();
-
-                    var columnFilter = ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
-
-                    if (columnFilter != null)
-                    {
-                        columnFilterPart.Add($"{RefineSearchExpression(column, gridModel)} {columnFilter.Value.Key} @columnfilter{i}");
-                        query.Params[$"@columnfilter{i}"] = ParamValue(columnFilter.Value.Value,column, gridModel);
-                    }
-                }
-
-                if (columnFilterPart.Any())
-                {
-                    filterParts.Add($"({string.Join(" and ", columnFilterPart)})");
-                }
+                filterParts.Add($"({string.Join(" and ", columnFilterParts)})");
             }
 
             if (gridModel.IsNested || gridModel.IsLinked)
@@ -100,6 +108,81 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
+        private static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
+        {
+            if (gridModel.Columns.Any(c => c.Aggregate != AggregateType.None) == false)
+            {
+                return;
+            }
+            query.Sql += $" group by {string.Join(",", gridModel.Columns.Where(c => c.Aggregate == AggregateType.None).Select(c => c.Expression).ToList())}";
+        }
+
+        private static void AddHavingPart(this GridModel gridModel, CommandConfig query)
+        {
+            List<string> havingParts = new List<string>();
+
+            List<string> columnFilterParts = ColumnFilterParts(gridModel, query, true);
+
+            if (columnFilterParts.Any())
+            {
+                havingParts.Add($"({string.Join(" and ", columnFilterParts)})");
+            }
+
+            if (havingParts.Any())
+            {
+                query.Sql += $" having {string.Join(" and ", havingParts)}";
+            }
+        }
+
+        private static List<string> ColumnFilterParts(this GridModel gridModel, CommandConfig query, bool havingFilter = false)
+        {
+            if (gridModel.Columns.Any(c => c.Filter) == false)
+            {
+                return new List<string>();
+            }
+            List<string> columnFilterParts = new List<string>();
+            for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
+            {
+                if (string.IsNullOrEmpty(gridModel.ColumnFilter[i]))
+                {
+                    continue;
+                }
+
+                var column = gridModel.Columns.Skip(i).First();
+
+                if (column.Aggregate == AggregateType.None == havingFilter)
+                {
+                    continue;
+                }
+
+                var columnFilter = ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
+
+                if (columnFilter != null)
+                {
+                    columnFilterParts.Add($"{FilterColumnExpression(gridModel, column, havingFilter)} {columnFilter.Value.Key} @columnfilter{i}");
+                    query.Params[$"@columnfilter{i}"] = ParamValue(columnFilter.Value.Value, column, gridModel);
+                }
+            }
+
+            return columnFilterParts;
+        }
+
+        private static string FilterColumnExpression(GridModel gridModel, GridColumnModel gridColumnModel, bool havingFilter)
+        {
+            if (havingFilter == false)
+            {
+                return RefineSearchExpression(gridColumnModel, gridModel);
+            }
+
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.SQlite:
+                    return gridColumnModel.ColumnName;
+                default:
+                    return AggregateExpression(gridColumnModel);
+            }
+        }
+
         private static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
         {
             if (string.IsNullOrEmpty(gridModel.SortColumnOrdinal))
@@ -116,11 +199,6 @@ namespace DbNetSuiteCore.Extensions
                 return string.Empty;
             }
             return $"{gridModel.SortColumnName} {gridModel.SortSequence}";
-        }
-
-        private static string GetColumnExpressions(this GridModel gridModel)
-        {
-            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
         }
 
         public static void QualifyColumnExpressions(this GridModel gridModel)
@@ -144,6 +222,11 @@ namespace DbNetSuiteCore.Extensions
                     return $"\"@\"";
             }
             return "@";
+        }
+
+        private static string AggregateExpression(GridColumnModel c)
+        {
+            return $"{c.Aggregate}({Regex.Replace(c.Expression, @" as \w*$", "", RegexOptions.IgnoreCase)})";
         }
 
         public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumnModel gridColumn)
@@ -208,6 +291,11 @@ namespace DbNetSuiteCore.Extensions
         {
             string columnExpression = StripColumnRename(col.Expression);
 
+            if (col.Aggregate != AggregateType.None)
+            {
+                columnExpression = AggregateExpression(col);
+            }
+
             if (col.DataType != typeof(DateTime))
             {
                 return columnExpression;
@@ -260,7 +348,7 @@ namespace DbNetSuiteCore.Extensions
                 switch (dataType)
                 {
                     case nameof(String):
-                         break;
+                        break;
                     case nameof(Boolean):
                         paramValue = ParseBoolean(value.ToString());
                         break;

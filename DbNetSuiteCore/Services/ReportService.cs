@@ -144,7 +144,6 @@ namespace DbNetSuiteCore.Services
                     switch (gridModel.DataSourceType)
                     {
                         case DataSourceType.MSSQL:
-                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r, gridModel.DataSourceType)).Cast<GridColumnModel>().ToList();
                             var dataRows = schema.Rows.Cast<DataRow>().ToList();
                             for (var i = 0; i < dataRows.Count; i++)
                             {

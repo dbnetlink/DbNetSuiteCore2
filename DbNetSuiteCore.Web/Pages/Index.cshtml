@@ -21,7 +21,7 @@
         var tbody = args.cell.closest("tbody")
         var url = tbody.dataset.url.toString().toLowerCase().replace('../pages', '')
         
-        switch (args.cell.dataset.columnname.toString()) 
+        switch (args.columnName) 
         { 
             case "Name":
                 var name = args.cell.dataset.value.toString()

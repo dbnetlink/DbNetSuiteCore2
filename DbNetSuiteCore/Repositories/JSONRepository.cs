@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Data;
 using DbNetSuiteCore.Extensions;
 using Newtonsoft.Json.Linq;
+using Irony.Parsing;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -41,10 +42,23 @@ namespace DbNetSuiteCore.Repositories
         {
             var url = gridModel.Url;
 
+            if (url.StartsWith("/"))
+            {
+                url = url.Substring(1);
+            }
+
             if (url.StartsWith("http") == false)
             {
                 url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
             }
+
+            string token = string.Empty;
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            }
+
             string json = await _httpClient.GetStringAsync(url);
 
             DataTable? dataTable = new();
