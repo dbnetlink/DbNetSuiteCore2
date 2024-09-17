@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public PostgreSqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.PostgreSql;
-            Connections = new List<string>{ "sakila(postgresql)" };
+            Connections = new List<string>{ "sakila(postgresql)", "Northwind(postgresql)" };
         }
     }
 }

@@ -11,9 +11,9 @@
         new GridColumnModel("CustomerID", "Customer") {Lookup = new LookupModel("Customers","CustomerID","LastName || ', ' || FirstName")},
         new GridColumnModel("InvoiceDate", "Date"),
         new GridColumnModel("BillingAddress", "Address"),
-        new GridColumnModel("BillingCity", "City"),
+        new GridColumnModel("BillingCity", "City"){ Style = "font-weight:bold;"},
         new GridColumnModel("BillingState", "State") {LookupEnum = typeof(StateEnum)},
-        new GridColumnModel("BillingCountry", "Country"),
+        new GridColumnModel("BillingCountry", "Country") { Style = "background-color:gold; color:steelblue;"},
         new GridColumnModel("BillingPostalCode", "Postal Code"),
         new GridColumnModel("Total", "Total") { Format = "C"},
 
@@ -21,5 +21,6 @@
 
     var invoiceGrid = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "invoices");
     invoiceGrid.Columns = invoiceColumns;
+    invoiceGrid.MultiRowSelect = MultiRowSelectLocation.Left;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
 }

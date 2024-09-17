@@ -50,7 +50,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecords(GridModel gridModel)
         {
-            QueryCommandConfig query = gridModel.BuildQuery();
+            QueryCommandConfig query = gridModel.BuildQuery(this);
             gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
 
             foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
@@ -95,6 +95,17 @@ namespace DbNetSuiteCore.Repositories
             gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
         }
 
+        public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumnModel gridColumn)
+        {
+            QueryCommandConfig query = new QueryCommandConfig();
+            var lookup = gridColumn.Lookup!;
+
+            query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
+            query.Sql = $"select {lookup.KeyColumn} from {lookup.TableName} where {lookup.DescriptionColumn} like @{gridColumn.ParamName}";
+
+            var dataTable = await GetDataTable(query, gridModel.ConnectionAlias);
+            return dataTable.Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+        }
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
             QueryCommandConfig query = gridModel.BuildEmptyQuery();

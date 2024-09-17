@@ -6,17 +6,17 @@
 @{
     var invoiceColumns = new List<GridColumnModel>
     {
-        new GridColumnModel("ProductName", "Product")
+        new GridColumnModel("Product_Id", "Product Name") {Lookup = new LookupModel("Products", "Id", "Product_name")}
     };
 
     for (var i =1; i<=12; i++)
     {
         var monthName = new DateTime(2024, i, 1).ToString("MMMM");
-        var column = new GridColumnModel($"(case when Month(OrderDate) = {i} then Quantity else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, DataType = typeof(Int32) };
+        var column = new GridColumnModel($"(case when Month(order_date) = {i} then Quantity else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, Format = "####0" };
         invoiceColumns.Add(column);
     }
 
-    var invoiceGrid = new GridModel(DataSourceType.MSSQL, "Northwind(mssql)", "invoices");
+    var invoiceGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "Order_Details join Orders on Orders.Id = Order_Details.Order_id");
     invoiceGrid.Columns = invoiceColumns;
     invoiceGrid.ClientEvents[ClientEvent.CellRendered] = "highlightQuantity";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))

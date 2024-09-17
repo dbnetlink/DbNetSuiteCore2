@@ -4,17 +4,18 @@ using DbNetSuiteCore.Enums;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Data;
+using System.Linq;
 
 namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
-        public static QueryCommandConfig BuildQuery(this GridModel gridModel)
+        public static QueryCommandConfig BuildQuery(this GridModel gridModel, DbRepository dbRepository)
         {
             string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            gridModel.AddFilterPart(query);
+            gridModel.AddFilterPart(query, dbRepository);
             gridModel.AddGroupByPart(query);
             gridModel.AddHavingPart(query);
             gridModel.AddOrderPart(query);
@@ -53,7 +54,7 @@ namespace DbNetSuiteCore.Extensions
         }
 
 
-        private static void AddFilterPart(this GridModel gridModel, CommandConfig query)
+        private static void AddFilterPart(this GridModel gridModel, CommandConfig query, DbRepository dbRepository)
         {
             List<string> filterParts = new List<string>();
 
@@ -65,6 +66,16 @@ namespace DbNetSuiteCore.Extensions
                 {
                     query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
                     quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)} like @{gridColumn.ParamName}");
+                }
+
+                foreach (var gridColumn in gridModel.GridColumns.Where(c => c.Lookup != null))
+                {
+                    var lookupValues = dbRepository.GetLookupKeys(gridModel, gridColumn).Result;
+                    var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbRepository.ParameterName($"{gridColumn.Name}lookupparam{i}")).ToList();
+
+                    int i = 0;
+                    paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
+                    quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)}  in ({String.Join(",", paramNames)})");
                 }
 
                 if (quickSearchFilterPart.Any())

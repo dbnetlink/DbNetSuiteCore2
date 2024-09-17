@@ -62,7 +62,7 @@ namespace DbNetSuiteCore.Models
         public string HxFormTrigger => IsLinked ? "submit" : "load";
         public string TriggerName { get; set; } = string.Empty;
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
-
+        public MultiRowSelectLocation MultiRowSelect { get; set; } = MultiRowSelectLocation.None;
         public GridModel()
         {
             Id = GeneratedId();

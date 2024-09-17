@@ -7,12 +7,15 @@
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
-@using DbNetSuiteCore.Constants
 
 <tbody id="@Model.TBodyId" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row" data-id="@Model.PrimaryKeyValue(row)">
+            @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
+            {
+                <td class="text-base"><input class="multi-select" type="checkbox" /></td>
+            }
             @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page && Model.GridModel.NestedGrid != null)
             {
                 if (Model.DataSourceType == DataSourceType.FileSystem)
@@ -44,7 +47,7 @@
 
                 if (row[col] == System.DBNull.Value || row[col] == null)
                 {
-                    <td class="text-base" data-value="">&nbsp;</td>
+                    <td class="text-base" data-value="" style="@columnInfo.Style">&nbsp;</td>
                     continue;
                 }
 
@@ -52,13 +55,13 @@
                 {
                     classes.Add("text-center");
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[col]));
-                    <td class="@(string.Join(" ",classes))" data-value="@boolValue">
+                    <td class="@(string.Join(" ",classes))" data-value="@boolValue" style="@columnInfo.Style">
                         <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
                 else if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {
-                    <td class="@(string.Join(" ",classes))" data-value="@row[col]">
+                    <td class="@(string.Join(" ",classes))" data-value="@row[col]" style="@columnInfo.Style">
                         @row[col]
                     </td>
                 }
@@ -72,7 +75,7 @@
                     var value = columnInfo.FormatValue(row[col]!);
                     if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
                     {
-                        <td class="@(string.Join(" ",classes))" data-value="@row[col]">
+                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" style="@columnInfo.Style">
                             <div class="tooltip" data-tip="@Html.Raw(value)">
                                 @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
                             </div>
@@ -80,9 +83,14 @@
                     }
                     else
                     {
-                        <td class="@(string.Join(" ",classes))" data-value="@row[col]">@Html.Raw(value)</td>
+                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" style="@columnInfo.Style">@Html.Raw(value)</td>
                     }
                 }
+            }
+
+            @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
+            {
+                <td class="text-base"><input class="multi-select" type="checkbox" /></td>
             }
         </tr>
     }

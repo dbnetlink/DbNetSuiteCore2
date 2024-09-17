@@ -62,7 +62,16 @@ class GridControl {
             e.classList.remove("selected");
             e.classList.add("underline")
         });
-        htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow(ev)) });
+
+        if (this.gridControl.querySelector(this.multiRowSelectAllSelector())) {
+            this.gridControl.querySelector(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => {this.updateMultiRowSelect(ev) });
+            this.gridControl.querySelectorAll(this.multiRowSelectSelector()).forEach((e) => { e.addEventListener("change", ev => this.highlightRow(ev)) });
+        }
+        else {
+            htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", ev => this.highlightRow(ev)) });
+        }
+
+
         let row: HTMLElement = document.querySelector(this.rowSelector());
         if (row) {
             row.click();
@@ -210,6 +219,11 @@ class GridControl {
         }
         return document.querySelector(selector);
     };
+
+    updateMultiRowSelect(ev: Event) {
+        let checked = (ev.target as HTMLInputElement).checked
+        this.gridControl.querySelectorAll(this.multiRowSelectSelector()).forEach((e: HTMLInputElement) => { e.checked = checked });
+    }
 
     highlightRow(ev: Event) {
         let tr = (ev.target as HTMLElement).closest('tr')
@@ -359,6 +373,14 @@ class GridControl {
 
     rowSelector() {
         return `#tbody${this.gridId} > tr.grid-row`
+    }
+
+    multiRowSelectAllSelector() {
+        return `th > input.multi-select`
+    }
+
+    multiRowSelectSelector() {
+        return `td > input.multi-select`
     }
 
     cellSelector() {

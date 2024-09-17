@@ -1,0 +1,18 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var invoiceColumns = new List<GridColumnModel>
+    {
+        new GridColumnModel("Product_Id", "Product Name") {Lookup = new LookupModel("Products", "Product_Id", "Product_name")},
+        new GridColumnModel("Unit_Price", "Unit Price") {Format = "c", Aggregate = AggregateType.Sum},
+        new GridColumnModel("Quantity", "Qty") {Aggregate = AggregateType.Sum, Format = "#####"},
+        new GridColumnModel("(Unit_Price*Quantity)", "Price") {Format = "c", Aggregate = AggregateType.Sum},
+    };
+
+    var invoiceGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(Postgresql)", "Order_Details");
+    invoiceGrid.Columns = invoiceColumns;
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
+}

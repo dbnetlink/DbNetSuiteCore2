@@ -15,6 +15,7 @@ namespace DbNetSuiteCore.Models
 
         public SortOrder? InitialSortOrder { get; set; } = null;
         public bool Filter { get; set; } = true;
+        public string Style { get; set; } = string.Empty;
 
         public GridColumnModel()
         {
