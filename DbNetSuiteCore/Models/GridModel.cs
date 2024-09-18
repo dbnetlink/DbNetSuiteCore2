@@ -9,12 +9,14 @@ namespace DbNetSuiteCore.Models
         private SortOrder? _SortSequence = null;
         private GridModel? _LinkedGrid;
         public string Id { get; set; } = string.Empty;
-        public List<GridColumnModel> GridColumns => Columns.Cast<GridColumnModel>().ToList();
+        public IEnumerable<GridColumnModel> Columns { get; set; } = new List<GridColumnModel>();
+        public IEnumerable<GridColumnModel> VisbleColumns => Columns.Where(c => c.DataOnly == false);
+        public IEnumerable<GridColumnModel> DataOnlyColumns => Columns.Where(c => c.DataOnly);
         public int CurrentPage { get; set; } = 1;
         public string SearchInput { get; set; } = string.Empty;
         public string SortKey  
         { 
-            get { return string.IsNullOrEmpty(_SortKey) ? GridColumns.FirstOrDefault()?.Key ?? string.Empty : _SortKey; } 
+            get { return string.IsNullOrEmpty(_SortKey) ? Columns.FirstOrDefault()?.Key ?? string.Empty : _SortKey; } 
             set { _SortKey = value; } 
         }
         public string CurrentSortKey { get; set; } = string.Empty;
@@ -38,7 +40,7 @@ namespace DbNetSuiteCore.Models
         public string FixedFilter { get; set; } = string.Empty;
         public List<string> ColumnFilter { get; set; } = new List<string>();
         public int PageSize { get; set; } = 20;
-        public bool Uninitialised => GridColumns.Any() == false || GridColumns.Where(c => c.Initialised == false).Any();
+        public bool Uninitialised => Columns.Any() == false || Columns.Where(c => c.Initialised == false).Any();
         public GridModel? NestedGrid { get; set; } = null;
         public GridModel? LinkedGrid
         {
@@ -54,7 +56,7 @@ namespace DbNetSuiteCore.Models
         }
         public bool IsNested { get; set; } = false;
         public bool IsLinked { get; set; } = false;
-        public int ColSpan { get; set; } = 0;
+        public int ColSpan => VisbleColumns.ToList().Count;
         public string ParentKey { get; set; } = string.Empty;
         public string Caption { get; set; } = string.Empty;
         public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
@@ -63,6 +65,7 @@ namespace DbNetSuiteCore.Models
         public string TriggerName { get; set; } = string.Empty;
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
         public MultiRowSelectLocation MultiRowSelect { get; set; } = MultiRowSelectLocation.None;
+        public bool FrozenHeader { get; set; } = false;
         public GridModel()
         {
             Id = GeneratedId();

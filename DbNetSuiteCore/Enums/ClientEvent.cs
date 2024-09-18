@@ -4,6 +4,7 @@
     {
         PageLoaded,
         RowSelected,
-        CellRendered
+        CellRendered,
+        SelectedRowsUpdated
     };
 }

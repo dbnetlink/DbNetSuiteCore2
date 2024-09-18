@@ -5,8 +5,7 @@ namespace DbNetSuiteCore.Models
 {
     public class ComponentModel
     {
-        public List<GridColumnModel> Columns { get; set; } = new List<GridColumnModel>();
-        [JsonIgnore]
+         [JsonIgnore]
         public DataTable Data { get; set; } = new DataTable();
     }
 }

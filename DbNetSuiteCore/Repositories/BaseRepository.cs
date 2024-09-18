@@ -7,7 +7,7 @@ namespace DbNetSuiteCore.Repositories
     { 
         protected string GetColumnExpressions(GridModel gridModel)
         {
-            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
+            return gridModel.Columns.Any() ? string.Join(",", gridModel.Columns.Select(x => x.Expression).ToList()) : "*";
         }
     }
 

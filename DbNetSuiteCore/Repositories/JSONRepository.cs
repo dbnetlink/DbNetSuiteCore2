@@ -107,7 +107,7 @@ namespace DbNetSuiteCore.Repositories
             {
                 List<string> searchFilterPart = new List<string>();
 
-                foreach (var col in gridModel.GridColumns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+                foreach (var col in gridModel.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList())
                 {
                     searchFilterPart.Add($"{col} like '%{gridModel.SearchInput}%'");
                 }

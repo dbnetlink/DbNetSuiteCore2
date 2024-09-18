@@ -29,14 +29,14 @@ namespace DbNetSuiteCore.Extensions
 
         private static string AddSelectPart(this GridModel gridModel)
         {
-            if (gridModel.GridColumns.Any() == false)
+            if (gridModel.Columns.Any() == false)
             {
                 return "*";
             }
 
             List<string> selectPart = new List<string>();
 
-            foreach (var gridColumn in gridModel.GridColumns)
+            foreach (var gridColumn in gridModel.Columns)
             {
                 var columnExpression = gridColumn.Expression;
                 if (gridColumn.Aggregate != AggregateType.None)
@@ -50,7 +50,7 @@ namespace DbNetSuiteCore.Extensions
 
         private static string GetColumnExpressions(this GridModel gridModel)
         {
-            return gridModel.GridColumns.Any() ? string.Join(",", gridModel.GridColumns.Select(x => x.Expression).ToList()) : "*";
+            return gridModel.Columns.Any() ? string.Join(",", gridModel.Columns.Select(x => x.Expression).ToList()) : "*";
         }
 
 
@@ -62,13 +62,13 @@ namespace DbNetSuiteCore.Extensions
             {
                 List<string> quickSearchFilterPart = new List<string>();
 
-                foreach (var gridColumn in gridModel.GridColumns.Where(c => c.Searchable))
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.Searchable))
                 {
                     query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
                     quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)} like @{gridColumn.ParamName}");
                 }
 
-                foreach (var gridColumn in gridModel.GridColumns.Where(c => c.Lookup != null))
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
                 {
                     var lookupValues = dbRepository.GetLookupKeys(gridModel, gridColumn).Result;
                     var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbRepository.ParameterName($"{gridColumn.Name}lookupparam{i}")).ToList();
@@ -214,7 +214,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static void QualifyColumnExpressions(this GridModel gridModel)
         {
-            gridModel.GridColumns.ForEach(c => c.Expression = QualifyExpression(c.Expression, gridModel.DataSourceType));
+            gridModel.Columns.ToList().ForEach(c => c.Expression = QualifyExpression(c.Expression, gridModel.DataSourceType));
         }
         public static string QualifyExpression(string expression, DataSourceType dataSourceType)
         {

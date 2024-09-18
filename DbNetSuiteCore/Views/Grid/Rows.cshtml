@@ -1,4 +1,4 @@
-﻿@model DbNetSuiteCore.Models.GridViewModel
+﻿@model DbNetSuiteCore.ViewModels.GridViewModel
 @using System.Data
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
@@ -11,7 +11,7 @@
 <tbody id="@Model.TBodyId" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
     @foreach (DataRow row in Model.Rows)
     {
-        <tr style="cursor:pointer" class="grid-row" data-id="@Model.PrimaryKeyValue(row)">
+        <tr style="cursor:pointer" class="grid-row" @RowDataAttributes(row)>
             @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
             {
                 <td class="text-base"><input class="multi-select" type="checkbox" /></td>
@@ -40,50 +40,50 @@
                     </td>
                 }
             }
-            @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
+            @foreach (GridColumnModel column in Model.VisibleColumns)
             {
-                DataColumn col = Model.GetDataColumn(columnInfo);
+                DataColumn dataColumn = Model.GetDataColumn(column) ?? new DataColumn();
                 var classes = new List<string>() { "text-base" };
 
-                if (row[col] == System.DBNull.Value || row[col] == null)
+                if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
                 {
-                    <td class="text-base" data-value="" style="@columnInfo.Style">&nbsp;</td>
+                    <td @CellDataAttributes(classes, "", column.Style)>&nbsp;</td>
                     continue;
                 }
 
-                if (columnInfo.DataType == typeof(Boolean))
+                if (column.DataType == typeof(Boolean))
                 {
                     classes.Add("text-center");
-                    var boolValue = Convert.ToBoolean(Convert.ToInt16(row[col]));
-                    <td class="@(string.Join(" ",classes))" data-value="@boolValue" style="@columnInfo.Style">
+                    var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));
+                    <td @CellDataAttributes(classes, boolValue, column.Style)>
                         <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
-                else if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
+                else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
-                    <td class="@(string.Join(" ",classes))" data-value="@row[col]" style="@columnInfo.Style">
-                        @row[col]
+                    <td @CellDataAttributes(classes, row[dataColumn], column.Style)>
+                        @row[dataColumn]
                     </td>
                 }
                 else
                 {
-                    if (columnInfo.IsNumeric)
+                    if (column.IsNumeric)
                     {
                         classes.Add("text-right");
                     }
 
-                    var value = columnInfo.FormatValue(row[col]!);
-                    if (columnInfo.MaxTextLength.HasValue && value.ToString().Length > columnInfo.MaxTextLength.Value)
+                    var value = column.FormatValue(row[dataColumn]!);
+                    if (column.MaxTextLength.HasValue && value.ToString().Length > column.MaxTextLength.Value)
                     {
-                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" style="@columnInfo.Style">
+                        <td @CellDataAttributes(classes, row[dataColumn], column.Style)>
                             <div class="tooltip" data-tip="@Html.Raw(value)">
-                                @Html.Raw($"{value.ToString().Substring(0, columnInfo.MaxTextLength.Value)}...")
+                                @Html.Raw($"{value.ToString().Substring(0, column.MaxTextLength.Value)}...")
                             </div>
                         </td>
                     }
                     else
                     {
-                        <td class="@(string.Join(" ",classes))" data-value="@row[col]" style="@columnInfo.Style">@Html.Raw(value)</td>
+                        <td @CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
                     }
                 }
             }
@@ -126,6 +126,38 @@
 </tbody>
 
 @functions {
+    public HtmlString RowDataAttributes(DataRow row)
+    {
+        List<string> dataAttributes = new List<string>();
+
+        if (Model.PrimaryKeyValue(row) != null)
+        {
+            dataAttributes.Add($"data-id=\"{Model.PrimaryKeyValue(row)}\"");
+        }
+
+        foreach (var column in Model.DataOnlyColumns)
+        {
+            dataAttributes.Add($"data-{column.ColumnName.ToLower()}=\"{row[column.ColumnName]}\"");
+        }
+
+        return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
+    }
+
+    public HtmlString CellDataAttributes(List<string> classes, object value, string style)
+    {
+        List<string> dataAttributes = new List<string>();
+
+        dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
+
+        if ((value is byte) == false)
+        {
+            dataAttributes.Add($"data-value=\"{value}\"");
+        }
+        dataAttributes.Add($"style=\"{style}\"");
+
+        return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
+    }
+
     public static object? FormatValue(object? value, GridColumnModel? columnInfo)
     {
         if (string.IsNullOrEmpty(columnInfo?.Format))

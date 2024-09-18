@@ -1,4 +1,4 @@
-﻿@model DbNetSuiteCore.Models.GridViewModel
+﻿@model DbNetSuiteCore.ViewModels.GridViewModel
 @using System.Data
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
@@ -23,12 +23,12 @@
                 {
                     <col />
                 }
-                @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
+                @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
                 {
                     <col data-datatype="@columnInfo.DataTypeName" data-dbdatatype="@columnInfo.DbDataType" />
                 }
             </colgroup>
-            <thead>
+            <thead data-frozen="@Model.GridModel.FrozenHeader">
                 <tr class="bg-slate-200 heading-row">
                     @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
                     {
@@ -38,7 +38,7 @@
                     {
                         <th class="text-base w-12"></th>
                     }
-                    @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
+                    @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
                     {
                         if (columnInfo.Sortable)
                         {
@@ -59,7 +59,7 @@
                     }
                 </tr>
 
-                @if (Model.ColumnInfo.Any(c => c.Filter))
+                @if (Model.Columns.Any(c => c.Filter))
                 {
                     <tr class="filter-row">
                         @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
@@ -70,7 +70,7 @@
                         {
                             <th class="text-base w-12"></th>
                         }
-                        @foreach (GridColumnModel columnInfo in Model.ColumnInfo)
+                        @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
                         {
                             RenderColumnFilter(columnInfo);
                         }

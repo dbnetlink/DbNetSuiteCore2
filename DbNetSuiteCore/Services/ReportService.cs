@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.ViewModels;
 
 namespace DbNetSuiteCore.Services
 {
@@ -102,7 +103,6 @@ namespace DbNetSuiteCore.Services
         private GridModel ConfigureNestedGrid(GridModel gridModel)
         {
             gridModel.NestedGrid!.IsNested = true;
-            gridModel.NestedGrid!.ColSpan = gridModel.Columns.Count;
             gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
             gridModel.NestedGrid.SetId();
            
@@ -147,7 +147,7 @@ namespace DbNetSuiteCore.Services
                             var dataRows = schema.Rows.Cast<DataRow>().ToList();
                             for (var i = 0; i < dataRows.Count; i++)
                             {
-                                gridModel.Columns[i].Update(dataRows[i]);
+                                gridModel.Columns.ToList()[i].Update(dataRows[i]);
                             }
                             break;
                         default:
@@ -164,15 +164,15 @@ namespace DbNetSuiteCore.Services
                             {
                                 for (var i = 0; i < dataColumns.Count; i++)
                                 {
-                                    gridModel.Columns[i].Update(dataColumns[i]);
+                                    gridModel.Columns.ToList()[i].Update(dataColumns[i]);
                                 }
                             }
                             break;
                     }
                 }
-                for (var i = 0; i < gridModel.Columns.Count; i++)
+                for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
                 {
-                    gridModel.Columns[i].Ordinal = i + 1;
+                    gridModel.Columns.ToList()[i].Ordinal = i + 1;
                 }
             }
         }

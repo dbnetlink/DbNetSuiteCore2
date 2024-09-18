@@ -940,6 +940,10 @@ form.dbnetsuite {
   position: relative;
 }
 
+.sticky {
+  position: sticky;
+}
+
 .m-1 {
   margin: 0.25rem;
 }

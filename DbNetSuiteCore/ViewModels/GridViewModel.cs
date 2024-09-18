@@ -2,11 +2,16 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Html;
 using System.Data;
+using DbNetSuiteCore.Models;
 
-namespace DbNetSuiteCore.Models
+namespace DbNetSuiteCore.ViewModels
 {
     public class GridViewModel : ComponentViewModel
     {
+        public IEnumerable<GridColumnModel> Columns => _gridModel.Columns;
+        public IEnumerable<GridColumnModel> VisibleColumns => _gridModel.VisbleColumns;
+        public IEnumerable<GridColumnModel> DataOnlyColumns => _gridModel.DataOnlyColumns;
+
         private readonly GridModel _gridModel = new GridModel();
         public GridModel GridModel => _gridModel;
         public IEnumerable<DataRow> Rows { get; set; } = new List<DataRow>();
@@ -39,7 +44,7 @@ namespace DbNetSuiteCore.Models
 
             Rows = gridModel.Data.AsEnumerable().Skip((GridModel.CurrentPage - 1) * GridModel.PageSize).Take(GridModel.PageSize);
 
-            foreach (DataColumn column in Columns)
+            foreach (DataColumn column in DataColumns)
             {
                 ColumnModel? columnInfo = GetColumnInfo(column);
 
@@ -55,7 +60,7 @@ namespace DbNetSuiteCore.Models
 
         public GridColumnModel? GetColumnInfo(DataColumn column)
         {
-            return (GridColumnModel)_GetColumnInfo(column);
+            return _GetColumnInfo(column, _gridModel.Columns.Cast<ColumnModel>()) as GridColumnModel;
         }
 
         public DataColumn? GetDataColumn(GridColumnModel column)
