@@ -41,7 +41,12 @@ namespace DbNetSuiteCore.Extensions
 
         public static object? TypedValue(this GridColumnModel gridColumnModel, object value)
         {
-            switch (gridColumnModel?.DataType.Name)
+            return TypedValue(gridColumnModel?.DataType.Name, value);
+        }
+
+        public static object? TypedValue(string dataTypeName, object value)
+        {
+            switch (dataTypeName)
             {
                 case nameof(DateTime):
                     return Convert.ToDateTime(value);

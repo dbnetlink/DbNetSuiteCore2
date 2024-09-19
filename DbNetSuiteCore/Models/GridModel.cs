@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.Collections.Specialized;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -33,6 +34,8 @@ namespace DbNetSuiteCore.Models
         }
         public string? PrimaryKey { get; set; }
         public string TableName { get; set; } = string.Empty;
+        public string ProcedureName { get; set; } = string.Empty;
+        public List<ProcedureParameter> ProcedureParameters { get; set; } = new List<ProcedureParameter>();
         public string ExportFormat { get; set; } = string.Empty;
         public string Filter { get; set; } = string.Empty;
         public string ConnectionAlias { get; set; } = string.Empty;
@@ -66,6 +69,7 @@ namespace DbNetSuiteCore.Models
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
         public MultiRowSelectLocation MultiRowSelect { get; set; } = MultiRowSelectLocation.None;
         public bool FrozenHeader { get; set; } = false;
+        public bool IsStoredProcedure { get; set; } = false;
         public GridModel()
         {
             Id = GeneratedId();
@@ -76,11 +80,22 @@ namespace DbNetSuiteCore.Models
             Url = url;
         }
 
-        public GridModel(DataSourceType dataSourceType, string connectionAlias, string tableName) : this()
+        public GridModel(DataSourceType dataSourceType, string connectionAlias, string tableName, bool isStoredProcedure = false) : this()
         {
             DataSourceType = dataSourceType;
             ConnectionAlias = connectionAlias;
-            TableName = tableName;
+            TableName = isStoredProcedure ? string.Empty : tableName;
+            ProcedureName = isStoredProcedure ? tableName : string.Empty;
+            IsStoredProcedure = isStoredProcedure;
+        }
+
+        public GridModel(DataSourceType dataSourceType, string connectionAlias, string procedureName, List<ProcedureParameter> procedureParameters) : this()
+        {
+            DataSourceType = dataSourceType;
+            ConnectionAlias = connectionAlias;
+            ProcedureName = procedureName;
+            ProcedureParameters = procedureParameters;
+            IsStoredProcedure = true;
         }
 
         public GridModel(string tableName) : this()
@@ -95,7 +110,7 @@ namespace DbNetSuiteCore.Models
 
         public void SetId()
         {
-            Id = $"Grid{DateTime.Now.Ticks}";
+            Id = GeneratedId();
         }
 
         public void AddLinkedGrid(GridModel gridModel)
@@ -119,7 +134,7 @@ namespace DbNetSuiteCore.Models
 
         public DataColumn? GetDataColumn(GridColumnModel column)
         {
-            return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName == column.Name || c.ColumnName == column.ColumnName);
+            return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower());
         }
 
         public void ConfigureSort(string sortKey)

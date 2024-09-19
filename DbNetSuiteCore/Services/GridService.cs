@@ -15,7 +15,7 @@ using DbNetSuiteCore.ViewModels;
 
 namespace DbNetSuiteCore.Services
 {
-    public class ReportService : IReportService
+    public class GridService : IGridService
     {
         private readonly IMSSQLRepository _msSqlRepository;
         private readonly ITimestreamRepository _timestreamRepository;
@@ -28,7 +28,7 @@ namespace DbNetSuiteCore.Services
         private HttpContext? _context = null;
         private string triggerName => _context.Request.Headers.Keys.Contains(HeaderNames.HxTriggerName) ? _context.Request.Headers[HeaderNames.HxTriggerName] : string.Empty;
 
-        public ReportService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -92,8 +92,15 @@ namespace DbNetSuiteCore.Services
                 FileSystemRepository.UpdateUrl(gridModel);
             }
 
-            await ConfigureGridColumns(gridModel);
+            if (gridModel.IsStoredProcedure == false && gridModel.Uninitialised)
+            {
+                await ConfigureGridColumns(gridModel);
+            }
             await GetRecords(gridModel);
+            if (gridModel.IsStoredProcedure && gridModel.Uninitialised)
+            {
+                ConfigureGridColumnsForStoredProcedure(gridModel);
+            }
 
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
 
@@ -105,7 +112,7 @@ namespace DbNetSuiteCore.Services
             gridModel.NestedGrid!.IsNested = true;
             gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
             gridModel.NestedGrid.SetId();
-           
+
             if (gridModel.DataSourceType == DataSourceType.FileSystem)
             {
                 gridModel.NestedGrid.NestedGrid = gridModel.NestedGrid.DeepCopy();
@@ -121,65 +128,102 @@ namespace DbNetSuiteCore.Services
 
         private async Task ConfigureGridColumns(GridModel gridModel)
         {
-            if (gridModel.Uninitialised)
+            DataTable schema = await GetColumns(gridModel);
+
+            if (gridModel.Columns.Any() == false)
             {
-                DataTable schema = await GetColumns(gridModel);
-
-                if (gridModel.Columns.Any() == false)
+                switch (gridModel.DataSourceType)
                 {
-                    switch (gridModel.DataSourceType)
+                    case DataSourceType.MSSQL:
+                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r, gridModel.DataSourceType)).Cast<GridColumnModel>().Where(c => c.Valid).ToList();
+                        break;
+                    default:
+                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
+                        break;
+                }
+
+                gridModel.QualifyColumnExpressions();
+            }
+            else
+            {
+                switch (gridModel.DataSourceType)
+                {
+                    case DataSourceType.MSSQL:
+                        var dataRows = schema.Rows.Cast<DataRow>().ToList();
+                        for (var i = 0; i < dataRows.Count; i++)
+                        {
+                            gridModel.Columns.ToList()[i].Update(dataRows[i]);
+                        }
+                        break;
+                    default:
+                        var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+
+                        if (gridModel.DataSourceType == DataSourceType.FileSystem)
+                        {
+                            foreach (GridColumnModel gridColumn in gridModel.Columns)
+                            {
+                                gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
+                            }
+                        }
+                        else
+                        {
+                            for (var i = 0; i < dataColumns.Count; i++)
+                            {
+                                gridModel.Columns.ToList()[i].Update(dataColumns[i]);
+                            }
+                        }
+                        break;
+                }
+            }
+            for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
+            {
+                gridModel.Columns.ToList()[i].Ordinal = i + 1;
+            }
+        }
+
+        private void ConfigureGridColumnsForStoredProcedure(GridModel gridModel)
+        {
+            DataTable schema = gridModel.Data;
+
+            if (gridModel.Columns.Any() == false)
+            {
+                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumnModel(dc)).Cast<GridColumnModel>().ToList();
+                gridModel.QualifyColumnExpressions();
+            }
+            else
+            {
+                var gridColumns = gridModel.Columns.DeepCopy();
+                gridModel.Columns = new List<GridColumnModel>();
+                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+
+                for (var i = 0; i < dataColumns.Count; i++)
+                {
+                    var dataColumn = dataColumns[i];
+                    var gridColumn = gridColumns.FirstOrDefault(c => c.Expression.ToLower() == dataColumn.ColumnName.ToLower());
+
+                    if (gridColumn == null)
                     {
-                        case DataSourceType.MSSQL:
-                            gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r, gridModel.DataSourceType)).Cast<GridColumnModel>().Where(c => c.Valid).ToList();
-                            break;
-                        default:
-                            gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
-                            break;
+                        gridColumn = new GridColumnModel(dataColumn);
                     }
-
-                    gridModel.QualifyColumnExpressions();
-                }
-                else
-                {
-                    switch (gridModel.DataSourceType)
+                    else
                     {
-                        case DataSourceType.MSSQL:
-                            var dataRows = schema.Rows.Cast<DataRow>().ToList();
-                            for (var i = 0; i < dataRows.Count; i++)
-                            {
-                                gridModel.Columns.ToList()[i].Update(dataRows[i]);
-                            }
-                            break;
-                        default:
-                            var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-
-                            if (gridModel.DataSourceType == DataSourceType.FileSystem)
-                            {
-                                foreach (GridColumnModel gridColumn in gridModel.Columns)
-                                {
-                                    gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
-                                }
-                            }
-                            else
-                            {
-                                for (var i = 0; i < dataColumns.Count; i++)
-                                {
-                                    gridModel.Columns.ToList()[i].Update(dataColumns[i]);
-                                }
-                            }
-                            break;
+                        gridColumn.Update(dataColumn);
                     }
+                    gridModel.Columns = gridModel.Columns.Append(gridColumn);
                 }
-                for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
-                {
-                    gridModel.Columns.ToList()[i].Ordinal = i + 1;
-                }
+            }
+            for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
+            {
+                gridModel.Columns.ToList()[i].Ordinal = i + 1;
             }
         }
 
         private async Task GetRecords(GridModel gridModel)
         {
-            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
+            if (gridModel.IsStoredProcedure == false)
+            {
+                gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
+            }
 
             if (gridModel.TriggerName == TriggerNames.LinkedGrid)
             {
@@ -413,7 +457,7 @@ namespace DbNetSuiteCore.Services
                 using (var memoryStream = new MemoryStream())
                 {
                     workbook.SaveAs(memoryStream);
-                     memoryStream.Seek(0, SeekOrigin.Begin);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
                     return memoryStream.ToArray();
                 }
             }

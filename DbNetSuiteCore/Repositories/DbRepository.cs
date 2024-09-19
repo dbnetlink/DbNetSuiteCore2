@@ -7,7 +7,6 @@ using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Reflection;
-using DbNetSuiteCore.Constants;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -50,8 +49,8 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecords(GridModel gridModel)
         {
-            QueryCommandConfig query = gridModel.BuildQuery(this);
-            gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
+            QueryCommandConfig query = gridModel.IsStoredProcedure ? gridModel.BuildProcedureCall(this) : gridModel.BuildQuery(this);
+            gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias, gridModel.IsStoredProcedure);
 
             foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
             {
@@ -60,9 +59,12 @@ namespace DbNetSuiteCore.Repositories
 
             gridModel.ConvertEnumLookups();
 
-            if (gridModel.SortColumn != null && gridModel.SortColumn.LookupOptions != null && gridModel.Data.Rows.Count > 0)
+            if (gridModel.IsStoredProcedure == false)
             {
-                gridModel.Data = gridModel.Data.Select(string.Empty, gridModel.AddDataTableOrderPart()).CopyToDataTable();
+                if (gridModel.SortColumn != null && gridModel.SortColumn.LookupOptions != null && gridModel.Data.Rows.Count > 0)
+                {
+                    gridModel.Data = gridModel.Data.Select(string.Empty, gridModel.AddDataTableOrderPart()).CopyToDataTable();
+                }
             }
         }
 
@@ -119,12 +121,12 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database)
+        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, bool isStoredProcedure = false)
         {
             var connection = GetConnection(database);
             connection.Open();
             DataTable dataTable = new DataTable();
-            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection));
+            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, isStoredProcedure ? CommandType.StoredProcedure : CommandType.Text ));
             connection.Close();
             return dataTable;
         }
@@ -143,10 +145,22 @@ namespace DbNetSuiteCore.Repositories
         {
             return await ExecuteQuery(new QueryCommandConfig(sql), connection);
         }
-        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior Behaviour = CommandBehavior.Default)
+        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandType commandType)
         {
-            IDbCommand command = ConfigureCommand(query.Sql, connection, query.Params);
-            return await ((DbCommand)command).ExecuteReaderAsync(CommandBehavior.Default);
+            return await ExecuteQuery(query, connection, CommandBehavior.Default, commandType);
+        }
+        public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior commandBehavour = CommandBehavior.Default, CommandType commandType = CommandType.Text)
+        {
+            IDbCommand command = ConfigureCommand(query.Sql, connection, query.Params, commandType);
+            /*
+            command.Parameters.Clear();
+            IDbDataParameter dbParam = command.CreateParameter();
+            dbParam.ParameterName = "@isactive";
+            dbParam.Value = 0;
+            dbParam.DbType = DbType.Int32;
+            command.Parameters.Add(dbParam);    
+            */
+            return await ((DbCommand)command).ExecuteReaderAsync(commandBehavour);
         }
 
         public async Task<int> ExecuteNonQuery(CommandConfig commandConfig, IDbConnection connection)
@@ -198,11 +212,11 @@ namespace DbNetSuiteCore.Repositories
             return connectionString;
         }
 
-        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null)
+        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null, CommandType commandType = CommandType.Text)
         {
             IDbCommand command = connection.CreateCommand();
             command.CommandText = sql.Trim();
-            command.CommandType = CommandType.Text;
+            command.CommandType = commandType;
             command.Parameters.Clear();
             command.CommandText = sql.Trim();
             AddCommandParameters(command, @params);
@@ -240,19 +254,18 @@ namespace DbNetSuiteCore.Repositories
 
         public static string ParameterName(string key, bool parameterValue = false)
         {
-            var temmplate = "@{0}";
+            var template = "@{0}";
             if (key.Length > 0)
-                if (temmplate.Substring(0, 1) == key.Substring(0, 1))
+                if (template.Substring(0, 1) == key.Substring(0, 1))
                     return key;
 
-            return temmplate.Replace("{0}", CleanParameterName(key));
+            return template.Replace("{0}", CleanParameterName(key));
         }
 
         public static string CleanParameterName(string key)
         {
             key = Regex.Replace(key, "[^a-zA-Z0-9_]", "_");
             return key;
-
         }
 
         public static IDbConnection GetCustomDbConnection(DataSourceType dataSourceType, string connectionString)

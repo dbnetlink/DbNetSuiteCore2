@@ -40,7 +40,7 @@
                     }
                     @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
                     {
-                        if (columnInfo.Sortable)
+                        if (columnInfo.Sortable && Model.GridModel.IsStoredProcedure == false)
                         {
                             <th class="text-base" style="cursor:pointer" data-key="@columnInfo.Key" data-columnname="@columnInfo.ColumnName" hx-vals='{"sortKey":"@columnInfo.Key"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
                                 <div class="flex flex-row justify-between items-center">@columnInfo?.Label<span class="text-slate-400"></span></div>
@@ -48,9 +48,7 @@
                         }
                         else
                         {
-                            <th class="text-base">
-                                <div class="flex flex-row justify-between items-center">@columnInfo?.Label</div>
-                            </th>
+                            <th class="text-base">@columnInfo?.Label</th>
                         }
                     }
                     @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
@@ -59,7 +57,7 @@
                     }
                 </tr>
 
-                @if (Model.Columns.Any(c => c.Filter))
+                @if (Model.Columns.Any(c => c.Filter) && Model.GridModel.IsStoredProcedure == false)
                 {
                     <tr class="filter-row">
                         @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)

@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Data;
 using System.Linq;
+using System.Text.Json;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -22,6 +23,22 @@ namespace DbNetSuiteCore.Extensions
 
             return query;
         }
+
+        public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel, DbRepository dbRepository)
+        {
+            QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
+            foreach(var parameter in gridModel.ProcedureParameters)
+            {
+                if (parameter.Value is JsonElement)
+                {
+                    parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
+                }
+                query.Params[DbRepository.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
+            }
+            
+            return query;
+        }
+
         public static QueryCommandConfig BuildEmptyQuery(this GridModel gridModel)
         {
             return new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");

@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Middleware
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
-        private IReportService _reportService = null;
+        private IGridService _reportService = null;
         private string _extension = ".htmx";
 
 
@@ -19,7 +19,7 @@ namespace DbNetSuiteCore.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IReportService reportService)
+        public async Task Invoke(HttpContext context, IGridService reportService)
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
@@ -77,7 +77,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddControllersWithViews();
             services.AddHttpContextAccessor();
-            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IGridService, GridService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();
             services.AddScoped<IJSONRepository, JSONRepository>();

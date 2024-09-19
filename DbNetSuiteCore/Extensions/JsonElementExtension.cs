@@ -13,7 +13,7 @@ namespace DbNetSuiteCore.Extensions
                     value = jsonElement.GetString();
                     break;
                 case JsonValueKind.Number:
-                    value = jsonElement.GetUInt64();
+                    value = jsonElement.GetInt32();
                     break;
                 case JsonValueKind.True:
                 case JsonValueKind.False:
@@ -23,7 +23,7 @@ namespace DbNetSuiteCore.Extensions
                     value = DBNull.Value;
                     break;
                 default:
-                    value = jsonElement.ToString();
+                    value = jsonElement.GetString();
                     break;
             }
             return value;

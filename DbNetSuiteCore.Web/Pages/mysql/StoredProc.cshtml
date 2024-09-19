@@ -1,0 +1,14 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var customersGridParameters = new List<ProcedureParameter>() { new ProcedureParameter("isactive", false) };
+    var customersGrid = new GridModel(DataSourceType.MySql, "Sakila(mysql)", "GetAllCustomers2", customersGridParameters);
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+
+    var ordersGridParameters = new List<ProcedureParameter>() { new ProcedureParameter("orderDate", new DateTime(2006, 5, 1)) };
+    var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "GetOrdersBeforeDate", ordersGridParameters);
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
+}
