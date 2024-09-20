@@ -1,5 +1,5 @@
 ### Introduction ###
-This project is a set of data driven ASP.NET Core components based on Razor pages, HTMX, Tailwind CSS and JavaScript. The components can be added to any ASP.NET Core web application as middleware and the components can be added to any existing web page. The goal is to creats a set of components that are lightweight, easy to add to any web page and highly configurable.
+This project is a set of data driven ASP.NET Core components based on Razor views, HTMX, Tailwind CSS and JavaScript. The components can be added to any ASP.NET Core web application as middleware and the components can be added to any existing web page. The goal is to creats a set of components that are lightweight, easy to add to any web page and highly configurable.
 
 Currently the components support the following data sources:
 
