@@ -5,42 +5,42 @@
 
 @{
 
-    var orderColumns = new List<GridColumnModel>
+    var orderColumns = new List<GridColumn>
     {
-        new GridColumnModel("id") {PrimaryKey = true},
-        new GridColumnModel("employee_id","Employee"){ Lookup = new LookupModel("employees", "id", "concat(last_name,', ',first_name)")},
-        new GridColumnModel("customer_id","Customer"){ Lookup = new LookupModel("customers", "id", "company")},
-        new GridColumnModel("order_date"),
-        new GridColumnModel("shipped_date"),
-        new GridColumnModel("shipper_id"){ Lookup = new LookupModel("shippers", "id", "company")},
-        new GridColumnModel("ship_name"),
-        new GridColumnModel("ship_address"),
-        new GridColumnModel("ship_city"),
-        new GridColumnModel("ship_state_province"),
-        new GridColumnModel("ship_zip_postal_code"),
-        new GridColumnModel("ship_country_region"),
-        new GridColumnModel("shipping_fee"),
-        new GridColumnModel("taxes"),
-        new GridColumnModel("payment_type"),
-        new GridColumnModel("paid_date"),
-        new GridColumnModel("notes"),
-        new GridColumnModel("tax_rate"),
-        new GridColumnModel("tax_status_id"),
-        new GridColumnModel("status_id"){ Lookup = new LookupModel("orders_status", "id", "status_name")},
+        new GridColumn("id") {PrimaryKey = true},
+        new GridColumn("employee_id","Employee"){ Lookup = new Lookup("employees", "id", "concat(last_name,', ',first_name)")},
+        new GridColumn("customer_id","Customer"){ Lookup = new Lookup("customers", "id", "company")},
+        new GridColumn("order_date"),
+        new GridColumn("shipped_date"),
+        new GridColumn("shipper_id"){ Lookup = new Lookup("shippers", "id", "company")},
+        new GridColumn("ship_name"),
+        new GridColumn("ship_address"),
+        new GridColumn("ship_city"),
+        new GridColumn("ship_state_province"),
+        new GridColumn("ship_zip_postal_code"),
+        new GridColumn("ship_country_region"),
+        new GridColumn("shipping_fee"),
+        new GridColumn("taxes"),
+        new GridColumn("payment_type"),
+        new GridColumn("paid_date"),
+        new GridColumn("notes"),
+        new GridColumn("tax_rate"),
+        new GridColumn("tax_status_id"),
+        new GridColumn("status_id"){ Lookup = new Lookup("orders_status", "id", "status_name")},
     };
 
-    var orderDetailColumns = new List<GridColumnModel>
+    var orderDetailColumns = new List<GridColumn>
     {
-        new GridColumnModel("id"),
-        new GridColumnModel("order_id") {ForeignKey = true},
-        new GridColumnModel("product_id") {Lookup = new LookupModel("products","id","product_name")},
-        new GridColumnModel("Quantity"),
-        new GridColumnModel("Unit_Price"),
-        new GridColumnModel("Discount"),
-        new GridColumnModel("status_id"){ Lookup = new LookupModel("order_details_status", "id", "status_name")},
-        new GridColumnModel("Date_Allocated"),
-        new GridColumnModel("Purchase_Order_Id"),
-        new GridColumnModel("Inventory_Id")
+        new GridColumn("id"),
+        new GridColumn("order_id") {ForeignKey = true},
+        new GridColumn("product_id") {Lookup = new Lookup("products","id","product_name")},
+        new GridColumn("Quantity"),
+        new GridColumn("Unit_Price"),
+        new GridColumn("Discount"),
+        new GridColumn("status_id"){ Lookup = new Lookup("order_details_status", "id", "status_name")},
+        new GridColumn("Date_Allocated"),
+        new GridColumn("Purchase_Order_Id"),
+        new GridColumn("Inventory_Id")
     };
 
 

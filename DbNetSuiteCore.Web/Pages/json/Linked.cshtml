@@ -9,36 +9,36 @@
 }
 
 @{
-    var customerColumns = new List<GridColumnModel>
+    var customerColumns = new List<GridColumn>
     {
-        new GridColumnModel("CustomerID", "CustomerID") {PrimaryKey = true },
-        new GridColumnModel("CompanyName", "Company Name"),
-        new GridColumnModel("ContactName", "Contact Name"),
-        new GridColumnModel("ContactTitle", "Contact Title"),
-        new GridColumnModel("Address", "Address"),
-        new GridColumnModel("City", "City") {},
-        new GridColumnModel("PostalCode", "Post Code"),
-        new GridColumnModel("Country", "Country"),
-        new GridColumnModel("Phone", "Phone"),
-        new GridColumnModel("Fax", "Fax")
+        new GridColumn("CustomerID", "CustomerID") {PrimaryKey = true },
+        new GridColumn("CompanyName", "Company Name"),
+        new GridColumn("ContactName", "Contact Name"),
+        new GridColumn("ContactTitle", "Contact Title"),
+        new GridColumn("Address", "Address"),
+        new GridColumn("City", "City") {},
+        new GridColumn("PostalCode", "Post Code"),
+        new GridColumn("Country", "Country"),
+        new GridColumn("Phone", "Phone"),
+        new GridColumn("Fax", "Fax")
     };
 
-    var orderColumns = new List<GridColumnModel>
+    var orderColumns = new List<GridColumn>
     {
-        new GridColumnModel("OrderID", "Invoice ID") ,
-        new GridColumnModel("CustomerID", "Customer ID") {ForeignKey = true },
-        new GridColumnModel("EmployeeID", "Employee ID"),
-        new GridColumnModel("OrderDate", "Ordered"),
-        new GridColumnModel("RequiredDate", "Required "),
-        new GridColumnModel("ShippedDate", "Shipped "),
-        new GridColumnModel("ShipVia", "Ship Via") {LookupEnum = typeof(ShipperEnum)}, 
-        new GridColumnModel("Freight", "Freight"),
-        new GridColumnModel("ShipName", "Ship Name"),
-        new GridColumnModel("ShipAddress", "Ship Address"),
-        new GridColumnModel("ShipCity", "Ship City"),
-        new GridColumnModel("ShipRegion", "Ship Region"),
-        new GridColumnModel("ShipPostalCode", "Ship Postal Code"),
-        new GridColumnModel("ShipCountry", "Ship Country")
+        new GridColumn("OrderID", "Invoice ID") ,
+        new GridColumn("CustomerID", "Customer ID") {ForeignKey = true },
+        new GridColumn("EmployeeID", "Employee ID"),
+        new GridColumn("OrderDate", "Ordered"),
+        new GridColumn("RequiredDate", "Required "),
+        new GridColumn("ShippedDate", "Shipped "),
+        new GridColumn("ShipVia", "Ship Via") {LookupEnum = typeof(ShipperEnum)}, 
+        new GridColumn("Freight", "Freight"),
+        new GridColumn("ShipName", "Ship Name"),
+        new GridColumn("ShipAddress", "Ship Address"),
+        new GridColumn("ShipCity", "Ship City"),
+        new GridColumn("ShipRegion", "Ship Region"),
+        new GridColumn("ShipPostalCode", "Ship Postal Code"),
+        new GridColumn("ShipCountry", "Ship Country")
     };
 
 

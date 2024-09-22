@@ -4,7 +4,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class GridColumnModelExtensions
     {
-        public static object? FormatValue(this GridColumnModel gridColumnModel, object value)
+        public static object? FormatValue(this GridColumn gridColumnModel, object value)
         {
             if (string.IsNullOrEmpty(value?.ToString()) || value == DBNull.Value)
             {
@@ -39,7 +39,7 @@ namespace DbNetSuiteCore.Extensions
             return value;
         }
 
-        public static object? TypedValue(this GridColumnModel gridColumnModel, object value)
+        public static object? TypedValue(this GridColumn gridColumnModel, object value)
         {
             return TypedValue(gridColumnModel?.DataType.Name, value);
         }
@@ -68,7 +68,7 @@ namespace DbNetSuiteCore.Extensions
             return value;
         }
 
-        public static string FormatedValue(this GridColumnModel gridColumnModel, object value, string format)
+        public static string FormatedValue(this GridColumn gridColumnModel, object value, string format)
         {
             switch (gridColumnModel?.DataType.Name)
             {

@@ -5,17 +5,17 @@
 @using DbNetSuiteCore.Models
 @{
     var invoiceGrid = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "invoices");
-    invoiceGrid.Columns = new List<GridColumnModel>
+    invoiceGrid.Columns = new List<GridColumn>
     {
-        new GridColumnModel("InvoiceId", "Invoice ID") { PrimaryKey = true, DataOnly = true},
-        new GridColumnModel("CustomerID", "Customer") {Lookup = new LookupModel("Customers","CustomerID","LastName || ', ' || FirstName")},
-        new GridColumnModel("InvoiceDate", "Date"),
-        new GridColumnModel("BillingAddress", "Address"),
-        new GridColumnModel("BillingCity", "City"){ Style = "font-weight:bold;"},
-        new GridColumnModel("BillingState", "State") {LookupEnum = typeof(StateEnum) },
-        new GridColumnModel("BillingCountry", "Country") { Style = "background-color:gold; color:steelblue;"},
-        new GridColumnModel("BillingPostalCode", "Postal Code"),
-        new GridColumnModel("Total", "Total") { Format = "C"},
+        new GridColumn("InvoiceId", "Invoice ID") { PrimaryKey = true, DataOnly = true},
+        new GridColumn("CustomerID", "Customer") {Lookup = new Lookup("Customers","CustomerID","LastName || ', ' || FirstName")},
+        new GridColumn("InvoiceDate", "Date"),
+        new GridColumn("BillingAddress", "Address"),
+        new GridColumn("BillingCity", "City"){ Style = "font-weight:bold;"},
+        new GridColumn("BillingState", "State") {LookupEnum = typeof(StateEnum) },
+        new GridColumn("BillingCountry", "Country") { Style = "background-color:gold; color:steelblue;"},
+        new GridColumn("BillingPostalCode", "Postal Code"),
+        new GridColumn("Total", "Total") { Format = "C"},
     }; 
     invoiceGrid.MultiRowSelect = MultiRowSelectLocation.Left;
     invoiceGrid.PageSize = 100;

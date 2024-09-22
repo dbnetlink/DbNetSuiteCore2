@@ -119,6 +119,7 @@ class GridControl {
 
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
+        let rowCount = parseInt(tbody.dataset.rowcount);
 
         if (totalPages == 0) {
             this.updateLinkedGrids('');
@@ -136,6 +137,7 @@ class GridControl {
 
             this.setPageNumber(currentPage,totalPages);
             (this.gridControlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
+            (this.gridControlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
 
             this.getButton("first").disabled = currentPage == 1;
             this.getButton("previous").disabled = currentPage == 1;

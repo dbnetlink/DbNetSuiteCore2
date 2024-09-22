@@ -7,9 +7,9 @@
     var customersGridParameters = new List<ProcedureParameter>() { new ProcedureParameter("OrderId", 10248, typeof(Int32)) };
     var customersGrid = new GridModel(DataSourceType.MSSQL, "Northwind(mssql)", "CustOrdersDetail", customersGridParameters);
 
-    customersGrid.Columns = new List<GridColumnModel>() { 
-        new GridColumnModel("UnitPrice", "Unit Price") { Format = "c" }, 
-        new GridColumnModel("ExtendedPrice", "Ext. Price") { Format = "c" }
+    customersGrid.Columns = new List<GridColumn>() { 
+        new GridColumn("UnitPrice", "Unit Price") { Format = "c" }, 
+        new GridColumn("ExtendedPrice", "Ext. Price") { Format = "c" }
     };
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
 }

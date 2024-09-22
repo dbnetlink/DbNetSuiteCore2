@@ -4,32 +4,32 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var mt1Columns = new List<GridColumnModel>
+    var mt1Columns = new List<GridColumn>
     {
-        new GridColumnModel("SerialNumber", "Serial No."),
-        new GridColumnModel("measure_name", "Measure"),
-        new GridColumnModel("time", "Timestamp"),
-        new GridColumnModel("gpModel", "GP Model"),
-        new GridColumnModel("lpModel", "LP Model"),
-        new GridColumnModel("refrigerantType", "Refrigerant Type"),
-        new GridColumnModel("wifiPassword", "WI-FI Password"),
-        new GridColumnModel("model", "Model"),
-        new GridColumnModel("firmwareVersion", "Firmware Vn"),
-        new GridColumnModel("numCompressors", "No. Compressors")
+        new GridColumn("SerialNumber", "Serial No."),
+        new GridColumn("measure_name", "Measure"),
+        new GridColumn("time", "Timestamp"),
+        new GridColumn("gpModel", "GP Model"),
+        new GridColumn("lpModel", "LP Model"),
+        new GridColumn("refrigerantType", "Refrigerant Type"),
+        new GridColumn("wifiPassword", "WI-FI Password"),
+        new GridColumn("model", "Model"),
+        new GridColumn("firmwareVersion", "Firmware Vn"),
+        new GridColumn("numCompressors", "No. Compressors")
     };
 
-    var mt2Columns = new List<GridColumnModel>
+    var mt2Columns = new List<GridColumn>
     {
-        new GridColumnModel("SerialNumber", "Serial No."),
-        new GridColumnModel("measure_name", "Measure"),
-        new GridColumnModel("time", "Timestamp"),
+        new GridColumn("SerialNumber", "Serial No."),
+        new GridColumn("measure_name", "Measure"),
+        new GridColumn("time", "Timestamp"),
 
-        new GridColumnModel("t1", "Load Return Temperature"),
-        new GridColumnModel("t2", "Load Outlet Temperature"),
-        new GridColumnModel("t4", "Ground Return Temperature"),
-        new GridColumnModel("t5", "Ground Outlet Temperature"),
-        new GridColumnModel("t7", "Discharge Temp") { InitialSortOrder = SortOrder.Desc},
-        new GridColumnModel("t9", "Weather Compensation Temperature Probe"),
+        new GridColumn("t1", "Load Return Temperature"),
+        new GridColumn("t2", "Load Outlet Temperature"),
+        new GridColumn("t4", "Ground Return Temperature"),
+        new GridColumn("t5", "Ground Outlet Temperature"),
+        new GridColumn("t7", "Discharge Temp") { InitialSortOrder = SortOrder.Desc},
+        new GridColumn("t9", "Weather Compensation Temperature Probe"),
 
     @*
         new GridColumnModel("t3", "Load Outlet Temperatur For Twin Compressor Unit"),
@@ -37,35 +37,35 @@
         new GridColumnModel("t8", "Discharge Temperature Twin Compressor"),
         *@
 
-        new GridColumnModel("p1", "Load Side Pressure"),
-        new GridColumnModel("p2", "Ground Side Pressure"),
-        new GridColumnModel("p3", "Suction Pipe Pressure"),
-        new GridColumnModel("p5", "Discharge Pipe Pressure"),
+        new GridColumn("p1", "Load Side Pressure"),
+        new GridColumn("p2", "Ground Side Pressure"),
+        new GridColumn("p3", "Suction Pipe Pressure"),
+        new GridColumn("p5", "Discharge Pipe Pressure"),
     @*
         new GridColumnModel("p4", "SuctionPipeOnTwinCompressor"),
         new GridColumnModel("p6", "Discharge Pipe Twin Compressor"),
         *@
 
-        new GridColumnModel("state", "State Of The Heat Pump"),
-        new GridColumnModel("comp1", "State Of Compressor 1"),
-        new GridColumnModel("comp2", "State Of Compressor 2"),
-        new GridColumnModel("reason", "Reason For Logging"),
-        new GridColumnModel("numFaults", "Number Of Faults"),
-        new GridColumnModel("faultCode", "Fault Code"),
+        new GridColumn("state", "State Of The Heat Pump"),
+        new GridColumn("comp1", "State Of Compressor 1"),
+        new GridColumn("comp2", "State Of Compressor 2"),
+        new GridColumn("reason", "Reason For Logging"),
+        new GridColumn("numFaults", "Number Of Faults"),
+        new GridColumn("faultCode", "Fault Code"),
 
-        new GridColumnModel("lpState", "Load Pump State"),
-        new GridColumnModel("gpState", "GroundPumpState"),
-        new GridColumnModel("pulse1", "Pulse Input Value 1"),
-        new GridColumnModel("pulse2", "Pulse Input Value 2"),
+        new GridColumn("lpState", "Load Pump State"),
+        new GridColumn("gpState", "GroundPumpState"),
+        new GridColumn("pulse1", "Pulse Input Value 1"),
+        new GridColumn("pulse2", "Pulse Input Value 2"),
 
-        new GridColumnModel("cop", "Coefficient Of Performance"),
-        new GridColumnModel("scop", "Seasonal Coefficient Of Performance"),
+        new GridColumn("cop", "Coefficient Of Performance"),
+        new GridColumn("scop", "Seasonal Coefficient Of Performance"),
 
-        new GridColumnModel("deltaLoad", "Load Side Differential"),
-        new GridColumnModel("deltaGround", "Ground Side Differential"),
+        new GridColumn("deltaLoad", "Load Side Differential"),
+        new GridColumn("deltaGround", "Ground Side Differential"),
 
-        new GridColumnModel("runHours1", "Run Hours 1"),
-        new GridColumnModel("runHours2", "Run Hours 2")
+        new GridColumn("runHours1", "Run Hours 1"),
+        new GridColumn("runHours2", "Run Hours 2")
     };
 
    

@@ -4,13 +4,13 @@
 @using DbNetSuiteCore.Models
 @{
 
-    var orderDetailColumns = new List<GridColumnModel>
+    var orderDetailColumns = new List<GridColumn>
     {
-        new GridColumnModel("orderid", "Order ID"),
-        new GridColumnModel("ProductID", "Product") {Lookup = new LookupModel("Products","ProductID","ProductName")},
-        new GridColumnModel("UnitPrice", "Unit Price") { Format = "C"},
-        new GridColumnModel("Quantity", "Qty"),
-        new GridColumnModel("Discount", "Discount"),
+        new GridColumn("orderid", "Order ID"),
+        new GridColumn("ProductID", "Product") {Lookup = new Lookup("Products","ProductID","ProductName")},
+        new GridColumn("UnitPrice", "Unit Price") { Format = "C"},
+        new GridColumn("Quantity", "Qty"),
+        new GridColumn("Discount", "Discount"),
     };
 
     var orderDetailGrid = new GridModel(DataSourceType.SQlite, "Northwind(sqlite)", "[order details]");

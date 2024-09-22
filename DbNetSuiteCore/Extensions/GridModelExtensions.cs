@@ -195,7 +195,7 @@ namespace DbNetSuiteCore.Extensions
             return columnFilterParts;
         }
 
-        private static string FilterColumnExpression(GridModel gridModel, GridColumnModel gridColumnModel, bool havingFilter)
+        private static string FilterColumnExpression(GridModel gridModel, GridColumn gridColumnModel, bool havingFilter)
         {
             if (havingFilter == false)
             {
@@ -252,12 +252,12 @@ namespace DbNetSuiteCore.Extensions
             return "@";
         }
 
-        private static string AggregateExpression(GridColumnModel c)
+        private static string AggregateExpression(GridColumn c)
         {
             return $"{c.Aggregate}({Regex.Replace(c.Expression, @" as \w*$", "", RegexOptions.IgnoreCase)})";
         }
 
-        public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumnModel gridColumn)
+        public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
         {
             string comparisionOperator = "=";
 
@@ -315,7 +315,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        private static string RefineSearchExpression(GridColumnModel col, GridModel gridModel)
+        private static string RefineSearchExpression(GridColumn col, GridModel gridModel)
         {
             string columnExpression = StripColumnRename(col.Expression);
 
@@ -354,7 +354,7 @@ namespace DbNetSuiteCore.Extensions
             return String.Join(")", columnParts);
         }
 
-        private static object ParamValue(object value, GridColumnModel column, GridModel gridModel)
+        private static object ParamValue(object value, GridColumn column, GridModel gridModel)
         {
             var dataType = column.DataTypeName;
             if (value == null)

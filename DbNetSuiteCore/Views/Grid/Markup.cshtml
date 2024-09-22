@@ -23,9 +23,9 @@
                 {
                     <col />
                 }
-                @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
+                @foreach (GridColumn gridColumn in Model.VisibleColumns)
                 {
-                    <col data-datatype="@columnInfo.DataTypeName" data-dbdatatype="@columnInfo.DbDataType" />
+                    <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" />
                 }
             </colgroup>
             <thead data-frozen="@Model.GridModel.FrozenHeader">
@@ -38,17 +38,17 @@
                     {
                         <th class="text-base w-12"></th>
                     }
-                    @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
+                    @foreach (GridColumn gridColumn in Model.VisibleColumns)
                     {
-                        if (columnInfo.Sortable && Model.GridModel.IsStoredProcedure == false)
+                        if (gridColumn.Sortable)
                         {
-                            <th class="text-base" style="cursor:pointer" data-key="@columnInfo.Key" data-columnname="@columnInfo.ColumnName" hx-vals='{"sortKey":"@columnInfo.Key"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
-                                <div class="flex flex-row justify-between items-center">@columnInfo?.Label<span class="text-slate-400"></span></div>
+                            <th class="text-base" style="cursor:pointer" data-key="@gridColumn.Key" data-columnname="@gridColumn.ColumnName" hx-vals='{"sortKey":"@gridColumn.Key"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
+                                <div class="flex flex-row justify-between items-center">@gridColumn?.Label<span class="text-slate-400"></span></div>
                             </th>
                         }
                         else
                         {
-                            <th class="text-base">@columnInfo?.Label</th>
+                            <th class="text-base">@gridColumn?.Label</th>
                         }
                     }
                     @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
@@ -57,7 +57,7 @@
                     }
                 </tr>
 
-                @if (Model.Columns.Any(c => c.Filter) && Model.GridModel.IsStoredProcedure == false)
+                @if (Model.Columns.Any(c => c.Filter))
                 {
                     <tr class="filter-row">
                         @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
@@ -68,7 +68,7 @@
                         {
                             <th class="text-base w-12"></th>
                         }
-                        @foreach (GridColumnModel columnInfo in Model.VisibleColumns)
+                        @foreach (GridColumn columnInfo in Model.VisibleColumns)
                         {
                             RenderColumnFilter(columnInfo);
                         }
@@ -98,7 +98,7 @@
 </div>
 
 @functions {
-    void RenderColumnFilter(GridColumnModel columnInfo)
+    void RenderColumnFilter(GridColumn columnInfo)
     {
         <th class="text-base">
             @if (columnInfo?.Filter ?? false)
@@ -112,7 +112,7 @@
                     switch (columnInfo.DataTypeName)
                     {
                         case nameof(Boolean):
-                            RenderColumnSelectFilter(GridColumnModel.BooleanFilterOptions,string.Empty);
+                            RenderColumnSelectFilter(GridColumn.BooleanFilterOptions,string.Empty);
                             break;
                         default:
                             <input class="w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />

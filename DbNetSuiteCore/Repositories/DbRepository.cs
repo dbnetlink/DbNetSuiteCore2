@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -66,9 +67,13 @@ namespace DbNetSuiteCore.Repositories
                     gridModel.Data = gridModel.Data.Select(string.Empty, gridModel.AddDataTableOrderPart()).CopyToDataTable();
                 }
             }
+            else
+            {
+                gridModel.Data.FilterAndSort(gridModel);
+            }
         }
 
-        private async Task GetLookupOptions(GridModel gridModel, GridColumnModel gridColumn)
+        private async Task GetLookupOptions(GridModel gridModel, GridColumn gridColumn)
         {
             DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
 
@@ -97,7 +102,7 @@ namespace DbNetSuiteCore.Repositories
             gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
         }
 
-        public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumnModel gridColumn)
+        public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumn gridColumn)
         {
             QueryCommandConfig query = new QueryCommandConfig();
             var lookup = gridColumn.Lookup!;
@@ -152,14 +157,6 @@ namespace DbNetSuiteCore.Repositories
         public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior commandBehavour = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
             IDbCommand command = ConfigureCommand(query.Sql, connection, query.Params, commandType);
-            /*
-            command.Parameters.Clear();
-            IDbDataParameter dbParam = command.CreateParameter();
-            dbParam.ParameterName = "@isactive";
-            dbParam.Value = 0;
-            dbParam.DbType = DbType.Int32;
-            command.Parameters.Add(dbParam);    
-            */
             return await ((DbCommand)command).ExecuteReaderAsync(commandBehavour);
         }
 

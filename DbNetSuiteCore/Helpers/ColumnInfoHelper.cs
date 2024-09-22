@@ -6,50 +6,50 @@ namespace DbNetSuiteCore.Helpers
 {
     public static class ColumnInfoHelper
     {
-        public static List<GridColumnModel> CustomerGridColumns()
+        public static List<GridColumn> CustomerGridColumns()
         {
-            return new List<GridColumnModel>()
+            return new List<GridColumn>()
             {
-                new GridColumnModel("customer.customer_id", "CustomerID"),
-                new GridColumnModel("customer.first_name", "Forename"),
-                new GridColumnModel("customer.last_name", "Surname"),
-                new GridColumnModel("customer.email", "Email Address") {Format = "email" },
-                new GridColumnModel("address.address", "Address"),
-                new GridColumnModel("city.city", "City"),
-                new GridColumnModel("address.postal_code", "Post Code"),
-                new GridColumnModel("customer.active", "Active") {DataType = typeof(Boolean)},
-                new GridColumnModel("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
-                new GridColumnModel("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+                new GridColumn("customer.customer_id", "CustomerID"),
+                new GridColumn("customer.first_name", "Forename"),
+                new GridColumn("customer.last_name", "Surname"),
+                new GridColumn("customer.email", "Email Address") {Format = "email" },
+                new GridColumn("address.address", "Address"),
+                new GridColumn("city.city", "City"),
+                new GridColumn("address.postal_code", "Post Code"),
+                new GridColumn("customer.active", "Active") {DataType = typeof(Boolean)},
+                new GridColumn("customer.create_date", "Created") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+                new GridColumn("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
             };
         }
 
-        public static List<GridColumnModel> FilmGridColumns()
+        public static List<GridColumn> FilmGridColumns()
         {
-            return new List<GridColumnModel>()
+            return new List<GridColumn>()
             {
-                new GridColumnModel("film.film_id", "FilmID"),
-                new GridColumnModel("film.title", "Title"),
-                new GridColumnModel("film.description", "Description") {MaxTextLength = 40},
-                new GridColumnModel("film.release_year", "Year Of Release"),
-                new GridColumnModel("language.name", "Language"),
-                new GridColumnModel("film.rental_duration", "Duration"),
-                new GridColumnModel("film.rental_rate", "Rental Rate"){Format = "C" },
-                new GridColumnModel("film.length", "Length"),
-                new GridColumnModel("film.replacement_cost", "Replacement Cost"){Format = "C" },
-                new GridColumnModel("film.rating", "Rating") ,
-                new GridColumnModel("film.special_features", "Special Features"),
-                new GridColumnModel("film.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+                new GridColumn("film.film_id", "FilmID"),
+                new GridColumn("film.title", "Title"),
+                new GridColumn("film.description", "Description") {MaxTextLength = 40},
+                new GridColumn("film.release_year", "Year Of Release"),
+                new GridColumn("language.name", "Language"),
+                new GridColumn("film.rental_duration", "Duration"),
+                new GridColumn("film.rental_rate", "Rental Rate"){Format = "C" },
+                new GridColumn("film.length", "Length"),
+                new GridColumn("film.replacement_cost", "Replacement Cost"){Format = "C" },
+                new GridColumn("film.rating", "Rating") ,
+                new GridColumn("film.special_features", "Special Features"),
+                new GridColumn("film.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
             };
         }
 
-        public static List<GridColumnModel> ActorGridColumns()
+        public static List<GridColumn> ActorGridColumns()
         {
-            return new List<GridColumnModel>()
+            return new List<GridColumn>()
             {
-                new GridColumnModel("actor_id", "ActorID") ,
-                new GridColumnModel("first_name", "Forename"),
-                new GridColumnModel("last_name", "Surname"),
-                new GridColumnModel("last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+                new GridColumn("actor_id", "ActorID") ,
+                new GridColumn("first_name", "Forename"),
+                new GridColumn("last_name", "Surname"),
+                new GridColumn("last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
             };
         }
 

@@ -4,12 +4,12 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var invoiceColumns = new List<GridColumnModel>
+    var invoiceColumns = new List<GridColumn>
     {
-        new GridColumnModel("Product_Id", "Product Name") {Lookup = new LookupModel("Products", "Id", "Product_name")},
-        new GridColumnModel("Unit_Price", "Unit Price") {Format = "c", Aggregate = AggregateType.Sum},
-        new GridColumnModel("Quantity", "Qty") {Aggregate = AggregateType.Sum, Format = "#####"},
-        new GridColumnModel("(Unit_Price*Quantity)", "Price") {Format = "c", Aggregate = AggregateType.Sum},
+        new GridColumn("Product_Id", "Product Name") {Lookup = new Lookup("Products", "Id", "Product_name")},
+        new GridColumn("Unit_Price", "Unit Price") {Format = "c", Aggregate = AggregateType.Sum},
+        new GridColumn("Quantity", "Qty") {Aggregate = AggregateType.Sum, Format = "#####"},
+        new GridColumn("(Unit_Price*Quantity)", "Price") {Format = "c", Aggregate = AggregateType.Sum},
     };
 
     var invoiceGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "Order_Details");

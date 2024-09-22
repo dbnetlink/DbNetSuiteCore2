@@ -10,23 +10,23 @@ namespace DbNetSuiteCore.Models
         private SortOrder? _SortSequence = null;
         private GridModel? _LinkedGrid;
         public string Id { get; set; } = string.Empty;
-        public IEnumerable<GridColumnModel> Columns { get; set; } = new List<GridColumnModel>();
-        public IEnumerable<GridColumnModel> VisbleColumns => Columns.Where(c => c.DataOnly == false);
-        public IEnumerable<GridColumnModel> DataOnlyColumns => Columns.Where(c => c.DataOnly);
+        public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
+        public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
+        public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
         public int CurrentPage { get; set; } = 1;
         public string SearchInput { get; set; } = string.Empty;
         public string SortKey  
         { 
-            get { return string.IsNullOrEmpty(_SortKey) ? Columns.FirstOrDefault()?.Key ?? string.Empty : _SortKey; } 
+            get { return string.IsNullOrEmpty(_SortKey) ? InitalSortColumn?.Key ?? string.Empty : _SortKey; } 
             set { _SortKey = value; } 
         }
         public string CurrentSortKey { get; set; } = string.Empty;
         public bool CurrentSortAscending => SortSequence == SortOrder.Asc;
         public string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
         public string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
-        public GridColumnModel? SortColumn => ((Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn);
-        public GridColumnModel? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
-        public GridColumnModel? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
+        public GridColumn? SortColumn => ((Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn);
+        public GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
+        public GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
         public SortOrder? SortSequence 
         { 
             get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; } 
@@ -132,7 +132,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public DataColumn? GetDataColumn(GridColumnModel column)
+        public DataColumn? GetDataColumn(GridColumn column)
         {
             return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower());
         }

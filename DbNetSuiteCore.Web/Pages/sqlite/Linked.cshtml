@@ -8,36 +8,36 @@
 }
 
 @{
-    var customerColumns = new List<GridColumnModel>
+    var customerColumns = new List<GridColumn>
     {
-        new GridColumnModel("customerid", "CustomerID") {PrimaryKey = true },
-        new GridColumnModel("firstname", "Forename"),
-        new GridColumnModel("lastname", "Surname"),
-        new GridColumnModel("email", "Email Address") {Format = "email" },
-        new GridColumnModel("address", "Address"),
-        new GridColumnModel("city", "City") { InitialSortOrder = SortOrder.Desc},
-        new GridColumnModel("postalcode", "Post Code"),
+        new GridColumn("customerid", "CustomerID") {PrimaryKey = true },
+        new GridColumn("firstname", "Forename"),
+        new GridColumn("lastname", "Surname"),
+        new GridColumn("email", "Email Address") {Format = "email" },
+        new GridColumn("address", "Address"),
+        new GridColumn("city", "City") { InitialSortOrder = SortOrder.Desc},
+        new GridColumn("postalcode", "Post Code"),
     };
 
-    var invoiceColumns = new List<GridColumnModel>
+    var invoiceColumns = new List<GridColumn>
     {
-        new GridColumnModel("invoiceid", "Invoice ID") {PrimaryKey = true },
-        new GridColumnModel("customerid", "Customer ID") {ForeignKey = true },
-        new GridColumnModel("invoicedate", "Date"),
-        new GridColumnModel("billingaddress", "Address"),
-        new GridColumnModel("billingcity", "City"),
-        new GridColumnModel("billingstate", "State"),
-        new GridColumnModel("billingcountry", "Country"),
-        new GridColumnModel("billingpostalcode", "Post Code"),
+        new GridColumn("invoiceid", "Invoice ID") {PrimaryKey = true },
+        new GridColumn("customerid", "Customer ID") {ForeignKey = true },
+        new GridColumn("invoicedate", "Date"),
+        new GridColumn("billingaddress", "Address"),
+        new GridColumn("billingcity", "City"),
+        new GridColumn("billingstate", "State"),
+        new GridColumn("billingcountry", "Country"),
+        new GridColumn("billingpostalcode", "Post Code"),
     };
 
-    var invoiceItemColumns = new List<GridColumnModel>
+    var invoiceItemColumns = new List<GridColumn>
     {
-        new GridColumnModel("invoicelineid", "Invoice Line ID"),
-        new GridColumnModel("invoiceid", "Invoice ID") {ForeignKey = true },
-        new GridColumnModel("trackid", "Track ID") {Lookup = new LookupModel("tracks","trackid","name")},
-        new GridColumnModel("unitprice", "Price"),
-        new GridColumnModel("quantity", "Qty"),
+        new GridColumn("invoicelineid", "Invoice Line ID"),
+        new GridColumn("invoiceid", "Invoice ID") {ForeignKey = true },
+        new GridColumn("trackid", "Track ID") {Lookup = new Lookup("tracks","trackid","name")},
+        new GridColumn("unitprice", "Price"),
+        new GridColumn("quantity", "Qty"),
     };
 
     var invoiceLineGridModel = new GridModel("Invoice_items");

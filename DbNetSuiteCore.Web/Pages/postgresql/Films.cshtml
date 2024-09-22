@@ -5,28 +5,28 @@
 
 @{
 
-    var filmColumns = new List<GridColumnModel>
+    var filmColumns = new List<GridColumn>
     {
-        new GridColumnModel("film_id") {PrimaryKey = true},
-        new GridColumnModel("title"),
-        new GridColumnModel("description"),
-        new GridColumnModel("release_year"),
-        new GridColumnModel("language_id"){ Lookup = new LookupModel("language", "language_id", "name")},
-        new GridColumnModel("rental_duration"),
-        new GridColumnModel("rental_rate"),
-        new GridColumnModel("length"),
-        new GridColumnModel("replacement_cost"),
-        new GridColumnModel("rating"),
-        new GridColumnModel("last_update"),
-        new GridColumnModel("special_features"),
+        new GridColumn("film_id") {PrimaryKey = true},
+        new GridColumn("title"),
+        new GridColumn("description"),
+        new GridColumn("release_year"),
+        new GridColumn("language_id"){ Lookup = new Lookup("language", "language_id", "name")},
+        new GridColumn("rental_duration"),
+        new GridColumn("rental_rate"),
+        new GridColumn("length"),
+        new GridColumn("replacement_cost"),
+        new GridColumn("rating"),
+        new GridColumn("last_update"),
+        new GridColumn("special_features"),
       //  new GridColumnModel("fulltext")
     };
 
-    var filmCategoryColumns = new List<GridColumnModel>
+    var filmCategoryColumns = new List<GridColumn>
     {
-        new GridColumnModel("film_id") {ForeignKey = true},
-        new GridColumnModel("category_id"){ Lookup = new LookupModel("category", "category_id", "name")},
-        new GridColumnModel("last_update")
+        new GridColumn("film_id") {ForeignKey = true},
+        new GridColumn("category_id"){ Lookup = new Lookup("category", "category_id", "name")},
+        new GridColumn("last_update")
     };
 
     var filmCategoryGrid = new GridModel("film_category") { PageSize = 5 };

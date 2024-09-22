@@ -54,7 +54,7 @@ namespace DbNetSuiteCore.Models
         public string Format { get; set; } = string.Empty;
         public bool Initialised { get; set; } = false;
         public bool Valid { get; set; } = true;
-        public LookupModel? Lookup { get; set; }
+        public Lookup? Lookup { get; set; }
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()

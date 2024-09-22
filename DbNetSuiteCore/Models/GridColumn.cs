@@ -3,7 +3,7 @@ using System.Data;
 
 namespace DbNetSuiteCore.Models
 {
-    public class GridColumnModel : ColumnModel
+    public class GridColumn : ColumnModel
     {
         public bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
         public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml);
@@ -18,22 +18,22 @@ namespace DbNetSuiteCore.Models
         public string Style { get; set; } = string.Empty;
         public bool DataOnly { get; set; } = false;
 
-        public GridColumnModel()
+        public GridColumn()
         {
         }
-        public GridColumnModel(string expression, string label) : base(expression, label)
+        public GridColumn(string expression, string label) : base(expression, label)
         {
         }
 
-        public GridColumnModel(DataColumn dataColumn) : base(dataColumn)
+        public GridColumn(DataColumn dataColumn) : base(dataColumn)
         {
         }
         
-        public GridColumnModel(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow)
+        public GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow)
         {
         }
 
-        public GridColumnModel(string name) : base(name, name)
+        public GridColumn(string name) : base(name, name)
         {
         }
     }

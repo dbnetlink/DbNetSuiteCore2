@@ -4,15 +4,15 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var invoiceColumns = new List<GridColumnModel>
+    var invoiceColumns = new List<GridColumn>
     {
-        new GridColumnModel("ProductName", "Product")
+        new GridColumn("ProductName", "Product")
     };
 
     for (var i =1; i<=12; i++)
     {
         var monthName = new DateTime(2024, i, 1).ToString("MMMM");
-        var column = new GridColumnModel($"(case when Month(OrderDate) = {i} then Quantity else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, DataType = typeof(Int32) };
+        var column = new GridColumn($"(case when Month(OrderDate) = {i} then Quantity else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, DataType = typeof(Int32) };
         invoiceColumns.Add(column);
     }
 

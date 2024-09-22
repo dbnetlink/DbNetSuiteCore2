@@ -135,10 +135,10 @@ namespace DbNetSuiteCore.Services
                 switch (gridModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumnModel(r, gridModel.DataSourceType)).Cast<GridColumnModel>().Where(c => c.Valid).ToList();
+                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumn(r, gridModel.DataSourceType)).Cast<GridColumn>().Where(c => c.Valid).ToList();
                         break;
                     default:
-                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumnModel(c)).Cast<GridColumnModel>().ToList();
+                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c)).Cast<GridColumn>().ToList();
                         break;
                 }
 
@@ -160,7 +160,7 @@ namespace DbNetSuiteCore.Services
 
                         if (gridModel.DataSourceType == DataSourceType.FileSystem)
                         {
-                            foreach (GridColumnModel gridColumn in gridModel.Columns)
+                            foreach (GridColumn gridColumn in gridModel.Columns)
                             {
                                 gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
                             }
@@ -187,13 +187,13 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.Columns.Any() == false)
             {
-                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumnModel(dc)).Cast<GridColumnModel>().ToList();
+                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumn(dc)).Cast<GridColumn>().ToList();
                 gridModel.QualifyColumnExpressions();
             }
             else
             {
                 var gridColumns = gridModel.Columns.DeepCopy();
-                gridModel.Columns = new List<GridColumnModel>();
+                gridModel.Columns = new List<GridColumn>();
                 var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
 
                 for (var i = 0; i < dataColumns.Count; i++)
@@ -203,7 +203,7 @@ namespace DbNetSuiteCore.Services
 
                     if (gridColumn == null)
                     {
-                        gridColumn = new GridColumnModel(dataColumn);
+                        gridColumn = new GridColumn(dataColumn);
                     }
                     else
                     {
@@ -220,10 +220,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task GetRecords(GridModel gridModel)
         {
-            if (gridModel.IsStoredProcedure == false)
-            {
-                gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
-            }
+            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
             if (gridModel.TriggerName == TriggerNames.LinkedGrid)
             {
@@ -305,7 +302,7 @@ namespace DbNetSuiteCore.Services
             {
                 DataRow dataRow = dataTable.NewRow();
 
-                foreach (GridColumnModel columnModel in gridModel.Columns)
+                foreach (GridColumn columnModel in gridModel.Columns)
                 {
                     DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
 
@@ -329,7 +326,7 @@ namespace DbNetSuiteCore.Services
             foreach (DataRow row in gridModel.Data.Rows)
             {
                 IEnumerable<string> fields = new List<string>();
-                foreach (GridColumnModel columnModel in gridModel.Columns)
+                foreach (GridColumn columnModel in gridModel.Columns)
                 {
                     DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
 

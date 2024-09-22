@@ -24,6 +24,8 @@
             RenderPageNumber(Model.GridModel.CurrentPage, Model.TotalPages);
             <span class="flex">of</span>
             RenderTotalPages(Model.TotalPages);
+            <span class="flex">Rows</span>
+            RenderRowCount(Model.RowCount);
             RenderNavButton(TriggerNames.Next, IconHelper.Next(), "Next page");
             RenderNavButton(TriggerNames.Last, IconHelper.Last(), "Last page");
         }
@@ -57,6 +59,11 @@
     void RenderTotalPages(int totalPages)
     {
         <input class="text-center" style="width:@(totalPages.ToString().Length + 1)em" readonly type="text" data-type="total-pages" value="@totalPages" />
+    }
+
+    void RenderRowCount(int rowCount)
+    {
+        <input class="text-center" style="width:@(rowCount.ToString().Length + 1)em" readonly type="text" data-type="row-count" value="@rowCount" />
     }
 
     void RenderExportOptions()

@@ -153,7 +153,7 @@ namespace DbNetSuiteCore.Repositories
             return String.Join(" and ", filterParts);
         }
 
-        private string Quoted(GridColumnModel column)
+        private string Quoted(GridColumn column)
         {
             return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
         }
