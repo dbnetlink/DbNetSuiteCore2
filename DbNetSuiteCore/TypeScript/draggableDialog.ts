@@ -32,8 +32,8 @@
     private startDragging(e: MouseEvent): void {
         if ((e.target as HTMLElement).closest(`.${this.dragHandle.className}`) === this.dragHandle) {
             this.isDragging = true;
-            this.initialX = e.clientX - this.xOffset;
-            this.initialY = e.clientY - this.yOffset;
+            this.initialX = e.clientX - (this.xOffset ? this.xOffset : (this.dialog.clientWidth / 2) * -1);
+            this.initialY = e.clientY - (this.yOffset ? this.yOffset : (this.dialog.clientHeight / 2) * -1);
             this.dragHandle.style.cursor = 'grabbing';
             document.body.style.userSelect = 'none'; // Prevent text selection during drag
         }

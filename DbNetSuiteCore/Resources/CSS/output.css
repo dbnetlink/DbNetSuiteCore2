@@ -809,6 +809,7 @@ form.dbnetsuite {
 }
 
 .dbnetsuite .dialog {
+  position:fixed;
   height: 400px;
   width: 600px;
   top: 50%;
