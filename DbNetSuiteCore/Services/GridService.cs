@@ -524,7 +524,7 @@ namespace DbNetSuiteCore.Services
                     resources = ["output", "gridcontrol"];
                     break;
                 case "js":
-                    resources = ["htmx", "gridcontrol"];
+                    resources = ["htmx", "gridcontrol", "draggableDialog"];
                     break;
             }
 

@@ -39,6 +39,7 @@
     <None Remove="Resources\CSS\tailwind.css" />
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
+    <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridcontrol.js" />
     <None Remove="Resources\JS\htmx.js" />
     <None Remove="Resources\JS\htmx.min.js" />
@@ -46,6 +47,7 @@
     <None Remove="Resources\JS\surreal.js" />
     <None Remove="Resources\JS\tailwindcss.js" />
     <None Remove="Resources\SVG\spinner.svg" />
+    <None Remove="TypeScript\draggableDialog.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
   </ItemGroup>
 
@@ -54,6 +56,7 @@
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
+    <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
@@ -102,6 +105,10 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Build">

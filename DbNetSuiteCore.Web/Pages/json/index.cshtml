@@ -37,7 +37,7 @@
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/employees.json") { 
         Columns = employeeColumns,
-        Caption = "Employees"
+        Caption = "Employees",
+        ViewDialog = true
     }))
 }
-

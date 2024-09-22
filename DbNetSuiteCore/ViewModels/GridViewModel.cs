@@ -18,6 +18,7 @@ namespace DbNetSuiteCore.ViewModels
         public int RowCount => GridModel.Data.Rows.Count;
         public string GridId => _gridModel.Id;
         public string TBodyId => $"tbody{_gridModel.Id}";
+        public string ViewDialogId => $"viewDialog{_gridModel.Id}";
         public string LinkedGridId => _gridModel.LinkedGrid?.Id ?? string.Empty;
         public string SearchInput => _gridModel.SearchInput;
         public string CurrentSortKey => _gridModel.CurrentSortKey;

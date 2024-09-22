@@ -70,6 +70,8 @@ namespace DbNetSuiteCore.Models
         public MultiRowSelectLocation MultiRowSelect { get; set; } = MultiRowSelectLocation.None;
         public bool FrozenHeader { get; set; } = false;
         public bool IsStoredProcedure { get; set; } = false;
+        public bool ViewDialog { get; set; } = false;
+        public bool SearchDialog { get; set; } = false;
         public GridModel()
         {
             Id = GeneratedId();

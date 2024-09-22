@@ -58,4 +58,12 @@
     .dbnetsuite td, .dbnetsuite th {
         @apply border-y border-slate-300 py-0.5 px-0.5;
     }
+
+    .dbnetsuite .dialog {
+        height: 400px;
+        width: 600px;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+    }
 }

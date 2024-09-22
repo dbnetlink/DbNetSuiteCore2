@@ -16,6 +16,10 @@
         @IconHelper.Info()
         <span>No records found</span>
     </div>
+    @if (Model.GridModel.ViewDialog)
+    {
+        <button button-type="view" type="button" title="View">@IconHelper.View()</button>
+    }
     <div id="navigation" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
         @{
             RenderNavButton(TriggerNames.First, IconHelper.First(), "First page");
@@ -30,8 +34,8 @@
             RenderNavButton(TriggerNames.Last, IconHelper.Last(), "Last page");
         }
 
-        <button class="" button-type="copy" type="button" title="Copy">@IconHelper.Copy()</button>
-        <button class="" button-type="export" type="button" title="Export">@IconHelper.Download()</button>
+        <button button-type="copy" type="button" title="Copy">@IconHelper.Copy()</button>
+        <button button-type="export" type="button" title="Export">@IconHelper.Download()</button>
         @{
             RenderExportOptions();
         }
@@ -40,6 +44,11 @@
 
 @functions {
     void RenderNavButton(string name, HtmlString icon, string title)
+    {
+        <button class="" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
+    }
+
+    void RenderButton(string name, HtmlString icon, string title)
     {
         <button class="" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
     }

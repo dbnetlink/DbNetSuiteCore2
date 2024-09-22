@@ -1,5 +1,6 @@
 var DbNetSuiteCore: any = {};
 DbNetSuiteCore.gridControlArray = {}
+
 DbNetSuiteCore.createGridControl = function (gridId, clientEvents) {
     document.addEventListener('htmx:afterRequest', function (evt) {
         if (!DbNetSuiteCore.gridControlArray[gridId]) {
@@ -20,6 +21,8 @@ class GridControl {
     eventHandlers = {};
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
+    viewDialog: HTMLDialogElement;
+    draggedDialog: HTMLDialogElement;
 
     constructor(gridId) {
         this.gridId = gridId;
@@ -41,12 +44,7 @@ class GridControl {
         this.configureSortIcon()
 
         if (gridId == this.gridId) {
-            if (this.toolbarExists()) {
-                this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
-                this.getButton("export").addEventListener("click", ev => this.download())
-            }
-
-            this.invokeEventHandler('Initialised');
+            this.initialise()
         }
 
         this.gridControlElements(".nested-buttons").forEach((div) => {
@@ -56,7 +54,7 @@ class GridControl {
             buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
 
-        this.gridControlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellRendered(cell)});
+        this.gridControlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellRendered(cell) });
 
         this.gridControlElements("tbody a").forEach((e) => {
             e.classList.remove("selected");
@@ -64,7 +62,7 @@ class GridControl {
         });
 
         if (this.gridControlElement(this.multiRowSelectAllSelector())) {
-            this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => {this.updateMultiRowSelect(ev) });
+            this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
             this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
                 e.addEventListener("change", (ev) => {
                     this.highlightRow(ev.target);
@@ -81,7 +79,7 @@ class GridControl {
             row.click();
         }
 
-        this.gridControlElements("tr.column-filter-refresh select").forEach((select:HTMLSelectElement) => {
+        this.gridControlElements("tr.column-filter-refresh select").forEach((select: HTMLSelectElement) => {
             let filter: HTMLSelectElement = this.gridControlElement(`thead select[data-key="${select.dataset.key}"]`)
             filter.innerHTML = select.innerHTML;
         });
@@ -94,6 +92,27 @@ class GridControl {
         }
 
         this.invokeEventHandler('PageLoaded');
+    }
+
+    initialise() {
+        if (this.toolbarExists()) {
+            this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
+            this.getButton("export").addEventListener("click", ev => this.download())
+        }
+
+        this.viewDialog = this.gridControlElement(".view-dialog")
+
+      //  this.gridContainer.addEventListener("dragover", ev => this.drag_over(ev), false)
+       // this.gridContainer.addEventListener("drop", ev => this.drop(ev), false)
+
+        if (this.viewDialog) {
+            let closeButton = this.viewDialog.querySelector(this.buttonSelector("close"));
+            closeButton.addEventListener("click", ev => this.viewDialog.close())
+            this.getButton("view").addEventListener("click", ev => this.openViewDialog())
+            new DraggableDialog(this.viewDialog.id, "dialog-nav");
+        }
+
+        this.invokeEventHandler('Initialised');
     }
 
     invokeCellRendered(cell: HTMLTableCellElement) {
@@ -135,7 +154,7 @@ class GridControl {
                 this.removeClass('#navigation', "hidden");
             }
 
-            this.setPageNumber(currentPage,totalPages);
+            this.setPageNumber(currentPage, totalPages);
             (this.gridControlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
             (this.gridControlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
 
@@ -154,7 +173,7 @@ class GridControl {
         this.gridControlElement(selector).classList.add(className);
     }
 
-    setPageNumber(pageNumber: number, totalPages:number) {
+    setPageNumber(pageNumber: number, totalPages: number) {
         var select = this.gridControlElement('[name="page"]') as HTMLSelectElement;
 
         if (select.childElementCount != totalPages) {
@@ -264,7 +283,7 @@ class GridControl {
             this.clearHighlighting(tr);
             return;
         }
-        
+
         tr.classList.add(this.bgColourClass, this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
         tr.querySelectorAll("td[data-columnname] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
@@ -328,6 +347,10 @@ class GridControl {
         window.getSelection().removeAllRanges();
     }
 
+    openViewDialog() {
+        this.viewDialog.show()
+    }
+
     download() {
         this.showIndicator()
         const data = new URLSearchParams();
@@ -352,7 +375,7 @@ class GridControl {
                 else {
                     throw new Error(response.headers.get("error"))
                 }
-             })
+            })
             .then((blob) => {
                 if (blob) {
                     if (exportOption == "html") {
@@ -448,5 +471,24 @@ class GridControl {
         })
 
         return selectedValues;
+    }
+
+    drag_start(event) {
+        this.draggedDialog = event.target.closest("dialog");
+        var style = window.getComputedStyle(this.draggedDialog, null);
+        event.dataTransfer.setData("text/plain", (parseInt(style.getPropertyValue("left"), 10)) + ',' + (parseInt(style.getPropertyValue("top"), 10)));
+    }
+
+    drag_over(event) {
+        event.preventDefault();
+        return false;
+    }
+
+    drop(event) {
+        var offset = event.dataTransfer.getData("text/plain").split(',');
+        this.draggedDialog.style.left = (parseInt(offset[0], 10)) + 'px';
+        this.draggedDialog.style.top = (parseInt(offset[1], 10)) + 'px';
+        event.preventDefault();
+        return false;
     }
 }
