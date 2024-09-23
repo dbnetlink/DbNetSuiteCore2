@@ -109,11 +109,14 @@
                             <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
                         </div>
                     </div>
-                    <div style="flex:2">Content</div>
-                    <div class="flex flex-row justify-items-end">
+                </nav>
+                <div class="view-dialog-content overflow-auto" style="height:600px"></div>
+                <div class="flex flex-row justify-items-end">
+                    <div>
+                        <input type="hidden" name="@TriggerNames.ViewDialogContent" hx-post="@Model.SubmitUrl" hx-target="#@(Model.ViewDialogId) .view-dialog-content" hx-indicator="previous .htmx-indicator" hx-swap="innerHTML" hx-trigger="changed" />
                         <button>Close</button>
                     </div>
-                </nav>
+                </div>
             </div>
         </dialog>
     }

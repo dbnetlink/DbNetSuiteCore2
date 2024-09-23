@@ -7,5 +7,6 @@ namespace DbNetSuiteCore.Repositories
     {
         public Task GetRecords(GridModel gridModel);
         public Task<DataTable> GetColumns(GridModel gridModel);
+        public Task GetRecord(GridModel gridModel);
     }
 }

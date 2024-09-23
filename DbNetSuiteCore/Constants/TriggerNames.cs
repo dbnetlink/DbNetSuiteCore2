@@ -14,5 +14,6 @@
         public const string ColumnFilter = "columnFilter";
         public const string NestedGrid = "nestedGrid";
         public const string LinkedGrid = "primaryKey";
+        public const string ViewDialogContent = "viewDialogContent";
     }
 }

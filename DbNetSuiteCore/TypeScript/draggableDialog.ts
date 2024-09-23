@@ -2,8 +2,6 @@
     private dialog: HTMLDialogElement;
     private dragHandle: HTMLElement;
     private isDragging: boolean = false;
-    private currentX: number = 0;
-    private currentY: number = 0;
     private initialX: number = 0;
     private initialY: number = 0;
     private xOffset: number = 0;
@@ -34,7 +32,7 @@
             this.isDragging = true;
             this.initialX = e.clientX - (this.xOffset ? this.xOffset : (this.dialog.clientWidth / 2) * -1);
             this.initialY = e.clientY - (this.yOffset ? this.yOffset : (this.dialog.clientHeight / 2) * -1);
-            this.dragHandle.style.cursor = 'grabbing';
+            this.dragHandle.style.cursor = 'move';
             document.body.style.userSelect = 'none'; // Prevent text selection during drag
         }
     }
@@ -42,13 +40,9 @@
     private drag(e: MouseEvent): void {
         if (this.isDragging) {
             e.preventDefault();
-            this.currentX = e.clientX - this.initialX;
-            this.currentY = e.clientY - this.initialY;
-
-            this.xOffset = this.currentX;
-            this.yOffset = this.currentY;
-
-            this.setTranslate(this.currentX, this.currentY);
+            this.xOffset = e.clientX - this.initialX;
+            this.yOffset = e.clientY - this.initialY;
+            this.setTranslate(this.xOffset, this.yOffset);
         }
     }
 
@@ -57,10 +51,8 @@
         this.dragHandle.style.cursor = '';
         document.body.style.userSelect = ''; // Re-enable text selection
 
-        // Remove mousemove and mouseup listeners
         document.removeEventListener('mousemove', this.drag);
         document.removeEventListener('mouseup', this.stopDragging);
-
     }
 
     private setTranslate(xPos: number, yPos: number): void {

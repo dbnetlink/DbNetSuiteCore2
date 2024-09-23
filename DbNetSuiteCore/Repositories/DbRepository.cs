@@ -73,6 +73,19 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
+        public async Task GetRecord(GridModel gridModel)
+        {
+            QueryCommandConfig query = gridModel.BuildRecordQuery(this);
+            gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
+
+            foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
+            {
+                await GetLookupOptions(gridModel, gridColumn);
+            }
+
+            gridModel.ConvertEnumLookups();
+        }
+
         private async Task GetLookupOptions(GridModel gridModel, GridColumn gridColumn)
         {
             DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
@@ -131,7 +144,7 @@ namespace DbNetSuiteCore.Repositories
             var connection = GetConnection(database);
             connection.Open();
             DataTable dataTable = new DataTable();
-            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, isStoredProcedure ? CommandType.StoredProcedure : CommandType.Text ));
+            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, isStoredProcedure ? CommandType.StoredProcedure : CommandType.Text));
             connection.Close();
             return dataTable;
         }

@@ -18,7 +18,6 @@ namespace DbNetSuiteCore.Services
     public class GridService : IGridService
     {
         private readonly IMSSQLRepository _msSqlRepository;
-        private readonly ITimestreamRepository _timestreamRepository;
         private readonly ISQLiteRepository _sqliteRepository;
         private readonly RazorViewToStringRenderer _razorRendererService;
         private readonly IJSONRepository _jsonRepository;
@@ -28,11 +27,10 @@ namespace DbNetSuiteCore.Services
         private HttpContext? _context = null;
         private string triggerName => _context.Request.Headers.Keys.Contains(HeaderNames.HxTriggerName) ? _context.Request.Headers[HeaderNames.HxTriggerName] : string.Empty;
 
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ITimestreamRepository timestreamRepository, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
-            _timestreamRepository = timestreamRepository;
             _sqliteRepository = sqliteRepository;
             _jsonRepository = jsonRepository;
             _fileSystemRepository = fileSystemRepository;
@@ -69,20 +67,43 @@ namespace DbNetSuiteCore.Services
 
             gridModel.TriggerName = triggerName;
 
+            if (triggerName == TriggerNames.InitialLoad)
+            {
+                ValidateGridModel(gridModel);
+            }
+
             switch (triggerName)
             {
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.NestedGrid:
                     return await View("Grid/Nested", ConfigureNestedGrid(gridModel));
+                case TriggerNames.ViewDialogContent:
+                    return await View("Grid/ViewDialogContent", await ViewDialogContent(gridModel));
                 default:
                     string viewName = gridModel.Uninitialised ? "Grid/Markup" : "Grid/Rows";
                     return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
+
+        private void ValidateGridModel(GridModel gridModel)
+        {
+            var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
+            if (gridModel.ViewDialog && primaryKeyAssigned == false)
+            {
+                throw new Exception("A column designated as a primary key is required for the view dialog");
+            }
+        }
         private async Task<Byte[]> View<TModel>(string viewName, TModel model)
         {
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
+        }
+
+        private async Task<GridViewDialogViewModel> ViewDialogContent(GridModel gridModel)
+        {
+            gridModel.ParentKey = RequestHelper.FormValue(TriggerNames.ViewDialogContent, "", _context);
+            await GetRecord(gridModel);
+            return new GridViewDialogViewModel(gridModel);
         }
 
         private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
@@ -218,6 +239,35 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        private async Task GetRecord(GridModel gridModel)
+        {
+            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
+
+            if (gridModel.TriggerName == TriggerNames.LinkedGrid)
+            {
+                gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
+            }
+
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.SQlite:
+                    await _sqliteRepository.GetRecord(gridModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetRecord(gridModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetRecord(gridModel);
+                    break;
+                case DataSourceType.JSON:
+                    await _jsonRepository.GetRecord(gridModel, _context);
+                    break;
+                default:
+                    await _msSqlRepository.GetRecord(gridModel);
+                    break;
+            }
+        }
+
         private async Task GetRecords(GridModel gridModel)
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
@@ -229,9 +279,6 @@ namespace DbNetSuiteCore.Services
 
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.Timestream:
-                    await _timestreamRepository.GetRecords(gridModel);
-                    break;
                 case DataSourceType.SQlite:
                     await _sqliteRepository.GetRecords(gridModel);
                     break;
@@ -257,8 +304,6 @@ namespace DbNetSuiteCore.Services
         {
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.Timestream:
-                    return await _timestreamRepository.GetColumns(gridModel);
                 case DataSourceType.SQlite:
                     return await _sqliteRepository.GetColumns(gridModel);
                 case DataSourceType.MySql:
@@ -521,10 +566,10 @@ namespace DbNetSuiteCore.Services
             switch (type)
             {
                 case "css":
-                    resources = ["output", "gridcontrol"];
+                    resources = ["output", "gridControl"];
                     break;
                 case "js":
-                    resources = ["htmx", "gridcontrol", "draggableDialog"];
+                    resources = ["htmx", "gridControl", "draggableDialog"];
                     break;
             }
 

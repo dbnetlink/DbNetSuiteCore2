@@ -1,8 +1,6 @@
 class DraggableDialog {
     constructor(dialogId, dragHandleClass = 'dialog-header') {
         this.isDragging = false;
-        this.currentX = 0;
-        this.currentY = 0;
         this.initialX = 0;
         this.initialY = 0;
         this.xOffset = 0;
@@ -27,25 +25,22 @@ class DraggableDialog {
             this.isDragging = true;
             this.initialX = e.clientX - (this.xOffset ? this.xOffset : (this.dialog.clientWidth / 2) * -1);
             this.initialY = e.clientY - (this.yOffset ? this.yOffset : (this.dialog.clientHeight / 2) * -1);
-            this.dragHandle.style.cursor = 'grabbing';
+            this.dragHandle.style.cursor = 'move';
             document.body.style.userSelect = 'none'; // Prevent text selection during drag
         }
     }
     drag(e) {
         if (this.isDragging) {
             e.preventDefault();
-            this.currentX = e.clientX - this.initialX;
-            this.currentY = e.clientY - this.initialY;
-            this.xOffset = this.currentX;
-            this.yOffset = this.currentY;
-            this.setTranslate(this.currentX, this.currentY);
+            this.xOffset = e.clientX - this.initialX;
+            this.yOffset = e.clientY - this.initialY;
+            this.setTranslate(this.xOffset, this.yOffset);
         }
     }
     stopDragging() {
         this.isDragging = false;
         this.dragHandle.style.cursor = '';
         document.body.style.userSelect = ''; // Re-enable text selection
-        // Remove mousemove and mouseup listeners
         document.removeEventListener('mousemove', this.drag);
         document.removeEventListener('mouseup', this.stopDragging);
     }

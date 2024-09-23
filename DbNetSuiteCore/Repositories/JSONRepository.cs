@@ -23,6 +23,13 @@ namespace DbNetSuiteCore.Repositories
             gridModel.ConvertEnumLookups();
         }
 
+        public async Task GetRecord(GridModel gridModel, HttpContext httpContext)
+        {
+            var dataTable = await BuildDataTable(gridModel, httpContext);
+            dataTable.FilterWithPrimaryKey(gridModel);
+            gridModel.ConvertEnumLookups();
+        }
+
         public async Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext)
         {
             return await BuildDataTable(gridModel, httpContext);

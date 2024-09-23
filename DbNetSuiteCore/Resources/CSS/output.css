@@ -810,8 +810,6 @@ form.dbnetsuite {
 
 .dbnetsuite .dialog {
   position:fixed;
-  height: 400px;
-  width: 600px;
   top: 50%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
@@ -1041,6 +1039,10 @@ form.dbnetsuite {
 
 .gap-2 {
   gap: 0.5rem;
+}
+
+.overflow-auto {
+  overflow: auto;
 }
 
 .rounded {

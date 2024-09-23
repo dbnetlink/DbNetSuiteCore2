@@ -40,7 +40,7 @@
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\draggableDialog.js" />
-    <None Remove="Resources\JS\gridcontrol.js" />
+    <None Remove="Resources\JS\gridControl.js" />
     <None Remove="Resources\JS\htmx.js" />
     <None Remove="Resources\JS\htmx.min.js" />
     <None Remove="Resources\JS\jquery.min.js" />
@@ -52,15 +52,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\CSS\gridcontrol.css" />
+    <EmbeddedResource Include="Resources\CSS\gridControl.css" />
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
-    <EmbeddedResource Include="Resources\JS\gridcontrol.js" />
+    <EmbeddedResource Include="Resources\JS\gridControl.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
-    <EmbeddedResource Include="TypeScript\gridcontrol.ts" />
+    <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\Grid\Toolbar.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -90,7 +90,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\JS\jquery.min.js" />
     <EmbeddedResource Include="Resources\JS\surreal.js" />
     <EmbeddedResource Include="Resources\JS\tailwindcss.js" />
   </ItemGroup>

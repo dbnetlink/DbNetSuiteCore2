@@ -81,7 +81,6 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();
             services.AddScoped<IJSONRepository, JSONRepository>();
-            services.AddScoped<ITimestreamRepository, TimestreamRepository>();
             services.AddScoped<IFileSystemRepository, FileSystemRepository>();
             services.AddScoped<RazorViewToStringRenderer>();
             services.AddScoped<IMySqlRepository, MySqlRepository>();

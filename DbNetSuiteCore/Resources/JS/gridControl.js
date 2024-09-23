@@ -9,7 +9,7 @@ DbNetSuiteCore.createGridControl = function (gridId, clientEvents) {
             }
             DbNetSuiteCore.gridControlArray[gridId] = gridControl;
         }
-        DbNetSuiteCore.gridControlArray[gridId].init(evt);
+        DbNetSuiteCore.gridControlArray[gridId].afterRequest(evt);
     });
 };
 class GridControl {
@@ -28,9 +28,13 @@ class GridControl {
         this.gridControl = document.querySelector(this.gridSelector());
         this.gridContainer = this.gridControl.parentElement;
     }
-    init(evt) {
+    afterRequest(evt) {
         let gridId = evt.target.closest("form").id;
         if (gridId.startsWith(this.gridId) == false || evt.detail.elt.name == "nestedGrid") {
+            return;
+        }
+        if (this.triggerName(evt) == "viewdialogcontent") {
+            this.configureViewDialog();
             return;
         }
         if (!this.gridControlElement("tbody")) {
@@ -38,7 +42,7 @@ class GridControl {
         }
         this.configureNavigation();
         this.configureSortIcon();
-        if (gridId == this.gridId) {
+        if (this.triggerName(evt) == "initialload") {
             this.initialise();
         }
         this.gridControlElements(".nested-buttons").forEach((div) => {
@@ -226,6 +230,8 @@ class GridControl {
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
         tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
         this.updateLinkedGrids(tr.dataset.id);
+        this.selectedRow = tr;
+        this.updateViewDialog();
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
     updateLinkedGrids(primaryKey) {
@@ -281,6 +287,17 @@ class GridControl {
     }
     openViewDialog() {
         this.viewDialog.show();
+        this.updateViewDialog();
+    }
+    updateViewDialog() {
+        if (this.viewDialog && this.viewDialog.open) {
+            let input = this.viewDialog.querySelector("input[hx-post]");
+            input.value = this.selectedRow.dataset.id;
+            htmx.trigger(input, "changed");
+        }
+    }
+    configureViewDialog() {
+        this.invokeEventHandler('ViewDialogUpdated');
     }
     download() {
         this.showIndicator();
@@ -373,6 +390,9 @@ class GridControl {
     getButton(name) {
         return this.gridControlElement(this.buttonSelector(name));
     }
+    triggerName(evt) {
+        return evt.detail.requestConfig.headers['HX-Trigger-Name'].toLowerCase();
+    }
     selectedValues() {
         let selectedValues = [];
         this.gridControlElements(this.multiRowSelectSelector()).forEach((checkbox) => {
@@ -384,21 +404,5 @@ class GridControl {
             }
         });
         return selectedValues;
-    }
-    drag_start(event) {
-        this.draggedDialog = event.target.closest("dialog");
-        var style = window.getComputedStyle(this.draggedDialog, null);
-        event.dataTransfer.setData("text/plain", (parseInt(style.getPropertyValue("left"), 10)) + ',' + (parseInt(style.getPropertyValue("top"), 10)));
-    }
-    drag_over(event) {
-        event.preventDefault();
-        return false;
-    }
-    drop(event) {
-        var offset = event.dataTransfer.getData("text/plain").split(',');
-        this.draggedDialog.style.left = (parseInt(offset[0], 10)) + 'px';
-        this.draggedDialog.style.top = (parseInt(offset[1], 10)) + 'px';
-        event.preventDefault();
-        return false;
     }
 }

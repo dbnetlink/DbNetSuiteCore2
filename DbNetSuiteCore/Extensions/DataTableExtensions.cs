@@ -41,7 +41,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static void FilterAndSort(this DataTable dataTable, GridModel gridModel)
         {
-            var rows = dataTable.Select(AddFilterPart(gridModel), AddOrderPart(gridModel));
+            var rows = dataTable.Select(AddFilter(gridModel), AddOrder(gridModel));
 
             if (rows.Any())
             {
@@ -53,7 +53,21 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        private static string AddFilterPart(GridModel gridModel)
+        public static void FilterWithPrimaryKey(this DataTable dataTable, GridModel gridModel)
+        {
+            var rows = dataTable.Select(AddPrimaryKeyFilter(gridModel));
+
+            if (rows.Any())
+            {
+                gridModel.Data = rows.CopyToDataTable();
+            }
+            else
+            {
+                gridModel.Data = new DataTable();
+            }
+        }
+
+        private static string AddFilter(GridModel gridModel)
         {
             string filter = string.Empty;
             List<string> filterParts = new List<string>();
@@ -122,7 +136,13 @@ namespace DbNetSuiteCore.Extensions
             return String.Join(" and ", filterParts);
         }
 
-        private static string AddOrderPart(GridModel gridModel)
+        private static string AddPrimaryKeyFilter(GridModel gridModel)
+        {
+            var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
+            return $"({primaryKeyColumn.Name} = {Quoted(primaryKeyColumn)}{gridModel.ParentKey}{Quoted(primaryKeyColumn)})";
+        }
+
+        private static string AddOrder(GridModel gridModel)
         {
             if (string.IsNullOrEmpty(gridModel.SortColumnName))
             {

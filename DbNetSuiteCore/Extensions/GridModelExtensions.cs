@@ -24,6 +24,15 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
+        public static QueryCommandConfig BuildRecordQuery(this GridModel gridModel, DbRepository dbRepository)
+        {
+            string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
+            QueryCommandConfig query = new QueryCommandConfig(sql);
+
+            gridModel.AddPrimaryKeyFilterPart(query, dbRepository);
+            return query;
+        }
+
         public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel, DbRepository dbRepository)
         {
             QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
@@ -134,6 +143,14 @@ namespace DbNetSuiteCore.Extensions
             {
                 query.Sql += $" where {string.Join(" and ", filterParts)}";
             }
+        }
+
+
+        private static void AddPrimaryKeyFilterPart(this GridModel gridModel, CommandConfig query, DbRepository dbRepository)
+        {
+            var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
+            query.Sql += $" where {primaryKeyColumn.Expression} = @{primaryKeyColumn.ParamName}";
+            query.Params[$"@{primaryKeyColumn.ParamName}"] = primaryKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
         }
 
         private static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)

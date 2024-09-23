@@ -1,0 +1,18 @@
+﻿@namespace DbNetSuiteCore.ViewModels
+@using DbNetSuiteCore.Models
+@using System.Data
+@model GridViewDialogViewModel
+
+<table>
+    <tbody>
+        @foreach (GridColumn gridColumn in Model.Columns)
+        {
+            DataColumn? dataColumn = Model.GridModel.GetDataColumn(gridColumn);
+            <tr>
+                <td>@(gridColumn.Label)</td>
+                <td>@(Model.GridModel.Data.Rows[0][dataColumn!])</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
