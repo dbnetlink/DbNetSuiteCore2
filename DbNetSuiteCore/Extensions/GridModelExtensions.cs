@@ -36,7 +36,7 @@ namespace DbNetSuiteCore.Extensions
         public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel, DbRepository dbRepository)
         {
             QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
-            foreach(var parameter in gridModel.ProcedureParameters)
+            foreach (var parameter in gridModel.ProcedureParameters)
             {
                 if (parameter.Value is JsonElement)
                 {
@@ -44,7 +44,7 @@ namespace DbNetSuiteCore.Extensions
                 }
                 query.Params[DbRepository.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
             }
-            
+
             return query;
         }
 
@@ -96,12 +96,9 @@ namespace DbNetSuiteCore.Extensions
 
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
                 {
-                    var lookupValues = dbRepository.GetLookupKeys(gridModel, gridColumn).Result;
-                    var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbRepository.ParameterName($"{gridColumn.Name}lookupparam{i}")).ToList();
-
-                    int i = 0;
-                    paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
-                    quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)}  in ({String.Join(",", paramNames)})");
+                    query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
+                    var lookupSql = $"select {gridColumn.Lookup.KeyColumn} from {gridColumn.Lookup.TableName} where {gridColumn.Lookup.DescriptionColumn} like @{gridColumn.ParamName}";
+                    quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)} in ({lookupSql})");
                 }
 
                 if (quickSearchFilterPart.Any())
@@ -144,7 +141,6 @@ namespace DbNetSuiteCore.Extensions
                 query.Sql += $" where {string.Join(" and ", filterParts)}";
             }
         }
-
 
         private static void AddPrimaryKeyFilterPart(this GridModel gridModel, CommandConfig query, DbRepository dbRepository)
         {

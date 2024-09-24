@@ -7,7 +7,6 @@ using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -53,9 +52,12 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = gridModel.IsStoredProcedure ? gridModel.BuildProcedureCall(this) : gridModel.BuildQuery(this);
             gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias, gridModel.IsStoredProcedure);
 
-            foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
+            if (gridModel.Data.Rows.Count > 0)
             {
-                await GetLookupOptions(gridModel, gridColumn);
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
+                {
+                    await GetLookupOptions(gridModel, gridColumn);
+                }
             }
 
             gridModel.ConvertEnumLookups();

@@ -47,7 +47,7 @@
 
                 if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
                 {
-                    <td @CellDataAttributes(classes, "", column.Style)>&nbsp;</td>
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)>&nbsp;</td>
                     continue;
                 }
 
@@ -55,13 +55,13 @@
                 {
                     classes.Add("text-center");
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));
-                    <td @CellDataAttributes(classes, boolValue, column.Style)>
+                    <td @RazorHelper.CellDataAttributes(classes, boolValue, column.Style)>
                         <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
-                    <td @CellDataAttributes(classes, row[dataColumn], column.Style)>
+                    <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
                         @row[dataColumn]
                     </td>
                 }
@@ -75,7 +75,7 @@
                     var value = column.FormatValue(row[dataColumn]!);
                     if (column.MaxTextLength.HasValue && value.ToString().Length > column.MaxTextLength.Value)
                     {
-                        <td @CellDataAttributes(classes, row[dataColumn], column.Style)>
+                        <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
                             <div class="tooltip" data-tip="@Html.Raw(value)">
                                 @Html.Raw($"{value.ToString().Substring(0, column.MaxTextLength.Value)}...")
                             </div>
@@ -83,7 +83,7 @@
                     }
                     else
                     {
-                        <td @CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
+                        <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
                     }
                 }
             }
@@ -118,7 +118,7 @@
             <td>
                 @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
                 {
-                    RenderColumnSelectFilter(gridColumn.LookupOptions, gridColumn.Key);
+                    RenderColumnSelectFilter(gridColumn.LookupOptions ?? new List<KeyValuePair<string,string>>(), gridColumn.Key);
                 }
             </td>
         </tr>
@@ -143,57 +143,7 @@
         return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
     }
 
-    public HtmlString CellDataAttributes(List<string> classes, object value, string style)
-    {
-        List<string> dataAttributes = new List<string>();
-
-        dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
-
-        if ((value is byte) == false)
-        {
-            dataAttributes.Add($"data-value=\"{value}\"");
-        }
-        dataAttributes.Add($"style=\"{style}\"");
-
-        return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
-    }
-
-    public static object? FormatValue(object? value, GridColumn? columnInfo)
-    {
-        if (string.IsNullOrEmpty(columnInfo?.Format))
-        {
-            return value;
-        }
-
-        string format = columnInfo!.Format;
-
-        switch (format)
-        {
-            case "email":
-                value = $"<a href=\"mailto:{value}\">{value}</a>";
-                break;
-            case "www":
-                value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
-                break;
-            default:
-                if (columnInfo?.DataType == typeof(DateTime))
-                {
-                    value = Convert.ToDateTime(value).ToString(format);
-                }
-                if (columnInfo?.DataType == typeof(Int64))
-                {
-                    value = Convert.ToInt64(value).ToString(format);
-                }
-                if (columnInfo?.DataType == typeof(Double))
-                {
-                    value = Convert.ToDouble(value).ToString(format);
-                }
-
-                break;
-        }
-
-        return value;
-    }
+      
 
     public void RenderNestedButtons(DataRow row, HtmlString openIcon, HtmlString closedIcon)
     {

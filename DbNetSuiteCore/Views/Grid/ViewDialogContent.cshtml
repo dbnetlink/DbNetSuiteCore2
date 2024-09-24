@@ -1,16 +1,27 @@
 ﻿@namespace DbNetSuiteCore.ViewModels
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Extensions
+@using DbNetSuiteCore.Helpers
 @using System.Data
 @model GridViewDialogViewModel
 
-<table>
+<table class="table-auto border-collapse m-1">
     <tbody>
         @foreach (GridColumn gridColumn in Model.Columns)
         {
             DataColumn? dataColumn = Model.GridModel.GetDataColumn(gridColumn);
+            var classes = new List<string>() { "text-base" };
+            var value = Model.GridModel.Data.Rows[0][dataColumn!];
+            if (gridColumn.IsNumeric)
+            {
+                classes.Add("text-right");
+            }
+
+            var formattedvalue = gridColumn.FormatValue(value);
+           
             <tr>
-                <td>@(gridColumn.Label)</td>
-                <td>@(Model.GridModel.Data.Rows[0][dataColumn!])</td>
+                <td class="font-bold">@(gridColumn.Label)</td>
+                <td @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>@(formattedvalue)</td>
             </tr>
         }
     </tbody>

@@ -808,13 +808,6 @@ form.dbnetsuite {
   padding-right: 0.125rem;
 }
 
-.dbnetsuite .dialog {
-  position:fixed;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-}
-
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -933,10 +926,6 @@ form.dbnetsuite {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
-}
-
-.static {
-  position: static;
 }
 
 .absolute {
@@ -1168,6 +1157,10 @@ form.dbnetsuite {
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
+}
+
+.font-bold {
+  font-weight: 700;
 }
 
 .text-gray-200 {

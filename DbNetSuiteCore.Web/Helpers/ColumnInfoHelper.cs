@@ -1,8 +1,6 @@
-﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Repositories;
+﻿using DbNetSuiteCore.Models;
 
-namespace DbNetSuiteCore.Helpers
+namespace DbNetSuiteCore.Web.Helpers
 {
     public static class ColumnInfoHelper
     {

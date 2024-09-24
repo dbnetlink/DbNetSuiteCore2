@@ -30,6 +30,15 @@
         display:flex;
     }
 
+
+.dbnetsuite .dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    z-index:1;
+}
+
 .htmx-table :where(th,td) {
     padding-left: 0.5rem;
     padding-right: 0.5rem;

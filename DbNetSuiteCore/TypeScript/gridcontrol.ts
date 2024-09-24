@@ -145,6 +145,7 @@ class GridControl {
 
         if (totalPages == 0) {
             this.updateLinkedGrids('');
+            this.closeViewDialog();
         }
 
         if (this.toolbarExists()) {
@@ -365,6 +366,12 @@ class GridControl {
             let input = this.viewDialog.querySelector("input[hx-post]") as HTMLInputElement;
             input.value = this.selectedRow.dataset.id;
             htmx.trigger(input, "changed");
+        }
+    }
+
+    closeViewDialog() {
+        if (this.viewDialog && this.viewDialog.open) {
+            this.viewDialog.close();
         }
     }
 
