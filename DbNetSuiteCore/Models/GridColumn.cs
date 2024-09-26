@@ -26,11 +26,11 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        public GridColumn(DataColumn dataColumn) : base(dataColumn)
+        public GridColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
         {
         }
         
-        public GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow)
+        public GridColumn(DataRow dataRow) : base(dataRow)
         {
         }
 

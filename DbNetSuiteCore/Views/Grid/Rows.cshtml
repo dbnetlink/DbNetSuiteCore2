@@ -11,7 +11,7 @@
 <tbody id="@Model.TBodyId" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
     @foreach (DataRow row in Model.Rows)
     {
-        <tr style="cursor:pointer" class="grid-row" @RowDataAttributes(row)>
+        <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>
             @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
             {
                 <td class="text-base"><input class="multi-select" type="checkbox" /></td>
@@ -42,7 +42,12 @@
             }
             @foreach (GridColumn column in Model.VisibleColumns)
             {
-                DataColumn dataColumn = Model.GetDataColumn(column) ?? new DataColumn();
+                DataColumn? dataColumn = Model.GetDataColumn(column);
+
+                if (dataColumn == null)
+                {
+                    continue;
+                }
                 var classes = new List<string>() { "text-base" };
 
                 if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
@@ -126,25 +131,6 @@
 </tbody>
 
 @functions {
-    public HtmlString RowDataAttributes(DataRow row)
-    {
-        List<string> dataAttributes = new List<string>();
-
-        if (Model.PrimaryKeyValue(row) != null)
-        {
-            dataAttributes.Add($"data-id=\"{Model.PrimaryKeyValue(row)}\"");
-        }
-
-        foreach (var column in Model.DataOnlyColumns)
-        {
-            dataAttributes.Add($"data-{column.ColumnName.ToLower()}=\"{row[column.ColumnName]}\"");
-        }
-
-        return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
-    }
-
-      
-
     public void RenderNestedButtons(DataRow row, HtmlString openIcon, HtmlString closedIcon)
     {
         <div class="nested-buttons">
@@ -154,7 +140,7 @@
             <button type="button" class="btn-sm" style="display:none">
                 @closedIcon
             </button>
-            <button type="button" name="@TriggerNames.NestedGrid" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.PrimaryKeyValue(row)"}' hx-trigger="click once" style="display:none">
+            <button type="button" name="@TriggerNames.NestedGrid" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.GridModel.PrimaryKeyValue(row)"}' hx-trigger="click once" style="display:none">
             </button>
         </div>
     }

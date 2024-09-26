@@ -12,6 +12,7 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
+using System.Linq;
 
 namespace DbNetSuiteCore.Services
 {
@@ -24,10 +25,11 @@ namespace DbNetSuiteCore.Services
         private readonly IFileSystemRepository _fileSystemRepository;
         private readonly IMySqlRepository _mySqlRepository;
         private readonly IPostgreSqlRepository _postgreSqlRepository;
+        private readonly IExcelRepository _excelRepository;
         private HttpContext? _context = null;
         private string triggerName => _context.Request.Headers.Keys.Contains(HeaderNames.HxTriggerName) ? _context.Request.Headers[HeaderNames.HxTriggerName] : string.Empty;
 
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -36,6 +38,7 @@ namespace DbNetSuiteCore.Services
             _fileSystemRepository = fileSystemRepository;
             _mySqlRepository = mySqlRepository;
             _postgreSqlRepository = postgreSqlRepository;
+            _excelRepository = excelRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -156,10 +159,10 @@ namespace DbNetSuiteCore.Services
                 switch (gridModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumn(r, gridModel.DataSourceType)).Cast<GridColumn>().Where(c => c.Valid).ToList();
+                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
                         break;
                     default:
-                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c)).Cast<GridColumn>().ToList();
+                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                         break;
                 }
 
@@ -208,7 +211,7 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.Columns.Any() == false)
             {
-                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumn(dc)).Cast<GridColumn>().ToList();
+                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumn(dc, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                 gridModel.QualifyColumnExpressions();
             }
             else
@@ -224,7 +227,7 @@ namespace DbNetSuiteCore.Services
 
                     if (gridColumn == null)
                     {
-                        gridColumn = new GridColumn(dataColumn);
+                        gridColumn = new GridColumn(dataColumn, gridModel.DataSourceType);
                     }
                     else
                     {
@@ -262,6 +265,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.JSON:
                     await _jsonRepository.GetRecord(gridModel, _context);
                     break;
+                case DataSourceType.Excel:
+                    await _excelRepository.GetRecord(gridModel, _context);
+                    break;
                 default:
                     await _msSqlRepository.GetRecord(gridModel);
                     break;
@@ -291,6 +297,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.JSON:
                     await _jsonRepository.GetRecords(gridModel, _context);
                     break;
+                case DataSourceType.Excel:
+                    await _excelRepository.GetRecords(gridModel, _context);
+                    break;
                 case DataSourceType.FileSystem:
                     await _fileSystemRepository.GetRecords(gridModel, _context);
                     break;
@@ -312,6 +321,8 @@ namespace DbNetSuiteCore.Services
                     return await _postgreSqlRepository.GetColumns(gridModel);
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetColumns(gridModel, _context);
+                case DataSourceType.Excel:
+                    return await _excelRepository.GetColumns(gridModel, _context);
                 case DataSourceType.FileSystem:
                     return await _fileSystemRepository.GetColumns(gridModel, _context);
                 default:
@@ -569,7 +580,7 @@ namespace DbNetSuiteCore.Services
                     resources = ["output", "gridControl"];
                     break;
                 case "js":
-                    resources = ["htmx", "gridControl", "draggableDialog"];
+                    resources = ["htmx", "gridControl", "draggableDialog", "viewDialog"];
                     break;
             }
 

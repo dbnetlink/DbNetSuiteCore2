@@ -19,19 +19,19 @@
         new GridColumn("ship_state_province"),
         new GridColumn("ship_zip_postal_code"),
         new GridColumn("ship_country_region"),
-        new GridColumn("shipping_fee"),
-        new GridColumn("taxes"),
+        new GridColumn("shipping_fee") { Format = "c"},
+        new GridColumn("taxes") { Format = "c"},
         new GridColumn("payment_type"),
         new GridColumn("paid_date"),
         new GridColumn("notes"),
-        new GridColumn("tax_rate"),
+        new GridColumn("tax_rate") { Format = "c"},
         new GridColumn("tax_status_id"),
         new GridColumn("status_id"){ Lookup = new Lookup("orders_status", "id", "status_name")},
     };
 
     var orderDetailColumns = new List<GridColumn>
     {
-        new GridColumn("id"),
+        new GridColumn("id") {PrimaryKey = true},
         new GridColumn("order_id") {ForeignKey = true},
         new GridColumn("product_id") {Lookup = new Lookup("products","id","product_name")},
         new GridColumn("Quantity"),
@@ -45,7 +45,7 @@
 
 
 
-    var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5 };
+    var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5, ViewDialog = true };
     orderDetailGrid.Columns = orderDetailColumns;
 
     var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.orders") { PageSize = 5, ViewDialog = true };

@@ -42,10 +42,10 @@
     };
 
 
-    var ordersGridModel = new GridModel(DataSourceType.JSON, "/data/orders.json");
+    var ordersGridModel = new GridModel(DataSourceType.JSON, "/data/json/orders.json");
     ordersGridModel.Columns = orderColumns;
 
-    var customerGridModel = new GridModel(DataSourceType.JSON, "/data/customers.json");
+    var customerGridModel = new GridModel(DataSourceType.JSON, "/data/json/customers.json");
     customerGridModel.Columns = customerColumns;
     customerGridModel.NestedGrid = ordersGridModel;
 

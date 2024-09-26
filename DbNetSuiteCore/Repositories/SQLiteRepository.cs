@@ -1,8 +1,4 @@
-﻿using DbNetSuiteCore.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Data;
-
-namespace DbNetSuiteCore.Repositories
+﻿namespace DbNetSuiteCore.Repositories
 {
     public class SQLiteRepository : DbRepository, ISQLiteRepository
     {

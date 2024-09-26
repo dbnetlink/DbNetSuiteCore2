@@ -3,6 +3,7 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Extensions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
+using System.Data.OleDb;
 using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
@@ -25,14 +26,14 @@ namespace DbNetSuiteCore.Repositories
 
         public IDbConnection GetConnection(string database)
         {
-            string? connectionString = _configuration.GetConnectionString(database);
-            connectionString = MapDatabasePath(connectionString, _env);
+            string connectionString = _configuration.GetConnectionString(database);
 
             IDbConnection connection;
 
             switch (_dataSourceType)
             {
                 case DataSourceType.SQlite:
+                    connectionString = MapDatabasePath(connectionString, _env);
                     connection = new SqliteConnection(connectionString);
                     break;
                 case DataSourceType.PostgreSql:
@@ -213,11 +214,7 @@ namespace DbNetSuiteCore.Repositories
 
             connectionString = Regex.Replace(connectionString, @"DataProvider=(.*?);", "", RegexOptions.IgnoreCase);
 
-            string currentPath = "";
-
-            if (env != null)
-                currentPath = env.WebRootPath;
-
+            string currentPath = env.WebRootPath;
             string dataSourcePropertyName = "data source";
 
             connectionString = Regex.Replace(connectionString, dataSourcePropertyName + "=~", dataSourcePropertyName + "=" + currentPath, RegexOptions.IgnoreCase).Replace("=//", "=/");

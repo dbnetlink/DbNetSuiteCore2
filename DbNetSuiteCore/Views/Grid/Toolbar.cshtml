@@ -45,7 +45,7 @@
 @functions {
     void RenderNavButton(string name, HtmlString icon, string title)
     {
-        <button class="" type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
+        <button type="button" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
     }
 
     void RenderButton(string name, HtmlString icon, string title)

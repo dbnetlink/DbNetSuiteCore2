@@ -44,7 +44,7 @@
         }
 
     .dbnetsuite button {
-        @apply bg-slate-200 hover:bg-slate-100 text-white font-bold py-1 px-1 border border-solid border-slate-300 rounded inline-flex items-center;
+        @apply bg-slate-200 hover:bg-slate-100 py-1 px-1 border border-solid border-slate-300 rounded inline-flex items-center;
     }
 
         .dbnetsuite button:disabled {

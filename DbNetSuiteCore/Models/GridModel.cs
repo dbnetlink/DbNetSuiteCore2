@@ -71,6 +71,7 @@ namespace DbNetSuiteCore.Models
         public bool FrozenHeader { get; set; } = false;
         public bool IsStoredProcedure { get; set; } = false;
         public bool ViewDialog { get; set; } = false;
+        public int ViewDialogLayoutColumns { get; set; } = 1;
         public bool SearchDialog { get; set; } = false;
         public GridModel()
         {
@@ -160,6 +161,41 @@ namespace DbNetSuiteCore.Models
                     CurrentSortKey = InitalSortColumn?.Key ?? string.Empty;
                 }
             }
+        }
+
+        public string? PrimaryKeyValue(DataRow dataRow)
+        {
+            if (DataSourceType == DataSourceType.FileSystem)
+            {
+                return Convert.ToString(RowValue(dataRow, "Name", false));
+            }
+            else
+            {
+                var primaryKeyColumn = Columns.FirstOrDefault(c => c.PrimaryKey);
+                if (primaryKeyColumn != null)
+                {
+                    var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == primaryKeyColumn.Name || primaryKeyColumn.Name.Split(".").Last() == c.ColumnName);
+
+                    if (dataColumn != null)
+                    {
+                        return dataRow[dataColumn].ToString();
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        public object RowValue(DataRow dataRow, string columnName, object defaultValue)
+        {
+            var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == columnName);
+
+            if (dataColumn != null)
+            {
+                return dataRow[dataColumn];
+            }
+
+            return defaultValue;
         }
     }
 }

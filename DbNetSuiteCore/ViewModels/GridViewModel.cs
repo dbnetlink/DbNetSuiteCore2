@@ -66,32 +66,10 @@ namespace DbNetSuiteCore.ViewModels
             return _gridModel.GetDataColumn(column);
         }
 
-        public string? PrimaryKeyValue(DataRow dataRow)
-        {
-            if (DataSourceType == DataSourceType.FileSystem)
-            {
-                return Convert.ToString(RowValue(dataRow, "Name", false));
-            }
-            else
-            {
-                var primaryKeyColumn = GridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
-                if (primaryKeyColumn != null)
-                {
-                    var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == primaryKeyColumn.Name || primaryKeyColumn.Name.Split(".").Last() == c.ColumnName);
-
-                    if (dataColumn != null)
-                    {
-                        return dataRow[dataColumn].ToString();
-                    }
-                }
-
-                return null;
-            }
-        }
 
         public bool IsFolder(DataRow dataRow)
         {
-            return Convert.ToBoolean(RowValue(dataRow, "IsDirectory", false));
+            return Convert.ToBoolean(GridModel.RowValue(dataRow, "IsDirectory", false));
         }
 
         public int SelectWidth(List<KeyValuePair<string, string>> options)
@@ -99,17 +77,6 @@ namespace DbNetSuiteCore.ViewModels
             return options.Select(o => o.Value.Length).OrderByDescending(l => l).First();
         }
 
-        private object RowValue(DataRow dataRow, string columnName, object defaultValue)
-        {
-            var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == columnName);
-
-            if (dataColumn != null)
-            {
-                return dataRow[dataColumn];
-            }
-
-            return defaultValue;
-        }
 
         private string PageUrl(int pageNumber)
         {

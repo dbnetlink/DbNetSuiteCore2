@@ -1,4 +1,6 @@
-﻿using DbNetSuiteCore.Helpers;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Data;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -7,7 +9,7 @@ namespace DbNetSuiteCore.Models
 {
     public class ColumnModel
     {
-        private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte) };
+        private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte), nameof(SByte) };
         private Type? _DataType = null;
         private List<KeyValuePair<string, string>>? _EnumOptions;
         public string Label { get; set; } = string.Empty;
@@ -24,27 +26,29 @@ namespace DbNetSuiteCore.Models
         public Type? LookupEnum { get; set; }
         public string ParamName => $"Param{Ordinal}";
         public int Ordinal { get; set; }
-        public List<KeyValuePair<string, string>>? EnumOptions 
+        public List<KeyValuePair<string, string>>? EnumOptions
         {
-            get 
+            get
             {
                 if (LookupEnum != null)
                 {
                     _EnumOptions = EnumHelper.GetEnumOptions(LookupEnum!, DataType);
-                 };
+                };
                 return _EnumOptions;
             }
             set { _EnumOptions = value; }
         }
-        public string DataTypeName => DataType.ToString().Split(".").Last();    
+        public string DataTypeName => DataType.ToString().Split(".").Last();
         [JsonIgnore]
         public Type DataType
         {
             get { return String.IsNullOrEmpty(UserDataType) ? _DataType ?? typeof(string) : Type.GetType($"System.{UserDataType}") ?? typeof(string); }
-            set { 
+            set
+            {
                 _DataType = value;
 
-                if (string.IsNullOrEmpty(UserDataType)) {
+                if (string.IsNullOrEmpty(UserDataType))
+                {
                     UserDataType = value.Name;
                 };
             }
@@ -66,11 +70,11 @@ namespace DbNetSuiteCore.Models
         {
             Key = Guid.NewGuid().ToString().Split("-").First();
         }
-        public ColumnModel(DataColumn dataColumn) : this()
+        public ColumnModel(DataColumn dataColumn, DataSourceType dataSourceType) : this()
         {
             Expression = dataColumn.ColumnName;
-            Label = TextHelper.GenerateLabel(dataColumn.ColumnName); 
-            Name = CleanColumnName(dataColumn.ColumnName);
+            Label = TextHelper.GenerateLabel(dataColumn.ColumnName);
+            Name = (dataSourceType == DataSourceType.Excel) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
             DataType = dataColumn.DataType;
             Initialised = true;
         }
@@ -119,7 +123,7 @@ namespace DbNetSuiteCore.Models
         {
             DataType = (Type)dataRow["DataType"];
             Initialised = true;
-            Name = CleanColumnName(string.IsNullOrEmpty((string)dataRow["ColumnName"]) ? Expression :(string)dataRow["ColumnName"]);
+            Name = CleanColumnName(string.IsNullOrEmpty((string)dataRow["ColumnName"]) ? Expression : (string)dataRow["ColumnName"]);
             if (string.IsNullOrEmpty(Label))
             {
                 Label = TextHelper.GenerateLabel(Name);
@@ -145,7 +149,7 @@ namespace DbNetSuiteCore.Models
 
         private string CleanColumnName(string columnName)
         {
-            return new Regex("[^a-zA-Z0-9_]").Replace(columnName,string.Empty);
+            return new Regex("[^a-zA-Z0-9_]").Replace(columnName, string.Empty);
         }
     }
 }

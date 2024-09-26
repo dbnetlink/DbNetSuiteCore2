@@ -8,6 +8,7 @@ namespace DbNetSuiteCore.Enums
         JSON,
         FileSystem,
         MySql,
-        PostgreSql
+        PostgreSql,
+        Excel
     };
 }

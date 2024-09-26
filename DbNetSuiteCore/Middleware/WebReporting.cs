@@ -85,6 +85,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<RazorViewToStringRenderer>();
             services.AddScoped<IMySqlRepository, MySqlRepository>();
             services.AddScoped<IPostgreSqlRepository, PostgreSqlRepository>();
+            services.AddScoped<IExcelRepository, ExcelRepository>();
             return services;
         }
     }

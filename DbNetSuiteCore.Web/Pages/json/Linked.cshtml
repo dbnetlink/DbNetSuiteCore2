@@ -42,11 +42,11 @@
     };
 
 
-    var ordersGridModel = new GridModel(DataSourceType.JSON, "/data/orders.json");
+    var ordersGridModel = new GridModel(DataSourceType.JSON, "/data/json/orders.json");
     ordersGridModel.Columns = orderColumns;
     ordersGridModel.PageSize = 10;
 
-    var customerGridModel = new GridModel(DataSourceType.JSON, "/data/customers.json");
+    var customerGridModel = new GridModel(DataSourceType.JSON, "/data/json/customers.json");
     customerGridModel.Columns = customerColumns;
     customerGridModel.AddLinkedGrid(ordersGridModel);
     customerGridModel.PageSize = 10;

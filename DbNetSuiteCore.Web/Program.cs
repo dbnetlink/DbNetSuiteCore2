@@ -20,11 +20,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.MapGet("/customers", () =>
-    FileHelper.GetJson("/data/customers.json", builder.Environment));
+    FileHelper.GetJson("/data/json/customers.json", builder.Environment));
 app.MapGet("/employees", () =>
-    FileHelper.GetJson("/data/employees.json", builder.Environment));
+    FileHelper.GetJson("/data/json/employees.json", builder.Environment));
 app.MapGet("/orders", () =>
-    FileHelper.GetJson("/data/orders.json", builder.Environment));
+    FileHelper.GetJson("/data/json/orders.json", builder.Environment));
 
 app.UseRouting();
 

@@ -25,7 +25,10 @@
                 }
                 @foreach (GridColumn gridColumn in Model.VisibleColumns)
                 {
-                    <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" />
+                    if (Model.GetDataColumn(gridColumn) != null)
+                    {
+                        <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" />
+                    }
                 }
             </colgroup>
             <thead data-frozen="@Model.GridModel.FrozenHeader">
@@ -40,6 +43,10 @@
                     }
                     @foreach (GridColumn gridColumn in Model.VisibleColumns)
                     {
+                        if (Model.GetDataColumn(gridColumn) == null)
+                        {
+                            continue;
+                        }
                         if (gridColumn.Sortable)
                         {
                             <th class="text-base" style="cursor:pointer" data-key="@gridColumn.Key" data-columnname="@gridColumn.ColumnName" hx-vals='{"sortKey":"@gridColumn.Key"}' hx-post="@Model.SubmitUrl" hx-target="next tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator">
@@ -68,9 +75,12 @@
                         {
                             <th class="text-base w-12"></th>
                         }
-                        @foreach (GridColumn columnInfo in Model.VisibleColumns)
+                        @foreach (GridColumn gridColumn in Model.VisibleColumns)
                         {
-                            RenderColumnFilter(columnInfo);
+                            if (Model.GetDataColumn(gridColumn) != null)
+                            {
+                                RenderColumnFilter(gridColumn);
+                            }
                         }
                         @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
                         {
@@ -98,23 +108,27 @@
 
     @if (Model.GridModel.ViewDialog)
     {
-        <dialog class="view-dialog dialog border-solid border border-stone-400 rounded-md" id="@Model.ViewDialogId">
+        <dialog class="view-dialog dialog border-solid border-2 border-stone-200 rounded-md bg-neutral-100" id="@Model.ViewDialogId">
             <div class="flex flex-col">
                 <nav class="dialog-nav">
-                    <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-100 rounded-md m-1 p-1">
+                    <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
                         <div>
-                            <h2>View Dialog</h2>
+                            <h2 class="font-bold">View</h2>
                         </div>
                         <div>
                             <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
                         </div>
                     </div>
                 </nav>
-                <div class="view-dialog-content overflow-auto" style="height:600px"></div>
-                <div class="flex flex-row justify-items-end">
+                <div class="flex view-dialog-content"></div>
+                <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
                     <div>
+                        <button type="button" button-type="previous" title="Previous row">@IconHelper.Previous()</button>
+                        <button type="button" button-type="next" title="Next row">@IconHelper.Next()</button>
                         <input type="hidden" name="@TriggerNames.ViewDialogContent" hx-post="@Model.SubmitUrl" hx-target="#@(Model.ViewDialogId) .view-dialog-content" hx-indicator="previous .htmx-indicator" hx-swap="innerHTML" hx-trigger="changed" />
-                        <button>Close</button>
+                    </div>
+                    <div>
+                        <button type="button" button-type="close">Close</button>
                     </div>
                 </div>
             </div>

@@ -34,7 +34,7 @@ class GridControl {
             return;
         }
         if (this.triggerName(evt) == "viewdialogcontent") {
-            this.configureViewDialog();
+            this.invokeEventHandler('ViewDialogUpdated');
             return;
         }
         if (!this.gridControlElement("tbody")) {
@@ -59,13 +59,13 @@ class GridControl {
             this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev); });
             this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
                 e.addEventListener("change", (ev) => {
-                    this.highlightRow(ev.target);
+                    this.selectRow(ev.target);
                     this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
                 });
             });
         }
         else {
-            htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.highlightRow(ev.target)); });
+            htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target)); });
         }
         let row = document.querySelector(this.rowSelector());
         if (row) {
@@ -88,12 +88,9 @@ class GridControl {
             this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard());
             this.getButton("export").addEventListener("click", ev => this.download());
         }
-        this.viewDialog = this.gridControlElement(".view-dialog");
-        if (this.viewDialog) {
-            let closeButton = this.viewDialog.querySelector(this.buttonSelector("close"));
-            closeButton.addEventListener("click", () => this.viewDialog.close());
-            this.getButton("view").addEventListener("click", this.openViewDialog.bind(this));
-            new DraggableDialog(this.viewDialog.id, "dialog-nav");
+        var viewDialog = this.gridControlElement(".view-dialog");
+        if (viewDialog) {
+            this.viewDialog = new ViewDialog(viewDialog, this);
         }
         this.invokeEventHandler('Initialised');
     }
@@ -120,7 +117,9 @@ class GridControl {
         let rowCount = parseInt(tbody.dataset.rowcount);
         if (totalPages == 0) {
             this.updateLinkedGrids('');
-            this.closeViewDialog();
+            if (this.viewDialog) {
+                this.viewDialog.close();
+            }
         }
         if (this.toolbarExists()) {
             if (totalPages == 0) {
@@ -211,11 +210,11 @@ class GridControl {
         let checked = ev.target.checked;
         this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
             e.checked = checked;
-            this.highlightRow(e);
+            this.selectRow(e);
         });
         this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
     }
-    highlightRow(target) {
+    selectRow(target) {
         let tr = target.closest('tr');
         if (target.classList.contains("multi-select") == false) {
             if (tr.classList.contains(this.bgColourClass)) {
@@ -232,7 +231,10 @@ class GridControl {
         tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
         this.updateLinkedGrids(tr.dataset.id);
         this.selectedRow = tr;
-        this.updateViewDialog();
+        if (this.viewDialog) {
+            this.viewDialog.configureNavigation(tr);
+            this.viewDialog.update();
+        }
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
     }
     updateLinkedGrids(primaryKey) {
@@ -286,24 +288,11 @@ class GridControl {
         document.execCommand('copy');
         window.getSelection().removeAllRanges();
     }
-    openViewDialog() {
-        this.viewDialog.show();
-        this.updateViewDialog();
+    previousRow() {
+        this.selectedRow.previousElementSibling.click();
     }
-    updateViewDialog() {
-        if (this.viewDialog && this.viewDialog.open) {
-            let input = this.viewDialog.querySelector("input[hx-post]");
-            input.value = this.selectedRow.dataset.id;
-            htmx.trigger(input, "changed");
-        }
-    }
-    closeViewDialog() {
-        if (this.viewDialog && this.viewDialog.open) {
-            this.viewDialog.close();
-        }
-    }
-    configureViewDialog() {
-        this.invokeEventHandler('ViewDialogUpdated');
+    nextRow() {
+        this.selectedRow.nextElementSibling.click();
     }
     download() {
         this.showIndicator();
@@ -397,7 +386,8 @@ class GridControl {
         return this.gridControlElement(this.buttonSelector(name));
     }
     triggerName(evt) {
-        return evt.detail.requestConfig.headers['HX-Trigger-Name'].toLowerCase();
+        var _a;
+        return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
     }
     selectedValues() {
         let selectedValues = [];

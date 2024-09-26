@@ -46,9 +46,11 @@
     <None Remove="Resources\JS\jquery.min.js" />
     <None Remove="Resources\JS\surreal.js" />
     <None Remove="Resources\JS\tailwindcss.js" />
+    <None Remove="Resources\JS\viewDialog.js" />
     <None Remove="Resources\SVG\spinner.svg" />
     <None Remove="TypeScript\draggableDialog.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
+    <None Remove="TypeScript\viewDialog.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,7 +61,9 @@
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridControl.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
+    <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
+    <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\Grid\Toolbar.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -104,6 +108,7 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
+    <PackageReference Include="System.Data.OleDb" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
