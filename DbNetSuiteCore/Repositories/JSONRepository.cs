@@ -63,7 +63,15 @@ namespace DbNetSuiteCore.Repositories
             {
                 return dataTable;
             }
-            dataTable = Tabulate(json);
+
+            try
+            {
+                dataTable = Tabulate(json);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unable to convert JSON to a table. Please ensure root element is an array", ex);
+            }
 
             if (gridModel.Columns.Any())
             {

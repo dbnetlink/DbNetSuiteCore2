@@ -1,0 +1,20 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using Microsoft.Extensions.Primitives
+
+@{
+    StringValues fileName;
+    if (Request.Query.TryGetValue("name", out fileName) == false)
+    {
+        fileName = "employees.json";
+    }
+    var model = new GridModel(DataSourceType.JSON, $"/data/json/{fileName}")
+            {
+                Caption = fileName.ToString()
+            };
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(model));
+}

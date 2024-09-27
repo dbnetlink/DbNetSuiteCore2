@@ -266,7 +266,7 @@ namespace DbNetSuiteCore.Services
                     await _jsonRepository.GetRecord(gridModel, _context);
                     break;
                 case DataSourceType.Excel:
-                    await _excelRepository.GetRecord(gridModel, _context);
+                    await _excelRepository.GetRecord(gridModel);
                     break;
                 default:
                     await _msSqlRepository.GetRecord(gridModel);
@@ -298,7 +298,7 @@ namespace DbNetSuiteCore.Services
                     await _jsonRepository.GetRecords(gridModel, _context);
                     break;
                 case DataSourceType.Excel:
-                    await _excelRepository.GetRecords(gridModel, _context);
+                    await _excelRepository.GetRecords(gridModel);
                     break;
                 case DataSourceType.FileSystem:
                     await _fileSystemRepository.GetRecords(gridModel, _context);
@@ -322,7 +322,7 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetColumns(gridModel, _context);
                 case DataSourceType.Excel:
-                    return await _excelRepository.GetColumns(gridModel, _context);
+                    return await _excelRepository.GetColumns(gridModel);
                 case DataSourceType.FileSystem:
                     return await _fileSystemRepository.GetColumns(gridModel, _context);
                 default:

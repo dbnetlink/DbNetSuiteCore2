@@ -101,6 +101,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.TimestreamQuery" Version="3.7.301.35" />
     <PackageReference Include="ClosedXML" Version="0.102.3" />
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
