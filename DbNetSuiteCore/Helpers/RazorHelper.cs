@@ -11,13 +11,20 @@ namespace DbNetSuiteCore.Helpers
         {
             List<string> dataAttributes = new List<string>();
 
-            dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
+            if (classes.Any())
+            {
+                dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
+            }
 
             if ((value is byte) == false)
             {
                 dataAttributes.Add($"data-value=\"{value}\"");
             }
-            dataAttributes.Add($"style=\"{style}\"");
+
+            if (string.IsNullOrEmpty(style) == false)
+            {
+                dataAttributes.Add($"style=\"{style}\"");
+            }
 
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
         }

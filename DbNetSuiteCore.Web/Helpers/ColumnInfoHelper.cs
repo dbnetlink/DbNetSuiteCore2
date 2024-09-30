@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Web.Helpers
 {
@@ -11,7 +12,7 @@ namespace DbNetSuiteCore.Web.Helpers
                 new GridColumn("customer.customer_id", "CustomerID"),
                 new GridColumn("customer.first_name", "Forename"),
                 new GridColumn("customer.last_name", "Surname"),
-                new GridColumn("customer.email", "Email Address") {Format = "email" },
+                new GridColumn("customer.email", "Email Address") {Format = FormatType.Email },
                 new GridColumn("address.address", "Address"),
                 new GridColumn("city.city", "City"),
                 new GridColumn("address.postal_code", "Post Code"),

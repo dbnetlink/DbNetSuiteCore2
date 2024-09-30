@@ -50,7 +50,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecords(GridModel gridModel)
         {
-            QueryCommandConfig query = gridModel.IsStoredProcedure ? gridModel.BuildProcedureCall(this) : gridModel.BuildQuery(this);
+            QueryCommandConfig query = gridModel.IsStoredProcedure ? gridModel.BuildProcedureCall() : gridModel.BuildQuery();
             gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias, gridModel.IsStoredProcedure);
 
             if (gridModel.Data.Rows.Count > 0)
@@ -78,7 +78,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecord(GridModel gridModel)
         {
-            QueryCommandConfig query = gridModel.BuildRecordQuery(this);
+            QueryCommandConfig query = gridModel.BuildRecordQuery();
             gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
 
             foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
@@ -135,8 +135,8 @@ namespace DbNetSuiteCore.Repositories
 
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.MSSQL:
-                    return await GetSchemaTable(query, gridModel.ConnectionAlias);
+               // case DataSourceType.MSSQL:
+               //     return await GetSchemaTable(query, gridModel.ConnectionAlias);
                 default:
                     return await GetDataTable(query, gridModel.ConnectionAlias);
             }

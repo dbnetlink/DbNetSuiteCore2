@@ -1,0 +1,16 @@
+[
+  {
+    "outputFileName": "Resources/JS/bundle.js",
+    "inputFiles": [
+      "Resources/JS/gridControl.js",
+      "Resources/JS/draggableDialog.js",
+      "Resources/JS/viewDialog.js"
+    ]
+  },
+  {
+    "outputFileName": "gulpfile.min.js",
+    "inputFiles": [
+      "gulpfile.js"
+    ]
+  }
+]

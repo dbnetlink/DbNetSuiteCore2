@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.ComponentModel;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -18,6 +19,10 @@ namespace DbNetSuiteCore.Models
         public bool Filter { get; set; } = true;
         public string Style { get; set; } = string.Empty;
         public bool DataOnly { get; set; } = false;
+
+        [Description("Apply reglular expression to value before displaying")]
+        public string RegularExpression { get; set; } = string.Empty;
+        [Description("Apply a format template to the column value e.g. <b>{0}</b>")]
 
         public GridColumn()
         {

@@ -1,4 +1,4 @@
-﻿using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using System.Data;
 
@@ -78,7 +78,7 @@ namespace DbNetSuiteCore.Extensions
 
                 foreach (var columnName in gridModel.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList())
                 {
-                    searchFilterPart.Add($"{DelimitColumn(columnName, gridModel.DataSourceType)} like '%{gridModel.SearchInput}%'");
+                    searchFilterPart.Add($"{TextHelper.DelimitColumn(columnName, gridModel.DataSourceType)} like '%{gridModel.SearchInput}%'");
                 }
 
                 if (searchFilterPart.Any())
@@ -103,7 +103,7 @@ namespace DbNetSuiteCore.Extensions
 
                     if (columnFilter != null)
                     {
-                        columnFilterPart.Add($"{DelimitColumn(column.Name, gridModel.DataSourceType)} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
+                        columnFilterPart.Add($"{TextHelper.DelimitColumn(column.Name, gridModel.DataSourceType)} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
                     }
                 }
 
@@ -120,7 +120,7 @@ namespace DbNetSuiteCore.Extensions
                     var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
                     if (foreignKeyColumn != null)
                     {
-                        filterParts.Add($"({DelimitColumn(foreignKeyColumn.Name, gridModel.DataSourceType)} = {Quoted(foreignKeyColumn)}{gridModel.ParentKey}{Quoted(foreignKeyColumn)})");
+                        filterParts.Add($"({TextHelper.DelimitColumn(foreignKeyColumn.Name, gridModel.DataSourceType)} = {Quoted(foreignKeyColumn)}{gridModel.ParentKey}{Quoted(foreignKeyColumn)})");
                     }
                 }
                 else
@@ -150,23 +150,12 @@ namespace DbNetSuiteCore.Extensions
                 return string.Empty;
             }
 
-            return $"{DelimitColumn(gridModel.SortColumnName, gridModel.DataSourceType)} {gridModel.SortSequence}";
+            return $"{TextHelper.DelimitColumn(gridModel.SortColumnName, gridModel.DataSourceType)} {gridModel.SortSequence}";
         }
 
         private static string Quoted(GridColumn column)
         {
             return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
         }
-
-        private static string DelimitColumn(string columnName, DataSourceType dataSourceType)
-        {
-            if (dataSourceType == DataSourceType.Excel)
-            {
-                return $"[{columnName}]";
-            }
-            return columnName;
-        }
     }
-
-    
 }

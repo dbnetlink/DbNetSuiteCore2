@@ -1,5 +1,6 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 
@@ -13,7 +14,7 @@
         new GridColumn("customer.customer_id", "CustomerID"),
         new GridColumn("customer.first_name", "Forename"),
         new GridColumn("customer.last_name", "Surname"),
-        new GridColumn("customer.email", "Email Address") {Format = "email" },
+        new GridColumn("customer.email", "Email Address") {Format = FormatType.Email },
         new GridColumn("address.address", "Address"),
         new GridColumn("city.city", "City") {InitialSortOrder = SortOrder.Desc },
         new GridColumn("address.postal_code", "Post Code"),
@@ -34,13 +35,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Customers</title>
-    <link rel="stylesheet" href="css.htmx" />
+    @DbNetSuiteCore.Resources.StyleSheet()
 </head>
 <body>
     <main style="padding:20px">
         @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGridModel))
     </main>
-    <script src="js.htmx"></script>
+    @DbNetSuiteCore.Resources.ClientScript()
 
     <script>
         function customerGridPageLoaded(gridControl) {

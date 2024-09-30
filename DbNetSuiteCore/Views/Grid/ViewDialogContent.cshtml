@@ -33,7 +33,7 @@
                         var formattedvalue = gridColumn.FormatValue(value);
 
                         <td class="font-bold" data-columnname="@gridColumn.ColumnName">@(gridColumn.Label)</td>
-                        <td @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>@(formattedvalue)</td>
+                        <td @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>@Html.Raw(formattedvalue)</td>
 
                         if (c > 0 && c < layoutColumns)
                         {

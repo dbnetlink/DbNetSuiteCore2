@@ -1,4 +1,6 @@
 ﻿using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Constants;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -21,15 +23,23 @@ namespace DbNetSuiteCore.Extensions
                 return value;
             }
 
+            if (string.IsNullOrEmpty(gridColumnModel.RegularExpression) == false)
+            {
+                value = Regex.Match(value.ToString(), gridColumnModel.RegularExpression);
+            }
+
             string format = gridColumnModel.Format;
 
             switch (format)
             {
-                case "email":
+                case FormatType.Email:
                     value = $"<a href=\"mailto:{value}\">{value}</a>";
                     break;
-                case "www":
+                case FormatType.Url:
                     value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
+                    break;
+                case FormatType.Image:
+                    value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img src=\"{s}\"/>"));
                     break;
                 default:
                     value = gridColumnModel.FormatedValue(value, format);
@@ -87,6 +97,8 @@ namespace DbNetSuiteCore.Extensions
                     return Convert.ToSingle(value).ToString(format);
                 case nameof(Decimal):
                     return Convert.ToDecimal(value).ToString(format);
+                case nameof(String):
+                    return String.Format(format, value);
             }
 
             return value?.ToString() ?? string.Empty;

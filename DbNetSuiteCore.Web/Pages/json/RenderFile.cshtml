@@ -13,7 +13,8 @@
     }
     var model = new GridModel(DataSourceType.JSON, $"/data/json/{fileName}")
             {
-                Caption = fileName.ToString()
+                Caption = fileName.ToString(),
+                Cache = true
             };
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(model));

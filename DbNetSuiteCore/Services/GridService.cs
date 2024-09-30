@@ -152,6 +152,11 @@ namespace DbNetSuiteCore.Services
 
         private async Task ConfigureGridColumns(GridModel gridModel)
         {
+            if (gridModel.Columns.Any())
+            {
+         //       gridModel.Columns.ToList().ForEach(c => c.Expression = GridModelExtensions.QualifyExpression(c.Expression, gridModel.DataSourceType, true));
+            }
+
             DataTable schema = await GetColumns(gridModel);
 
             if (gridModel.Columns.Any() == false)
@@ -170,33 +175,21 @@ namespace DbNetSuiteCore.Services
             }
             else
             {
-                switch (gridModel.DataSourceType)
-                {
-                    case DataSourceType.MSSQL:
-                        var dataRows = schema.Rows.Cast<DataRow>().ToList();
-                        for (var i = 0; i < dataRows.Count; i++)
-                        {
-                            gridModel.Columns.ToList()[i].Update(dataRows[i]);
-                        }
-                        break;
-                    default:
-                        var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
 
-                        if (gridModel.DataSourceType == DataSourceType.FileSystem)
-                        {
-                            foreach (GridColumn gridColumn in gridModel.Columns)
-                            {
-                                gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
-                            }
-                        }
-                        else
-                        {
-                            for (var i = 0; i < dataColumns.Count; i++)
-                            {
-                                gridModel.Columns.ToList()[i].Update(dataColumns[i]);
-                            }
-                        }
-                        break;
+                if (gridModel.DataSourceType == DataSourceType.FileSystem)
+                {
+                    foreach (GridColumn gridColumn in gridModel.Columns)
+                    {
+                        gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < dataColumns.Count; i++)
+                    {
+                        gridModel.Columns.ToList()[i].Update(dataColumns[i]);
+                    }
                 }
             }
             for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
@@ -580,7 +573,7 @@ namespace DbNetSuiteCore.Services
                     resources = ["output", "gridControl"];
                     break;
                 case "js":
-                    resources = ["htmx", "gridControl", "draggableDialog", "viewDialog"];
+                    resources = ["htmx.min", "bundle.min"];
                     break;
             }
 

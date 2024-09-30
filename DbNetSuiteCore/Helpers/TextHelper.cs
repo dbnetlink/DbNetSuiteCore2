@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using DbNetSuiteCore.Enums;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Helpers
@@ -32,6 +33,20 @@ namespace DbNetSuiteCore.Helpers
                 bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA again to reverse
             }
             return Encoding.UTF8.GetString(bytes);
+        }
+
+        public static string DelimitColumn(string columnName, DataSourceType dataSourceType)
+        {
+            if (dataSourceType == DataSourceType.Excel)
+            {
+                return $"[{columnName}]";
+            }
+            return columnName;
+        }
+
+        public static bool IsAlphaNumeric(string text)
+        {
+            return text.All(c => char.IsLetterOrDigit(c) ||  c == '_');
         }
     }
 }

@@ -9,11 +9,12 @@
     StringValues fileName;
     if (Request.Query.TryGetValue("name", out fileName) == false)
     {
-        fileName = "employees.json";
+        fileName = "cities.csv";
     }
     var model = new GridModel(DataSourceType.Excel, $"/data/excel/{fileName}")
             {
-                Caption = fileName.ToString()
+                Caption = fileName.ToString(),
+                Cache = true
             };
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(model));

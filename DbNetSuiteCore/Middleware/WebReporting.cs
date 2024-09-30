@@ -76,6 +76,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddHttpContextAccessor();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddControllersWithViews();
+            services.AddMemoryCache();
             services.AddHttpContextAccessor();
             services.AddScoped<IGridService, GridService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
@@ -86,6 +87,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IMySqlRepository, MySqlRepository>();
             services.AddScoped<IPostgreSqlRepository, PostgreSqlRepository>();
             services.AddScoped<IExcelRepository, ExcelRepository>();
+           
             return services;
         }
     }

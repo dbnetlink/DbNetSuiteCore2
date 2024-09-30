@@ -17,16 +17,19 @@ class ViewDialog {
     }
 
     open() {
-        this.dialog.show();
-        this.update();
+        this.getRecord();
     }
 
     update() {
         if (this.dialog && this.dialog.open) {
-            let input = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
-            input.value = this.gridControl.selectedRow.dataset.id;
-            htmx.trigger(input, "changed");
+            this.getRecord();
         }
+    }
+
+    getRecord() {
+        let input = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
+        input.value = this.gridControl.selectedRow.dataset.id;
+        htmx.trigger(input, "changed");
     }
 
     close() {

@@ -1,5 +1,6 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 
@@ -13,7 +14,7 @@
         new GridColumn("customerid", "CustomerID") {PrimaryKey = true },
         new GridColumn("firstname", "Forename"),
         new GridColumn("lastname", "Surname"),
-        new GridColumn("email", "Email Address") {Format = "email" },
+        new GridColumn("email", "Email Address") {Format = FormatType.Email },
         new GridColumn("address", "Address"),
         new GridColumn("city", "City") { InitialSortOrder = SortOrder.Desc},
         new GridColumn("postalcode", "Post Code"),

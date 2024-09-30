@@ -8,13 +8,12 @@
 </form>
 
 <script>
-    var isNested = @(Model.IsNested.ToString().ToLower());
-    if (isNested == false) {
-        document.addEventListener("DOMContentLoaded", function () {
-            DbNetSuiteCore.createGridControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents)));
-        });
+    @if (Model.IsNested)
+    {
+        <text>DbNetSuiteCore.createGridControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); </text>
     }
-    else {
-        DbNetSuiteCore.createGridControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents)));
+    else
+    {
+        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createGridControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); });</text>
     }
 </script>

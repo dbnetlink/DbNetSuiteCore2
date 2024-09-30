@@ -6,17 +6,18 @@ using System.Globalization;
 using System.Data;
 using System.Linq;
 using System.Text.Json;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
-        public static QueryCommandConfig BuildQuery(this GridModel gridModel, DbRepository dbRepository)
+        public static QueryCommandConfig BuildQuery(this GridModel gridModel)
         {
             string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            gridModel.AddFilterPart(query, dbRepository);
+            gridModel.AddFilterPart(query);
             gridModel.AddGroupByPart(query);
             gridModel.AddHavingPart(query);
             gridModel.AddOrderPart(query);
@@ -24,16 +25,16 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
-        public static QueryCommandConfig BuildRecordQuery(this GridModel gridModel, DbRepository dbRepository)
+        public static QueryCommandConfig BuildRecordQuery(this GridModel gridModel)
         {
             string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            gridModel.AddPrimaryKeyFilterPart(query, dbRepository);
+            gridModel.AddPrimaryKeyFilterPart(query);
             return query;
         }
 
-        public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel, DbRepository dbRepository)
+        public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel)
         {
             QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
             foreach (var parameter in gridModel.ProcedureParameters)
@@ -80,7 +81,7 @@ namespace DbNetSuiteCore.Extensions
         }
 
 
-        private static void AddFilterPart(this GridModel gridModel, CommandConfig query, DbRepository dbRepository)
+        private static void AddFilterPart(this GridModel gridModel, CommandConfig query)
         {
             List<string> filterParts = new List<string>();
 
@@ -90,8 +91,17 @@ namespace DbNetSuiteCore.Extensions
 
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.Searchable))
                 {
-                    query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
-                    quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)} like @{gridColumn.ParamName}");
+                    string searchInput = gridModel.SearchInput;
+                    string expression = RefineSearchExpression(gridColumn, gridModel);
+
+                    if (IsCsvFile(gridModel))
+                    {
+                        searchInput = searchInput.ToLower();
+                        expression = $"LCASE({expression})";
+                    }
+
+                    query.Params[$"@{gridColumn.ParamName}"] = $"%{searchInput}%";
+                    quickSearchFilterPart.Add($"{expression} like @{gridColumn.ParamName}");
                 }
 
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
@@ -142,7 +152,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        private static void AddPrimaryKeyFilterPart(this GridModel gridModel, CommandConfig query, DbRepository dbRepository)
+        private static void AddPrimaryKeyFilterPart(this GridModel gridModel, CommandConfig query)
         {
             var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
             query.Sql += $" where {primaryKeyColumn.Expression} = @{primaryKeyColumn.ParamName}";
@@ -200,8 +210,17 @@ namespace DbNetSuiteCore.Extensions
 
                 if (columnFilter != null)
                 {
-                    columnFilterParts.Add($"{FilterColumnExpression(gridModel, column, havingFilter)} {columnFilter.Value.Key} @columnfilter{i}");
-                    query.Params[$"@columnfilter{i}"] = ParamValue(columnFilter.Value.Value, column, gridModel);
+                    string expression = FilterColumnExpression(gridModel, column, havingFilter);
+                    object paramValue = ParamValue(columnFilter.Value.Value, column, gridModel);
+
+                    if (IsCsvFile(gridModel) && columnFilter.Value.Key == "like")
+                    {
+                        expression = $"LCASE({expression})";
+                        paramValue = paramValue.ToString().ToLower();
+                    }
+
+                    columnFilterParts.Add($"{expression} {columnFilter.Value.Key} @columnfilter{i}");
+                    query.Params[$"@columnfilter{i}"] = paramValue;
                 }
             }
 
@@ -246,15 +265,37 @@ namespace DbNetSuiteCore.Extensions
         {
             gridModel.Columns.ToList().ForEach(c => c.Expression = QualifyExpression(c.Expression, gridModel.DataSourceType));
         }
-        public static string QualifyExpression(string expression, DataSourceType dataSourceType)
+        public static string QualifyExpression(string expression, DataSourceType dataSourceType, bool userDefined = false)
         {
+            if (QualifyTemplate(dataSourceType) == "@")
+            {
+                return expression;
+            }
+
+            if (expression.Substring(0,1) == QualifyTemplate(dataSourceType).Substring(0,1))
+            {
+                return expression;
+            }
+
+            if (expression.Substring(0, 1) == QualifyTemplate(dataSourceType).Substring(0, 1))
+            {
+                return expression;
+            }
+
+            if (userDefined && TextHelper.IsAlphaNumeric(expression))
+            { 
+                return expression; 
+            }  
+
             return QualifyTemplate(dataSourceType).Replace("@", expression);
         }
+
         public static string QualifyTemplate(DataSourceType dataSourceType)
         {
             switch (dataSourceType)
             {
                 case DataSourceType.MSSQL:
+                case DataSourceType.Excel:
                 case DataSourceType.SQlite:
                     return $"[@]";
                 case DataSourceType.MySql:
@@ -474,10 +515,14 @@ namespace DbNetSuiteCore.Extensions
                     return false;
             }
         }
-
         private static Type GetColumnType(string typeName)
         {
             return Type.GetType("System." + typeName);
+        }
+
+        private static bool IsCsvFile(GridModel gridModel)
+        {
+            return gridModel.DataSourceType == DataSourceType.Excel && gridModel.TableName.ToLower().Replace("]", string.Empty).EndsWith(".csv");
         }
     }
 }

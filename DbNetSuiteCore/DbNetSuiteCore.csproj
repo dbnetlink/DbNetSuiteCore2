@@ -5,6 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Library</OutputType>
+    <Description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, SQLite, JSON, Excel, CSV and the file system</Description>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Interactive data-driven components for ASP.Net Core Razor Views</Title>
+    <Version>1.0.20</Version>
+    <Authors>DbNetLink</Authors>
+    <Copyright>Copyright (c) DbNetLink Limited 2024</Copyright>
+    <PackageProjectUrl>https://dbnetsuitecore.com</PackageProjectUrl>
+    <PackageIcon>nuget_logo.png</PackageIcon>
+    <RepositoryUrl>https://github.com/dbnetlink/DbNetSuiteCore2</RepositoryUrl>
+    <PackageTags>asp.netcore;components;component;asp.net;core;razor;blazor;htmx;spreadsheet;excel grid;grid;csv grid;sqlite grid;mysql grid;mssql grid;postgresql grid;json grid;</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IsPackable>true</IsPackable>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="bundleconfig.json" />
+    <Content Remove="package.json" />
     <Content Remove="Views\Error.cshtml" />
     <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\GridRows.cshtml" />
@@ -34,11 +49,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Nuget\readme.md" />
     <None Remove="Resources\CSS\gridcontrol.css" />
     <None Remove="Resources\CSS\output.css" />
     <None Remove="Resources\CSS\tailwind.css" />
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
+    <None Remove="Resources\JS\bundle.js" />
+    <None Remove="Resources\JS\bundle.min.js" />
     <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridControl.js" />
     <None Remove="Resources\JS\htmx.js" />
@@ -54,10 +72,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="bundleconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Nuget\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\CSS\gridControl.css" />
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
+    <EmbeddedResource Include="Resources\JS\bundle.js" />
+    <EmbeddedResource Include="Resources\JS\bundle.min.js" />
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridControl.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
@@ -99,7 +127,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.TimestreamQuery" Version="3.7.301.35" />
+    <None Include="bundleconfig.json" />
+    <None Include="package.json" />
+    <EmbeddedResource Include="Nuget\nuget_logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
     <PackageReference Include="ClosedXML" Version="0.102.3" />
     <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5" />

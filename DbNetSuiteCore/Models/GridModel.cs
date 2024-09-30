@@ -1,5 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
-using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -73,6 +73,8 @@ namespace DbNetSuiteCore.Models
         public bool ViewDialog { get; set; } = false;
         public int ViewDialogLayoutColumns { get; set; } = 1;
         public bool SearchDialog { get; set; } = false;
+        [Description("Boosts performance by caching data. Applied to Excel and JSON files only.")]
+        public bool Cache { get; set; } = false;
         public GridModel()
         {
             Id = GeneratedId();

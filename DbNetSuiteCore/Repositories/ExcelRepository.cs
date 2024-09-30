@@ -5,69 +5,93 @@ using System.Data.OleDb;
 using CsvHelper;
 using System.Globalization;
 using CsvHelper.Configuration;
+using Microsoft.Extensions.Caching.Memory;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.ExtendedProperties;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class ExcelRepository : IExcelRepository
+    public class ExcelRepository : FileRepository,IExcelRepository
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
-        private static readonly HttpClient _httpClient = new HttpClient();
-        public ExcelRepository(IConfiguration configuration, IWebHostEnvironment env)
+        private readonly IMemoryCache _memoryCache;
+
+        public ExcelRepository(IConfiguration configuration, IWebHostEnvironment env, IMemoryCache memoryCache)
         {
             _configuration = configuration;
             _env = env;
+            _memoryCache = memoryCache;
         }
         public async Task GetRecords(GridModel gridModel)
         {
-            var dataTable = await BuildDataTable(gridModel);
-            dataTable.FilterAndSort(gridModel);
+            QueryCommandConfig query = gridModel.BuildQuery();
+            gridModel.Data = await BuildDataTable(gridModel, query);
             gridModel.ConvertEnumLookups();
         }
 
         public async Task GetRecord(GridModel gridModel)
         {
-            var dataTable = await BuildDataTable(gridModel);
-            dataTable.FilterWithPrimaryKey(gridModel);
+            QueryCommandConfig query = gridModel.BuildRecordQuery();
+            gridModel.Data = await BuildDataTable(gridModel, query);
             gridModel.ConvertEnumLookups();
         }
 
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
-            return await BuildDataTable(gridModel);
+            if (string.IsNullOrEmpty(gridModel.TableName))
+            {
+                AssignTableName(gridModel);
+            }
+
+            gridModel.TableName = TextHelper.DelimitColumn(gridModel.TableName, DataSourceType.Excel);
+
+            QueryCommandConfig query = gridModel.BuildEmptyQuery();
+
+            return await BuildDataTable(gridModel, query);
         }
 
-        private async Task<DataTable> BuildDataTable(GridModel gridModel)
+        private async Task<DataTable> BuildDataTable(GridModel gridModel, QueryCommandConfig query)
         {
+            return await LoadSpreadsheet(gridModel, query);
+        }
+
+        private async Task<DataTable> LoadSpreadsheet(GridModel gridModel, QueryCommandConfig query)
+        {
+            DataTable dataTable;
             try
             {
                 using (OleDbConnection connection = GetConnection(gridModel.Url))
                 {
                     connection.Open();
 
-                    if (string.IsNullOrEmpty(gridModel.TableName))
-                    {
-                        AssignTableName(gridModel, connection);
-                    }
+                    dataTable = new DataTable();
 
-                    DataTable dataTable = new DataTable();
-                    OleDbCommand command = new OleDbCommand($"SELECT * FROM [{gridModel.TableName}]", connection);
+                    string columns = gridModel.Columns.Any() ? String.Join(",", gridModel.Columns.Select(c => c.Expression)) : "*";
+ 
+                    OleDbCommand command = new OleDbCommand(query.Sql, connection);
+                    DbRepository.AddCommandParameters(command, query.Params);
                     dataTable.Load(await command.ExecuteReaderAsync());
                     connection.Close();
-                    return dataTable;
                 }
             }
             catch (Exception ex)
             {
+                    /*
                 if (gridModel.Url.ToLower().EndsWith(".csv"))
                 {
-                    return CsvToDataTable(gridModel);
+                    dataTable = CsvToDataTable(gridModel);
                 }
                 else
-                { 
+                {
                     throw new Exception($"Unable too read the Excel file {gridModel.TableName}");
                 }
+                */
+                throw new Exception($"Unable to read the Excel file {gridModel.TableName}", ex);
             }
+
+            return dataTable;
         }
 
         private DataTable CsvToDataTable(GridModel gridModel)
@@ -92,7 +116,7 @@ namespace DbNetSuiteCore.Repositories
             return dt;
         }
 
-        private async Task AssignTableName(GridModel gridModel, OleDbConnection connection)
+        private async Task AssignTableName(GridModel gridModel)
         {
             if (gridModel.Url.ToLower().EndsWith(".csv"))
             {
@@ -100,8 +124,13 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                DataTable tables = connection.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-                gridModel.TableName = tables.Rows[0]["TABLE_NAME"].ToString();
+                using (OleDbConnection connection = GetConnection(gridModel.Url))
+                {
+                    connection.Open();
+                    DataTable tables = connection.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+                    gridModel.TableName = tables.Rows[0]["TABLE_NAME"].ToString();
+                    connection.Close();
+                }
             }
         }
 
@@ -117,7 +146,8 @@ namespace DbNetSuiteCore.Repositories
 
         private string ExcelConnectionString(string filePath)
         {
-            string properties = filePath.ToLower().EndsWith(".csv") ? "Text;HDR=Yes;FORMAT=Delimited" : "Excel 12.0;HDR=YES";
+            string properties = filePath.ToLower().EndsWith(".csv") ? "Text;FORMAT=Delimited;" : "Excel 12.0;";
+            properties = $"{properties}HDR=Yes;characterset=65001";
 
             if (filePath.ToLower().EndsWith(".csv"))
             {

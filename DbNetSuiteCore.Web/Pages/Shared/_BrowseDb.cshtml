@@ -38,6 +38,43 @@
         </div>
     </form>
 
+    <div style="margin-top:10px">
+        @{
+            if (Model.TableName != string.Empty)
+            {
+                if (Model.TableName == "All")
+                {
+                    <div class="accordion" id="accordionExample">
+                        @foreach (string tableName in Model.Tables)
+                        {
+                            var tab = CleanTableName(tableName);
+                            var first = (tab == CleanTableName(Model.Tables.First()));
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading@(tab)">
+                                    <button class="accordion-button@(first ? "" : " collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@(tab)" aria-expanded="true" aria-controls="@(tab)" aria-expanded="@(first ? "true" : "false")">
+                                        @TextHelper.GenerateLabel(tab)
+                                    </button>
+                                </h2>
+                                <div id="@(tab)" class="accordion-collapse collapse@(first ? " show" : "")" aria-labelledby="heading@(tab)" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) {  }))
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                }
+                else
+                {
+                    @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName)))
+                }
+            }
+
+        }
+    </div>
+
+    @*
     <div>
         @{
             if (Model.TableName != string.Empty)
@@ -70,12 +107,13 @@
             }
         }
     </div>
+    *@
 </div>
 
 @functions
 {
     string CleanTableName(string tableName)
     {
-        return tableName.Split(".").Last().Replace("[", "").Replace("]", "").Replace(" ","");
+        return tableName.Split(".").Last().Replace("[", "").Replace("]", "").Replace(" ", "");
     }
 }

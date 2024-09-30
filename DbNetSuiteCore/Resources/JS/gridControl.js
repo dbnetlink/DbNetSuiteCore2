@@ -34,6 +34,7 @@ class GridControl {
             return;
         }
         if (this.triggerName(evt) == "viewdialogcontent") {
+            this.viewDialog.dialog.show();
             this.invokeEventHandler('ViewDialogUpdated');
             return;
         }
@@ -117,7 +118,10 @@ class GridControl {
         let rowCount = parseInt(tbody.dataset.rowcount);
         if (totalPages == 0) {
             this.updateLinkedGrids('');
-            if (this.viewDialog) {
+        }
+        if (this.viewDialog) {
+            this.getButton("view").disabled = (rowCount == 0);
+            if (rowCount == 0) {
                 this.viewDialog.close();
             }
         }

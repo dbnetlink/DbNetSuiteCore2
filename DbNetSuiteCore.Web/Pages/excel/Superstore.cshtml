@@ -1,0 +1,35 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+
+@{
+    var columns = new List<GridColumn>
+    {
+        new GridColumn("[Row ID]"),
+        new GridColumn("[Order ID]"),
+        new GridColumn("[Order Date]"),
+        new GridColumn("[Ship Date]"),
+        new GridColumn("[Ship Mode]"),
+        new GridColumn("[Customer ID]"),
+        new GridColumn("[Customer Name]"),
+        new GridColumn("Segment"),
+        new GridColumn("Country"),
+        new GridColumn("City"),
+        new GridColumn("State"),
+        new GridColumn("[Postal Code]"),
+        new GridColumn("Region"),
+        new GridColumn("[Product ID]"),
+        new GridColumn("Category"),
+        new GridColumn("[Sub-Category]"),
+        new GridColumn("[Product Name]"),
+        new GridColumn("Sales") { Format = "c"},
+        new GridColumn("Quantity"),
+        new GridColumn("Discount"),
+        new GridColumn("Profit") { Format = "c"}
+    };
+}
+
+@(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Excel, "/data/excel/superstore.xls") { Columns = columns }))
