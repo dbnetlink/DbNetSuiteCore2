@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>DbNetSuiteCore</id>
+    <version>1.0.20</version>
+    <title>Interactive data-driven components for ASP.Net Core Razor Views</title>
+    <authors>DbNetLink</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>nuget_logo.png</icon>
+    <readme>readme.md</readme>
+    <projectUrl>https://dbnetsuitecore.com/</projectUrl>
+    <description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, SQLite, JSON, Excel, CSV and the file system</description>
+    <copyright>Copyright (c) DbNetLink Limited 2024</copyright>
+    <tags>asp.netcore components component asp.net core razor blazor htmx spreadsheet excel grid grid csv grid sqlite grid mysql grid mssql grid postgresql grid json grid</tags>
+    <repository type="git" url="https://github.com/dbnetlink/DbNetSuiteCore2" commit="fc916c77d87fe3e2433da6f133c83bf61131a53e" />
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="ClosedXML" version="0.102.3" exclude="Build,Analyzers" />
+        <dependency id="CsvHelper" version="33.0.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" version="8.0.5" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.WebUtilities" version="8.0.6" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Data.SqlClient" version="5.2.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Data.Sqlite" version="8.0.6" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Data.Sqlite.Core" version="8.0.6" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="13.0.3" exclude="Build,Analyzers" />
+        <dependency id="RazorEngineCore" version="2024.4.1" exclude="Build,Analyzers" />
+        <dependency id="System.Data.OleDb" version="8.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net8.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="C:\Users\robin\source\repos\DbNetSuiteCore2\DbNetSuiteCore\bin\Debug\net8.0\DbNetSuiteCore.dll" target="lib\net8.0\DbNetSuiteCore.dll" />
+    <file src="C:\Users\robin\source\repos\DbNetSuiteCore2\DbNetSuiteCore\Nuget\readme.md" target="\readme.md" />
+    <file src="C:\Users\robin\source\repos\DbNetSuiteCore2\DbNetSuiteCore\Nuget\nuget_logo.png" target="\nuget_logo.png" />
+  </files>
+</package>

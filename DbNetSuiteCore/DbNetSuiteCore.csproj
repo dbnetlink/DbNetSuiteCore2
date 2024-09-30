@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Library</OutputType>
     <Description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, SQLite, JSON, Excel, CSV and the file system</Description>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Title>Interactive data-driven components for ASP.Net Core Razor Views</Title>
     <Version>1.0.20</Version>
     <Authors>DbNetLink</Authors>
@@ -155,6 +155,10 @@
 
   <Target Name="Tailwind" BeforeTargets="Build">
     <Exec Command="npm run css:build" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="nuget pack ./DbNetSuiteCore.nuspec" />
   </Target>
 
 </Project>
