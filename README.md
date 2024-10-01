@@ -6,7 +6,10 @@ Currently the components support the following data sources:
  - MSSQL
  - SQLite
  - MySql
+ - MariaDB
  - PostgreSql
+ - Excel
+ - CSV
  - JSON
  - File System
 
