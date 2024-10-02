@@ -12,13 +12,12 @@ namespace DbNetSuiteCore.Models
         public bool Viewable { get; set; } = true;
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
-        public int? MaxTextLength { get; set; }
         public AggregateType Aggregate { get; set; } = AggregateType.None;
-
         public SortOrder? InitialSortOrder { get; set; } = null;
-        public bool Filter { get; set; } = true;
+        public bool Filter { get; set; } = false;
         public string Style { get; set; } = string.Empty;
         public bool DataOnly { get; set; } = false;
+        public Image? Image { get; set; }
 
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;

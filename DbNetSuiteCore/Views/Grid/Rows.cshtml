@@ -70,6 +70,12 @@
                         @row[dataColumn]
                     </td>
                 }
+                else if (column.Image != null)
+                {
+                    <td @RazorHelper.CellDataAttributes(classes, new Byte[0], column.Style)>
+                        @Html.Raw(column.Image.Img(row[dataColumn] as byte[]))
+                    </td>
+                }
                 else
                 {
                     if (column.IsNumeric)
@@ -78,18 +84,7 @@
                     }
 
                     var value = column.FormatValue(row[dataColumn]!);
-                    if (column.MaxTextLength.HasValue && value.ToString().Length > column.MaxTextLength.Value)
-                    {
-                        <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
-                            <div class="tooltip" data-tip="@Html.Raw(value)">
-                                @Html.Raw($"{value.ToString().Substring(0, column.MaxTextLength.Value)}...")
-                            </div>
-                        </td>
-                    }
-                    else
-                    {
-                        <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
-                    }
+                    <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
                 }
             }
 

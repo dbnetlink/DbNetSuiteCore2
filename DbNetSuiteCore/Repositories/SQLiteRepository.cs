@@ -2,7 +2,7 @@
 {
     public class SQLiteRepository : DbRepository, ISQLiteRepository
     {
-        public SQLiteRepository(IConfiguration configuration, IWebHostEnvironment env) : base(Enums.DataSourceType.SQlite, configuration, env)
+        public SQLiteRepository(IConfiguration configuration, IWebHostEnvironment env) : base(Enums.DataSourceType.SQLite, configuration, env)
         {
         }
 

@@ -8,7 +8,6 @@ using CsvHelper.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.ExtendedProperties;
 
 namespace DbNetSuiteCore.Repositories
 {

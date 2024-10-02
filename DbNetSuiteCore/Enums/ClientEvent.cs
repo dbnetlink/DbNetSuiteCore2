@@ -4,7 +4,9 @@
     {
         PageLoaded,
         RowSelected,
-        CellRendered,
-        SelectedRowsUpdated
-    };
+        CellTransform,
+        RowTransform,
+        SelectedRowsUpdated,
+		ViewDialogUpdated
+	};
 }

@@ -9,7 +9,7 @@ namespace DbNetSuiteCore.Web.Pages.sqlite
     {
         public SqLiteBrowseModel(IConfiguration configuration, IWebHostEnvironment env) : base(configuration, env)
         {
-            DataSourceType = DataSourceType.SQlite;
+            DataSourceType = DataSourceType.SQLite;
             Connections = new List<string> { "Sakila(sqlite)", "Chinook(sqlite)", "Northwind(sqlite)", "Pitchfork(sqlite)", "Euro(sqlite)" };
         }
     }

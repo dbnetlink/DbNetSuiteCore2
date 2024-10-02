@@ -1,6 +1,7 @@
 class ViewDialog {
     dialog: HTMLDialogElement;
     gridControl: GridControl;
+    draggableDialog: DraggableDialog | null = null;
 
     constructor(dialog: HTMLDialogElement, gridControl: GridControl) {
         this.dialog = dialog;
@@ -13,11 +14,17 @@ class ViewDialog {
         this.dialog.querySelector(this.gridControl.buttonSelector("previous")).addEventListener("click", () => this.gridControl.previousRow());
         this.dialog.querySelector(this.gridControl.buttonSelector("next")).addEventListener("click", () => this.gridControl.nextRow());
         this.gridControl.getButton("view").addEventListener("click", this.open.bind(this))
-        new DraggableDialog(this.dialog.id, "dialog-nav");
     }
 
     open() {
         this.getRecord();
+    }
+
+    show() {
+        this.dialog.show();
+        if (!this.draggableDialog) {
+            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav", this.gridControl.gridControlElement("tbody"));
+        }
     }
 
     update() {
@@ -45,5 +52,14 @@ class ViewDialog {
 
     configureButton(sibling: HTMLTableRowElement, buttonType: string) {
         (this.dialog.querySelector(this.gridControl.buttonSelector(buttonType)) as HTMLButtonElement).disabled = (!sibling || sibling.classList.contains("grid-row") == false)  
+    }
+
+    columnCell(columnName: string) :HTMLDivElement {
+        return this.dialog.querySelector(`div[data-columnname='${columnName.toLowerCase()}']`);
+    }
+
+    columnValue(columnName: string) {
+        let div = this.columnCell(columnName)
+        return div ? div.dataset.value : null;
     }
 }

@@ -13,7 +13,7 @@
         new GridColumn("Discount", "Discount"),
     };
 
-    var orderDetailGrid = new GridModel(DataSourceType.SQlite, "Northwind(sqlite)", "[order details]");
+    var orderDetailGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[order details]");
     orderDetailGrid.Columns = orderDetailColumns;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid))
 }

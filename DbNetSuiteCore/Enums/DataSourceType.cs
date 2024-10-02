@@ -3,7 +3,7 @@ namespace DbNetSuiteCore.Enums
 {
     public enum DataSourceType
     {
-        SQlite,
+        SQLite,
         MSSQL,
         JSON,
         FileSystem,

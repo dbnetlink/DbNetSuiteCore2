@@ -11,7 +11,7 @@
     };
     var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "/data/excel", FixedFilter = "(IsDirectory = 1 or Name like '%.xlsx' or Name like '%.xls' or Name like '%.csv' )" };
     gridModel.Columns = columns;
-    gridModel.ClientEvents[ClientEvent.CellRendered] = "createLink";
+    gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }
@@ -20,9 +20,8 @@
     function createLink(gridControl, args) {
         var tbody = args.cell.closest("tbody")
         
-        switch (args.columnName) 
-        { 
-            case "Name":
+        switch (args.columnName.toLowerCase()) { 
+            case "name":
                 var name = args.cell.dataset.value.toString()
                 if (name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".csv")) {
                     args.cell.innerHTML = `<a target='_blank' href='${window.location.origin}/excel/renderfile?name=${name}'>${name}</a>`

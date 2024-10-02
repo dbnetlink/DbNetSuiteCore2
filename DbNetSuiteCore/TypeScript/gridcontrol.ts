@@ -22,7 +22,6 @@ class GridControl {
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
     viewDialog: ViewDialog;
-    draggedDialog: HTMLDialogElement;
     selectedRow: HTMLTableRowElement;
 
     constructor(gridId) {
@@ -38,8 +37,8 @@ class GridControl {
         }
 
         if (this.triggerName(evt) == "viewdialogcontent") {
-            this.viewDialog.dialog.show();
-            this.invokeEventHandler('ViewDialogUpdated');
+            this.viewDialog.show();
+            this.invokeEventHandler('ViewDialogUpdated', {viewDialog:this.viewDialog});
             return
         }
 
@@ -61,7 +60,8 @@ class GridControl {
             buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
 
-        this.gridControlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellRendered(cell) });
+        this.gridControlElements("tr.grid-row").forEach((row: HTMLTableRowElement) => { this.invokeEventHandler('RowTransform', { row: row }) });
+        this.gridControlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellTransform(cell) });
 
         this.gridControlElements("tbody a").forEach((e) => {
             e.classList.remove("selected");
@@ -72,10 +72,9 @@ class GridControl {
             this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
             this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
                 e.addEventListener("change", (ev) => {
-                    this.selectRow(ev.target);
-                    this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
-                })
-            });
+                    this.selectRow(ev.target, true);
+                 })
+             });
         }
         else {
             htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target as HTMLElement)) });
@@ -115,10 +114,10 @@ class GridControl {
         this.invokeEventHandler('Initialised');
     }
 
-    invokeCellRendered(cell: HTMLTableCellElement) {
+    invokeCellTransform(cell: HTMLTableCellElement) {
         var columnName = (this.gridControlElement("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
-        var args = { cell: (cell as HTMLTableCellElement), columnName: columnName }
-        this.invokeEventHandler('CellRendered', args)
+        var args = { cell: cell, columnName: columnName }
+        this.invokeEventHandler('CellTransform', args)
     }
 
     invokeEventHandler(eventName, args = {}) {
@@ -260,6 +259,12 @@ class GridControl {
         }
     }
 
+    refresh() {
+        let pageSelect = this.gridControlElement('[name="page"]')
+        pageSelect.value = "1";
+        htmx.trigger(pageSelect, "changed");
+    }
+
     isElementLoaded = async selector => {
         while (document.querySelector(selector) === null) {
             await new Promise(resolve => requestAnimationFrame(resolve))
@@ -274,10 +279,10 @@ class GridControl {
             this.selectRow(e);
         });
 
-        this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
+        this.selectedValuesChanged();;
     }
 
-    selectRow(target: HTMLElement) {
+    selectRow(target: HTMLElement, multiSelect:boolean = false) {
         let tr = target.closest('tr')
 
         if (target.classList.contains("multi-select") == false) {
@@ -288,6 +293,9 @@ class GridControl {
         }
         else if ((target as HTMLInputElement).checked == false) {
             this.clearHighlighting(tr);
+            if (multiSelect) {
+                this.selectedValuesChanged();
+            }
             return;
         }
 
@@ -302,8 +310,15 @@ class GridControl {
             this.viewDialog.configureNavigation(tr);
             this.viewDialog.update()
         }
-        
+
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
+        if (multiSelect) {
+            this.selectedValuesChanged();
+        }
+    }
+
+    selectedValuesChanged() {
+        this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
     }
 
     updateLinkedGrids(primaryKey: string) {
@@ -469,8 +484,26 @@ class GridControl {
     }
 
     columnCells(columnName) {
-        let th: HTMLTableCellElement = document.querySelector(`#${this.gridId} th[data-columnname='${columnName.toLowerCase()}']`)
+        let th = this.heading(columnName);
         return this.gridControlElements(`td:nth-child(${(th.cellIndex + 1)})`)
+    }
+
+    heading(columnName): HTMLTableCellElement {
+        return this.gridControlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
+    }
+
+    columnCell(columnName: string, row: HTMLTableRowElement):HTMLTableCellElement {
+        let th = this.heading(columnName);
+        return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
+    }
+
+    columnValue(columnName: string, row: HTMLTableRowElement) {
+        let datasetValue = row.dataset[columnName.toLowerCase()];
+        if (datasetValue) {
+            return datasetValue;
+        }
+        let cell = this.columnCell(columnName, row)
+        return cell ? cell.dataset.value : null;
     }
 
     getButton(name): HTMLButtonElement {

@@ -55,7 +55,7 @@
 
     void RenderPageNumber(int pageNumber, int totalPages)
     {
-        <select class="" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" style="width:@(totalPages.ToString().Length + 2)em">
+        <select class="" name="@TriggerNames.Page" value="@pageNumber" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" style="padding-right:2em">
             @{
                 for (var i = 1; i <= totalPages; i++)
                 {

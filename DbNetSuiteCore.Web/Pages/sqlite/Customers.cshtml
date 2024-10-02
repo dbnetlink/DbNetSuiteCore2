@@ -4,6 +4,14 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var customerGrid = new GridModel(DataSourceType.SQlite, "Northwind(sqlite)", "customers");
+    var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers");
+
+    customerGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("CompanyName", "Name"),
+        new GridColumn("coalesce(Address,'') || ', ' || coalesce(City,'')", "Address"),
+        new GridColumn("coalesce(Phone,'') || '/' || coalesce(Fax,'')", "Phone/Fax")
+    };
+
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
 }

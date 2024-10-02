@@ -4,7 +4,6 @@
 
 @{
     Layout = null;
-    var customerGrid = new GridModel(DataSourceType.MSSQL, "Northwind(sqlite)", "Customers");
 }
 
 <!DOCTYPE html>
@@ -13,8 +12,12 @@
     @DbNetSuiteCore.Resources.StyleSheet()
 </head>
 <body>
-    <main style="padding:20px">
-        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+    <main>
+        @{
+            var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+        }
+        
     </main>
     @DbNetSuiteCore.Resources.ClientScript()
 </body>

@@ -49,7 +49,7 @@
     invoiceGridModel.Caption = "Invoices";
     invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
-    var customerGridModel = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "Customers");
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
     customerGridModel.Columns = customerColumns;
     customerGridModel.NestedGrid = invoiceGridModel;
 }

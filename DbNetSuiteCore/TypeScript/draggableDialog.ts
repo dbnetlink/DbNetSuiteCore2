@@ -1,14 +1,16 @@
 ﻿class DraggableDialog {
     private dialog: HTMLDialogElement;
     private dragHandle: HTMLElement;
+    private container: HTMLElement;
     private isDragging: boolean = false;
     private initialX: number = 0;
     private initialY: number = 0;
     private xOffset: number = 0;
     private yOffset: number = 0;
 
-    constructor(dialogId: string, dragHandleClass: string = 'dialog-header') {
+    constructor(dialogId: string, dragHandleClass: string = 'dialog-header', container:HTMLElement) {
         this.dialog = document.getElementById(dialogId) as HTMLDialogElement;
+        this.container = container;
         if (!this.dialog) {
             throw new Error(`Dialog with id "${dialogId}" not found`);
         }
@@ -25,6 +27,10 @@
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
+
+        this.xOffset = (0 - (this.container.clientWidth / 2) - this.dialog.clientWidth) + this.container.offsetLeft;
+        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
+        this.setTranslate(this.xOffset, this.yOffset);
     }
 
     private startDragging(e: MouseEvent): void {

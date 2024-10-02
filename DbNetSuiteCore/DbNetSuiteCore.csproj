@@ -8,7 +8,7 @@
     <Description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, SQLite, JSON, Excel, CSV and the file system</Description>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Title>Interactive data-driven components for ASP.Net Core Razor Views</Title>
-    <Version>1.0.20</Version>
+    <Version>1.0.21</Version>
     <Authors>DbNetLink</Authors>
     <Copyright>Copyright (c) DbNetLink Limited 2024</Copyright>
     <PackageProjectUrl>https://dbnetsuitecore.com</PackageProjectUrl>
@@ -158,7 +158,7 @@
   </Target>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="nuget pack ./DbNetSuiteCore.nuspec" />
+    <Exec Command="nuget pack ./Nuget/DbNetSuiteCore.nuspec" />
   </Target>
 
 </Project>

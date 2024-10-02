@@ -18,7 +18,7 @@
 
     var invoiceGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "Order_Details join Orders on Orders.Id = Order_Details.Order_id");
     invoiceGrid.Columns = invoiceColumns;
-    invoiceGrid.ClientEvents[ClientEvent.CellRendered] = "highlightQuantity";
+    invoiceGrid.ClientEvents[ClientEvent.CellTransform] = "highlightQuantity";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
 }
 

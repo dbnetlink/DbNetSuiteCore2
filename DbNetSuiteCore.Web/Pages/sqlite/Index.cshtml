@@ -23,7 +23,7 @@
         new GridColumn("customer.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)}
     };
 
-    var customerGridModel = new GridModel(DataSourceType.SQlite, "Sakila(sqlite)", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id");
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id");
     customerGridModel.Columns = customerColumns;
     customerGridModel.ClientEvents[ClientEvent.PageLoaded] = "customerGridPageLoaded";
     customerGridModel.ClientEvents[ClientEvent.RowSelected] = "customerRowSelectedLoaded";

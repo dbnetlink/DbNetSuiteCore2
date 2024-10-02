@@ -139,7 +139,7 @@ namespace DbNetSuiteCore.Models
 
         public DataColumn? GetDataColumn(GridColumn column)
         {
-            return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower());
+            return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower() || c.ColumnName.ToLower() == column.Expression.ToLower());
         }
 
         public void ConfigureSort(string sortKey)
@@ -198,6 +198,11 @@ namespace DbNetSuiteCore.Models
             }
 
             return defaultValue;
+        }
+
+        public void Bind(ClientEvent clientEvent, string functionName)
+        {
+            ClientEvents[clientEvent] = functionName;
         }
     }
 }

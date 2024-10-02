@@ -12,7 +12,7 @@
         new GridColumn("(UnitPrice*Quantity)", "Price") {Format = "c", Aggregate = AggregateType.Sum, DataType = typeof(Decimal)},
     };
 
-    var invoiceGrid = new GridModel(DataSourceType.SQlite, "Northwind(sqlite)", "invoices");
+    var invoiceGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "invoices");
     invoiceGrid.Columns = invoiceColumns;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
 }

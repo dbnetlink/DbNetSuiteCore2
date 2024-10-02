@@ -18,7 +18,7 @@
 
     var invoiceGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(Postgresql)", "Order_Details join Orders on Orders.Order_Id = Order_Details.Order_id");
     invoiceGrid.Columns = invoiceColumns;
-    invoiceGrid.ClientEvents[ClientEvent.CellRendered] = "highlightQuantity";
+    invoiceGrid.ClientEvents[ClientEvent.CellTransform] = "highlightQuantity";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
 }
 

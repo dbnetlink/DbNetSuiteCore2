@@ -23,7 +23,7 @@
                     {
                         GridColumn gridColumn = Model.Columns.ToList()[i];
                         DataColumn? dataColumn = Model.GridModel.GetDataColumn(gridColumn);
-                        var classes = new List<string>() { "text-base" };
+                        var classes = new List<string>() { "text-base", "view-cell" };
                         var value = Model.Row[dataColumn!];
                         if (gridColumn.IsNumeric && gridColumn.Lookup == null)
                         {
@@ -32,8 +32,20 @@
 
                         var formattedvalue = gridColumn.FormatValue(value);
 
-                        <td class="font-bold" data-columnname="@gridColumn.ColumnName">@(gridColumn.Label)</td>
-                        <td @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>@Html.Raw(formattedvalue)</td>
+                        <td class="font-bold">@(gridColumn.Label)</td>
+                        <td>
+                            <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>
+                            @if (gridColumn.DataType == typeof(Boolean))
+                            {
+                                var boolValue = Convert.ToBoolean(Convert.ToInt16(value));
+                                @(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())
+                            }
+                            else
+                            {
+                                @Html.Raw(formattedvalue)
+                            }
+                            </div>
+                        </td>
 
                         if (c > 0 && c < layoutColumns)
                         {

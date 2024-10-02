@@ -199,7 +199,7 @@ namespace DbNetSuiteCore.Extensions
                     continue;
                 }
 
-                var column = gridModel.Columns.Skip(i).First();
+                var column = gridModel.Columns.Where(c => c.Filter).Skip(i).First();
 
                 if (column.Aggregate == AggregateType.None == havingFilter)
                 {
@@ -236,7 +236,7 @@ namespace DbNetSuiteCore.Extensions
 
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     return gridColumnModel.ColumnName;
                 default:
                     return AggregateExpression(gridColumnModel);
@@ -296,7 +296,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 case DataSourceType.MSSQL:
                 case DataSourceType.Excel:
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     return $"[@]";
                 case DataSourceType.MySql:
                     return $"`@`";
@@ -391,7 +391,7 @@ namespace DbNetSuiteCore.Extensions
                         columnExpression = $"CONVERT(DATE,{columnExpression})";
                     }
                     break;
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     columnExpression = $"DATE({columnExpression})";
                     break;
             }
@@ -493,7 +493,7 @@ namespace DbNetSuiteCore.Extensions
                 case nameof(DateTime):
                     switch (gridModel.DataSourceType)
                     {
-                        case DataSourceType.SQlite:
+                        case DataSourceType.SQLite:
                             paramValue = Convert.ToDateTime(paramValue).ToString("yyyy-MM-dd");
                             break;
                     }

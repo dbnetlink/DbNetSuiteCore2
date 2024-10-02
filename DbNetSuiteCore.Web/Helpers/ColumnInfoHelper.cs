@@ -28,7 +28,7 @@ namespace DbNetSuiteCore.Web.Helpers
             {
                 new GridColumn("film.film_id", "FilmID") { PrimaryKey = true},
                 new GridColumn("film.title", "Title"),
-                new GridColumn("film.description", "Description") {MaxTextLength = 40},
+                new GridColumn("film.description", "Description"),
                 new GridColumn("film.release_year", "Year Of Release"),
                 new GridColumn("language.name", "Language"),
                 new GridColumn("film.rental_duration", "Duration"),

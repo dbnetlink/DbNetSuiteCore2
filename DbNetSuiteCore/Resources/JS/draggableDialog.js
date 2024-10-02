@@ -1,11 +1,12 @@
 class DraggableDialog {
-    constructor(dialogId, dragHandleClass = 'dialog-header') {
+    constructor(dialogId, dragHandleClass = 'dialog-header', container) {
         this.isDragging = false;
         this.initialX = 0;
         this.initialY = 0;
         this.xOffset = 0;
         this.yOffset = 0;
         this.dialog = document.getElementById(dialogId);
+        this.container = container;
         if (!this.dialog) {
             throw new Error(`Dialog with id "${dialogId}" not found`);
         }
@@ -19,6 +20,9 @@ class DraggableDialog {
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
+        this.xOffset = (0 - (this.container.clientWidth / 2) - this.dialog.clientWidth) + this.container.offsetLeft;
+        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
+        this.setTranslate(this.xOffset, this.yOffset);
     }
     startDragging(e) {
         if (e.target.closest(`.${this.dragHandle.className}`) === this.dragHandle) {

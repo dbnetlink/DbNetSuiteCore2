@@ -16,18 +16,16 @@
         invoiceColumns.Add(column);
     }
 
-    var invoiceGrid = new GridModel(DataSourceType.SQlite, "Northwind(sqlite)", "invoices");
+    var invoiceGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "invoices");
     invoiceGrid.Columns = invoiceColumns;
-    invoiceGrid.ClientEvents[ClientEvent.CellRendered] = "highlightQuantity";
+    invoiceGrid.ClientEvents[ClientEvent.CellTransform] = "highlightQuantity";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
 }
 
 <script>
     function highlightQuantity(gridControl, args) {
-
-
         switch (args.columnName.toLowerCase()) {
-            case "ProductName":
+            case "productname":
                 break;
             default:
                 var qty = Number(args.cell.dataset.value)
@@ -36,6 +34,5 @@
                 }
                 break;
         }
-
     }
 </script>

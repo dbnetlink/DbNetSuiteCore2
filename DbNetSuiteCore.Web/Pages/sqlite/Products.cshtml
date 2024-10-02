@@ -1,0 +1,52 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+	var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog = true, ViewDialogLayoutColumns = 2};
+	customerGrid.Columns = new List<GridColumn>() {
+		new GridColumn("ProductID") { PrimaryKey = true },
+		new GridColumn("ProductName"),
+		new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = true },
+		new GridColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"), Filter = true },
+		new GridColumn("QuantityPerUnit", "Qty."),
+		new GridColumn("UnitPrice","Price") { Format = "c"},
+		new GridColumn("UnitsInStock", "Stock"),
+		new GridColumn("UnitsOnOrder","On Order"),
+		new GridColumn("ReorderLevel"),
+		new GridColumn("Discontinued") { DataType = typeof(Boolean)}
+	};
+    customerGrid.Bind(ClientEvent.RowTransform, "highlightGridLowStock");
+	customerGrid.Bind(ClientEvent.ViewDialogUpdated, "highlightViewLowStock");
+
+	@(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+}
+<script>
+	function highlightGridLowStock(gridControl, args) {
+		highlightLowStock(gridControl, args.row)
+    }
+
+	function highlightViewLowStock(gridControl, args) {
+		highlightLowStock(args.viewDialog)
+	}
+
+	function highlightLowStock(control, row) {
+		var unitsInStock = parseInt(control.columnValue("UnitsInStock", row));
+		var reorderLevel = parseInt(control.columnValue("ReorderLevel", row));
+
+		if (unitsInStock < reorderLevel) {
+			if (row) {
+				row.style.fontWeight = "bold";
+			}
+			let unitsInStockCell = control.columnCell("UnitsInStock", row);
+			let reorderLevelCell = control.columnCell("ReorderLevel", row);
+
+			unitsInStockCell.style.backgroundColor = "#CD6155"
+			unitsInStockCell.style.color = "#F2D7D5";
+
+			reorderLevelCell.style.backgroundColor = "#CD6155"
+			reorderLevelCell.style.color = "#F2D7D5";
+		}
+	}
+</script>
+

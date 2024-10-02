@@ -3,11 +3,11 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Extensions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using System.Data.OleDb;
 using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -32,7 +32,7 @@ namespace DbNetSuiteCore.Repositories
 
             switch (_dataSourceType)
             {
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     connectionString = MapDatabasePath(connectionString, _env);
                     connection = new SqliteConnection(connectionString);
                     break;
@@ -102,9 +102,15 @@ namespace DbNetSuiteCore.Repositories
 
             var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
 
-            QueryCommandConfig query = new QueryCommandConfig();
             var lookup = gridColumn.Lookup!;
 
+            if (string.IsNullOrEmpty(lookup.TableName))
+            {
+                gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+                return;
+            }
+
+            QueryCommandConfig query = new QueryCommandConfig();
             var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => ParameterName($"param{i}")).ToList();
 
             int i = 0;
@@ -112,9 +118,18 @@ namespace DbNetSuiteCore.Repositories
 
             query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {lookup.KeyColumn} in ({String.Join(",", paramNames)}) order by 2";
 
-            var dt = await GetDataTable(query, gridModel.ConnectionAlias);
-            gridColumn.DbLookupOptions = dt.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+            DataTable lookupData;
 
+            try
+            {
+                lookupData = await GetDataTable(query, gridModel.ConnectionAlias);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error in column lookup configuration", ex);
+            }
+            
+            gridColumn.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
             gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
         }
 
@@ -292,6 +307,10 @@ namespace DbNetSuiteCore.Repositories
                 case DataSourceType.MySql:
                     assemblyName = "MySqlConnector";
                     connectionName = "MySqlConnection";
+                    break;
+                case DataSourceType.Excel:
+                    assemblyName = "System.Data.OleDb";
+                    connectionName = "OleDbConnection";
                     break;
                 default:
                     throw new NotImplementedException($"Custom connection not supported for {dataSourceType} data source type");

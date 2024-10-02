@@ -58,7 +58,7 @@ namespace DbNetSuiteCore.Web.ViewModels
                 case DataSourceType.MSSQL:
                     LoadMSSQLTables(connection as SqlConnection);
                     break;
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     LoadSqliteTables(connection as SqliteConnection);
                     break;
                 case DataSourceType.PostgreSql:
@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Web.ViewModels
         private void LoadSqliteTables(SqliteConnection connection)
         {
             LoadSchemaTables("SELECT name FROM sqlite_master WHERE type in ('table','view') order by 1", connection);
-            Tables = Tables.Select(t => GridModelExtensions.QualifyExpression(t, DataSourceType.SQlite)).ToList();
+            Tables = Tables.Select(t => GridModelExtensions.QualifyExpression(t, DataSourceType.SQLite)).ToList();
         }
 
         private void LoadPostreSqlTables(IDbConnection connection)
@@ -125,7 +125,7 @@ namespace DbNetSuiteCore.Web.ViewModels
             {
                 default:
                     return new SqlConnection(connectionString);
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     connectionString = DbRepository.MapDatabasePath(connectionString, env);
                     return new SqliteConnection(connectionString);
                 case DataSourceType.PostgreSql:

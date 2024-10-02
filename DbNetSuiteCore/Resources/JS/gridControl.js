@@ -34,8 +34,8 @@ class GridControl {
             return;
         }
         if (this.triggerName(evt) == "viewdialogcontent") {
-            this.viewDialog.dialog.show();
-            this.invokeEventHandler('ViewDialogUpdated');
+            this.viewDialog.show();
+            this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
             return;
         }
         if (!this.gridControlElement("tbody")) {
@@ -51,7 +51,8 @@ class GridControl {
             buttons[0].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
             buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
-        this.gridControlElements("td[data-value]").forEach((cell) => { this.invokeCellRendered(cell); });
+        this.gridControlElements("tr.grid-row").forEach((row) => { this.invokeEventHandler('RowTransform', { row: row }); });
+        this.gridControlElements("td[data-value]").forEach((cell) => { this.invokeCellTransform(cell); });
         this.gridControlElements("tbody a").forEach((e) => {
             e.classList.remove("selected");
             e.classList.add("underline");
@@ -60,8 +61,7 @@ class GridControl {
             this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev); });
             this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
                 e.addEventListener("change", (ev) => {
-                    this.selectRow(ev.target);
-                    this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
+                    this.selectRow(ev.target, true);
                 });
             });
         }
@@ -95,10 +95,10 @@ class GridControl {
         }
         this.invokeEventHandler('Initialised');
     }
-    invokeCellRendered(cell) {
+    invokeCellTransform(cell) {
         var columnName = this.gridControlElement("thead").children[0].children[cell.cellIndex].dataset.columnname;
         var args = { cell: cell, columnName: columnName };
-        this.invokeEventHandler('CellRendered', args);
+        this.invokeEventHandler('CellTransform', args);
     }
     invokeEventHandler(eventName, args = {}) {
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
@@ -210,15 +210,21 @@ class GridControl {
             htmx.trigger(`#${this.gridId}`, "submit");
         }
     }
+    refresh() {
+        let pageSelect = this.gridControlElement('[name="page"]');
+        pageSelect.value = "1";
+        htmx.trigger(pageSelect, "changed");
+    }
     updateMultiRowSelect(ev) {
         let checked = ev.target.checked;
         this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
             e.checked = checked;
             this.selectRow(e);
         });
-        this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
+        this.selectedValuesChanged();
+        ;
     }
-    selectRow(target) {
+    selectRow(target, multiSelect = false) {
         let tr = target.closest('tr');
         if (target.classList.contains("multi-select") == false) {
             if (tr.classList.contains(this.bgColourClass)) {
@@ -228,6 +234,9 @@ class GridControl {
         }
         else if (target.checked == false) {
             this.clearHighlighting(tr);
+            if (multiSelect) {
+                this.selectedValuesChanged();
+            }
             return;
         }
         tr.classList.add(this.bgColourClass, this.textColourClass);
@@ -240,6 +249,12 @@ class GridControl {
             this.viewDialog.update();
         }
         this.invokeEventHandler('RowSelected', { selectedRow: tr });
+        if (multiSelect) {
+            this.selectedValuesChanged();
+        }
+    }
+    selectedValuesChanged() {
+        this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
     }
     updateLinkedGrids(primaryKey) {
         let table = this.gridControlElement("table");
@@ -383,8 +398,23 @@ class GridControl {
         return `button[button-type="${buttonType}"]`;
     }
     columnCells(columnName) {
-        let th = document.querySelector(`#${this.gridId} th[data-columnname='${columnName.toLowerCase()}']`);
+        let th = this.heading(columnName);
         return this.gridControlElements(`td:nth-child(${(th.cellIndex + 1)})`);
+    }
+    heading(columnName) {
+        return this.gridControlElement(`th[data-columnname='${columnName.toLowerCase()}']`);
+    }
+    columnCell(columnName, row) {
+        let th = this.heading(columnName);
+        return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
+    }
+    columnValue(columnName, row) {
+        let datasetValue = row.dataset[columnName.toLowerCase()];
+        if (datasetValue) {
+            return datasetValue;
+        }
+        let cell = this.columnCell(columnName, row);
+        return cell ? cell.dataset.value : null;
     }
     getButton(name) {
         return this.gridControlElement(this.buttonSelector(name));

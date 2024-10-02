@@ -690,6 +690,10 @@ select {
   --tw-ring-color: rgb(14 116 144 / var(--tw-ring-opacity));
 }
 
+.dbnetsuite select.column-filter {
+  padding-right: 2rem;
+}
+
 .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {
   border-radius: 0.25rem;
@@ -799,6 +803,24 @@ form.dbnetsuite {
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(203 213 225 / var(--tw-border-opacity));
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  padding-left: 0.125rem;
+  padding-right: 0.125rem;
+}
+
+.dbnetsuite .view-dialog td {
+  border-top-width: 0px;
+  border-bottom-width: 0px;
+}
+
+.dbnetsuite div.view-cell {
+  border-radius: 0.25rem;
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(203 213 225 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-top: 0.125rem;
   padding-bottom: 0.125rem;
   padding-left: 0.125rem;

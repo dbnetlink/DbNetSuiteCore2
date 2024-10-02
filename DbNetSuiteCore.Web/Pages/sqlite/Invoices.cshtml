@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var invoiceGrid = new GridModel(DataSourceType.SQlite, "Chinook(sqlite)", "invoices");
+    var invoiceGrid = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "invoices");
     invoiceGrid.Columns = new List<GridColumn>
     {
         new GridColumn("InvoiceId", "Invoice ID") { PrimaryKey = true, DataOnly = true},

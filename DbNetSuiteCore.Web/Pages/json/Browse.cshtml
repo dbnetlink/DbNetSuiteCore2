@@ -11,7 +11,7 @@
     };
     var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "/data/json", FixedFilter = "(IsDirectory = 1 or Name like '%.json')" };
     gridModel.Columns = columns;
-    gridModel.ClientEvents[ClientEvent.CellRendered] = "createLink";
+    gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }
@@ -20,9 +20,9 @@
     function createLink(gridControl, args) {
         var tbody = args.cell.closest("tbody")
         
-        switch (args.columnName) 
+        switch (args.columnName.toLowerCase()) 
         { 
-            case "Name":
+            case "name":
                 var name = args.cell.dataset.value.toString()
                 if (name.endsWith(".json")) {
                     args.cell.innerHTML = `<a target='_blank' href='${window.location.origin}/json/renderfile?name=${name}'>${name.replace(".json", "")}</a>`

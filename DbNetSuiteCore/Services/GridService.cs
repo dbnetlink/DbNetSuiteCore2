@@ -246,7 +246,7 @@ namespace DbNetSuiteCore.Services
 
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     await _sqliteRepository.GetRecord(gridModel);
                     break;
                 case DataSourceType.MySql:
@@ -278,7 +278,7 @@ namespace DbNetSuiteCore.Services
 
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     await _sqliteRepository.GetRecords(gridModel);
                     break;
                 case DataSourceType.MySql:
@@ -306,7 +306,7 @@ namespace DbNetSuiteCore.Services
         {
             switch (gridModel.DataSourceType)
             {
-                case DataSourceType.SQlite:
+                case DataSourceType.SQLite:
                     return await _sqliteRepository.GetColumns(gridModel);
                 case DataSourceType.MySql:
                     return await _mySqlRepository.GetColumns(gridModel);

@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Html;
 using System.Data;
 
@@ -16,7 +15,7 @@ namespace DbNetSuiteCore.Helpers
                 dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
             }
 
-            if ((value is byte) == false)
+            if (value != null && (value is byte) == false)
             {
                 dataAttributes.Add($"data-value=\"{value}\"");
             }
