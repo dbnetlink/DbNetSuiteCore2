@@ -26,6 +26,7 @@ class GridControl {
         };
         this.gridId = gridId;
         this.gridControl = document.querySelector(this.gridSelector());
+        this.gridControl.style.display = '';
         this.gridContainer = this.gridControl.parentElement;
     }
     afterRequest(evt) {
@@ -57,16 +58,18 @@ class GridControl {
             e.classList.remove("selected");
             e.classList.add("underline");
         });
-        if (this.gridControlElement(this.multiRowSelectAllSelector())) {
-            this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev); });
-            this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
-                e.addEventListener("change", (ev) => {
-                    this.selectRow(ev.target, true);
+        if (this.rowSelection() != "none") {
+            if (this.gridControlElement(this.multiRowSelectAllSelector())) {
+                this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev); });
+                this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
+                    e.addEventListener("change", (ev) => {
+                        this.selectRow(ev.target, true);
+                    });
                 });
-            });
-        }
-        else {
-            htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target)); });
+            }
+            else {
+                htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target)); });
+            }
         }
         let row = document.querySelector(this.rowSelector());
         if (row) {
@@ -142,6 +145,10 @@ class GridControl {
             this.getButton("next").disabled = currentPage == totalPages;
             this.getButton("last").disabled = currentPage == totalPages;
         }
+    }
+    rowSelection() {
+        let thead = this.gridControlElement("thead");
+        return thead.dataset.rowselection.toLowerCase();
     }
     removeClass(selector, className) {
         this.gridControlElement(selector).classList.remove(className);
@@ -459,7 +466,7 @@ class DraggableDialog {
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
-        this.xOffset = (0 - (this.container.clientWidth / 2) - this.dialog.clientWidth) + this.container.offsetLeft;
+        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft;
         this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
         this.setTranslate(this.xOffset, this.yOffset);
     }

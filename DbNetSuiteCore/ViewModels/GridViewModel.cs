@@ -13,6 +13,7 @@ namespace DbNetSuiteCore.ViewModels
         public IEnumerable<GridColumn> DataOnlyColumns => _gridModel.DataOnlyColumns;
         private readonly GridModel _gridModel = new GridModel();
         public GridModel GridModel => _gridModel;
+        public ViewDialog ViewDialog => _gridModel.ViewDialog!;
         public IEnumerable<DataRow> Rows => GridModel.Data.AsEnumerable().Skip((GridModel.CurrentPage - 1) * GridModel.PageSize).Take(GridModel.PageSize);
         public int TotalPages => (int)Math.Ceiling((double)GridModel.Data.Rows.Count / GridModel.PageSize);
         public int RowCount => GridModel.Data.Rows.Count;

@@ -99,13 +99,13 @@ namespace DbNetSuiteCore.Models
         public ColumnModel(string expression, string label) : this()
         {
             Expression = expression;
-            Label = TextHelper.GenerateLabel(label);
+            Label = label;
         }
 
         public ColumnModel(string expression) : this()
         {
             Expression = expression;
-            Label = expression.Split(" ").Last();
+            Label = TextHelper.GenerateLabel(expression);
         }
 
         public void Update(DataColumn dataColumn)
@@ -113,10 +113,6 @@ namespace DbNetSuiteCore.Models
             DataType = dataColumn.DataType;
             Initialised = true;
             Name = CleanColumnName(dataColumn.ColumnName);
-            if (string.IsNullOrEmpty(Label))
-            {
-                Label = TextHelper.GenerateLabel(Name);
-            }
         }
 
         public void Update(DataRow dataRow)

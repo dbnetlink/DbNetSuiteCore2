@@ -45,10 +45,10 @@
 
 
 
-    var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5, ViewDialog = true };
+    var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5, ViewDialog =  new ViewDialog() };
     orderDetailGrid.Columns = orderDetailColumns;
 
-    var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.orders") { PageSize = 5, ViewDialog = true };
+    var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.orders") { PageSize = 5, ViewDialog =  new ViewDialog() };
     ordersGrid.Columns = orderColumns;
     ordersGrid.AddLinkedGrid(orderDetailGrid);
 

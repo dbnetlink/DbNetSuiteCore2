@@ -9,6 +9,7 @@ namespace DbNetSuiteCore.Models
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
         private GridModel? _LinkedGrid;
+        private RowSelection _RowSelection = RowSelection.Single;
         public string Id { get; set; } = string.Empty;
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
@@ -67,11 +68,32 @@ namespace DbNetSuiteCore.Models
         public string HxFormTrigger => IsLinked ? "submit" : "load";
         public string TriggerName { get; set; } = string.Empty;
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
-        public MultiRowSelectLocation MultiRowSelect { get; set; } = MultiRowSelectLocation.None;
+        public RowSelection RowSelection { 
+            get 
+            { 
+                return _RowSelection;
+            } 
+            set 
+            {   
+                _RowSelection = value;
+                if (_RowSelection == RowSelection.Multiple)
+                {
+                    if (MultiRowSelectLocation == MultiRowSelectLocation.None)
+                    {
+                        MultiRowSelectLocation = MultiRowSelectLocation.Left;
+                    }
+                }
+                else
+                {
+                    MultiRowSelectLocation = MultiRowSelectLocation.None;
+                }
+            } 
+        }
+        public MultiRowSelectLocation MultiRowSelectLocation { get; set; } = MultiRowSelectLocation.None;
         public bool FrozenHeader { get; set; } = false;
+        public bool Headings { get; set; } = true;
         public bool IsStoredProcedure { get; set; } = false;
-        public bool ViewDialog { get; set; } = false;
-        public int ViewDialogLayoutColumns { get; set; } = 1;
+        public ViewDialog? ViewDialog { get; set; }
         public bool SearchDialog { get; set; } = false;
         [Description("Boosts performance by caching data. Applied to Excel and JSON files only.")]
         public bool Cache { get; set; } = false;

@@ -55,9 +55,9 @@
         new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
     };
 
-    var countryModel = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv") { Columns = countryColumns, ViewDialog = true, PageSize = 5, Caption = "Countries" };
-    var stateModel = new GridModel(DataSourceType.Excel, "/data/excel/states.csv") { Columns = stateColumns, ViewDialog = true, PageSize = 5, Caption = "States" };
-    var cityModel = new GridModel(DataSourceType.Excel, "/data/excel/cities.csv") { Columns = cityColumns, ViewDialog = true, PageSize = 5, Caption = "Cities" };
+    var countryModel = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv") { Columns = countryColumns, ViewDialog =  new ViewDialog(), PageSize = 5, Caption = "Countries" };
+    var stateModel = new GridModel(DataSourceType.Excel, "/data/excel/states.csv") { Columns = stateColumns, ViewDialog =  new ViewDialog(), PageSize = 5, Caption = "States" };
+    var cityModel = new GridModel(DataSourceType.Excel, "/data/excel/cities.csv") { Columns = cityColumns, ViewDialog =  new ViewDialog(), PageSize = 5, Caption = "Cities" };
 
     countryModel.LinkedGrid = stateModel;
     stateModel.LinkedGrid = cityModel;

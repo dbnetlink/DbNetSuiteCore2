@@ -3,10 +3,10 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var employeeGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees");
+    var employeeGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") { ViewDialog = new ViewDialog() { MaxWidth = 300, MaxHeight = 400} };
     employeeGrid.Columns = new List<GridColumn>()
     {
-        new GridColumn("EmployeeID"),
+        new GridColumn("EmployeeID") { PrimaryKey = true},
         new GridColumn("LastName"),
         new GridColumn("FirstName"),
         new GridColumn("Title"),
@@ -20,9 +20,9 @@
         new GridColumn("Country") { Lookup = new Lookup(), Filter = true},
         new GridColumn("HomePhone"),
         new GridColumn("Extension"),
-        new GridColumn("Photo") { Image = new Image(ImageType.Jpeg)},
+        new GridColumn("Photo") { Image = new Image(ImageType.Jpeg, 50)},
         new GridColumn("Notes"),
         new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = true}
     };
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid))
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid)) {}
 }

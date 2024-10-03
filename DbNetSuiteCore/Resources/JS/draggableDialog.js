@@ -20,7 +20,7 @@ class DraggableDialog {
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
-        this.xOffset = (0 - (this.container.clientWidth / 2) - this.dialog.clientWidth) + this.container.offsetLeft;
+        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft;
         this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
         this.setTranslate(this.xOffset, this.yOffset);
     }

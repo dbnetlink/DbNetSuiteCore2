@@ -4,6 +4,13 @@
     {
         Jpeg,
         Png,
-        Gif
+        Gif, 
+        Tiff,
+        Avif,
+        Svg,
+        Apng,
+        Webp,
+        Bmp,
+        Ico
     }
 }

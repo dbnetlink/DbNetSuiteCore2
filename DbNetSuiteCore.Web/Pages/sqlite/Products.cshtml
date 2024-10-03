@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-	var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog = true, ViewDialogLayoutColumns = 2};
+	var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
 	customerGrid.Columns = new List<GridColumn>() {
 		new GridColumn("ProductID") { PrimaryKey = true },
 		new GridColumn("ProductName"),

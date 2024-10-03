@@ -17,7 +17,7 @@
         new GridColumn("BillingPostalCode", "Postal Code"),
         new GridColumn("Total", "Total") { Format = "C"},
     }; 
-    invoiceGrid.MultiRowSelect = MultiRowSelectLocation.Left;
+    invoiceGrid.MultiRowSelectLocation = MultiRowSelectLocation.Left;
     invoiceGrid.PageSize = 100;
     invoiceGrid.FrozenHeader = true;
     invoiceGrid.ClientEvents[ClientEvent.SelectedRowsUpdated] = "showSelectedRows";

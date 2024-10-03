@@ -18,7 +18,7 @@
         new GridColumn("country_name"),
         new GridColumn("latitude"),
         new GridColumn("longitude"),
-        new GridColumn("[latitude & ',' & longitude]", "Mapx") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
+        new GridColumn("latitude & ',' & longitude", "Mapx") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
 
         new GridColumn("wikiDataId") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
     };
@@ -57,9 +57,9 @@
         new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
     };
 
-    var countryModel = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv") { Columns = countryColumns, ViewDialog = true };
-    var stateModel = new GridModel(DataSourceType.Excel, "/data/excel/states.csv") { Columns = stateColumns, ViewDialog = true };
-    var cityModel = new GridModel(DataSourceType.Excel, "/data/excel/cities.csv") { Columns = cityColumns, ViewDialog = true };
+    var countryModel = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv") { Columns = countryColumns, ViewDialog =  new ViewDialog() };
+    var stateModel = new GridModel(DataSourceType.Excel, "/data/excel/states.csv") { Columns = stateColumns, ViewDialog =  new ViewDialog() };
+    var cityModel = new GridModel(DataSourceType.Excel, "/data/excel/cities.csv") { Columns = cityColumns, ViewDialog =  new ViewDialog() };
 
     countryModel.NestedGrid = stateModel;
     stateModel.NestedGrid = cityModel;

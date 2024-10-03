@@ -12,7 +12,7 @@
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>
-            @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
+            @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
             {
                 <td class="text-base"><input class="multi-select" type="checkbox" /></td>
             }
@@ -88,7 +88,7 @@
                 }
             }
 
-            @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
+            @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
             {
                 <td class="text-base"><input class="multi-select" type="checkbox" /></td>
             }

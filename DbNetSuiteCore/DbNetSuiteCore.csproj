@@ -46,6 +46,7 @@
     <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\GridRows.cshtml" />
     <Content Remove="Views\GridToolbar.cshtml" />
+    <Content Remove="Views\Grid\ViewDialog.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,6 +94,9 @@
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
+    <EmbeddedResource Include="Views\Grid\ViewDialog.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Grid\Toolbar.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

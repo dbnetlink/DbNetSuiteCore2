@@ -12,7 +12,6 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
-using System.Linq;
 
 namespace DbNetSuiteCore.Services
 {
@@ -92,7 +91,7 @@ namespace DbNetSuiteCore.Services
         private void ValidateGridModel(GridModel gridModel)
         {
             var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
-            if (gridModel.ViewDialog && primaryKeyAssigned == false)
+            if (gridModel.ViewDialog != null && primaryKeyAssigned == false)
             {
                 throw new Exception("A column designated as a primary key is required for the view dialog");
             }

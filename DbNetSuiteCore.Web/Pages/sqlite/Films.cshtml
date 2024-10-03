@@ -22,7 +22,7 @@
     @foreach (string tab in ratings)
     {
         <div class="tab-pane fade @(tab == ratings.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
-            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns(), FixedFilter = $"rating = '{tab}'", ViewDialog = true }))
+            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "Film join Language on Film.Language_id = language.language_id") { Columns = ColumnInfoHelper.FilmGridColumns(), FixedFilter = $"rating = '{tab}'", ViewDialog =  new ViewDialog() }))
         </div>
     }
 </div>

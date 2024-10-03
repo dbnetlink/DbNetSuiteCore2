@@ -31,9 +31,10 @@
                     }
                 }
             </colgroup>
-            <thead data-frozen="@Model.GridModel.FrozenHeader">
-                <tr class="bg-slate-200 heading-row">
-                    @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
+
+            <thead data-frozen="@Model.GridModel.FrozenHeader" data-rowselection="@Model.GridModel.RowSelection">
+                    <tr class="bg-slate-200 heading-row" style="display:@(Model.GridModel.Headings ? string.Empty : "none")">
+                    @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
                     {
                         <th class="text-base"><input class="multi-select" type="checkbox" /></th>
                     }
@@ -58,7 +59,7 @@
                             <th class="text-base">@gridColumn?.Label</th>
                         }
                     }
-                    @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
+                    @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
                     {
                         <th class="text-base"><input class="multi-select" type="checkbox" /></th>
                     }
@@ -67,7 +68,7 @@
                 @if (Model.Columns.Any(c => c.Filter))
                 {
                     <tr class="filter-row">
-                        @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Left)
+                        @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
                         {
                             <th class="text-base"></th>
                         }
@@ -82,7 +83,7 @@
                                 RenderColumnFilter(gridColumn);
                             }
                         }
-                        @if (Model.GridModel.MultiRowSelect == MultiRowSelectLocation.Right)
+                        @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
                         {
                             <th class="text-base"></th>
                         }
@@ -105,33 +106,9 @@
             <span class="pl-1"></span>
         </div>
     </div>
-    @if (Model.GridModel.ViewDialog)
+    @if (Model.GridModel.ViewDialog != null)
     {
-        <dialog class="view-dialog dialog border-solid border-2 border-stone-200 rounded-md bg-neutral-100" id="@Model.ViewDialogId">
-            <div class="flex flex-col">
-                <nav class="dialog-nav">
-                    <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
-                        <div>
-                            <h2 class="font-bold">View</h2>
-                        </div>
-                        <div>
-                            <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
-                        </div>
-                    </div>
-                </nav>
-                <div class="flex view-dialog-content"></div>
-                <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
-                    <div>
-                        <button type="button" button-type="previous" title="Previous row">@IconHelper.Previous()</button>
-                        <button type="button" button-type="next" title="Next row">@IconHelper.Next()</button>
-                        <input type="hidden" name="@TriggerNames.ViewDialogContent" hx-post="@Model.SubmitUrl" hx-target="#@(Model.ViewDialogId) .view-dialog-content" hx-indicator="previous .htmx-indicator" hx-swap="innerHTML" hx-trigger="changed" />
-                    </div>
-                    <div>
-                        <button type="button" button-type="close">Close</button>
-                    </div>
-                </div>
-            </div>
-        </dialog>
+        @await Html.PartialAsync("Grid/ViewDialog", Model)
     }
 </div>
 
@@ -165,7 +142,7 @@
     {
         var length = Model.SelectWidth(options) + 1;
 
-        <select class="column-filter"  name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" data-key="@key">
+        <select class="column-filter" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" data-key="@key">
             <option value=""></option>
             @foreach (var option in options)
             {

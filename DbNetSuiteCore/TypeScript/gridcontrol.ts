@@ -27,6 +27,7 @@ class GridControl {
     constructor(gridId) {
         this.gridId = gridId;
         this.gridControl = document.querySelector(this.gridSelector())
+        this.gridControl.style.display = '';
         this.gridContainer = this.gridControl.parentElement
     }
 
@@ -68,16 +69,19 @@ class GridControl {
             e.classList.add("underline")
         });
 
-        if (this.gridControlElement(this.multiRowSelectAllSelector())) {
-            this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
-            this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
-                e.addEventListener("change", (ev) => {
-                    this.selectRow(ev.target, true);
-                 })
-             });
-        }
-        else {
-            htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target as HTMLElement)) });
+        if (this.rowSelection() != "none")
+        {
+            if (this.gridControlElement(this.multiRowSelectAllSelector())) {
+                this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
+                this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
+                    e.addEventListener("change", (ev) => {
+                        this.selectRow(ev.target, true);
+                    })
+                });
+            }
+            else {
+                htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target as HTMLElement)) });
+            }
         }
 
         let row: HTMLElement = document.querySelector(this.rowSelector());
@@ -169,6 +173,11 @@ class GridControl {
             this.getButton("next").disabled = currentPage == totalPages;
             this.getButton("last").disabled = currentPage == totalPages;
         }
+    }
+
+    rowSelection() {
+        let thead = this.gridControlElement("thead") as HTMLElement;
+        return thead.dataset.rowselection.toLowerCase();
     }
 
     removeClass(selector: string, className: string) {
