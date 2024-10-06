@@ -47,10 +47,10 @@ class GridControl {
         if (this.triggerName(evt) == "initialload") {
             this.initialise();
         }
-        this.gridControlElements(".nested-buttons").forEach((div) => {
-            let buttons = div.querySelectorAll("button");
-            buttons[0].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
-            buttons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
+        this.gridControlElements(".nested-icons").forEach((div) => {
+            let icons = div.querySelectorAll("span");
+            icons[0].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
+            icons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
         this.gridControlElements("tr.grid-row").forEach((row) => { this.invokeEventHandler('RowTransform', { row: row }); });
         this.gridControlElements("td[data-value]").forEach((cell) => { this.invokeCellTransform(cell); });
@@ -195,16 +195,16 @@ class GridControl {
     showHideNestedGrid(ev, show) {
         ev.stopPropagation();
         let tr = ev.target.closest("tr");
-        let buttons = tr.firstElementChild.querySelectorAll("button");
+        let icons = tr.firstElementChild.querySelectorAll("span");
         let siblingRow = tr.nextElementSibling;
         if (siblingRow && siblingRow.classList.contains("nested-grid-row")) {
             siblingRow.style.display = show ? null : "none";
         }
         else if (show) {
-            htmx.trigger(buttons[2], "click");
+            htmx.trigger(icons[2], "click");
         }
-        buttons[0].style.display = show ? "none" : "block";
-        buttons[1].style.display = show ? "block" : "none";
+        icons[0].style.display = show ? "none" : "block";
+        icons[1].style.display = show ? "block" : "none";
     }
     loadFromParent(primaryKey) {
         let selector = `#${this.gridId} input[name="primaryKey"]`;
@@ -248,7 +248,7 @@ class GridControl {
         }
         tr.classList.add(this.bgColourClass, this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
-        tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#ffffff"));
+        tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder] svg,td > div.nested-icons svg").forEach(e => e.setAttribute("fill", "#ffffff"));
         this.updateLinkedGrids(tr.dataset.id);
         this.selectedRow = tr;
         if (this.viewDialog) {
@@ -284,7 +284,7 @@ class GridControl {
     clearRowHighlight(tr) {
         tr.classList.remove(this.bgColourClass, this.textColourClass);
         tr.querySelectorAll("a").forEach(e => e.classList.remove("selected"));
-        tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder='false'] > svg").forEach(e => e.setAttribute("fill", "#666666"));
+        tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder] svg,td > div.nested-icons svg").forEach(e => e.setAttribute("fill", "#666666"));
     }
     copyTableToClipboard() {
         var table = this.gridControlElement("table");
@@ -416,6 +416,9 @@ class GridControl {
         return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
     }
     columnValue(columnName, row) {
+        if (!row) {
+            row = this.selectedRow;
+        }
         let datasetValue = row.dataset[columnName.toLowerCase()];
         if (datasetValue) {
             return datasetValue;

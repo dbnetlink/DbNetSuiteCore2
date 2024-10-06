@@ -2,7 +2,7 @@
 
 namespace DbNetSuiteCore.Models
 {
-    public class ProcedureParameter
+    public class DbParameter
     {
         private Type? _type = null;
         public string Name { get; set; } = string.Empty;
@@ -19,15 +19,15 @@ namespace DbNetSuiteCore.Models
             } 
         }
         public string TypeName { get; set; } = string.Empty;
-        public ProcedureParameter() { }
+        public DbParameter() { }
 
-        public ProcedureParameter(string name, object value)
+        public DbParameter(string name, object value)
         {
             Name = name;
             Value = value;
             Type = value.GetType();
         }
-        public ProcedureParameter(string name, object value, Type type)
+        public DbParameter(string name, object value, Type type)
         {
             Name = name;
             Value = value;

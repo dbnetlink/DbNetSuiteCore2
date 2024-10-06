@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var customersGridParameters = new List<ProcedureParameter>() { new ProcedureParameter("OrderId", 10248, typeof(Int32)) };
+    var customersGridParameters = new List<DbParameter>() { new DbParameter("OrderId", 10248, typeof(Int32)) };
     var customersGrid = new GridModel(DataSourceType.MSSQL, "Northwind(mssql)", "CustOrdersDetail", customersGridParameters);
 
     customersGrid.Columns = new List<GridColumn>() { 

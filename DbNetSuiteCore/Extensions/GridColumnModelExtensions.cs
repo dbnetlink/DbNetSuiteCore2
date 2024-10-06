@@ -79,7 +79,12 @@ namespace DbNetSuiteCore.Extensions
         }
 
         public static string FormatedValue(this GridColumn gridColumnModel, object value, string format)
-        {
+        {   
+            if (format.Contains("{0}"))
+            {
+                return String.Format(format, value.ToString());
+            }
+
             switch (gridColumnModel?.DataType.Name)
             {
                 case nameof(DateTime):

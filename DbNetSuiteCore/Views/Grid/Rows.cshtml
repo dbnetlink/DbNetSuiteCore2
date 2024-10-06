@@ -128,15 +128,15 @@
 @functions {
     public void RenderNestedButtons(DataRow row, HtmlString openIcon, HtmlString closedIcon)
     {
-        <div class="nested-buttons">
-            <button type="button" class="btn-sm">
+        <div class="nested-icons">
+            <span>
                 @openIcon
-            </button>
-            <button type="button" class="btn-sm" style="display:none">
+            </span>
+            <span style="display:none">
                 @closedIcon
-            </button>
-            <button type="button" name="@TriggerNames.NestedGrid" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.GridModel.PrimaryKeyValue(row)"}' hx-trigger="click once" style="display:none">
-            </button>
+            </span>
+            <span name="@TriggerNames.NestedGrid" hx-post="@Model.SubmitUrl" hx-target="closest tr" hx-indicator="next .htmx-indicator" hx-swap="afterend" hx-vals='{"primaryKey":"@Model.GridModel.PrimaryKeyValue(row)"}' hx-trigger="click once" style="display:none">
+            </span>
         </div>
     }
 

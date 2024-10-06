@@ -22,9 +22,9 @@
         @apply border-gray-300 rounded-lg shadow-sm focus:border-cyan-700 focus:ring-cyan-700 py-1 px-1 font-normal;
     }
 
-    .dbnetsuite select.column-filter {
-        @apply pr-8;
-    }
+        .dbnetsuite select.column-filter {
+            @apply pr-8;
+        }
 
     .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {
@@ -47,16 +47,12 @@
             @apply text-white;
         }
 
-    .dbnetsuite button {
+    .dbnetsuite button[button-type] {
         @apply bg-slate-200 hover:bg-slate-100 py-1 px-1 border border-solid border-slate-300 rounded inline-flex items-center;
     }
 
-        .dbnetsuite button:disabled {
+        .dbnetsuite button[button-type]:disabled {
             @apply bg-slate-100 border border-solid border-slate-200;
-        }
-
-        .dbnetsuite button.btn-sm {
-            @apply py-0.5 px-0.5;
         }
 
     .dbnetsuite td, .dbnetsuite th {

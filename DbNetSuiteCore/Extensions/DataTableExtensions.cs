@@ -97,7 +97,7 @@ namespace DbNetSuiteCore.Extensions
                         continue;
                     }
 
-                    var column = gridModel.Columns.Skip(i).First();
+                    var column = gridModel.Columns.Where(c => c.Filter).Skip(i).First();
 
                     var columnFilter = GridModelExtensions.ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
 

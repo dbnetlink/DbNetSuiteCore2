@@ -37,7 +37,13 @@ namespace DbNetSuiteCore.Extensions
         public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel)
         {
             QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
-            foreach (var parameter in gridModel.ProcedureParameters)
+            AssignParameters(query, gridModel.ProcedureParameters);
+            return query;
+        }
+
+        public static void AssignParameters(QueryCommandConfig query, List<DbParameter> parameters)
+        {
+            foreach (var parameter in parameters)
             {
                 if (parameter.Value is JsonElement)
                 {
@@ -45,8 +51,6 @@ namespace DbNetSuiteCore.Extensions
                 }
                 query.Params[DbRepository.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
             }
-
-            return query;
         }
 
         public static QueryCommandConfig BuildEmptyQuery(this GridModel gridModel)
@@ -81,7 +85,7 @@ namespace DbNetSuiteCore.Extensions
         }
 
 
-        private static void AddFilterPart(this GridModel gridModel, CommandConfig query)
+        private static void AddFilterPart(this GridModel gridModel, QueryCommandConfig query)
         {
             List<string> filterParts = new List<string>();
 
@@ -144,6 +148,7 @@ namespace DbNetSuiteCore.Extensions
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
                 filterParts.Add($"({gridModel.FixedFilter})");
+                AssignParameters(query, gridModel.FixedFilterParameters);
             }
 
             if (filterParts.Any())
@@ -272,7 +277,7 @@ namespace DbNetSuiteCore.Extensions
                 return expression;
             }
 
-            if (expression.Substring(0,1) == QualifyTemplate(dataSourceType).Substring(0,1))
+            if (expression.Substring(0, 1) == QualifyTemplate(dataSourceType).Substring(0, 1))
             {
                 return expression;
             }
@@ -283,9 +288,9 @@ namespace DbNetSuiteCore.Extensions
             }
 
             if (userDefined && TextHelper.IsAlphaNumeric(expression))
-            { 
-                return expression; 
-            }  
+            {
+                return expression;
+            }
 
             return QualifyTemplate(dataSourceType).Replace("@", expression);
         }
@@ -366,6 +371,20 @@ namespace DbNetSuiteCore.Extensions
             {
                 DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
                 gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
+            }
+        }
+
+        public static void GetDistinctLookups(this GridModel gridModel)
+        {
+            if (gridModel.Data.Rows.Count > 0)
+            {
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName)))
+                {
+                    DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+                    gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+                    gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
+                }
             }
         }
 

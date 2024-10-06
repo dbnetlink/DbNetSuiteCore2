@@ -10,6 +10,7 @@ namespace DbNetSuiteCore.Models
         private SortOrder? _SortSequence = null;
         private GridModel? _LinkedGrid;
         private RowSelection _RowSelection = RowSelection.Single;
+
         public string Id { get; set; } = string.Empty;
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
@@ -36,12 +37,12 @@ namespace DbNetSuiteCore.Models
         public string? PrimaryKey { get; set; }
         public string TableName { get; set; } = string.Empty;
         public string ProcedureName { get; set; } = string.Empty;
-        public List<ProcedureParameter> ProcedureParameters { get; set; } = new List<ProcedureParameter>();
+        public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
         public string ExportFormat { get; set; } = string.Empty;
-        public string Filter { get; set; } = string.Empty;
         public string ConnectionAlias { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;
+        public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
         public List<string> ColumnFilter { get; set; } = new List<string>();
         public int PageSize { get; set; } = 20;
         public bool Uninitialised => Columns.Any() == false || Columns.Where(c => c.Initialised == false).Any();
@@ -116,7 +117,7 @@ namespace DbNetSuiteCore.Models
             IsStoredProcedure = isStoredProcedure;
         }
 
-        public GridModel(DataSourceType dataSourceType, string connectionAlias, string procedureName, List<ProcedureParameter> procedureParameters) : this()
+        public GridModel(DataSourceType dataSourceType, string connectionAlias, string procedureName, List<DbParameter> procedureParameters) : this()
         {
             DataSourceType = dataSourceType;
             ConnectionAlias = connectionAlias;

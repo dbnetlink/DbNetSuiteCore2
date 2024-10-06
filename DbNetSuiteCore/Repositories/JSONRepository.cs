@@ -25,6 +25,8 @@ namespace DbNetSuiteCore.Repositories
             var dataTable = await BuildDataTable(gridModel, httpContext);
             dataTable.FilterAndSort(gridModel);
             gridModel.ConvertEnumLookups();
+            gridModel.GetDistinctLookups();
+
         }
 
         public async Task GetRecord(GridModel gridModel, HttpContext httpContext)
@@ -60,26 +62,34 @@ namespace DbNetSuiteCore.Repositories
 
         private async Task<DataTable> JsonToDataTable(GridModel gridModel, HttpContext httpContext)
         {
+            string json = string.Empty;
             var url = gridModel.Url;
 
-            if (url.StartsWith("/"))
+            if (url.StartsWith("[") || url.StartsWith("{"))
             {
-                url = url.Substring(1);
+                json = url;
             }
-
-            if (url.StartsWith("http") == false)
+            else
             {
-                url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
+                if (url.StartsWith("/"))
+                {
+                    url = url.Substring(1);
+                }
+
+                if (url.StartsWith("http") == false)
+                {
+                    url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
+                }
+
+                string token = string.Empty;
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                }
+
+                json = await _httpClient.GetStringAsync(url);
             }
-
-            string token = string.Empty;
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-            }
-
-            string json = await _httpClient.GetStringAsync(url);
 
             DataTable? dataTable = new();
             if (string.IsNullOrWhiteSpace(json))
