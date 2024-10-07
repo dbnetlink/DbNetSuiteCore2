@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Text.Json;
 using DbNetSuiteCore.Helpers;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -381,9 +382,8 @@ namespace DbNetSuiteCore.Extensions
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName)))
                 {
                     DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
-                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false).Select(dr => dr[0]).ToList();
                     gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
-                    gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
                 }
             }
         }

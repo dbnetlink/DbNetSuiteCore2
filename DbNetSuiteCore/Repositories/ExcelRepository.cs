@@ -28,6 +28,7 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = gridModel.BuildQuery();
             gridModel.Data = await BuildDataTable(gridModel, query);
             gridModel.ConvertEnumLookups();
+            gridModel.GetDistinctLookups();
         }
 
         public async Task GetRecord(GridModel gridModel)

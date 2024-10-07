@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var countriesGrid = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv");
+    countriesGrid.Columns = new List<GridColumn>() {
+        new GridColumn("Id") { Filter = true },
+        new GridColumn("Name") { Filter = true },
+        new GridColumn("Iso3") { Filter = true },
+        new GridColumn("Iso2") { Filter = true },
+        new GridColumn("Numeric_Code") { Filter = true },
+        new GridColumn("Phone_Code") { Filter = true },
+        new GridColumn("Capital") { Filter = true },
+        new GridColumn("Currency") { Filter = true },
+        new GridColumn("Currency_Name") { Filter = true },
+        new GridColumn("Currency_Symbol") { Filter = true },
+        new GridColumn("Tld") { Filter = true },
+        new GridColumn("Native") { Filter = true },
+        new GridColumn("Region") { Filter = true, Lookup = new Lookup() },
+        new GridColumn("Subregion") { Filter = true, Lookup = new Lookup() }
+    };
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(countriesGrid))
+}
+
+
