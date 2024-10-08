@@ -2,8 +2,6 @@
 
 namespace DbNetSuiteCore.Playwright
 {
-    [Parallelizable(ParallelScope.Self)]
-    [TestFixture]
     public class SQLiteGridTests : GridTests
     {
         [Test]

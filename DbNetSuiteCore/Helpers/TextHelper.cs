@@ -8,6 +8,7 @@ namespace DbNetSuiteCore.Helpers
     {
         static public string GenerateLabel(string label)
         {
+            label = label.Replace("[",string.Empty).Replace("]", string.Empty);
             label = Regex.Replace(label, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
             return Capitalise(label.Replace("_", " ").Replace(".", " "));
         }
@@ -37,9 +38,11 @@ namespace DbNetSuiteCore.Helpers
 
         public static string DelimitColumn(string columnName, DataSourceType dataSourceType)
         {
-            if (dataSourceType == DataSourceType.Excel)
+            switch (dataSourceType)
             {
-                return $"[{columnName}]";
+                case DataSourceType.Excel:
+                case DataSourceType.JSON:
+                    return $"[{columnName}]";
             }
             return columnName;
         }

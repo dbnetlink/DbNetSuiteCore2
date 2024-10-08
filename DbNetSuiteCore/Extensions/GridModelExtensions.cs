@@ -109,7 +109,7 @@ namespace DbNetSuiteCore.Extensions
                     quickSearchFilterPart.Add($"{expression} like @{gridColumn.ParamName}");
                 }
 
-                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null))
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
                 {
                     query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
                     var lookupSql = $"select {gridColumn.Lookup.KeyColumn} from {gridColumn.Lookup.TableName} where {gridColumn.Lookup.DescriptionColumn} like @{gridColumn.ParamName}";

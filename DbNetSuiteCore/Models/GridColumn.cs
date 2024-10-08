@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
 using System.ComponentModel;
 using System.Data;
 
@@ -38,7 +39,7 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        public GridColumn(string name) : base(name, name)
+        public GridColumn(string name) : base(name, TextHelper.GenerateLabel(name))
         {
         }
     }

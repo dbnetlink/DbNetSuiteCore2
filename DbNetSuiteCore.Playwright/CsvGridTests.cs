@@ -2,58 +2,72 @@
 
 namespace DbNetSuiteCore.Playwright
 {
-    [Parallelizable(ParallelScope.Self)]
-    [TestFixture]
     public class CsvGridTests : GridTests
     {
 
         [Test]
-        public async Task QuickSearchTest()
+        public async Task CsvQuickSearchTest()
         {
             Dictionary<string,int> searches = new Dictionary<string, int>() { 
-                { "loop", 7 }, 
-                { string.Empty, 412 }, 
-                { "Ordynacka 10", 7 } 
+                { "Polynesia", 10 }, 
+                { "EUR", 62 }, 
+                { "Česká republika", 1 },
+                { string.Empty, 250 },
+                { "xxxxxxxx", 0}
             };
 
-            await GridQuickSearchTest(searches, "csv/invoices");
+            await GridQuickSearchTest(searches, "excel/Countries");
+
+            searches["EUR"] = 74;
+            await GridQuickSearchTest(searches, "excel/renderfile?name=countries.csv");
         }
 
         [Test]
-        public async Task HeadingSort()
+        public async Task CsvHeadingSort()
         {
             Dictionary<string, string> sorts = new Dictionary<string, string>() { 
-                { "customer_id", "1"}, 
-                { "first_name","AARON" }, 
-                { "last_name", "ABNEY" }, 
-                { "email", "AARON.SELBY@sakilacustomer.org" }, 
-                { "city", "A Corua (La Corua)" }, 
-                { "postal_code", "1027" }, 
-                { "create_date", "14/02/06" }, 
-                { "last_update", "06/03/21" } 
+                { "id", "250"}, 
+                { "name","Afghanistan" }, 
+                { "iso3", "ABW" }, 
+                { "iso2", "AD" }, 
+                { "Numeric_Code", "4" }, 
+                { "phone_code", string.Empty }, 
+                { "capital", string.Empty },
+                { "currency", "AAD" },
+                { "currency_name", "Afghan afghani" },
+                { "currency_symbol", "؋" },
+                { "tld", ".ad" },
+                { "native", string.Empty },
+                { "region", string.Empty },
+                { "subregion", string.Empty } 
             };
 
-            await GridHeadingSort(sorts, "csv/index");
+            await GridHeadingSort(sorts, "excel/Countries");
+            await GridHeadingSort(sorts, "excel/renderfile?name=countries.csv");
         }
 
         [Test]
-        public async Task HeadingReverseSort()
+        public async Task CsvHeadingReverseSort()
         {
             Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>() {
-                { "customer_id", new KeyValuePair<string, string>("1","599")  },
-                { "first_name", new KeyValuePair<string, string>("AARON","ZACHARY") },
-                { "last_name", new KeyValuePair<string, string>("ABNEY","YOUNG") },
-                { "email", new KeyValuePair<string, string>("AARON.SELBY@sakilacustomer.org","ZACHARY.HITE@sakilacustomer.org") },
-                { "city", new KeyValuePair<string, string>("A Corua (La Corua)","s-Hertogenbosch") },
-                { "address", new KeyValuePair<string, string>("1 Valle de Santiago Avenue","999 Sanaa Loop") },
-                { "postal_code", new KeyValuePair<string, string>("1027","99865") },
-                { "create_date", new KeyValuePair<string, string>("14/02/06","14/02/06") },
-                { "last_update", new KeyValuePair<string, string>("06/03/21","08/07/24") }
+                { "id", new KeyValuePair<string, string>("250","1") },
+                { "name",new KeyValuePair<string, string>("Afghanistan","Zimbabwe") },
+                { "iso3", new KeyValuePair<string, string>("ABW","ZWE") },
+                { "iso2", new KeyValuePair<string, string>("AD","ZW") },
+                { "Numeric_Code", new KeyValuePair<string, string>("4","926") },
+                { "phone_code", new KeyValuePair<string, string>(string.Empty,"1721") },
+                { "capital", new KeyValuePair<string, string>(string.Empty,"Zagreb") },
+                { "currency", new KeyValuePair<string, string>("AAD","ZWL") },
+                { "currency_name", new KeyValuePair<string, string>("Afghan afghani","Zimbabwe Dollar") },
+                { "currency_symbol", new KeyValuePair<string, string>("؋","﷼") },
+                { "tld", new KeyValuePair<string, string>(".ad",".zw") },
+                { "native", new KeyValuePair<string, string>(string.Empty,"臺灣") },
+                { "region", new KeyValuePair<string, string>(string.Empty,"Polar") },
+                { "subregion", new KeyValuePair<string, string>(string.Empty,"Western Europe") }
             };
 
-            await GridHeadingReverseSort(sorts, "csv/index");
-          
+            await GridHeadingReverseSort(sorts, "excel/Countries");
+            await GridHeadingReverseSort(sorts, "excel/renderfile?name=countries.csv");
         }
-
     }
 }

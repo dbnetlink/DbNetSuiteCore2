@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Data;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -74,7 +73,7 @@ namespace DbNetSuiteCore.Models
         {
             Expression = dataColumn.ColumnName;
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName);
-            Name = (dataSourceType == DataSourceType.Excel) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
+            Name = (dataSourceType == DataSourceType.Excel || dataSourceType == DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
             DataType = dataColumn.DataType;
             Initialised = true;
         }
@@ -108,11 +107,11 @@ namespace DbNetSuiteCore.Models
             Label = TextHelper.GenerateLabel(expression);
         }
 
-        public void Update(DataColumn dataColumn)
+        public void Update(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             DataType = dataColumn.DataType;
             Initialised = true;
-            Name = CleanColumnName(dataColumn.ColumnName);
+            Name = (dataSourceType == DataSourceType.Excel ||dataSourceType ==  DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
         }
 
         public void Update(DataRow dataRow)

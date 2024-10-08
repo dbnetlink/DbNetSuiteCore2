@@ -1,0 +1,38 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using Microsoft.Extensions.Primitives;
+
+
+@{
+    var columns = new List<GridColumn>
+    {
+        new GridColumn("Row ID"){ Filter = true },
+        new GridColumn("Order ID"){ Filter = true },
+        new GridColumn("Order Date"){ Filter = true },
+        new GridColumn("Ship Date"),
+        new GridColumn("Ship Mode") { Filter = true, Lookup = new Lookup()},
+        new GridColumn("Customer ID"),
+        new GridColumn("Customer Name"),
+        new GridColumn("Segment"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Country"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("City"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("State"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Postal Code"),
+        new GridColumn("Region"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Product ID"),
+        new GridColumn("Category"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Sub-Category"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Product Name"),
+        new GridColumn("Sales") { Format = "c",Filter = true},
+        new GridColumn("Quantity") { Filter = true},
+        new GridColumn("Discount") { Format = "p", Filter = true},
+        new GridColumn("Profit") { Format = "c", Filter = true}
+    };
+
+    var superstoreGrid = new GridModel(DataSourceType.JSON, $"/data/json/superstore.json") { Columns = columns };
+}
+
+@(await new DbNetSuiteCore.GridControl(HttpContext).Render(superstoreGrid))

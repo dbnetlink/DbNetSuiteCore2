@@ -180,14 +180,14 @@ namespace DbNetSuiteCore.Services
                 {
                     foreach (GridColumn gridColumn in gridModel.Columns)
                     {
-                        gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression));
+                        gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression), gridModel.DataSourceType);
                     }
                 }
                 else
                 {
                     for (var i = 0; i < dataColumns.Count; i++)
                     {
-                        gridModel.Columns.ToList()[i].Update(dataColumns[i]);
+                        gridModel.Columns.ToList()[i].Update(dataColumns[i], gridModel.DataSourceType);
                     }
                 }
             }
@@ -223,7 +223,7 @@ namespace DbNetSuiteCore.Services
                     }
                     else
                     {
-                        gridColumn.Update(dataColumn);
+                        gridColumn.Update(dataColumn, gridModel.DataSourceType);
                     }
                     gridModel.Columns = gridModel.Columns.Append(gridColumn);
                 }
@@ -515,7 +515,7 @@ namespace DbNetSuiteCore.Services
                 var json = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
                 GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(json) ?? new GridModel();
                 gridModel.CurrentPage = GetPageNumber(gridModel);
-                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context);
+                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context);

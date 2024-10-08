@@ -2,7 +2,7 @@
 <RunSettings>
   <RunConfiguration>
     <EnvironmentVariables>
-        <HEADED>1</HEADED>
+        <HEADED>0</HEADED>
     </EnvironmentVariables>
   </RunConfiguration>
 </RunSettings>

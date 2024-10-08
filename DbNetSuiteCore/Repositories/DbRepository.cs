@@ -7,7 +7,6 @@ using System.Data;
 using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Reflection;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DbNetSuiteCore.Repositories
 {
