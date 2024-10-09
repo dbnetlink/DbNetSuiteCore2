@@ -94,6 +94,17 @@ class GridControl {
             filter.innerHTML = select.innerHTML;
         });
 
+        this.gridControlElements("thead input[data-key]").forEach((input: HTMLInputElement) => {
+            input.title = "";
+            input.style.backgroundColor = "";
+        });
+
+        this.gridControlElements("tr.column-filter-error span").forEach((span: HTMLElement) => {
+            let input: HTMLInputElement = this.gridControlElement(`thead input[data-key="${span.dataset.key}"]`)
+            input.title = span.innerText;
+            input.style.backgroundColor = "rgb(252 165 165)";
+        });
+
         let thead = this.gridControlElement("thead") as HTMLElement;
         if (thead.dataset.frozen.toLowerCase() == "true") {
             thead.style.top = `0px`;

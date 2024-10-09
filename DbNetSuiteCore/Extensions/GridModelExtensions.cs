@@ -4,10 +4,8 @@ using DbNetSuiteCore.Enums;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Data;
-using System.Linq;
 using System.Text.Json;
 using DbNetSuiteCore.Helpers;
-using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -206,7 +204,6 @@ namespace DbNetSuiteCore.Extensions
                 }
 
                 var column = gridModel.Columns.Where(c => c.Filter).Skip(i).First();
-
                 if (column.Aggregate == AggregateType.None == havingFilter)
                 {
                     continue;
@@ -217,7 +214,12 @@ namespace DbNetSuiteCore.Extensions
                 if (columnFilter != null)
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
-                    object paramValue = ParamValue(columnFilter.Value.Value, column, gridModel);
+                    object? paramValue = ParamValue(columnFilter.Value.Value, column, gridModel);
+                    if (string.IsNullOrEmpty(paramValue?.ToString()))
+                    {
+                        column.FilterError = paramValue == null ? "Invalid filter value for column data type" : "No filter value supplied";
+                        continue;
+                    }
 
                     if (IsCsvFile(gridModel) && columnFilter.Value.Key == "like")
                     {
@@ -325,6 +327,10 @@ namespace DbNetSuiteCore.Extensions
             {
                 comparisionOperator = filterColumnValue.Substring(0, 2);
             }
+            else if (filterColumnValue.StartsWith("<>") || filterColumnValue.StartsWith("!="))
+            {
+                comparisionOperator = filterColumnValue.Substring(0, 2);
+            }
             else if (filterColumnValue.StartsWith(">") || filterColumnValue.StartsWith("<"))
             {
                 comparisionOperator = filterColumnValue.Substring(0, 1);
@@ -427,7 +433,7 @@ namespace DbNetSuiteCore.Extensions
             return String.Join(")", columnParts);
         }
 
-        private static object ParamValue(object value, GridColumn column, GridModel gridModel)
+        private static object? ParamValue(object value, GridColumn column, GridModel gridModel)
         {
             var dataType = column.DataTypeName;
             if (value == null)
@@ -504,7 +510,8 @@ namespace DbNetSuiteCore.Extensions
             }
             catch (Exception e)
             {
-                throw new Exception($"{e.Message} => : Value: {value.ToString()} DataType:{dataType}");
+                return null;
+                //throw new Exception($"{e.Message} => : Value: {value.ToString()} DataType:{dataType}");
             }
 
             switch (dataType)

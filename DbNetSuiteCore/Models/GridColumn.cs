@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.Math;
 using System.ComponentModel;
 using System.Data;
 
@@ -16,6 +17,7 @@ namespace DbNetSuiteCore.Models
         public AggregateType Aggregate { get; set; } = AggregateType.None;
         public SortOrder? InitialSortOrder { get; set; } = null;
         public bool Filter { get; set; } = false;
+        public string FilterError { get; set; } = string.Empty;
         public string Style { get; set; } = string.Empty;
         public bool DataOnly { get; set; } = false;
         public Image? Image { get; set; }

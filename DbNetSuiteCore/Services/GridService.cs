@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
 using System.Web;
+using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {
@@ -522,6 +523,9 @@ namespace DbNetSuiteCore.Services
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context);
                 gridModel.ParentKey = RequestHelper.FormValue("primaryKey", gridModel.ParentKey, _context);
+
+                gridModel.Columns.ForEach(column => column.FilterError = string.Empty);
+
                 return gridModel;
             }
             catch

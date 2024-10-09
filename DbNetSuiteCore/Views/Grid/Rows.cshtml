@@ -123,6 +123,18 @@
             </td>
         </tr>
     }
+
+    @if (Model.GridModel.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
+    {
+        <tr style="display:none" class="column-filter-error">
+            <td>
+                @foreach (var gridColumn in Model.GridModel.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
+                {
+                    RenderColumnFilterError(gridColumn);
+                }
+            </td>
+        </tr>
+    }
 </tbody>
 
 @functions {
@@ -149,5 +161,10 @@
                 <option value="@option.Key">@option.Value</option>
             }
         </select>
+    }
+
+    public void RenderColumnFilterError(GridColumn gridColumn)
+    {
+        <span data-key="@gridColumn.Key">@gridColumn.FilterError</span>
     }
 }
