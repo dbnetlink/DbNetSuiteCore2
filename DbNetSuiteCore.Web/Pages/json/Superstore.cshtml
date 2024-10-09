@@ -3,8 +3,8 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Web.Enums
-@using Microsoft.Extensions.Primitives;
-
+@using Microsoft.Extensions.Primitives
+@using System.Net.Http
 
 @{
     var columns = new List<GridColumn>
@@ -32,7 +32,22 @@
         new GridColumn("Profit") { Format = "c", Filter = true}
     };
 
-    var superstoreGrid = new GridModel(DataSourceType.JSON, $"/data/json/superstore.json") { Columns = columns };
+    var port = Request.Query["port"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["port"];
+    var mode = Request.Query["mode"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["string"];
+
+    var url = String.IsNullOrEmpty(port.ToString()) ? "/data/json/superstore.json" : $"https://localhost:{port}/superstore";
+
+    GridModel superstoreGrid;
+    if (port != string.Empty && mode != string.Empty)
+    {
+        HttpClient client = new HttpClient();
+        string json = await client.GetStringAsync(url);
+        superstoreGrid = new GridModel(DataSourceType.JSON, json) { Columns = columns };
+    }
+    else
+    {
+        superstoreGrid = new GridModel(DataSourceType.JSON, url) { Columns = columns };
+    }
 }
 
 @(await new DbNetSuiteCore.GridControl(HttpContext).Render(superstoreGrid))

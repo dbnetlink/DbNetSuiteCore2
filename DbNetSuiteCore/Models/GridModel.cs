@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.Text.Json.Serialization;
 using System.ComponentModel;
 using System.Data;
 
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Models
         private SortOrder? _SortSequence = null;
         private GridModel? _LinkedGrid;
         private RowSelection _RowSelection = RowSelection.Single;
-
+        private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
@@ -40,7 +41,27 @@ namespace DbNetSuiteCore.Models
         public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
         public string ExportFormat { get; set; } = string.Empty;
         public string ConnectionAlias { get; set; } = string.Empty;
-        public string Url { get; set; } = string.Empty;
+        public string Url 
+        { 
+            get 
+            {
+                return _Url;
+            } 
+            set 
+            {
+                if (value.StartsWith("[") || value.StartsWith("{"))
+                {
+                    JSON = value;
+                    _Url = string.Empty;
+                }
+                else
+                {
+                    _Url = value;
+                }
+            } 
+        }
+        [JsonIgnore]
+        public string JSON { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;
         public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
         public List<string> ColumnFilter { get; set; } = new List<string>();

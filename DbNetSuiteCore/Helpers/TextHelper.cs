@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -50,6 +51,27 @@ namespace DbNetSuiteCore.Helpers
         public static bool IsAlphaNumeric(string text)
         {
             return text.All(c => char.IsLetterOrDigit(c) ||  c == '_');
+        }
+
+        public static string Compress(string text)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            using MemoryStream memoryStream = new MemoryStream();
+            using (GZipStream gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+            {
+                gzipStream.Write(bytes, 0, bytes.Length);
+            }
+            return Convert.ToBase64String(memoryStream.ToArray());
+        }
+
+        public static string Decompress(string compressedText)
+        {
+            byte[] bytes = Convert.FromBase64String(compressedText);
+            using MemoryStream memoryStream = new MemoryStream(bytes);
+            using GZipStream gzipStream = new GZipStream(memoryStream, CompressionMode.Decompress);
+            using MemoryStream decompressedStream = new MemoryStream();
+            gzipStream.CopyTo(decompressedStream);
+            return Encoding.UTF8.GetString(decompressedStream.ToArray());
         }
     }
 }

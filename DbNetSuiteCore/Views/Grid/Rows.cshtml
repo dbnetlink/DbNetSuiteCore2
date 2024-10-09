@@ -100,7 +100,7 @@
         <tr style="display:none">
             <td>
                 <div>
-                    <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model.GridModel))" />
+                    @await Html.PartialAsync("Grid/Hidden", Model.GridModel)
                     <span style="display:none" id="sortIcon">@Model.SortIcon</span>
                     @if (Model.GridModel.IsLinked)
                     {

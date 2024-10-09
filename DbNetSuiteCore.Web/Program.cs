@@ -25,6 +25,9 @@ app.MapGet("/employees", () =>
     FileHelper.GetJson("/data/json/employees.json", builder.Environment));
 app.MapGet("/orders", () =>
     FileHelper.GetJson("/data/json/orders.json", builder.Environment));
+app.MapGet("/superstore", () =>
+    FileHelper.GetJson("/data/json/superstore.json", builder.Environment));
+
 
 app.UseRouting();
 

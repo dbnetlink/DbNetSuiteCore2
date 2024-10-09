@@ -7,14 +7,17 @@ namespace DbNetSuiteCore.Playwright
 {
     public class ComponentTests : PageTest
     {
+        private int _port;
         protected CustomWebApplicationFactory<Program> _factory;
         protected HttpClient _client;
-
-        private string _baseUrl = $"https://localhost:{FreeTcpPort()}/";
+        public int Port => _port;
+        private string _baseUrl = string.Empty;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
+            _port = FreeTcpPort();
+            _baseUrl = $"https://localhost:{_port}/";
             _factory = new CustomWebApplicationFactory<Program>(_baseUrl);
             _client = _factory.CreateClient();
         }
@@ -25,13 +28,12 @@ namespace DbNetSuiteCore.Playwright
             _factory.Dispose();
         }
 
-
         public async Task GoToPage(string page)
         {
             await Page.GotoAsync($"{_baseUrl}{page}");
         }
 
-        static int FreeTcpPort()
+        private int FreeTcpPort()
         {
             TcpListener l = new TcpListener(IPAddress.Loopback, 0);
             l.Start();

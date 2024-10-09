@@ -22,7 +22,7 @@ namespace DbNetSuiteCore.Repositories
         }
         public async Task GetRecords(GridModel gridModel, HttpContext httpContext)
         {
-            var dataTable = await BuildDataTable(gridModel, httpContext);
+            var dataTable = gridModel.Data.Columns.Count > 0 ? gridModel.Data : await BuildDataTable(gridModel, httpContext);
             dataTable.FilterAndSort(gridModel);
             gridModel.ConvertEnumLookups();
             gridModel.GetDistinctLookups();
@@ -38,7 +38,8 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext)
         {
-            return await BuildDataTable(gridModel, httpContext);
+            gridModel.Data = await BuildDataTable(gridModel, httpContext);
+            return gridModel.Data;
         }
 
         private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
@@ -63,14 +64,14 @@ namespace DbNetSuiteCore.Repositories
         private async Task<DataTable> JsonToDataTable(GridModel gridModel, HttpContext httpContext)
         {
             string json = string.Empty;
-            var url = gridModel.Url;
 
-            if (url.StartsWith("[") || url.StartsWith("{"))
+            if (string.IsNullOrEmpty(gridModel.Url))
             {
-                json = url;
+                json = gridModel.JSON;
             }
             else
             {
+                var url = gridModel.Url;
                 if (url.StartsWith("/"))
                 {
                     url = url.Substring(1);

@@ -17,7 +17,9 @@ namespace DbNetSuiteCore.Playwright
             };
 
             await GridQuickSearchTest(searches, "json/Superstore");
-        }
+            await GridQuickSearchTest(searches, $"json/Superstore?port={Port}");
+            await GridQuickSearchTest(searches, $"json/Superstore?port={Port}&mode=string");
+         }
 
         [Test]
         public async Task JsonHeadingSort()
@@ -43,6 +45,8 @@ namespace DbNetSuiteCore.Playwright
             };
 
             await GridHeadingSort(sorts, "json/Superstore");
+            await GridHeadingSort(sorts, $"json/Superstore?port={Port}");
+            await GridHeadingSort(sorts, $"json/Superstore?port={Port}&mode=string");
         }
 
         [Test]
@@ -71,6 +75,8 @@ namespace DbNetSuiteCore.Playwright
             };
 
             await GridHeadingReverseSort(sorts, "json/Superstore");
+            await GridHeadingReverseSort(sorts, $"json/Superstore?port={Port}");
+            await GridHeadingReverseSort(sorts, $"json/Superstore?port={Port}&mode=string");
         }
     }
 }

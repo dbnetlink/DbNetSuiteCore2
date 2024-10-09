@@ -5,7 +5,7 @@ namespace DbNetSuiteCore.Models
 {
     public class ComponentModel
     {
-         [JsonIgnore]
+        [JsonIgnore]
         public DataTable Data { get; set; } = new DataTable();
     }
 }

@@ -12,6 +12,7 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
+using System.Web;
 
 namespace DbNetSuiteCore.Services
 {
@@ -512,8 +513,9 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var json = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
-                GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(json) ?? new GridModel();
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
+                GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(model) ?? new GridModel();
+                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
                 gridModel.CurrentPage = GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
