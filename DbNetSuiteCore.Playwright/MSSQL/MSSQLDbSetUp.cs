@@ -1,17 +1,17 @@
-﻿using DbNetSuiteCore.Web.Constants;
+﻿using DbNetSuiteCore.Web.Helpers;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.MSSQL
 {
     public class MSSQLDbSetUp : DbSetUp
     {
-        public MSSQLDbSetUp() 
+        public MSSQLDbSetUp()
         {
             MasterConnectionString = "Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True;";
-            ConnectionString = string.Format(ConnectionStringTemplates.MSSQL, DatabaseName);
+            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, Enums.DataSourceType.MSSQL);
         }
 
         [OneTimeSetUp]

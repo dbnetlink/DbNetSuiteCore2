@@ -1,16 +1,16 @@
 ﻿using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.CSV
 {
     public class CsvGridTests : GridTests
     {
 
         [Test]
-        public async Task CsvQuickSearchTest()
+        public async Task QuickSearchTest()
         {
-            Dictionary<string,int> searches = new Dictionary<string, int>() { 
-                { "Polynesia", 10 }, 
-                { "EUR", 62 }, 
+            Dictionary<string, int> searches = new Dictionary<string, int>() {
+                { "Polynesia", 10 },
+                { "EUR", 62 },
                 { "Česká republika", 1 },
                 { string.Empty, 250 },
                 { "xxxxxxxx", 0}
@@ -23,15 +23,15 @@ namespace DbNetSuiteCore.Playwright
         }
 
         [Test]
-        public async Task CsvHeadingSort()
+        public async Task HeadingSort()
         {
-            Dictionary<string, string> sorts = new Dictionary<string, string>() { 
-                { "id", "250"}, 
-                { "name","Afghanistan" }, 
-                { "iso3", "ABW" }, 
-                { "iso2", "AD" }, 
-                { "Numeric_Code", "4" }, 
-                { "phone_code", string.Empty }, 
+            Dictionary<string, string> sorts = new Dictionary<string, string>() {
+                { "id", "250"},
+                { "name","Afghanistan" },
+                { "iso3", "ABW" },
+                { "iso2", "AD" },
+                { "Numeric_Code", "4" },
+                { "phone_code", string.Empty },
                 { "capital", string.Empty },
                 { "currency", "AAD" },
                 { "currency_name", "Afghan afghani" },
@@ -39,7 +39,7 @@ namespace DbNetSuiteCore.Playwright
                 { "tld", ".ad" },
                 { "native", string.Empty },
                 { "region", string.Empty },
-                { "subregion", string.Empty } 
+                { "subregion", string.Empty }
             };
 
             await GridHeadingSort(sorts, "excel/Countries");
@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Playwright
         }
 
         [Test]
-        public async Task CsvHeadingReverseSort()
+        public async Task HeadingReverseSort()
         {
             Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>() {
                 { "id", new KeyValuePair<string, string>("250","1") },

@@ -1,12 +1,12 @@
 ﻿using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.Excel
 {
     public class ExcelGridTests : GridTests
     {
 
         [Test]
-        public async Task ExcelQuickSearchTest()
+        public async Task QuickSearch()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
                 { "Henderson", 56 },
@@ -19,12 +19,13 @@ namespace DbNetSuiteCore.Playwright
             await GridQuickSearchTest(searches, "excel/Superstore?ext=xlsx");
             await GridQuickSearchTest(searches, "excel/Superstore?ext=xls");
             await GridQuickSearchTest(searches, "excel/Superstore?ext=csv");
+            await GridQuickSearchTest(searches, "excel/renderfile?name=Superstore.xlsx");
         }
 
         [Test]
-        public async Task ExcelHeadingSort()
+        public async Task HeadingSort()
         {
-            Dictionary<string, string> sorts = new Dictionary<string, string>() 
+            Dictionary<string, string> sorts = new Dictionary<string, string>()
             {
                 { "row id", "9994"},
                 { "order id","CA-2014-100006" },
@@ -49,12 +50,18 @@ namespace DbNetSuiteCore.Playwright
 
             sorts["postal code"] = "1040";
             await GridHeadingSort(sorts, "excel/Superstore?ext=csv");
+
+            sorts["postal code"] = string.Empty;
+            sorts["sales"] = "0.44399999999999995";
+            sorts["discount"] = "0";
+
+            await GridHeadingSort(sorts, "excel/renderfile?name=Superstore.xlsx");
         }
 
         [Test]
-        public async Task ExcelHeadingReverseSort()
+        public async Task HeadingReverseSort()
         {
-            Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>() 
+            Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>()
             {
                 { "row id", new KeyValuePair<string, string>("9994","1")},
                 { "order id",new KeyValuePair<string, string>("CA-2014-100006","US-2017-169551") },
@@ -78,9 +85,16 @@ namespace DbNetSuiteCore.Playwright
 
             await GridHeadingReverseSort(sorts, "excel/Superstore?ext=xlsx");
             await GridHeadingReverseSort(sorts, "excel/Superstore?ext=xls");
-
+           
             sorts["postal code"] = new KeyValuePair<string, string>("1040", "99301");
             await GridHeadingReverseSort(sorts, "excel/Superstore?ext=csv");
+
+            sorts["postal code"] = new KeyValuePair<string, string>("", "99301"); 
+            sorts["sales"] = new KeyValuePair<string, string>("0.44399999999999995", "22638.48");
+            sorts["discount"] = new KeyValuePair<string, string>("0", "0.8");
+            sorts["profit"] = new KeyValuePair<string, string>("-6599.978000000001", "8399.975999999999");
+            
+            await GridHeadingReverseSort(sorts, "excel/renderfile?name=Superstore.xlsx");
         }
     }
 }

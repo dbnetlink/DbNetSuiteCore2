@@ -1,16 +1,16 @@
 ﻿using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.SQLite
 {
     public class SQLiteGridTests : GridTests
     {
         [Test]
         public async Task QuickSearchTest()
         {
-            Dictionary<string,int> searches = new Dictionary<string, int>() { 
-                { "loop", 7 }, 
-                { string.Empty, 412 }, 
-                { "Ordynacka 10", 7 } 
+            Dictionary<string, int> searches = new Dictionary<string, int>() {
+                { "loop", 7 },
+                { string.Empty, 412 },
+                { "Ordynacka 10", 7 }
             };
 
             await GridQuickSearchTest(searches, "sqlite/invoices");
@@ -19,15 +19,15 @@ namespace DbNetSuiteCore.Playwright
         [Test]
         public async Task HeadingSort()
         {
-            Dictionary<string, string> sorts = new Dictionary<string, string>() { 
-                { "customer_id", "1"}, 
-                { "first_name","AARON" }, 
-                { "last_name", "ABNEY" }, 
-                { "email", "AARON.SELBY@sakilacustomer.org" }, 
-                { "city", "A Corua (La Corua)" }, 
-                { "postal_code", "1027" }, 
-                { "create_date", "14/02/06" }, 
-                { "last_update", "06/03/21" } 
+            Dictionary<string, string> sorts = new Dictionary<string, string>() {
+                { "customer_id", "1"},
+                { "first_name","AARON" },
+                { "last_name", "ABNEY" },
+                { "email", "AARON.SELBY@sakilacustomer.org" },
+                { "city", "A Corua (La Corua)" },
+                { "postal_code", "1027" },
+                { "create_date", "14/02/06" },
+                { "last_update", "06/03/21" }
             };
 
             await GridHeadingSort(sorts, "sqlite/index");

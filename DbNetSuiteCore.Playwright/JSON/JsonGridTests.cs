@@ -1,12 +1,12 @@
 ﻿using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.JSON
 {
     public class JsonGridTests : GridTests
     {
 
         [Test]
-        public async Task JsonQuickSearchTest()
+        public async Task QuickSearchTest()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
                 { "Henderson", 56 },
@@ -19,12 +19,12 @@ namespace DbNetSuiteCore.Playwright
             await GridQuickSearchTest(searches, "json/Superstore");
             await GridQuickSearchTest(searches, $"json/Superstore?port={Port}");
             await GridQuickSearchTest(searches, $"json/Superstore?port={Port}&mode=string");
-         }
+        }
 
         [Test]
-        public async Task JsonHeadingSort()
+        public async Task HeadingSort()
         {
-            Dictionary<string, string> sorts = new Dictionary<string, string>() 
+            Dictionary<string, string> sorts = new Dictionary<string, string>()
             {
                 { "row id", "9994"},
                 { "order id","CA-2014-100006" },
@@ -50,9 +50,9 @@ namespace DbNetSuiteCore.Playwright
         }
 
         [Test]
-        public async Task JsonHeadingReverseSort()
+        public async Task HeadingReverseSort()
         {
-            Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>() 
+            Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>()
             {
                 { "row id", new KeyValuePair<string, string>("9994","1")},
                 { "order id",new KeyValuePair<string, string>("CA-2014-100006","US-2017-169551") },

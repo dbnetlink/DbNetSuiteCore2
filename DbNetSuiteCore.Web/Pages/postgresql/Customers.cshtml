@@ -4,9 +4,8 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @using Microsoft.Extensions.Primitives;
-@using DbNetSuiteCore.Web.Constants
+@using DbNetSuiteCore.Web.Helpers
 @{
-    string db = Request.Query["db"] == StringValues.Empty ? "Northwind(postgresql)" : string.Format(ConnectionStringTemplates.PostgreSql, Request.Query["db"].ToString());
-    var customersGrid = new GridModel(DataSourceType.PostgreSql, db, "customer");
+    var customersGrid = new GridModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "customer");
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
 }

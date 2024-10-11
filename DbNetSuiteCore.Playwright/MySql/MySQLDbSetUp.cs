@@ -1,22 +1,21 @@
-﻿using DbNetSuiteCore.Web.Constants;
-using Npgsql;
+﻿using DbNetSuiteCore.Web.Helpers;
+using MySqlConnector;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.MySql
 {
-    public class PostgreSqlDbSetUp : DbSetUp
+    public class MySQLDbSetUp : DbSetUp
     {
-        
-        public PostgreSqlDbSetUp () 
+
+        public MySQLDbSetUp()
         {
-            MasterConnectionString = "Host=localhost;Username=postgres;Password=password1234;Database=postgres;pooling=false;";
-            ConnectionString = string.Format(ConnectionStringTemplates.PostgreSql, DatabaseName);
+            MasterConnectionString = "server=localhost;user=root;password=password1234;";
+            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, Enums.DataSourceType.MySql);
         }
 
         [OneTimeSetUp]
         public void DbOneTimeSetUp()
         {
-            
             CreateDatabase();
             ExecuteScriptFile();
         }
@@ -24,32 +23,31 @@ namespace DbNetSuiteCore.Playwright
         [OneTimeTearDown]
         public void DbOneTimeTearDown()
         {
-            using (var connection = new NpgsqlConnection(MasterConnectionString))
+            using (var connection = new MySqlConnection(MasterConnectionString))
             {
                 connection.Open();
                 using var command = connection.CreateCommand();
-                command.CommandText = $"DROP DATABASE {DatabaseName} WITH (FORCE);";
+                command.CommandText = $"DROP DATABASE IF EXISTS `{DatabaseName}`";
                 command.ExecuteNonQuery();
             }
         }
 
         private void CreateDatabase()
         {
-            using (var connection = new NpgsqlConnection(MasterConnectionString))
+            using (var connection = new MySqlConnection(MasterConnectionString))
             {
                 connection.Open();
                 using var command = connection.CreateCommand();
-                command.CommandText = $"CREATE DATABASE {DatabaseName};GRANT ALL PRIVILEGES ON DATABASE {DatabaseName} to postgres";
+                command.CommandText = $"CREATE DATABASE `{DatabaseName}`";
                 command.ExecuteNonQuery();
             }
-
         }
 
         private void ExecuteScriptFile()
         {
-            var script = LoadScriptFromFile("TestDatabase/PostgreSql/Northwind.sql");
+            var script = LoadScriptFromFile("TestDatabase/MySql/Northwind.sql");
 
-            using (var connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new MySqlConnection(ConnectionString))
             {
                 connection.Open();
                 using var command = connection.CreateCommand();
