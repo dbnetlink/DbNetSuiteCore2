@@ -1,0 +1,12 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Constants
+@{
+    string db = Request.Query["db"] == StringValues.Empty ? "Northwind(mssql)" : string.Format(ConnectionStringTemplates.MSSQL, Request.Query["db"].ToString());
+    var customersGrid = new GridModel(DataSourceType.MSSQL, db, "Customers");
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+}

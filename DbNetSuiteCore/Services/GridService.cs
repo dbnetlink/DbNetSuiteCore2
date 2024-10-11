@@ -162,6 +162,7 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.Columns.Any() == false)
             {
+                /*
                 switch (gridModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
@@ -171,7 +172,8 @@ namespace DbNetSuiteCore.Services
                         gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                         break;
                 }
-
+                */
+                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                 gridModel.QualifyColumnExpressions();
             }
             else

@@ -21,7 +21,6 @@ namespace DbNetSuiteCore.Playwright
             _factory = new CustomWebApplicationFactory<Program>(_baseUrl);
             _client = _factory.CreateClient();
         }
-
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {

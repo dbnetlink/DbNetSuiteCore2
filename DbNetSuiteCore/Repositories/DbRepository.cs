@@ -27,6 +27,11 @@ namespace DbNetSuiteCore.Repositories
         {
             string connectionString = _configuration.GetConnectionString(database);
 
+            if (connectionString == null)
+            {
+                connectionString = database;
+            }
+
             IDbConnection connection;
 
             switch (_dataSourceType)
