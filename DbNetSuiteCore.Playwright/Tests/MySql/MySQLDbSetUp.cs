@@ -2,7 +2,7 @@
 using MySqlConnector;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.MySql
+namespace DbNetSuiteCore.Playwright.Tests.MySql
 {
     public class MySQLDbSetUp : DbSetUp
     {

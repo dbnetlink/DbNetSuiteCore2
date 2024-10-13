@@ -1,12 +1,13 @@
-﻿using NUnit.Framework;
+﻿using DbNetSuiteCore.Playwright.Models;
+using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.JSON
+namespace DbNetSuiteCore.Playwright.Tests.Excel
 {
-    public class JsonGridTests : GridTests
+    public class ExcelGridTests : GridTests
     {
 
         [Test]
-        public async Task QuickSearchTest()
+        public async Task QuickSearch()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
                 { "Henderson", 56 },
@@ -16,9 +17,10 @@ namespace DbNetSuiteCore.Playwright.JSON
                 { "321", 81}
             };
 
-            await GridQuickSearchTest(searches, "json/Superstore");
-            await GridQuickSearchTest(searches, $"json/Superstore?port={Port}");
-            await GridQuickSearchTest(searches, $"json/Superstore?port={Port}&mode=string");
+            await GridQuickSearchTest(searches, "excel/Superstore?ext=xlsx");
+            await GridQuickSearchTest(searches, "excel/Superstore?ext=xls");
+            await GridQuickSearchTest(searches, "excel/Superstore?ext=csv");
+            await GridQuickSearchTest(searches, "excel/renderfile?name=Superstore.xlsx");
         }
 
         [Test]
@@ -44,9 +46,17 @@ namespace DbNetSuiteCore.Playwright.JSON
                 { "discount", "0.00%" }
             };
 
-            await GridHeadingSort(sorts, "json/Superstore");
-            await GridHeadingSort(sorts, $"json/Superstore?port={Port}");
-            await GridHeadingSort(sorts, $"json/Superstore?port={Port}&mode=string");
+            await GridHeadingSort(sorts, "excel/Superstore?ext=xlsx");
+            await GridHeadingSort(sorts, "excel/Superstore?ext=xls");
+
+            sorts["postal code"] = "1040";
+            await GridHeadingSort(sorts, "excel/Superstore?ext=csv");
+
+            sorts["postal code"] = string.Empty;
+            sorts["sales"] = "0.44399999999999995";
+            sorts["discount"] = "0";
+
+            await GridHeadingSort(sorts, "excel/renderfile?name=Superstore.xlsx");
         }
 
         [Test]
@@ -71,12 +81,36 @@ namespace DbNetSuiteCore.Playwright.JSON
                 { "sales", new KeyValuePair<string, string>("£0.44","£22,638.48") },
                 { "quantity", new KeyValuePair<string, string>("1","14") },
                 { "discount", new KeyValuePair<string, string>("0.00%","80.00%") },
-                { "profit", new KeyValuePair<string, string>("-£6,599.98","£8,399.98") }
+                { "profit", new KeyValuePair<string, string>("-£6,599.98","£8,399.98") },
             };
 
-            await GridHeadingReverseSort(sorts, "json/Superstore");
-            await GridHeadingReverseSort(sorts, $"json/Superstore?port={Port}");
-            await GridHeadingReverseSort(sorts, $"json/Superstore?port={Port}&mode=string");
+            await GridHeadingReverseSort(sorts, "excel/Superstore?ext=xlsx");
+            await GridHeadingReverseSort(sorts, "excel/Superstore?ext=xls");
+
+            sorts["postal code"] = new KeyValuePair<string, string>("1040", "99301");
+            await GridHeadingReverseSort(sorts, "excel/Superstore?ext=csv");
+
+            sorts["postal code"] = new KeyValuePair<string, string>("", "99301");
+            sorts["sales"] = new KeyValuePair<string, string>("0.44399999999999995", "22638.48");
+            sorts["discount"] = new KeyValuePair<string, string>("0", "0.8");
+            sorts["profit"] = new KeyValuePair<string, string>("-6599.978000000001", "8399.975999999999");
+
+            await GridHeadingReverseSort(sorts, "excel/renderfile?name=Superstore.xlsx");
+        }
+
+        [Test]
+        public async Task ColumnFilter()
+        {
+            List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
+                new ColumnFilterTest("order date","08/11/2016",2),
+                new ColumnFilterTest("order date","",9994),
+                new ColumnFilterTest("ship mode","First Class",1538, FilterType.Select),
+                new ColumnFilterTest("city","Troy",14, FilterType.Select),
+            };
+
+            await GridColumnFilter(filterTests, "excel/Superstore?ext=csv");
+            await GridColumnFilter(filterTests, "excel/Superstore?ext=xls");
+            await GridColumnFilter(filterTests, "excel/Superstore?ext=xlsx");
         }
     }
 }

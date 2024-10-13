@@ -105,6 +105,10 @@ namespace DbNetSuiteCore.Extensions
                     {
                         columnFilterPart.Add($"{TextHelper.DelimitColumn(column.Name, gridModel.DataSourceType)} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
                     }
+                    else
+                    {
+                        column.FilterError = "Invalid filter value for column data type";
+                    }
                 }
 
                 if (columnFilterPart.Any())

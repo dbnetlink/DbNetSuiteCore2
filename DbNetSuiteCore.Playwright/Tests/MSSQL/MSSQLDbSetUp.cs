@@ -4,7 +4,7 @@ using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.MSSQL
+namespace DbNetSuiteCore.Playwright.Tests.MSSQL
 {
     public class MSSQLDbSetUp : DbSetUp
     {

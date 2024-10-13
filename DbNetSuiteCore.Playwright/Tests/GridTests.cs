@@ -1,7 +1,11 @@
-﻿using Microsoft.Playwright;
+﻿using DbNetSuiteCore.Playwright.Models;
+using DocumentFormat.OpenXml.Office.CustomUI;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using Irony.Parsing;
+using Microsoft.Playwright;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.Tests
 {
     public class GridTests : ComponentTests
     {
@@ -14,20 +18,10 @@ namespace DbNetSuiteCore.Playwright
             await GoToPage(page);
             ILocator search = Page.GetByPlaceholder("Search");
 
-            foreach(string token in searches.Keys)
+            foreach (string token in searches.Keys)
             {
                 await search.FillAsync(token);
-                await Page.WaitForResponseAsync(r => r.Url.Contains("gridcontrol.htmx"));
-
-                if (searches[token] == 0)
-                {
-                    await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();
-                }
-                else
-                {
-                    ILocator rowCount = Page.Locator("input[data-type=\"row-count\"]");
-                    await Expect(rowCount).ToHaveValueAsync(searches[token].ToString());
-                }
+                await TestRowCount(searches[token]);
             }
         }
 
@@ -54,9 +48,19 @@ namespace DbNetSuiteCore.Playwright
             }
         }
 
+        protected async Task GridColumnFilter(List<ColumnFilterTest> columnFilterTests, string page)
+        {
+            await GoToPage(page);
+
+            foreach (ColumnFilterTest columnFilterTest in columnFilterTests)
+            {
+                await TestColumnFilter(columnFilterTest);
+            }
+        }
+
         private async Task TestColumnHeadingSort(string columnName, string value)
         {
-            ILocator heading = Page.Locator($"th[data-columnname=\"{columnName.ToLower()}\"]");
+            ILocator heading = GetHeading(columnName);
             var cellIndex = await GetCellIndex(heading);
 
             if (cellIndex == -1)
@@ -68,6 +72,44 @@ namespace DbNetSuiteCore.Playwright
 
             var firstColumnCell = Page.Locator($"tr.grid-row").Nth(0).Locator("td").Nth(cellIndex);
             await Expect(firstColumnCell).ToHaveTextAsync(value);
+        }
+
+        private async Task TestColumnFilter(ColumnFilterTest columnFilterTest)
+        {
+            ILocator heading = GetHeading(columnFilterTest.ColumnName);
+            var columnKey = await heading.GetAttributeAsync("data-key");
+            ILocator filter = Page.Locator($"tr.filter-row {columnFilterTest.FilterType.ToString().ToLower()}[data-key=\"{columnKey}\"]");
+
+            var element =  await filter.ElementHandleAsync();
+            if (columnFilterTest.FilterType == FilterType.Select)
+            {
+                await filter.SelectOptionAsync(columnFilterTest.FilterValue);
+            }
+            else
+            {
+                await filter.FillAsync(columnFilterTest.FilterValue);
+            }
+            await TestRowCount(columnFilterTest.ExpectedRowCount);
+        }
+
+        private ILocator GetHeading(string columnName)
+        {
+            return Page.Locator($"th[data-columnname=\"{columnName.ToLower()}\"]");
+        }
+
+        private async Task TestRowCount(int expectedRowCount)
+        {
+            await Page.WaitForResponseAsync(r => r.Url.Contains("gridcontrol.htmx"));
+
+            if (expectedRowCount == 0)
+            {
+                await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();
+            }
+            else
+            {
+                ILocator rowCount = Page.Locator("input[data-type=\"row-count\"]");
+                await Expect(rowCount).ToHaveValueAsync(expectedRowCount.ToString());
+            }
         }
 
         private async Task<int> GetCellIndex(ILocator heading)

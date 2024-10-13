@@ -1,6 +1,7 @@
-﻿using NUnit.Framework;
+﻿using DbNetSuiteCore.Playwright.Models;
+using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.CSV
+namespace DbNetSuiteCore.Playwright.Tests.CSV
 {
     public class CsvGridTests : GridTests
     {
@@ -69,5 +70,6 @@ namespace DbNetSuiteCore.Playwright.CSV
             await GridHeadingReverseSort(sorts, "excel/Countries");
             await GridHeadingReverseSort(sorts, "excel/renderfile?name=countries.csv");
         }
+        
     }
 }

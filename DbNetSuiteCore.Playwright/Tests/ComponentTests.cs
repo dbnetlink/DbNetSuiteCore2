@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.Tests
 {
     public class ComponentTests : PageTest
     {

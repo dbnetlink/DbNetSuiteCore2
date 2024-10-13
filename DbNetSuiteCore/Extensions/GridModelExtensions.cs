@@ -230,6 +230,10 @@ namespace DbNetSuiteCore.Extensions
                     columnFilterParts.Add($"{expression} {columnFilter.Value.Key} @columnfilter{i}");
                     query.Params[$"@columnfilter{i}"] = paramValue;
                 }
+                else
+                {
+                    column.FilterError = "Invalid filter value for column data type";
+                }
             }
 
             return columnFilterParts;

@@ -1,6 +1,7 @@
-﻿using NUnit.Framework;
+﻿using DbNetSuiteCore.Playwright.Models;
+using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.SQLite
+namespace DbNetSuiteCore.Playwright.Tests.SQLite
 {
     public class SQLiteGridTests : GridTests
     {
@@ -49,6 +50,25 @@ namespace DbNetSuiteCore.Playwright.SQLite
             };
 
             await GridHeadingReverseSort(sorts, "sqlite/index");
+        }
+
+
+        [Test]
+        public async Task ColumnFilter()
+        {
+            List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
+                new ColumnFilterTest("last_update",">17/06/24",6),
+                new ColumnFilterTest("last_update",">=17/06/24",9),
+                new ColumnFilterTest("last_update",">=06/03/21",599),
+                new ColumnFilterTest("last_update",">06/03/21",9),
+                new ColumnFilterTest("last_update","",599),
+                new ColumnFilterTest("active","1",582, FilterType.Select),
+                new ColumnFilterTest("active","0",17, FilterType.Select),
+                new ColumnFilterTest("postal_code","00",1),
+                new ColumnFilterTest("active","1",14, FilterType.Select)
+            };
+
+            await GridColumnFilter(filterTests, "sqlite/index");
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.MSSQL
+namespace DbNetSuiteCore.Playwright.Tests.MSSQL
 {
     [TestFixture]
     public class MSSQLGridTests : MSSQLDbSetUp
@@ -58,6 +58,6 @@ namespace DbNetSuiteCore.Playwright.MSSQL
 
             await GridHeadingReverseSort(sorts, $"mssql/customers?db={DatabaseName}");
         }
-      
+
     }
 }

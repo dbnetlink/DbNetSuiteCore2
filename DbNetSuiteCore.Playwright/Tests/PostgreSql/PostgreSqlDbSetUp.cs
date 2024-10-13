@@ -2,7 +2,7 @@
 using Npgsql;
 using NUnit.Framework;
 
-namespace DbNetSuiteCore.Playwright.PostgreSql
+namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
 {
     public class PostgreSqlDbSetUp : DbSetUp
     {

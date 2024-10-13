@@ -1,10 +1,7 @@
-﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Playwright.MSSQL;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace DbNetSuiteCore.Playwright
+namespace DbNetSuiteCore.Playwright.Tests
 {
-   
     public class DbSetUp : GridTests
     {
         protected string DatabaseName = $"testdb_{Guid.NewGuid():N}".ToLower();
@@ -32,5 +29,5 @@ namespace DbNetSuiteCore.Playwright
             }
         }
     }
-   
+
 }
