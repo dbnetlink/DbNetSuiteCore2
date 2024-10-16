@@ -33,6 +33,7 @@ namespace DbNetSuiteCore.Extensions
             }
             else
             {
+                currentColumn.MaxLength = -1;
                 foreach (DataRow dataRow in dataTable.Rows)
                 {
                     dataRow[currentColumn] = gridColumnModel.GetLookupValue(dataRow[currentColumn]);
@@ -103,11 +104,18 @@ namespace DbNetSuiteCore.Extensions
 
                     if (columnFilter != null)
                     {
-                        columnFilterPart.Add($"{TextHelper.DelimitColumn(column.Name, gridModel.DataSourceType)} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
+                        if (string.IsNullOrEmpty(columnFilter.Value.ToString()) == false)
+                        {
+                            columnFilterPart.Add($"{TextHelper.DelimitColumn(column.Name, gridModel.DataSourceType)} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
+                        }
+                        else
+                        {
+                            column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
+                        }
                     }
                     else
                     {
-                        column.FilterError = "Invalid filter value for column data type";
+                        column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
                     }
                 }
 

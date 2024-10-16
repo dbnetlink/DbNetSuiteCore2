@@ -9,7 +9,7 @@
 <div class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1">
     @if (Model.GridModel.IsStoredProcedure == false)
     {
-        <input class="" style="width:10rem" autofocus type="search" placeholder="Search" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
+        <input class="" style="width:10rem" autofocus type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" />
     }
 
     <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2">
@@ -24,11 +24,11 @@
         @{
             RenderNavButton(TriggerNames.First, IconHelper.First(), "First page");
             RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), "Previous page");
-            <span class="flex">Page</span>
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Page)</span>
             RenderPageNumber(Model.GridModel.CurrentPage, Model.TotalPages);
-            <span class="flex">of</span>
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
             RenderTotalPages(Model.TotalPages);
-            <span class="flex">Rows</span>
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Rows)</span>
             RenderRowCount(Model.RowCount);
             RenderNavButton(TriggerNames.Next, IconHelper.Next(), "Next page");
             RenderNavButton(TriggerNames.Last, IconHelper.Last(), "Last page");
@@ -87,4 +87,4 @@
             }
         </select>
     }
-    }
+}

@@ -217,7 +217,7 @@ namespace DbNetSuiteCore.Extensions
                     object? paramValue = ParamValue(columnFilter.Value.Value, column, gridModel);
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
-                        column.FilterError = paramValue == null ? "Invalid filter value for column data type" : "No filter value supplied";
+                        column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
                         continue;
                     }
 
@@ -343,6 +343,11 @@ namespace DbNetSuiteCore.Extensions
             if (comparisionOperator != "=")
             {
                 filterColumnValue = filterColumnValue.Substring(comparisionOperator.Length);
+            }
+
+            if (string.IsNullOrEmpty(filterColumnValue))
+            {
+                return new KeyValuePair<string, object>(comparisionOperator, string.Empty);
             }
 
             if (gridColumn.IsNumeric)

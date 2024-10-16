@@ -104,7 +104,7 @@ namespace DbNetSuiteCore.Repositories
                 return;
             }
 
-            var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+            var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0].ToString()).ToList();
 
             var lookup = gridColumn.Lookup!;
 
@@ -120,7 +120,9 @@ namespace DbNetSuiteCore.Repositories
             int i = 0;
             paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
 
-            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {lookup.KeyColumn} in ({String.Join(",", paramNames)}) order by 2";
+            var keyColumn = $"{lookup.KeyColumn}{(gridModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
+
+            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
 
             DataTable lookupData;
 

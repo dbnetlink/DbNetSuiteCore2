@@ -523,7 +523,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
-                gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context);
+                gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
                 gridModel.ParentKey = RequestHelper.FormValue("primaryKey", gridModel.ParentKey, _context);
 
                 gridModel.Columns.ForEach(column => column.FilterError = string.Empty);

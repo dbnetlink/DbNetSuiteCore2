@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using DbNetSuiteCore.Playwright.Models;
+using NUnit.Framework;
 using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Net;
@@ -60,6 +61,25 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
             };
 
             await GridHeadingReverseSort(sorts, $"postgresql/customers?db={DatabaseName}");
+        }
+
+        [Test]
+        public async Task ColumnFilter()
+        {
+            List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
+                new ColumnFilterTest("OrderId",">11000",77),
+                new ColumnFilterTest("ShipperId","1",23, FilterType.Select),
+                new ColumnFilterTest("RequiredDate","14/5/2008",3),
+                new ColumnFilterTest("RequiredDate",">14/5/2008",10),
+                new ColumnFilterTest("RequiredDate","<14/5/2008",10),
+                new ColumnFilterTest("RequiredDate","<=14/5/2008",13),
+                new ColumnFilterTest("RequiredDate",">=14/5/2008",13),
+                new ColumnFilterTest("OrderId","",13),
+                new ColumnFilterTest("RequiredDate","",249),
+                new ColumnFilterTest("ShipperId","",830, FilterType.Select),
+            };
+
+            await GridColumnFilter(filterTests, $"postgresql/orders?db={DatabaseName}");
         }
 
     }

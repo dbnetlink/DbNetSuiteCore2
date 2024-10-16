@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+
+    var columns = new List<GridColumn>() {
+        new GridColumn("OrderID") {Filter = true },
+        new GridColumn("CustomerID") {Filter = true, Lookup = new Lookup("Customers", "CustomerID", "CompanyName")},
+        new GridColumn("EmployeeID") {Filter = true, Lookup = new Lookup("Employees", "EmployeeID", "LastName + ',' + FirstName")},
+        new GridColumn("OrderDate") {Filter = true},
+        new GridColumn("RequiredDate") {Filter = true},
+        new GridColumn("ShippedDate"),
+        new GridColumn("ShipVia") {Filter = true, Lookup = new Lookup("Shippers", "ShipperID", "CompanyName")},
+        new GridColumn("Freight"),
+        new GridColumn("ShipName"),
+        new GridColumn("ShipAddress"),
+        new GridColumn("ShipCity") {Filter = true, Lookup = new Lookup()},
+        new GridColumn("ShipRegion") {Filter = true, Lookup = new Lookup()},
+        new GridColumn("ShipPostalCode"),
+        new GridColumn("ShipCountry") {Filter = true, Lookup = new Lookup()}
+    };
+
+    var ordersGrid = new GridModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Orders");
+    ordersGrid.Columns = columns;
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
+}

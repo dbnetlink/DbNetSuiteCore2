@@ -136,6 +136,7 @@ class GridControl {
     }
 
     invokeEventHandler(eventName, args = {}) {
+        window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.gridId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return;
         }

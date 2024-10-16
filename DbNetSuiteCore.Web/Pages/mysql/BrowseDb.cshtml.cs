@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public MySqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.MySql;
-            Connections = new List<string>{ "northwind(mysql)" };
+            Connections = new List<string>{ "northwind(mysql)", "northwind2(mysql)" };
         }
     }
 }
