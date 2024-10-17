@@ -27,10 +27,11 @@ namespace DbNetSuiteCore.Services
         private readonly IMySqlRepository _mySqlRepository;
         private readonly IPostgreSqlRepository _postgreSqlRepository;
         private readonly IExcelRepository _excelRepository;
+        private readonly IMongoDbRepository _mongoDbRepository;
         private HttpContext? _context = null;
         private string triggerName => _context.Request.Headers.Keys.Contains(HeaderNames.HxTriggerName) ? _context.Request.Headers[HeaderNames.HxTriggerName] : string.Empty;
 
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -40,6 +41,7 @@ namespace DbNetSuiteCore.Services
             _mySqlRepository = mySqlRepository;
             _postgreSqlRepository = postgreSqlRepository;
             _excelRepository = excelRepository;
+            _mongoDbRepository = mongoDbRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -264,6 +266,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.Excel:
                     await _excelRepository.GetRecord(gridModel);
                     break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecord(gridModel);
+                    break;
                 default:
                     await _msSqlRepository.GetRecord(gridModel);
                     break;
@@ -299,6 +304,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.FileSystem:
                     await _fileSystemRepository.GetRecords(gridModel, _context);
                     break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecords(gridModel);
+                    break;
                 default:
                     await _msSqlRepository.GetRecords(gridModel);
                     break;
@@ -321,6 +329,8 @@ namespace DbNetSuiteCore.Services
                     return await _excelRepository.GetColumns(gridModel);
                 case DataSourceType.FileSystem:
                     return await _fileSystemRepository.GetColumns(gridModel, _context);
+                case DataSourceType.MongoDB:
+                    return await _mongoDbRepository.GetColumns(gridModel);
                 default:
                     return await _msSqlRepository.GetColumns(gridModel);
             }

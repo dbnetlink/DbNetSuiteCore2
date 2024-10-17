@@ -1,0 +1,27 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var customersGrid = new GridModel(DataSourceType.MongoDB, "Northwind(MongoDb)", "customers") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB) };
+
+    customersGrid.Columns = new List<GridColumn>() {
+        new GridColumn("company"),
+        new GridColumn("last_name"),
+        new GridColumn("first_name"),
+        new GridColumn("job_title"),
+        new GridColumn("business_phone"),
+        new GridColumn("fax_number"),
+        new GridColumn("address"),
+        new GridColumn("city"),
+        new GridColumn("state_province"),
+        new GridColumn("zip_postal_code"),
+        new GridColumn("country_region")
+    };
+
+    customersGrid.Columns.ToList().ForEach(c => c.Filter = true);
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+}

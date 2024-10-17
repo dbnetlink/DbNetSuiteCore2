@@ -16,6 +16,7 @@ namespace DbNetSuiteCore.Models
 
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
+        public string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".","_") : Expression;
         public string Key { get; set; }
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
         public List<KeyValuePair<string, string>>? LookupOptions => (DbLookupOptions ?? EnumOptions);

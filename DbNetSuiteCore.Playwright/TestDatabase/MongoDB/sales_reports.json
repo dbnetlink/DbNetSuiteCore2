@@ -1,0 +1,5 @@
+[{"_id":{"$oid":"5f8468a500306c706b79def5"},"group_by":"Category","display":"Category","title":"Sales By Category","filter_row_source":"SELECT DISTINCT [Category] FROM [products] ORDER BY [Category];","default":0},
+{"_id":{"$oid":"5f8468a500306c706b79def6"},"group_by":"country_region","display":"Country/Region","title":"Sales By Country","filter_row_source":"SELECT DISTINCT [country_region] FROM [customers Extended] ORDER BY [country_region];","default":0},
+{"_id":{"$oid":"5f8468a500306c706b79def7"},"group_by":"employee_id","display":"Employee","title":"Sales By Employee","filter_row_source":"SELECT DISTINCT [Employee Name] FROM [employees Extended] ORDER BY [Employee Name];","default":0},
+{"_id":{"$oid":"5f8468a500306c706b79def8"},"group_by":"Product ID","display":"Product","title":"Sales by Product","filter_row_source":"SELECT DISTINCT [Product Name] FROM [products] ORDER BY [Product Name];","default":1},
+{"_id":{"$oid":"5f8468a500306c706b79def9"},"group_by":"Customer ID","display":"Customer","title":"Sales By Customer","filter_row_source":"SELECT DISTINCT [Company] FROM [customers Extended] ORDER BY [Company];","default":0}]

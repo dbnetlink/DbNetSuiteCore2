@@ -9,6 +9,7 @@ namespace DbNetSuiteCore.Enums
         FileSystem,
         MySql,
         PostgreSql,
-        Excel
+        Excel,
+        MongoDB
     };
 }

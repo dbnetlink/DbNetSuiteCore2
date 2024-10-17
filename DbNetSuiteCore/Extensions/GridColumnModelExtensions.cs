@@ -39,7 +39,7 @@ namespace DbNetSuiteCore.Extensions
                     value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
                     break;
                 case FormatType.Image:
-                    value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img src=\"{s}\"/>"));
+                    value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img {(string.IsNullOrEmpty(gridColumnModel.Style) ? "" : $"style=\"{gridColumnModel.Style}\"")} src =\"{s}\"/>"));
                     break;
                 default:
                     value = gridColumnModel.FormatedValue(value, format);

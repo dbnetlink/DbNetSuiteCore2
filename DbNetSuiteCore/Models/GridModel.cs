@@ -41,6 +41,7 @@ namespace DbNetSuiteCore.Models
         public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
         public string ExportFormat { get; set; } = string.Empty;
         public string ConnectionAlias { get; set; } = string.Empty;
+        public string DatabaseName { get; set; } = string.Empty;
         public string Url 
         { 
             get 

@@ -1,0 +1,24 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@{
+    var moviesGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix" };
+
+    moviesGrid.Columns = new List<GridColumn>() {
+        new GridColumn("title"),
+        new GridColumn("year"){DataType = typeof(Int32), Lookup = new Lookup()},
+        new GridColumn("directors"),
+        new GridColumn("cast"),
+        new GridColumn("countries"),
+        new GridColumn("genres"),
+        new GridColumn("poster") {Format = FormatType.Image, Style = "height:50px"},
+        new GridColumn("imdb.rating", "Rating") {DataType = typeof(Double)},
+        new GridColumn("tomatoes.viewer.rating", "Rotten Tomatoes") {DataType = typeof(Double)},
+        new GridColumn("tomatoes.lastUpdated", "Last Updated")
+    };
+
+    moviesGrid.Columns.ToList().ForEach(c => c.Filter = true);
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(moviesGrid))
+}

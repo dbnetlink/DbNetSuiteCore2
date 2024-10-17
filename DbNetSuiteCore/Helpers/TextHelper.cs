@@ -9,6 +9,7 @@ namespace DbNetSuiteCore.Helpers
     {
         static public string GenerateLabel(string label)
         {
+            label = label.Split(".").Last();
             label = label.Replace("[",string.Empty).Replace("]", string.Empty);
             label = Regex.Replace(label, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
             return Capitalise(label.Replace("_", " ").Replace(".", " "));

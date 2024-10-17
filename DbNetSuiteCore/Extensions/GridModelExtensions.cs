@@ -538,7 +538,7 @@ namespace DbNetSuiteCore.Extensions
             return paramValue;
         }
 
-        private static bool ParseBoolean(string boolString)
+        public static bool ParseBoolean(string boolString)
         {
             switch (boolString.ToLower())
             {

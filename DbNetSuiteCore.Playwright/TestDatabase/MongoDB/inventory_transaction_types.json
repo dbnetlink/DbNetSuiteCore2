@@ -1,0 +1,18 @@
+[
+  {
+    "_id": 2,
+    "type_name": "Sold"
+  },
+  {
+    "_id": 3,
+    "type_name": "On Hold"
+  },
+  {
+    "_id": 4,
+    "type_name": "Waste"
+  },
+  {
+    "_id": 1,
+    "type_name": "Purchased"
+  }
+]

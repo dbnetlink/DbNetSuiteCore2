@@ -13,7 +13,12 @@ namespace DbNetSuiteCore.Playwright.Tests
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = $"{assembly.GetName().Name}.{scriptPath.Replace('/', '.')}";
 
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            return LoadTextFromResource(resourceName);
+        }
+
+        protected string LoadTextFromResource(string resourceName)
+        {
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
             {
                 if (stream == null)
                 {
