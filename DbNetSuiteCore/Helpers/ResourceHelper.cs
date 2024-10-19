@@ -11,7 +11,9 @@ namespace DbNetSuiteCore.Helpers
         SearchPlaceholder,
         Page,
         Of,
-        Rows
+        Rows,
+        NoRecordsFound,
+        QueryLimited
     }
     public static class ResourceHelper
     {

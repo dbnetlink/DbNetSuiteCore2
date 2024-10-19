@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var ordersGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(local)", "salesorder") { DatabaseName = "northwind"};
+
+    ordersGrid.Columns = new List<GridColumn>() {
+        new GridColumn("entityId"),
+        new GridColumn("customerId") { Lookup = new Lookup("customer", "entityId", "companyName") },
+        new GridColumn("employeeId") { Lookup = new Lookup("employee", "entityId", "lastname:, :firstname") },
+        new GridColumn("shipCity"),
+        new GridColumn("shipName"),
+        new GridColumn("orderDate") { DataType = typeof(DateTime)},
+        new GridColumn("requiredDate") { DataType = typeof(DateTime)},
+        new GridColumn("shippedDate") { DataType = typeof(DateTime)},
+        new GridColumn("shipperId") { Lookup = new Lookup("shipper", "entityId", "companyName") },
+        new GridColumn("shipRegion"),
+        new GridColumn("shipAddress"),
+        new GridColumn("shipCountry"),
+        new GridColumn("shipPostalCode"),
+        new GridColumn("freight") { Format = "c"}
+    };
+    
+    ordersGrid.Columns.ToList().ForEach(c => c.Filter = true);
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
+}

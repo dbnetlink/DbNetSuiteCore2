@@ -123,11 +123,17 @@
   <data name="ColumnFilterNoData" xml:space="preserve">
     <value>No filter value supplied</value>
   </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>No records found</value>
+  </data>
   <data name="Of" xml:space="preserve">
     <value>of</value>
   </data>
   <data name="Page" xml:space="preserve">
     <value>Page</value>
+  </data>
+  <data name="QueryLimited" xml:space="preserve">
+    <value>Query limited to {0} rows</value>
   </data>
   <data name="Rows" xml:space="preserve">
     <value>Rows</value>

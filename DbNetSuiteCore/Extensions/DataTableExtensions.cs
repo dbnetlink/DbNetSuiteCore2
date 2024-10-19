@@ -41,9 +41,9 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static void FilterAndSort(this DataTable dataTable, GridModel gridModel, bool addFilter = true)
+        public static void FilterAndSort(this DataTable dataTable, GridModel gridModel)
         {
-            var rows = dataTable.Select(addFilter ? AddFilter(gridModel) : string.Empty, AddOrder(gridModel));
+            var rows = dataTable.Select(AddFilter(gridModel), AddOrder(gridModel));
 
             if (rows.Any())
             {

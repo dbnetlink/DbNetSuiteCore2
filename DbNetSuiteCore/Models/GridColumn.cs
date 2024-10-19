@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Math;
 using System.ComponentModel;
 using System.Data;
 
@@ -9,7 +8,7 @@ namespace DbNetSuiteCore.Models
     public class GridColumn : ColumnModel
     {
         public bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
-        public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml);
+        public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml) && DataOnly == false;
         public bool Editable { get; set; } = false;
         public bool Viewable { get; set; } = true;
         public bool PrimaryKey { get; set; } = false;

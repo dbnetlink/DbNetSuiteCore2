@@ -28,5 +28,6 @@
 
     var ordersGrid = new GridModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "salesorder");
     ordersGrid.Columns = columns;
+    ordersGrid.QueryLimit = 500;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
 }

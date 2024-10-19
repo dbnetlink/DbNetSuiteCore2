@@ -155,9 +155,11 @@ namespace DbNetSuiteCore.Services
 
         private async Task ConfigureGridColumns(GridModel gridModel)
         {
-            if (gridModel.Columns.Any())
+            if (gridModel.Columns.Any(c => c.DataOnly))
             {
-         //       gridModel.Columns.ToList().ForEach(c => c.Expression = GridModelExtensions.QualifyExpression(c.Expression, gridModel.DataSourceType, true));
+                List<GridColumn> gridColumns = gridModel.Columns.Where(c => c.DataOnly == false).ToList();
+                gridColumns.AddRange(gridModel.Columns.Where(c => c.DataOnly).ToList());
+                gridModel.Columns = gridColumns;
             }
 
             DataTable schema = await GetColumns(gridModel);

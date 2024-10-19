@@ -154,6 +154,7 @@ class GridControl {
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
         let rowCount = parseInt(tbody.dataset.rowcount);
+        let queryLimit = parseInt(this.gridControlElement("#query-limited").dataset.querylimit);
 
         if (totalPages == 0) {
             this.updateLinkedGrids('');
@@ -174,6 +175,13 @@ class GridControl {
             else {
                 this.addClass('#no-records', "hidden");
                 this.removeClass('#navigation', "hidden");
+            }
+
+            if (queryLimit > 0 && queryLimit == rowCount) {
+                this.removeClass('#query-limited', "hidden");
+            }
+            else {
+                this.addClass('#query-limited', "hidden");
             }
 
             this.setPageNumber(currentPage, totalPages);

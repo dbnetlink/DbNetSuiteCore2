@@ -19,6 +19,7 @@
     }; 
     invoiceGrid.MultiRowSelectLocation = MultiRowSelectLocation.Left;
     invoiceGrid.PageSize = 100;
+    invoiceGrid.QueryLimit = 200;
     invoiceGrid.FrozenHeader = true;
     invoiceGrid.ClientEvents[ClientEvent.SelectedRowsUpdated] = "showSelectedRows";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))

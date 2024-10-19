@@ -1,26 +1,14 @@
 ﻿using DbNetSuiteCore.Models;
 using System.Data;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using DbNetSuiteCore.Helpers;
+using System.Linq;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public enum FilterOperator
-    {
-        eq,
-        gt,
-        gte,
-        lt,
-        lte,
-        ne,
-        nin,
-        and,
-        or,
-        regex
-    }
-
     public class MongoDbRepository : IMongoDbRepository
     {
         private readonly IConfiguration _configuration;
@@ -33,9 +21,11 @@ namespace DbNetSuiteCore.Repositories
         public async Task GetRecords(GridModel gridModel)
         {
             var database = GetDatabase(gridModel);
-            var reportConfiguration = BuildReportConfiguration(gridModel);
-            gridModel.Data = await CreateDataTable(database, reportConfiguration, gridModel);
-            // dataTable.FilterAndSort(gridModel, false);
+            gridModel.Data = await CreateDataTableFromPipeline(database, gridModel);
+            foreach (var gridColumn in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false  && c.LookupOptions == null))
+            {
+                await GetLookupOptions(gridModel, gridColumn, database);
+            }
             gridModel.ConvertEnumLookups();
             gridModel.GetDistinctLookups();
         }
@@ -43,8 +33,7 @@ namespace DbNetSuiteCore.Repositories
         public async Task GetRecord(GridModel gridModel)
         {
             var database = GetDatabase(gridModel);
-            var reportConfiguration = BuildReportConfiguration(gridModel);
-            var dataTable = await CreateDataTable(database, reportConfiguration, gridModel);
+            var dataTable = await CreateDataTableFromPipeline(database, gridModel);
             dataTable.FilterWithPrimaryKey(gridModel);
             gridModel.ConvertEnumLookups();
         }
@@ -52,51 +41,22 @@ namespace DbNetSuiteCore.Repositories
         public async Task<DataTable> GetColumns(GridModel gridModel)
         {
             var database = GetDatabase(gridModel);
+            gridModel.TableName = CheckCollectionName(database, gridModel.TableName);
             if (gridModel.Columns.Any() == false)
             {
                 AddSchemaColumns(gridModel, database);
             }
-            var reportConfiguration = BuildReportConfiguration(gridModel);
-            gridModel.Data = await CreateDataTable(database, reportConfiguration, gridModel);
+            gridModel.Data = await CreateDataTableFromPipeline(database, gridModel);
             return gridModel.Data;
         }
 
-        private async Task<DataTable> CreateDataTable(IMongoDatabase database, ReportConfiguration config, GridModel gridModel)
+        private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, GridModel gridModel)
         {
-            return await CreateDataTableFromPipeline(database, config, gridModel);
-            if (config.Fields.Any(f => f.Name.Contains(".")))
-            {
-                return await CreateDataTableFromPipeline(database, config, gridModel);
-            }
-            else
-            {
-                return await CreateDataTableFromProjection(database, config);
-            }
-        }
-
-        private async Task<DataTable> CreateDataTableFromProjection(IMongoDatabase database, ReportConfiguration config)
-        {
-            var collection = database.GetCollection<BsonDocument>(config.CollectionName);
-            var projectionDefBuilder = Builders<BsonDocument>.Projection;
-            var projection = projectionDefBuilder.Include(config.Fields.First().Name);
-
-            foreach (Field field in config.Fields.Skip(1))
-            {
-                projection = projection.Include(field.Name);
-            }
-
-            IAsyncCursor<BsonDocument> cursor = await collection.Find(new BsonDocument()).Project(projection).Limit(10).ToCursorAsync();
-            return await BuildDataTableFromCursor(cursor, config);
-        }
-
-
-        private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, ReportConfiguration config, GridModel gridModel)
-        {
-            var collection = database.GetCollection<BsonDocument>(config.CollectionName);
+            var collection = database.GetCollection<BsonDocument>(gridModel.TableName);
 
             var pipeline = new List<BsonDocument>
             {
-                new BsonDocument("$match", BuildMatchStage(gridModel)),
+                new BsonDocument("$match", BuildMatchStage(gridModel))
             };
 
             if (string.IsNullOrEmpty(gridModel.SortColumnName) == false)
@@ -105,37 +65,42 @@ namespace DbNetSuiteCore.Repositories
             }
             pipeline.Add(new BsonDocument("$project", BuildProjectStage(gridModel)));
 
-            var cursor = await collection.AggregateAsync<BsonDocument>(pipeline);
+            if (gridModel.QueryLimit > 0)
+            {
+                pipeline.Add(new BsonDocument("$limit", gridModel.QueryLimit));
+            }
 
-            return await BuildDataTableFromCursor(cursor, config);
+            return await BuildDataTableFromCursor(pipeline, collection, gridModel.Columns);
         }
 
-        private async Task<DataTable> BuildDataTableFromCursor(IAsyncCursor<BsonDocument> cursor, ReportConfiguration config)
+        private async Task<DataTable> BuildDataTableFromCursor(List<BsonDocument> pipeline, IMongoCollection<BsonDocument> collection, IEnumerable<GridColumn> columns)
         {
             var dataTable = new DataTable();
+
+            var cursor = await collection.AggregateAsync<BsonDocument>(pipeline);
 
             await cursor.ForEachAsync(document =>
             {
                 if (dataTable.Rows.Count == 0)
                 {
-                    foreach (var field in config.Fields)
+                    foreach (var column in columns)
                     {
-                        var value = document.GetValue(field.Alias, BsonNull.Value);
-                        dataTable.Columns.Add(field.Alias, GetColumnDataType(value, field));
+                        var value = document.GetValue(column.ColumnAlias, BsonNull.Value);
+                        dataTable.Columns.Add(column.ColumnAlias, GetColumnDataType(value, column));
                     }
                 }
 
                 var row = dataTable.NewRow();
-                foreach (var field in config.Fields)
+                foreach (var column in columns)
                 {
-                    var value = document.GetValue(field.Alias, BsonNull.Value);
+                    var value = document.GetValue(column.ColumnAlias, BsonNull.Value);
                     try
                     {
-                        row[field.Alias] = GetColumnValue(value);
+                        row[column.ColumnAlias] = GetColumnValue(value);
                     }
                     catch (Exception)
                     {
-                        row[field.Alias] = DBNull.Value;
+                        row[column.ColumnAlias] = DBNull.Value;
                     }
 
                 }
@@ -144,18 +109,77 @@ namespace DbNetSuiteCore.Repositories
 
             if (dataTable.Rows.Count == 0)
             {
-                foreach (var field in config.Fields)
+                foreach (var column in columns)
                 {
-                    dataTable.Columns.Add(field.Alias, GetColumnDataType(BsonNull.Value, field));
+                    dataTable.Columns.Add(column.ColumnAlias, GetColumnDataType(BsonNull.Value, column));
                 }
             }
 
             return dataTable;
         }
 
-        private Type GetColumnDataType(BsonValue value, Field field)
+        private async Task GetLookupOptions(GridModel gridModel, GridColumn gridColumn, IMongoDatabase database)
         {
-            return value.IsBsonNull || value.IsBsonArray ? field.DataType : BsonTypeMapper.MapToDotNetValue(value).GetType();
+            DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+
+            gridColumn.DbLookupOptions = new List<KeyValuePair<string, string>>();
+
+            if (dataColumn == null || gridModel.Data.Rows.Count == 0)
+            {
+                return;
+            }
+
+            var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+
+            var lookup = gridColumn.Lookup!;
+
+            DataTable lookupData = await CreateLookupOptionsFromPipeline(database, gridColumn,gridModel, lookupValues);
+
+            gridColumn.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+            gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
+        }
+
+        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, GridColumn gridColumn, GridModel gridModel, List<object> values)
+        {
+            var collection = database.GetCollection<BsonDocument>(gridColumn.Lookup.TableName);
+
+            var pipeline = new List<BsonDocument>
+            {
+                new BsonDocument("$match", new BsonDocument(gridColumn.Lookup.KeyColumn, new BsonDocument("$in", new BsonArray(values))))
+            };
+
+            var project = new BsonDocument
+            {
+                { gridColumn.Lookup.KeyColumn, $"${gridColumn.Lookup.KeyColumn}" }
+            };
+
+            var descriptionColumn = gridColumn.Lookup.DescriptionColumn;
+
+            if (gridColumn.Lookup.DescriptionColumn.Contains(":"))
+            {
+                descriptionColumn = "description";
+                project.AddRange(new BsonDocument(descriptionColumn, new BsonDocument("$concat", new BsonArray(FormatConcatFields(gridColumn.Lookup.DescriptionColumn)))));
+            }
+            else
+            {
+                project.Add(gridColumn.Lookup.DescriptionColumn, $"${descriptionColumn}");
+            }
+
+            pipeline.Add(new BsonDocument("$project", project));
+
+            var columns = new List<GridColumn> { new GridColumn(gridColumn.Lookup.KeyColumn), new GridColumn(descriptionColumn) };
+
+            return await BuildDataTableFromCursor(pipeline, collection, columns);
+        }
+
+        private List<string> FormatConcatFields(string lookupDescription)
+        {
+            return lookupDescription.Split(":").Select(s => char.IsLetter(s.FirstOrDefault()) ? $"${s}" : s).ToList();
+        }
+
+        private Type GetColumnDataType(BsonValue value, ColumnModel column)
+        {
+            return value.IsBsonNull || value.IsBsonArray ? column.DataType : BsonTypeMapper.MapToDotNetValue(value).GetType();
         }
 
         public object GetColumnValue(BsonValue value)
@@ -206,7 +230,48 @@ namespace DbNetSuiteCore.Repositories
 
             var client = new MongoClient(connectionString);
 
+            try
+            {
+                gridModel.DatabaseName = CheckNameList(client.ListDatabaseNames().ToList(), gridModel.DatabaseName);
+            }
+            catch(Exception)
+            {
+                throw new Exception($"Database => [{gridModel.DatabaseName}] does not exist on this connection");
+            }
+
+
             return client.GetDatabase(gridModel.DatabaseName);
+        }
+
+        private string CheckCollectionName(IMongoDatabase database, string collectionName)
+        {
+            try
+            {
+                collectionName = CheckNameList(database.ListCollectionNames().ToList(), collectionName);
+            }
+            catch (Exception)
+            {
+                throw new Exception($"Collection => [{collectionName}] does not exist in database [{database.DatabaseNamespace.DatabaseName}]");
+            }
+
+            return collectionName.ToString();
+        }
+
+        private string CheckNameList(List<string> list, string name)
+        {
+            if (list.Contains(name.ToString()) == false)
+            {
+                if (list.Select(c => c.ToLower()).Contains(name.ToLower()))
+                {
+                    name = list.First(c => c.ToLower() == name.ToLower());
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            }
+
+            return name;
         }
 
         private BsonDocument BuildMatchStage(GridModel gridModel)
@@ -218,12 +283,12 @@ namespace DbNetSuiteCore.Repositories
 
                 foreach (var expression in gridModel.Columns.Where(c => c.Searchable).Select(c => c.Expression).ToList())
                 {
-                    match.Add(new BsonDocument(expression, new BsonDocument(GetFilterOperator(FilterOperator.regex), new BsonRegularExpression(gridModel.SearchInput, "i"))));
+                    match.Add(new BsonDocument(expression, new BsonDocument(GetFilterOperator(MongoDbFilterOperator.regex), new BsonRegularExpression(gridModel.SearchInput, "i"))));
                 }
 
                 if (match.Any())
                 {
-                    filter.AddRange(new BsonDocument(new Dictionary<string, object>() { { GetFilterOperator(FilterOperator.or), match.ToArray() } }));
+                    filter.AddRange(new BsonDocument(new Dictionary<string, object>() { { GetFilterOperator(MongoDbFilterOperator.or), match.ToArray() } }));
                 }
             }
 
@@ -260,7 +325,7 @@ namespace DbNetSuiteCore.Repositories
 
                 if (match.Any())
                 {
-                    filter.AddRange(new BsonDocument(new Dictionary<string, object>() { { GetFilterOperator(FilterOperator.and), match.ToArray() } }));
+                    filter.AddRange(new BsonDocument(new Dictionary<string, object>() { { GetFilterOperator(MongoDbFilterOperator.and), match.ToArray() } }));
                 }
             }
 
@@ -269,31 +334,31 @@ namespace DbNetSuiteCore.Repositories
 
         private static ColumnFilter? ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
         {
-            FilterOperator comparisionOperator = FilterOperator.eq;
+            MongoDbFilterOperator comparisionOperator = MongoDbFilterOperator.eq;
 
             if (filterColumnValue.StartsWith(">="))
             {
-                comparisionOperator = FilterOperator.gte;
+                comparisionOperator = MongoDbFilterOperator.gte;
             }
             else if (filterColumnValue.StartsWith("<="))
             {
-                comparisionOperator = FilterOperator.lte;
+                comparisionOperator = MongoDbFilterOperator.lte;
             }
             else if (filterColumnValue.StartsWith("<>") || filterColumnValue.StartsWith("!="))
             {
-                comparisionOperator = FilterOperator.ne;
+                comparisionOperator = MongoDbFilterOperator.ne;
             }
             else if (filterColumnValue.StartsWith(">"))
             {
-                comparisionOperator = FilterOperator.gt;
+                comparisionOperator = MongoDbFilterOperator.gt;
             }
             else if (filterColumnValue.StartsWith("<"))
             {
-                comparisionOperator = FilterOperator.lt;
+                comparisionOperator = MongoDbFilterOperator.lt;
             }
-            if (comparisionOperator != FilterOperator.eq)
+            if (comparisionOperator != MongoDbFilterOperator.eq)
             {
-                var ltOrGt = new List<FilterOperator> { FilterOperator.lt, FilterOperator.gt };
+                var ltOrGt = new List<MongoDbFilterOperator> { MongoDbFilterOperator.lt, MongoDbFilterOperator.gt };
                 filterColumnValue = filterColumnValue.Substring(ltOrGt.Contains(comparisionOperator) ? 1 : 2);
             }
 
@@ -309,7 +374,7 @@ namespace DbNetSuiteCore.Repositories
             switch (gridColumn.DataTypeName)
             {
                 case nameof(System.Boolean):
-                    return new ColumnFilter(FilterOperator.eq, GridModelExtensions.ParseBoolean(filterColumnValue));
+                    return new ColumnFilter(MongoDbFilterOperator.eq, GridModelExtensions.ParseBoolean(filterColumnValue));
                 case nameof(DateTime):
                     try
                     {
@@ -329,37 +394,42 @@ namespace DbNetSuiteCore.Repositories
                         return null;
                     }
                 default:
-                    return new ColumnFilter(FilterOperator.regex, new BsonRegularExpression(filterColumnValue, "i"));
+                    return new ColumnFilter(MongoDbFilterOperator.regex, new BsonRegularExpression(filterColumnValue, "i"));
             }
         }
 
-
-        public static BsonValue TypedValue(string dataTypeName, object value)
+        public static BsonValue? TypedValue(string dataTypeName, object value)
         {
-            //   return Convert.ToInt32(value);
-            switch (dataTypeName)
+            try
             {
-                case nameof(DateTime):
-                    return Convert.ToDateTime(value);
-                case nameof(Int16):
-                    return Convert.ToInt16(value);
-                case nameof(Int32):
-                    return Convert.ToInt32(value);
-                case nameof(Int64):
-                case nameof(Int128):
-                    return Convert.ToInt64(value);
-                case nameof(Double):
-                    return Convert.ToDouble(value);
-                case nameof(Single):
-                    return Convert.ToSingle(value);
-                case nameof(Decimal):
-                    return Convert.ToDecimal(value);
-            }
+                switch (dataTypeName)
+                {
+                    case nameof(DateTime):
+                        return Convert.ToDateTime(value);
+                    case nameof(Int16):
+                        return Convert.ToInt16(value);
+                    case nameof(Int32):
+                        return Convert.ToInt32(value);
+                    case nameof(Int64):
+                    case nameof(Int128):
+                        return Convert.ToInt64(value);
+                    case nameof(Double):
+                        return Convert.ToDouble(value);
+                    case nameof(Single):
+                        return Convert.ToSingle(value);
+                    case nameof(Decimal):
+                        return Convert.ToDecimal(value);
+                }
 
-            return value.ToString();
+                return value.ToString();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
-        private string GetFilterOperator(FilterOperator filterOperator)
+        private string GetFilterOperator(MongoDbFilterOperator filterOperator)
         {
             return $"${filterOperator}";
         }
@@ -377,71 +447,29 @@ namespace DbNetSuiteCore.Repositories
             var project = new BsonDocument();
             foreach (var gridColumn in gridModel.Columns)
             {
-                project.Add(gridColumn.ColumnAlias, $"${gridColumn.Expression}");
+                if (gridColumn.DataType == typeof(DateTime))
+                {
+                    project.Add(gridColumn.ColumnAlias, new BsonDocument("$toDate", $"${gridColumn.Expression}"));
+                }
+                else
+                {
+                    project.Add(gridColumn.ColumnAlias, $"${gridColumn.Expression}");
+                }
             }
             return project;
         }
 
-        private ReportConfiguration BuildReportConfiguration(GridModel gridModel)
-        {
-            var config = new ReportConfiguration
-            {
-                CollectionName = gridModel.TableName,
-                Filters = new List<Filter>
-                {
-                    new Filter { Field = "location.address.street1", Operator = "$regex", Value = "Lone" },
-                    new Filter { Field = "location.address.state", Operator = "$regex", Value = "CA" }
-                },
-                SortFields = new List<SortField>
-                {
-                    new SortField { Field = "year", Ascending = false }
-                },
-                Fields = gridModel.Columns.Select(gc => new Field { Name = gc.Expression, Alias = gc.ColumnAlias, DataType = gc.DataType }).ToList(),
-                Limit = 100
-            };
-
-            return config;
-        }
     }
 
     public class ColumnFilter
     {
-        public ColumnFilter(FilterOperator @operator, BsonValue? value)
+        public ColumnFilter(MongoDbFilterOperator @operator, BsonValue? value)
         {
             Operator = @operator;
             Value = value;
         }
 
-        public FilterOperator Operator { get; set; } = FilterOperator.eq;
+        public MongoDbFilterOperator Operator { get; set; } = MongoDbFilterOperator.eq;
         public BsonValue? Value { get; set; }
-    }
-
-    public class ReportConfiguration
-    {
-        public string CollectionName { get; set; } = string.Empty;
-        public List<Filter> Filters { get; set; } = new List<Filter>();
-        public List<SortField> SortFields { get; set; } = new List<SortField>();
-        public List<Field> Fields { get; set; } = new List<Field>();
-        public int Limit { get; set; } = 1000;
-    }
-
-    public class Filter
-    {
-        public string Field { get; set; } = string.Empty;
-        public string Operator { get; set; } = string.Empty;
-        public object Value { get; set; } = string.Empty;
-    }
-
-    public class SortField
-    {
-        public string Field { get; set; } = string.Empty;
-        public bool Ascending { get; set; } = true;
-    }
-
-    public class Field
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Alias { get; set; } = null;
-        public Type DataType { get; set; } = typeof(System.Object);
     }
 }

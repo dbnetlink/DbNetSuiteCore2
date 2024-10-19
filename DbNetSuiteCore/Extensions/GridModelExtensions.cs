@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Data;
 using System.Text.Json;
 using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Office2010.Word;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -13,7 +15,7 @@ namespace DbNetSuiteCore.Extensions
     {
         public static QueryCommandConfig BuildQuery(this GridModel gridModel)
         {
-            string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
+            string sql = $"select {Top(gridModel)}{AddSelectPart(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             gridModel.AddFilterPart(query);
@@ -21,6 +23,7 @@ namespace DbNetSuiteCore.Extensions
             gridModel.AddHavingPart(query);
             gridModel.AddOrderPart(query);
 
+            query.Sql = $"{query.Sql}{Limit(gridModel)}";
             return query;
         }
 
@@ -558,6 +561,51 @@ namespace DbNetSuiteCore.Extensions
         private static bool IsCsvFile(GridModel gridModel)
         {
             return gridModel.DataSourceType == DataSourceType.Excel && gridModel.TableName.ToLower().Replace("]", string.Empty).EndsWith(".csv");
+        }
+
+        private static string Top(GridModel gridModel)
+        {
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.MSSQL:
+                    return QueryLimit(gridModel);
+            }
+
+            return string.Empty;
+        }
+
+        private static string Limit(GridModel gridModel)
+        {
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.MySql:
+                case DataSourceType.PostgreSql:
+                case DataSourceType.SQLite:
+                    return QueryLimit(gridModel);
+            }
+
+            return string.Empty;
+        }
+
+        private static string QueryLimit(GridModel gridModel)
+        {
+            string limit = string.Empty;
+            if (gridModel.QueryLimit > 0)
+            {
+                switch (gridModel.DataSourceType)
+                {
+                    case DataSourceType.MSSQL:
+                        limit = $"TOP {gridModel.QueryLimit} ";
+                        break;
+                    case DataSourceType.MySql:
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
+                        limit = $" LIMIT {gridModel.QueryLimit}";
+                        break;
+                }
+            }
+
+            return limit;
         }
     }
 }

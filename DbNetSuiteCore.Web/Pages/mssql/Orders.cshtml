@@ -25,5 +25,6 @@
 
     var ordersGrid = new GridModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Orders");
     ordersGrid.Columns = columns;
+    ordersGrid.QueryLimit = 500;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
 }

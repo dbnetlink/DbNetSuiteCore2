@@ -14,7 +14,7 @@
 
     <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2">
         @IconHelper.Info()
-        <span>No records found</span>
+        <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
     </div>
     @if (Model.GridModel.ViewDialog != null)
     {
@@ -39,6 +39,10 @@
         @{
             RenderExportOptions();
         }
+    </div>
+    <div id="query-limited" data-querylimit="@Model.GridModel.QueryLimit" class="p-1 rounded-md border border-solid border-orange-400 bg-orange-100 text-orange-700 flex flex-row gap-2">
+        @IconHelper.Info("#ea580c")
+        <span>@String.Format(ResourceHelper.GetResourceString(ResourceNames.QueryLimited), Model.GridModel.QueryLimit.ToString())</span>
     </div>
 </div>
 

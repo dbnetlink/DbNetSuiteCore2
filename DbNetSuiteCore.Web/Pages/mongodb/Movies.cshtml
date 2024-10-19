@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
 @{
-    var moviesGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix" };
+    var moviesGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix", QueryLimit = 200 };
 
     moviesGrid.Columns = new List<GridColumn>() {
         new GridColumn("title"),
@@ -12,10 +12,11 @@
         new GridColumn("cast"),
         new GridColumn("countries"),
         new GridColumn("genres"),
+        new GridColumn("released"),
         new GridColumn("poster") {Format = FormatType.Image, Style = "height:50px"},
         new GridColumn("imdb.rating", "Rating") {DataType = typeof(Double)},
         new GridColumn("tomatoes.viewer.rating", "Rotten Tomatoes") {DataType = typeof(Double)},
-        new GridColumn("tomatoes.lastUpdated", "Last Updated")
+        new GridColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime)}
     };
 
     moviesGrid.Columns.ToList().ForEach(c => c.Filter = true);

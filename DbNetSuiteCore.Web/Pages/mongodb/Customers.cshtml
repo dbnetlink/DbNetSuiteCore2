@@ -5,23 +5,23 @@
 @using DbNetSuiteCore.Models
 @using Microsoft.Extensions.Primitives
 @{
-    var customersGrid = new GridModel(DataSourceType.MongoDB, "Northwind(MongoDb)", "customers") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB) };
+    var customersGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(local)", "customer") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB) };
 
     customersGrid.Columns = new List<GridColumn>() {
-        new GridColumn("company"),
-        new GridColumn("last_name"),
-        new GridColumn("first_name"),
-        new GridColumn("job_title"),
-        new GridColumn("business_phone"),
-        new GridColumn("fax_number"),
+        new GridColumn("_id", "ID") { DataOnly = true, PrimaryKey = true},
+        new GridColumn("entityId", "Customer ID"),
+        new GridColumn("companyName"),
+        new GridColumn("contactName"),
+        new GridColumn("contactTitle") { Lookup = new Lookup()},
+        new GridColumn("phone"),
+        new GridColumn("fax"),
         new GridColumn("address"),
-        new GridColumn("city"),
-        new GridColumn("state_province"),
-        new GridColumn("zip_postal_code"),
-        new GridColumn("country_region")
+        new GridColumn("postalCode"),
+        new GridColumn("city") { Lookup = new Lookup()},
+        new GridColumn("region") { Lookup = new Lookup()},
+        new GridColumn("country") { Lookup = new Lookup()}
     };
 
     customersGrid.Columns.ToList().ForEach(c => c.Filter = true);
-
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
 }

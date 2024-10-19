@@ -10,46 +10,34 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="TestDatabase\MongoDB\customers.json" />
-    <None Remove="TestDatabase\MongoDB\employees.json" />
-    <None Remove="TestDatabase\MongoDB\inventory_transactions.json" />
-    <None Remove="TestDatabase\MongoDB\inventory_transaction_types.json" />
-    <None Remove="TestDatabase\MongoDB\invoices.json" />
-    <None Remove="TestDatabase\MongoDB\orders.json" />
-    <None Remove="TestDatabase\MongoDB\orders_status.json" />
-    <None Remove="TestDatabase\MongoDB\orders_tax_status.json" />
-    <None Remove="TestDatabase\MongoDB\order_details_status.json" />
-    <None Remove="TestDatabase\MongoDB\privileges.json" />
-    <None Remove="TestDatabase\MongoDB\products.json" />
-    <None Remove="TestDatabase\MongoDB\purchase_orders.json" />
-    <None Remove="TestDatabase\MongoDB\purchase_order_status.json" />
-    <None Remove="TestDatabase\MongoDB\sales_reports.json" />
-    <None Remove="TestDatabase\MongoDB\shippers.json" />
-    <None Remove="TestDatabase\MongoDB\strings.json" />
-    <None Remove="TestDatabase\MongoDB\suppliers.json" />
+    <None Remove="TestDatabase\MongoDB\category.json" />
+    <None Remove="TestDatabase\MongoDB\customer.json" />
+    <None Remove="TestDatabase\MongoDB\employee.json" />
+    <None Remove="TestDatabase\MongoDB\employeeTerritory.json" />
+    <None Remove="TestDatabase\MongoDB\orderDetail.json" />
+    <None Remove="TestDatabase\MongoDB\product.json" />
+    <None Remove="TestDatabase\MongoDB\region.json" />
+    <None Remove="TestDatabase\MongoDB\salesOrder.json" />
+    <None Remove="TestDatabase\MongoDB\shipper.json" />
+    <None Remove="TestDatabase\MongoDB\supplier.json" />
+    <None Remove="TestDatabase\MongoDB\territory.json" />
     <None Remove="TestDatabase\MySql\Northwind.sql" />
     <None Remove="TestDatabase\Northwind.sql" />
     <None Remove="TestDatabase\PostgreSql\Northwind.sql" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="TestDatabase\MongoDB\customers.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\employees.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\inventory_transactions.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\inventory_transaction_types.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\invoices.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\orders.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\orders_status.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\orders_tax_status.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\order_details_status.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\privileges.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\products.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\purchase_orders.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\purchase_order_status.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\sales_reports.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\shippers.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\strings.json" />
-    <EmbeddedResource Include="TestDatabase\MongoDB\suppliers.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\category.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\customer.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\employee.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\employeeTerritory.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\orderDetail.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\product.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\region.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\salesOrder.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\shipper.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\supplier.json" />
+    <EmbeddedResource Include="TestDatabase\MongoDB\territory.json" />
     <EmbeddedResource Include="TestDatabase\MSSQL\Northwind.sql" />
     <EmbeddedResource Include="TestDatabase\MySql\Northwind.sql" />
     <EmbeddedResource Include="TestDatabase\PostgreSql\Northwind.sql" />
