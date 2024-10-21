@@ -12,11 +12,11 @@
         new GridColumn("cast"),
         new GridColumn("countries"),
         new GridColumn("genres"),
-        new GridColumn("released"),
+        new GridColumn("released") {Format = "d"},
         new GridColumn("poster") {Format = FormatType.Image, Style = "height:50px"},
         new GridColumn("imdb.rating", "Rating") {DataType = typeof(Double)},
         new GridColumn("tomatoes.viewer.rating", "Rotten Tomatoes") {DataType = typeof(Double)},
-        new GridColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime)}
+        new GridColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime), Format = "d"}
     };
 
     moviesGrid.Columns.ToList().ForEach(c => c.Filter = true);

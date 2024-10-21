@@ -1,1 +1,18 @@
-[{"entityId":1,"regiondescription":"Eastern"},{"entityId":2,"regiondescription":"Western"},{"entityId":3,"regiondescription":"Northern"},{"entityId":4,"regiondescription":"Southern"}]
+[
+  {
+    "RegionID": 1,
+    "RegionDescription": "Eastern                                           "
+  },
+  {
+    "RegionID": 2,
+    "RegionDescription": "Western                                           "
+  },
+  {
+    "RegionID": 3,
+    "RegionDescription": "Northern                                          "
+  },
+  {
+    "RegionID": 4,
+    "RegionDescription": "Southern                                          "
+  }
+]

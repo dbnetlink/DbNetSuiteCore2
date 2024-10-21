@@ -462,6 +462,7 @@ class GridControl {
         link.href = window.URL.createObjectURL(response);
         extension = (extension == "excel") ? "xlsx" : extension;
         link.download = `report_${new Date().getTime()}.${extension}`;
+        this.invokeEventHandler('FileDownload', { link: link, extension : extension });
         link.click();
     }
 

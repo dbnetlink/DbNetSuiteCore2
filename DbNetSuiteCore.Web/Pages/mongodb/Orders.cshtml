@@ -5,23 +5,23 @@
 @using DbNetSuiteCore.Models
 @using Microsoft.Extensions.Primitives
 @{
-    var ordersGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(local)", "salesorder") { DatabaseName = "northwind"};
+    var ordersGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(local)", "Orders") { DatabaseName = "Northwind"};
 
     ordersGrid.Columns = new List<GridColumn>() {
-        new GridColumn("entityId"),
-        new GridColumn("customerId") { Lookup = new Lookup("customer", "entityId", "companyName") },
-        new GridColumn("employeeId") { Lookup = new Lookup("employee", "entityId", "lastname:, :firstname") },
-        new GridColumn("shipCity"),
-        new GridColumn("shipName"),
-        new GridColumn("orderDate") { DataType = typeof(DateTime)},
-        new GridColumn("requiredDate") { DataType = typeof(DateTime)},
-        new GridColumn("shippedDate") { DataType = typeof(DateTime)},
-        new GridColumn("shipperId") { Lookup = new Lookup("shipper", "entityId", "companyName") },
-        new GridColumn("shipRegion"),
-        new GridColumn("shipAddress"),
-        new GridColumn("shipCountry"),
-        new GridColumn("shipPostalCode"),
-        new GridColumn("freight") { Format = "c"}
+        new GridColumn("OrderID"),
+        new GridColumn("CustomerID") { Lookup = new Lookup("Customers", "CustomerID", "CompanyName") },
+        new GridColumn("EmployeeID") { Lookup = new Lookup("Employees", "EmployeeID", "LastName:, :FirstName") },
+        new GridColumn("OrderDate"),
+        new GridColumn("RequiredDate") { DataType = typeof(DateTime)},
+        new GridColumn("ShippedDate") { DataType = typeof(DateTime)},
+        new GridColumn("ShipVia") { Lookup = new Lookup("Shippers", "ShipperID", "CompanyName") },
+        new GridColumn("Freight") { Format = "c"},
+        new GridColumn("ShipName"),
+        new GridColumn("ShipAddress"),
+        new GridColumn("ShipCity") {Filter = true, Lookup = new Lookup()},
+        new GridColumn("ShipRegion") {Filter = true, Lookup = new Lookup()},
+        new GridColumn("ShipPostalCode"),
+        new GridColumn("ShipCountry") {Filter = true, Lookup = new Lookup()}
     };
     
     ordersGrid.Columns.ToList().ForEach(c => c.Filter = true);

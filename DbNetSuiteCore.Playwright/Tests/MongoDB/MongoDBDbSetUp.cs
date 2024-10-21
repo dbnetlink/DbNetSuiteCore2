@@ -4,7 +4,6 @@ using NUnit.Framework;
 using MongoDB.Bson;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using MongoDB.Bson.Serialization;
 
 namespace DbNetSuiteCore.Playwright.Tests.MongoDB
 {
@@ -39,23 +38,15 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
 
             foreach (var resourceName in resourceNames)
             {
-                if (resourceName.Contains("TestDatabase.MongoDB") == false)
+                if (resourceName.Contains("TestDatabase.MongoDB"))
                 {
-                    continue;
+                    var json = LoadTextFromResource(resourceName);
+                    var collectionName = Regex.Replace(resourceName, ".json$", string.Empty).Split(".").Last();
+                    var collection = database.GetCollection<BsonDocument>(collectionName);
+                    var importer = new DynamicDataImporter(database);
+                    importer.ImportJsonToMongoDB(json, collectionName);
                 }
-                var json = LoadTextFromResource(resourceName);
-                var collectionName = Regex.Replace(resourceName, ".json$", string.Empty).Split(".").Last();
-                var collection = database.GetCollection<BsonDocument>(collectionName);
-
-                var documents = BsonSerializer.Deserialize<List<BsonDocument>>(json); 
-
-                collection.InsertMany(documents);
             }
-        }
-
-        private void AddCollection()
-        {
-            var script = LoadScriptFromFile("TestDatabase/PostgreSql/Northwind.sql");
         }
     }
 }

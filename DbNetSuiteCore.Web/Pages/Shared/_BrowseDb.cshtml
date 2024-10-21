@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContext
 @using System.Data
+@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Extensions
@@ -44,71 +45,45 @@
             {
                 if (Model.TableName == "All")
                 {
-                    <div class="accordion" id="accordionExample">
-                        @foreach (string tableName in Model.Tables)
+                        <div class="accordion" id="accordionExample">
+                            @foreach (string tableName in Model.Tables)
                         {
                             var tab = CleanTableName(tableName);
                             var first = (tab == CleanTableName(Model.Tables.First()));
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading@(tab)">
-                                    <button class="accordion-button@(first ? "" : " collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@(tab)" aria-expanded="true" aria-controls="@(tab)" aria-expanded="@(first ? "true" : "false")">
-                                        @TextHelper.GenerateLabel(tab)
-                                    </button>
-                                </h2>
-                                <div id="@(tab)" class="accordion-collapse collapse@(first ? " show" : "")" aria-labelledby="heading@(tab)" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) {  }))
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading@(tab)">
+                                        <button class="accordion-button@(first ? "" : " collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@(tab)" aria-expanded="true" aria-controls="@(tab)" aria-expanded="@(first ? "true" : "false")">
+                                            @TextHelper.GenerateLabel(tab)
+                                        </button>
+                                    </h2>
+                                    <div id="@(tab)" class="accordion-collapse collapse@(first ? " show" : "")" aria-labelledby="heading@(tab)" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) {  }))
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                         }
 
-                    </div>
+                        </div>
                 }
                 else
                 {
-                    @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName)))
-                }
+                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName);
+                        gridModel.ClientEvents[ClientEvent.FileDownload] = "setFileName";
+                                @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(gridModel))
+                        }
             }
 
         }
     </div>
 
-    @*
-    <div>
-        @{
-            if (Model.TableName != string.Empty)
-            {
-                if (Model.TableName == "All")
-                {
-                    <ul class="nav nav-tabs">
-                        @foreach (string tableName in Model.Tables)
-                        {
-                            var tab = CleanTableName(tableName);
-                            <li class="nav-item">
-                                <button class="nav-link @(tab == CleanTableName(Model.Tables.First()) ? "active" : string.Empty)" id="@(tab)-tab" data-bs-toggle="tab" data-bs-target="#@(tab)-pane" type="button" role="tab" aria-controls="@tab" aria-selected="true">@TextHelper.GenerateLabel(tab)</button>
-                            </li>
-                        }
-                    </ul>
-                    <div class="tab-content" id="tabContent">
-                        @foreach (string tableName in Model.Tables)
-                        {
-                            var tab = CleanTableName(tableName);
-                            <div class="tab-pane fade @(tab == CleanTableName(Model.Tables.First()) ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
-                                @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { Caption = tableName }))
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName)))
-                }
-            }
+    <script>
+        function setFileName(sender, args) { 
+            args.link.download = "@(CleanTableName(Model.TableName))." + args.extension
         }
-    </div>
-    *@
-</div>
+
+    </script>
+    
 
 @functions
 {

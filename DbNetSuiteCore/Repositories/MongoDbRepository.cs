@@ -5,7 +5,9 @@ using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using DbNetSuiteCore.Helpers;
-using System.Linq;
+using DocumentFormat.OpenXml.Office2013.Excel;
+using Microsoft.IdentityModel.Tokens;
+using DocumentFormat.OpenXml.Office2021.Excel.NamedSheetViews;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -22,7 +24,7 @@ namespace DbNetSuiteCore.Repositories
         {
             var database = GetDatabase(gridModel);
             gridModel.Data = await CreateDataTableFromPipeline(database, gridModel);
-            foreach (var gridColumn in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false  && c.LookupOptions == null))
+            foreach (var gridColumn in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false && c.LookupOptions == null))
             {
                 await GetLookupOptions(gridModel, gridColumn, database);
             }
@@ -133,7 +135,7 @@ namespace DbNetSuiteCore.Repositories
 
             var lookup = gridColumn.Lookup!;
 
-            DataTable lookupData = await CreateLookupOptionsFromPipeline(database, gridColumn,gridModel, lookupValues);
+            DataTable lookupData = await CreateLookupOptionsFromPipeline(database, gridColumn, gridModel, lookupValues);
 
             gridColumn.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
             gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
@@ -234,7 +236,7 @@ namespace DbNetSuiteCore.Repositories
             {
                 gridModel.DatabaseName = CheckNameList(client.ListDatabaseNames().ToList(), gridModel.DatabaseName);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw new Exception($"Database => [{gridModel.DatabaseName}] does not exist on this connection");
             }
@@ -310,7 +312,7 @@ namespace DbNetSuiteCore.Repositories
                     {
                         if (columnFilter.Value != null)
                         {
-                            match.Add(new BsonDocument(column.Expression, new BsonDocument(GetFilterOperator(columnFilter.Operator), columnFilter.Value)));
+                            match.Add(ColumnFilterExpression(column, columnFilter));
                         }
                         else
                         {
@@ -330,6 +332,11 @@ namespace DbNetSuiteCore.Repositories
             }
 
             return filter;
+        }
+
+        private BsonDocument ColumnFilterExpression(GridColumn column, ColumnFilter columnFilter)
+        {
+            return new BsonDocument(column.Expression, new BsonDocument(GetFilterOperator(columnFilter.Operator), columnFilter.Value));
         }
 
         private static ColumnFilter? ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
@@ -378,7 +385,7 @@ namespace DbNetSuiteCore.Repositories
                 case nameof(DateTime):
                     try
                     {
-                        return new ColumnFilter(comparisionOperator, BsonDateTime.Create(TypedValue(gridColumn.DataTypeName, filterColumnValue)));
+                        return new ColumnFilter(comparisionOperator, TypedValue(gridColumn.DataTypeName, filterColumnValue));
                     }
                     catch (Exception)
                     {
@@ -405,7 +412,8 @@ namespace DbNetSuiteCore.Repositories
                 switch (dataTypeName)
                 {
                     case nameof(DateTime):
-                        return Convert.ToDateTime(value);
+                        var d = Convert.ToDateTime(value);
+                        return new DateTime(d.Year, d.Month, d.Day, 0, 0, 0, DateTimeKind.Utc);
                     case nameof(Int16):
                         return Convert.ToInt16(value);
                     case nameof(Int32):
@@ -449,7 +457,17 @@ namespace DbNetSuiteCore.Repositories
             {
                 if (gridColumn.DataType == typeof(DateTime))
                 {
-                    project.Add(gridColumn.ColumnAlias, new BsonDocument("$toDate", $"${gridColumn.Expression}"));
+                    //    project.Add(gridColumn.ColumnAlias, new BsonDocument("$toDate", $"${gridColumn.Expression}"));
+                    var dateTruncExpression = new BsonDocument
+                    {
+                        { "$dateTrunc", new BsonDocument
+                            {
+                                { "date", new BsonDocument("$toDate", $"${gridColumn.Expression}") },
+                                { "unit", "day" }
+                            }
+                        }
+                    };
+                    project.Add(gridColumn.ColumnAlias, dateTruncExpression);
                 }
                 else
                 {
@@ -458,7 +476,6 @@ namespace DbNetSuiteCore.Repositories
             }
             return project;
         }
-
     }
 
     public class ColumnFilter

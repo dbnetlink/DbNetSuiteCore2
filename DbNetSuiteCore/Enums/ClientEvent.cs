@@ -7,6 +7,7 @@
         CellTransform,
         RowTransform,
         SelectedRowsUpdated,
-		ViewDialogUpdated
+		ViewDialogUpdated,
+        FileDownload
 	};
 }

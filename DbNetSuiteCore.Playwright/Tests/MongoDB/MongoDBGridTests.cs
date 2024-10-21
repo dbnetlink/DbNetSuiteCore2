@@ -7,13 +7,11 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
     public class MongoDBGridTests : MongoDBDbSetUp
     {
         [Test]
-        public async Task QuickSearchTest()
+        public async Task QuickSearch()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
-                { "gin", 3 },
-                { "56", 60 },
-                { "6-7", 7 },
-                { "SP", 13 },
+                { "ger", 41 },
+                { "67", 17 },
                 { string.Empty, 91}
             };
 
@@ -25,17 +23,17 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
         {
             Dictionary<string, string> sorts = new Dictionary<string, string>()
             {
-                { "entityid", "91"},
-                { "companyname","Customer AHPOP" },
-                { "contactname", "Allen, Michael" },
-                { "contacttitle", "Accounting Manager" },
-                { "phone", "(02) 890 12 34" },
-                { "fax", "" },
-                { "address", "0123 Grizzly Peak Rd." },
-                { "postalcode", "10038" },
-                { "city", "Aachen" },
-                { "region", "" },
-                { "country", "Argentina" }
+                { "CustomerID", "WOLZA"},
+                { "CompanyName","Alfreds Futterkiste" },
+                { "ContactName", "Alejandra Camino" },
+                { "ContactTitle", "Accounting Manager" },
+                { "Address", "1 rue Alsace-Lorraine" },
+                { "City", "Aachen" },
+                { "Region", string.Empty },
+                { "PostalCode", string.Empty },
+                { "Country", "Argentina" },
+                { "Phone", "(02) 201 24 67" },
+                { "Fax", string.Empty }
             };
 
             await GridHeadingSort(sorts, $"mongodb/customers?db={DatabaseName}");
@@ -46,17 +44,17 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
         {
             Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>()
             {
-                { "entityid", new KeyValuePair<string, string>("91","1") },
-                { "companyname",new KeyValuePair<string, string>("Customer AHPOP","Customer ZRNDE") },
-                { "contactname", new KeyValuePair<string, string>("Allen, Michael","Young, Robin") },
-                { "contacttitle", new KeyValuePair<string, string>("Accounting Manager","Sales Representative") },
-                { "phone", new KeyValuePair<string, string>("(02) 890 12 34","981-123456") },
-                { "fax", new KeyValuePair<string, string>("","981-789012") },
-                { "address", new KeyValuePair<string, string>("0123 Grizzly Peak Rd.","Åkergatan 5678") },
-                { "postalcode", new KeyValuePair<string, string>("10038","10128") },
-                { "city", new KeyValuePair<string, string>("Aachen","Århus") },
-                { "region", new KeyValuePair<string, string>("","WY") },
-                { "country", new KeyValuePair<string, string>("Argentina","Venezuela") }
+                { "CustomerID", new KeyValuePair<string, string>("WOLZA","ALFKI")},
+                { "CompanyName", new KeyValuePair<string, string>("Alfreds Futterkiste","Wolski Zajazd") },
+                { "ContactName", new KeyValuePair<string, string>("Alejandra Camino","Zbyszek Piestrzeniewicz") },
+                { "ContactTitle", new KeyValuePair<string, string>("Accounting Manager","Sales Representative") },
+                { "Address", new KeyValuePair<string, string>("1 rue Alsace-Lorraine","Åkergatan 24") },
+                { "City", new KeyValuePair<string, string>("Aachen","Århus") },
+                { "Region", new KeyValuePair<string, string>(string.Empty,"WY") },
+                { "PostalCode", new KeyValuePair<string, string>(string.Empty,"WX3 6FW") },
+                { "Country", new KeyValuePair<string, string>("Argentina","Venezuela") },
+                { "Phone", new KeyValuePair<string, string>("(02) 201 24 67","981-443655") },
+                { "Fax", new KeyValuePair<string, string>(string.Empty,"981-443655") }
             };
 
             await GridHeadingReverseSort(sorts, $"mongodb/customers?db={DatabaseName}");
@@ -66,21 +64,17 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
         public async Task ColumnFilter()
         {
             List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
-                new ColumnFilterTest("entityid",">35",56),
-                new ColumnFilterTest("entityid","<31",0),
-                new ColumnFilterTest("ShipperId","1",23, FilterType.Select),
-                new ColumnFilterTest("RequiredDate","14/5/2008",3),
-                new ColumnFilterTest("RequiredDate",">14/5/2008",10),
-                new ColumnFilterTest("RequiredDate","<14/5/2008",10),
-                new ColumnFilterTest("RequiredDate","<=14/5/2008",13),
-                new ColumnFilterTest("RequiredDate",">=14/5/2008",13),
-                new ColumnFilterTest("OrderId","",13),
-                new ColumnFilterTest("RequiredDate","",249),
-                new ColumnFilterTest("ShipperId","",830, FilterType.Select),
+                new ColumnFilterTest("CustomerId","BSBEV",10, FilterType.Select),
+                new ColumnFilterTest("OrderDate","16/05/1997",1),
+                new ColumnFilterTest("OrderDate","<16/05/1997",4),
+                new ColumnFilterTest("OrderDate",">16/05/1997",5),
+                new ColumnFilterTest("CustomerId","",538, FilterType.Select),
+                new ColumnFilterTest("ShipRegion","WY",3, FilterType.Select),
+                new ColumnFilterTest("ShipRegion","",538, FilterType.Select),
+                new ColumnFilterTest("OrderDate","  ",830)
             };
 
             await GridColumnFilter(filterTests, $"mongodb/orders?db={DatabaseName}");
         }
-
     }
 }
