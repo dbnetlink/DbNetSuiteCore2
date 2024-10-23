@@ -4,10 +4,11 @@ using System.Data;
 using DbNetSuiteCore.Extensions;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Caching.Memory;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class JSONRepository : FileRepository,IJSONRepository
+    public class JSONRepository : FileRepository, IJSONRepository
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
@@ -71,25 +72,32 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                var url = gridModel.Url;
-                if (url.StartsWith("/"))
+                if (TextHelper.IsAbsolutePath(gridModel.Url))
                 {
-                    url = url.Substring(1);
+                    json = File.ReadAllText(gridModel.Url);
                 }
-
-                if (url.StartsWith("http") == false)
+                else
                 {
-                    url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
+                    var url = gridModel.Url;
+                    if (url.StartsWith("/"))
+                    {
+                        url = url.Substring(1);
+                    }
+
+                    if (url.StartsWith("http") == false)
+                    {
+                        url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
+                    }
+
+                    string token = string.Empty;
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                    }
+
+                    json = await _httpClient.GetStringAsync(url);
                 }
-
-                string token = string.Empty;
-
-                if (!string.IsNullOrEmpty(token))
-                {
-                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-                }
-
-                json = await _httpClient.GetStringAsync(url);
             }
 
             DataTable? dataTable = new();

@@ -12,8 +12,6 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
-using System.Web;
-using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {
@@ -98,6 +96,10 @@ namespace DbNetSuiteCore.Services
             if (gridModel.ViewDialog != null && primaryKeyAssigned == false)
             {
                 throw new Exception("A column designated as a primary key is required for the view dialog");
+            }
+            if (gridModel.DataSourceType == DataSourceType.MongoDB && string.IsNullOrEmpty(gridModel.DatabaseName))
+            {
+                throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
             }
         }
         private async Task<Byte[]> View<TModel>(string viewName, TModel model)
@@ -538,7 +540,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
                 gridModel.ParentKey = RequestHelper.FormValue("primaryKey", gridModel.ParentKey, _context);
 
-                gridModel.Columns.ForEach(column => column.FilterError = string.Empty);
+                gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
 
                 return gridModel;
             }
@@ -589,10 +591,10 @@ namespace DbNetSuiteCore.Services
             switch (type)
             {
                 case "css":
-                    resources = ["output", "gridControl"];
+                    resources = new string[] { "output", "gridControl" };
                     break;
                 case "js":
-                    resources = ["htmx.min", "bundle.min"];
+                    resources = new string[] { "htmx.min", "bundle.min" };
                     break;
             }
 

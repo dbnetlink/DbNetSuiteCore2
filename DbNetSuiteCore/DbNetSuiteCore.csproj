@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Library</OutputType>
     <Description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, SQLite, JSON, Excel, CSV and the file system</Description>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Title>Interactive data-driven components for ASP.Net Core Razor Views</Title>
-    <Version>1.0.21</Version>
+    <NuspecFile>Nuget/dbnetsuitecore.nuspec</NuspecFile>
     <Authors>DbNetLink</Authors>
     <Copyright>Copyright (c) DbNetLink Limited 2024</Copyright>
     <PackageProjectUrl>https://dbnetsuitecore.com</PackageProjectUrl>
@@ -143,7 +144,22 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
+    <PackageReference Include="ClosedXML" Version="0.104.1" />
+    <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.15" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.15" />
+    <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="RazorEngineCore" Version="2022.1.2" />
+    <PackageReference Include="System.Data.OleDb" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
     <PackageReference Include="ClosedXML" Version="0.104.1" />
     <PackageReference Include="CsvHelper" Version="33.0.1" />
@@ -158,16 +174,21 @@
     <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
   </ItemGroup>
 
+  <!-- Conditional compilation example -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <DefineConstants>NET8_0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+
+  </ItemGroup>
+
   <ItemGroup>
     <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Build">
     <Exec Command="npm run css:build" />
-  </Target>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="nuget pack ./Nuget/DbNetSuiteCore.nuspec" />
   </Target>
 
 </Project>

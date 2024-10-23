@@ -11,7 +11,7 @@ using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class ExcelRepository : FileRepository,IExcelRepository
+    public class ExcelRepository : IExcelRepository
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
@@ -69,7 +69,7 @@ namespace DbNetSuiteCore.Repositories
                     dataTable = new DataTable();
 
                     string columns = gridModel.Columns.Any() ? String.Join(",", gridModel.Columns.Select(c => c.Expression)) : "*";
- 
+
                     OleDbCommand command = new OleDbCommand(query.Sql, connection);
                     DbRepository.AddCommandParameters(command, query.Params);
                     dataTable.Load(await command.ExecuteReaderAsync());
@@ -78,16 +78,16 @@ namespace DbNetSuiteCore.Repositories
             }
             catch (Exception ex)
             {
-                    /*
-                if (gridModel.Url.ToLower().EndsWith(".csv"))
-                {
-                    dataTable = CsvToDataTable(gridModel);
-                }
-                else
-                {
-                    throw new Exception($"Unable too read the Excel file {gridModel.TableName}");
-                }
-                */
+                /*
+            if (gridModel.Url.ToLower().EndsWith(".csv"))
+            {
+                dataTable = CsvToDataTable(gridModel);
+            }
+            else
+            {
+                throw new Exception($"Unable too read the Excel file {gridModel.TableName}");
+            }
+            */
                 throw new Exception($"Unable to read the Excel file {gridModel.TableName}", ex);
             }
 
@@ -120,7 +120,7 @@ namespace DbNetSuiteCore.Repositories
         {
             if (gridModel.Url.ToLower().EndsWith(".csv"))
             {
-                gridModel.TableName = gridModel.Url.Split("/").Last();
+                gridModel.TableName = FilePath(gridModel.Url).Split("\\").Last();
             }
             else
             {
@@ -141,6 +141,11 @@ namespace DbNetSuiteCore.Repositories
 
         private string FilePath(string filePath)
         {
+            if (TextHelper.IsAbsolutePath(filePath))
+            {
+                return filePath;
+                
+            }
             return $"{_env.WebRootPath}{filePath.Replace("/", "\\")}".Replace("//", "/");
         }
 
@@ -149,11 +154,14 @@ namespace DbNetSuiteCore.Repositories
             string properties = filePath.ToLower().EndsWith(".csv") ? "Text;FORMAT=Delimited;" : "Excel 12.0;";
             properties = $"{properties}HDR=Yes;characterset=65001";
 
+            filePath = FilePath(filePath);
+
             if (filePath.ToLower().EndsWith(".csv"))
             {
-                filePath = string.Join("/", filePath.Split("/").Reverse().Skip(1).Reverse().ToArray());
+                string separator = "\\";
+                filePath = string.Join(separator, filePath.Split(separator).Reverse().Skip(1).Reverse().ToArray());
             }
-            return $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={FilePath(filePath)};Extended Properties=\"{properties}\";";
+            return $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={filePath};Extended Properties=\"{properties}\";";
         }
     }
 }

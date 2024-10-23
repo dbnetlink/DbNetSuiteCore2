@@ -9,7 +9,7 @@
     {
         new GridColumn(FileSystemColumn.Name.ToString())
     };
-    var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "../Pages", FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml')" };
+    var gridModel = new GridModel(DataSourceType.FileSystem, "C:\\Users\\robin\\source\\repos\\DbNetSuiteCore2\\DbNetSuiteCore.Web\\Pages") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml')" };
     gridModel.Columns = columns;
     gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
 

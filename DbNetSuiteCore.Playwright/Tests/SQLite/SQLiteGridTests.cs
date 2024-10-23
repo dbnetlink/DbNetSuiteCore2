@@ -31,7 +31,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "last_update", "06/03/21" }
             };
 
-            await GridHeadingSort(sorts, "sqlite/index");
+            await GridHeadingSort(sorts, "sqlite/joined");
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "last_update", new KeyValuePair<string, string>("06/03/21","08/07/24") }
             };
 
-            await GridHeadingReverseSort(sorts, "sqlite/index");
+            await GridHeadingReverseSort(sorts, "sqlite/joined");
         }
 
 
@@ -71,7 +71,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 new ColumnFilterTest("last_update",">=",Helpers.ResourceNames.ColumnFilterNoData)
             };
 
-            await GridColumnFilter(filterTests, "sqlite/index");
+            await GridColumnFilter(filterTests, "sqlite/joined");
         }
     }
 }

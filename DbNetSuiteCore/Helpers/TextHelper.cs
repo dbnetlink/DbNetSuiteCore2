@@ -74,5 +74,10 @@ namespace DbNetSuiteCore.Helpers
             gzipStream.CopyTo(decompressedStream);
             return Encoding.UTF8.GetString(decompressedStream.ToArray());
         }
+
+        public static bool IsAbsolutePath(string path)
+        {
+            return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+        }
     }
 }

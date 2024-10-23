@@ -27,7 +27,11 @@ namespace DbNetSuiteCore.Helpers
 
         public static List<string> FormValueList(string key, HttpContext httpContext)
         {
+        #if NET8_0
             return [.. httpContext.Request.Form[key]];
+        #else
+            return httpContext.Request.Form[key].ToList();
+        #endif
         }
     }
 }

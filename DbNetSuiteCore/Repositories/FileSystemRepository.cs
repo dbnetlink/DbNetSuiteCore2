@@ -3,6 +3,7 @@ using DbNetSuiteCore.Enums;
 using System.Data;
 using DbNetSuiteCore.Extensions;
 using Microsoft.Extensions.FileProviders;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -39,34 +40,49 @@ namespace DbNetSuiteCore.Repositories
 
         public static void UpdateUrl(GridModel gridModel)
         {
-            var urlParts = gridModel.Url.Split("/");
+            var folderSeparator = "/";
+
+            if (TextHelper.IsAbsolutePath(gridModel.Url))
+            {
+                folderSeparator = "\\";
+            }
+
+            var urlParts = gridModel.Url.Split(folderSeparator);
 
             if (string.IsNullOrEmpty(gridModel.ParentKey) == false)
             {
                 urlParts = urlParts.Append(gridModel.ParentKey).ToArray();
-                gridModel.Url = string.Join("/", urlParts.ToArray());
+                gridModel.Url = string.Join(folderSeparator, urlParts.ToArray());
                 gridModel.ParentKey = string.Empty;
             }
         }
 
         private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
         {
-            var pathParts = _env.WebRootPath.Split("\\");
-            var urlParts = gridModel.Url.Split("/");
+            var path = string.Empty;
 
-            foreach (var part in urlParts)
+            if (TextHelper.IsAbsolutePath(gridModel.Url))
             {
-                if (part == "..")
-                {
-                    pathParts = pathParts.Take(pathParts.Count() - 1).ToArray();
-                }
-                else
-                {
-                    pathParts = pathParts.Append(part).ToArray();
-                }
+                path = gridModel.Url;
             }
+            else
+            {
+                var pathParts = _env.WebRootPath.Split("\\");
+                var urlParts = gridModel.Url.Split("/");
 
-            var path = string.Join("\\", pathParts);
+                foreach (var part in urlParts)
+                {
+                    if (part == "..")
+                    {
+                        pathParts = pathParts.Take(pathParts.Count() - 1).ToArray();
+                    }
+                    else
+                    {
+                        pathParts = pathParts.Append(part).ToArray();
+                    }
+                }
+                path = string.Join("\\", pathParts);
+            }
 
             var provider = new PhysicalFileProvider(path);
             var contents = provider.GetDirectoryContents(string.Empty);

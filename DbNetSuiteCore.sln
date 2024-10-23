@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore", "DbNetSuit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.Web", "DbNetSuiteCore.Web\DbNetSuiteCore.Web.csproj", "{6B3D8D10-23B2-455B-B5A4-DEB02C8AD995}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbNetSuiteCore.Playwright", "DbNetSuiteCore.Playwright\DbNetSuiteCore.Playwright.csproj", "{B05EE004-BBB5-43ED-850A-44C988903F76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.Playwright", "DbNetSuiteCore.Playwright\DbNetSuiteCore.Playwright.csproj", "{B05EE004-BBB5-43ED-850A-44C988903F76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
