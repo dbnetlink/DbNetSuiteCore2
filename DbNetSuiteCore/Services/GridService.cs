@@ -12,6 +12,7 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
+using DocumentFormat.OpenXml.InkML;
 
 namespace DbNetSuiteCore.Services
 {
@@ -27,8 +28,7 @@ namespace DbNetSuiteCore.Services
         private readonly IExcelRepository _excelRepository;
         private readonly IMongoDbRepository _mongoDbRepository;
         private HttpContext? _context = null;
-        private string triggerName => _context.Request.Headers.Keys.Contains(HeaderNames.HxTriggerName) ? _context.Request.Headers[HeaderNames.HxTriggerName] : string.Empty;
-
+        
         public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository)
         {
             _msSqlRepository = msSqlRepository;
@@ -69,14 +69,14 @@ namespace DbNetSuiteCore.Services
         {
             GridModel gridModel = GetGridModel() ?? new GridModel();
 
-            gridModel.TriggerName = triggerName;
+            gridModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            if (triggerName == TriggerNames.InitialLoad)
+            if (gridModel.TriggerName == TriggerNames.InitialLoad)
             {
                 ValidateGridModel(gridModel);
             }
 
-            switch (triggerName)
+            switch (gridModel.TriggerName)
             {
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
@@ -133,7 +133,14 @@ namespace DbNetSuiteCore.Services
 
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
 
-            return new GridViewModel(gridModel);
+            var gridViewModel =  new GridViewModel(gridModel);
+
+            if (gridModel.DiagnosticsMode)
+            {
+                gridViewModel.Diagnostics = RequestHelper.Diagnostics(_context);
+            }
+
+            return gridViewModel;
         }
 
         private GridModel ConfigureNestedGrid(GridModel gridModel)
@@ -551,7 +558,7 @@ namespace DbNetSuiteCore.Services
         }
         private int GetPageNumber(GridModel gridModel)
         {
-            switch (triggerName)
+            switch (RequestHelper.TriggerName(_context))
             {
                 case TriggerNames.Page:
                     return Convert.ToInt32(RequestHelper.FormValue("page", "1", _context));

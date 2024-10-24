@@ -135,6 +135,13 @@
             </td>
         </tr>
     }
+
+    @if (string.IsNullOrEmpty(Model.Diagnostics) == false)
+    {
+        <tr style="display:none">
+            <td>@(Model.Diagnostics)</td>
+        </tr>
+    }
 </tbody>
 
 @functions {

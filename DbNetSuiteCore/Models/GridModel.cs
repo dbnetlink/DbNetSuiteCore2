@@ -121,6 +121,7 @@ namespace DbNetSuiteCore.Models
         [Description("Boosts performance by caching data. Applied to Excel and JSON files only.")]
         public bool Cache { get; set; } = false;
         public int QueryLimit { get; set; } = -1;
+        public bool DiagnosticsMode { get; set; } = false;
         public GridModel()
         {
             Id = GeneratedId();

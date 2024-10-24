@@ -9,6 +9,7 @@ namespace DbNetSuiteCore.ViewModels
         public IEnumerable<DataColumn> DataColumns => _componentModel.Data.Columns.Cast<DataColumn>();
 
         public string SubmitUrl => $"/gridcontrol.htmx";
+        public string Diagnostics { get; set; } = string.Empty;
 
         public ComponentViewModel(ComponentModel componentModel)
         {

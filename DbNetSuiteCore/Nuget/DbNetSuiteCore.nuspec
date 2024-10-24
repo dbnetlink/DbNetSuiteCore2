@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>DbNetSuiteCore</id>
-    <version>2.0.8</version>
+    <version>2.0.10</version>
     <authors>DbNetLink</authors>
     <owners>DbNetLink</owners>
     <icon>nuget_logo.png</icon>
@@ -56,10 +56,10 @@
     <file src="nuget_logo.png" target="\nuget_logo.png" />
 
     <!-- Assembly files for .NET 7 -->
-    <file src="..\bin\Debug\net7.0\DbNetSuiteCore.dll" target="lib\net7.0" />
+    <file src="..\bin\Release\net7.0\DbNetSuiteCore.dll" target="lib\net7.0" />
 
     <!-- Assembly files for .NET 8 -->
-    <file src="..\bin\Debug\net8.0\DbNetSuiteCore.dll" target="lib\net8.0" />
+    <file src="..\bin\Release\net8.0\DbNetSuiteCore.dll" target="lib\net8.0" />
 
   </files>
 </package>
