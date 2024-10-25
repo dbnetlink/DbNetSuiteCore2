@@ -4,15 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Razor Component Documentation</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/highlightjs-cshtml-razor/dist/cshtml-razor.min.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/highlightjs-cshtml-razor/dist/csharp.min.js"></script>
-    <!--
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
--->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
     <style>
         p,li {line-height: 150%;}
     </style>
@@ -69,7 +62,7 @@
                 </p>
 
                 <p>At it's simplest <b>DbNetGridCore</b> can be added to any Razor page or view with just a few lines of code.</p>
-<pre><code class="hljs cshtml">@page
+<pre><code class="language-cshtml">@page
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
 
@@ -100,9 +93,9 @@
             <div id="installation" class="section space-y-6 hidden">
                 <h2 class="text-3xl font-bold text-gray-900">Installation</h2>
                 <p class="text-gray-600"><b>DbNetGridCore</b> comes as a <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" target="_blank" href="https://www.nuget.org/packages/DbNetSuiteCore">Nuget</a> package can be installed using the package manager</p>
-                <pre><code class="hljs js">Install-Package DbNetSuiteCore</code></pre>
+                <pre><code class="">Install-Package DbNetSuiteCore</code></pre>
                 <p class="text-gray-600">After installing the package you need to update the <b>program.cs</b> file and add <b>DbNetGridCore</b> to the ASP.NET Core pipeline as follows:</p>
-                <pre><code class="hljs c#">using DbNetSuiteCore.Middleware;
+                <pre><code class="language-csharp">using DbNetSuiteCore.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,19 +127,19 @@ public partial class Program
                 <p class="text-gray-600">Once you have added <b>DbNetGridCore</b> to the pipeline in <b>program.cs</b> you are ready to start adding the component to your Razor pages or views</p>
 
                 <p class="text-gray-600">First include the styles that <b>DbNetGridCore</b> needs as follows</p>
-                <pre><code class="hljs cshtml">...
+                <pre><code class="language-cshtml">...
 @DbNetSuiteCore.Resources.StyleSheet()
 ...</code></pre>
 
                 <p class="text-gray-600">Next include the client-script that <b>DbNetGridCore</b> needs as follows</p>
-                <pre><code class="hljs cshtml">...
+                <pre><code class="language-cshtml">...
 @DbNetSuiteCore.Resources.ClientScript()
 ...
 </code></pre>
                 <p class="text-gray-600">The client-side code includes an API that allows you to customise the grid look and feel after it has been rendered.</p>
                 <p class="text-gray-600">If you are planning to use <b>DbNetGridCore</b> on multiple pages then it makes sense to create a Razor <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="https://learn.microsoft.com/en-us/aspnet/core/mvc/views/layout" target="_blank">Layout</a> page with the styles and client-script already included. Note that you can use <b>DbNetGridCore</b> in conjunction with other libraries for example <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="https://getbootstrap.com/" target="_blank">Bootstrap</a>. In these situations it optimal to include those libraries after the <b>DbNetGridCore</b> libraries e.g.</p>
 
-                <pre><code class="hljs cshtml">
+                <pre><code class="language-cshtml">
 &lt;!DOCTYPE html&gt;
 &lt;html lang="en"&gt;
 &lt;head&gt;
@@ -172,7 +165,7 @@ public partial class Program
 
                 <p class="text-gray-600">After the stylesheet and client-script libraries have been added to the page you are ready to add the grid control This can be as simple as.</p>
 
-                <pre><code class="hljs cshtml">...
+                <pre><code class="language-csharp">...
 GridModel customerGrid = new GridModel(DataSourceType.MSSQL, "Northwind", "Customers");
 @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
 ...
@@ -182,7 +175,7 @@ GridModel customerGrid = new GridModel(DataSourceType.MSSQL, "Northwind", "Custo
 
                 <p class="text-gray-600">More typically particular columns will be selected from the data source which allows additional formatting and functionality to be added for the specified columns e.g..</p>
 
-                <pre><code class="hljs cshtml">...
+                <pre><code class="language-csharp">...
 var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
 productsGrid.Columns = new List&lt;GridColumn&gt;() {
     new GridColumn("ProductID") { PrimaryKey = true },
@@ -231,7 +224,7 @@ customerGrid.Bind(ClientEvent.ViewDialogUpdated, "highlightViewLowStock");
 
                 <p class="text-gray-600">See below for examples of constructors</p>
 
-                <pre><code class="hljs cshtml"> ...
+                <pre><code class="language-csharp"> ...
 var employeeGrid = new GridModel(DataSourceType.SQLite, "Chinook", "Employees");
 ...
 var ordersGrid = new GridModel(DataSourceType.PostgreSql, "Sakila", "salesorder");
@@ -255,7 +248,7 @@ var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind", "GetOrdersBefo
 
                 <p class="text-gray-600">See below for examples of file/url constructors are below</p>
 
-                <pre><code class="hljs c#">...
+                <pre><code class="language-csharp">...
 var superstoreGrid = new GridModel(DataSourceType.Excel, "/data/excel/superstore.xlsx");
 ...
 var superstoreGrid = new GridModel(DataSourceType.Excel, "/data/excel/stats.xlsx", "sheet5");
@@ -273,7 +266,7 @@ var employeesGrid = new GridModel(DataSourceType.JSON, "https://localhost:7243/g
 
                 <p class="text-gray-600">JSON can also be provided as a string as in the example below. This gives the opporuntity to modify or transform a raw JSON data source before passing it to the grid control. e.g.</p>
 
-                <pre><code class="hljs c#">...
+                <pre><code class="language-csharp">...
 HttpClient client = new HttpClient();
 string json = await client.GetStringAsync("https://api.nobelprize.org/v1/prize.json");
 NobelPrizes nobelPrizes = System.Text.Json.JsonSerializer.Deserialize<NobelPrizes>(json);
@@ -295,7 +288,7 @@ var gridModel = new GridModel(DataSourceType.JSON, System.Text.Json.JsonSerializ
 
                 <p class="text-gray-600">In addition the name of the MongoDB database must be supplied in the additional <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#databasename">DatabaseName</a> property.</p>
 
-                <pre><code class="hljs c#">...
+                <pre><code class="language-csharp">...
 var moviesGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix" };
 ...
 var ordersGrid = new GridModel(DataSourceType.MongoDB, "mongodb://localhost:27017/", "Orders") { DatabaseName = "Northwind" };
@@ -314,7 +307,7 @@ var ordersGrid = new GridModel(DataSourceType.MongoDB, "mongodb://localhost:2701
                 </p>
 
 
-                <pre><code class="hljs c#">...
+                <pre><code class="language-csharp">...
 var pagesGrid = new GridModel(DataSourceType.FileSystem, "../Pages");
 ...
 var imagesGrid = new GridModel(DataSourceType.FileSystem, "C:\\Users\\username\\documents\\images") ;
@@ -324,14 +317,66 @@ var imagesGrid = new GridModel(DataSourceType.FileSystem, "C:\\Users\\username\\
 
         </main>
     </div>
-<!--
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cshtml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
--->
-<script>
-    hljs.highlightAll();
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+
+    <script>
+        // Define Razor grammar
+        (function(Prism) {
+            Prism.languages.cshtml = Prism.languages.extend('markup', {});
+            
+            Object.assign(Prism.languages.cshtml, {
+                'razor-block': [
+                    {
+                        pattern: /(@\{)[\s\S]*?(\})/,
+                        lookbehind: true,
+                        inside: {
+                            'punctuation': /[{}]/,
+                            rest: Prism.languages.csharp
+                        }
+                    }
+                ],
+                'razor-directive': {
+                    pattern: /@(?:model|using|inject|implements|inherits|layout|page|functions)\s+[^;{]*?(?=\r?\n|$)/i,
+                    inside: {
+                        'keyword': /^@\w+/i,
+                        rest: Prism.languages.csharp
+                    }
+                },
+                'razor-expression': {
+                    pattern: /@(?!\{)[^\s()@]*(?:\([^)]*\))?/,
+                    inside: {
+                        'punctuation': /[()]/,
+                        rest: Prism.languages.csharp
+                    }
+                }
+            });
+   
+        })(Prism);
+
+        // Tab switching functionality
+        function showCode(language) {
+            // Update tab active states
+            document.querySelectorAll('.language-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase().includes(language)) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update code block visibility
+            document.querySelectorAll('.code-block').forEach(block => {
+                block.classList.remove('active');
+            });
+            document.getElementById(`${language}-block`).classList.add('active');
+        }
+
+        // Initial highlight
+        Prism.highlightAll();
+    </script>
     <script>
         // Navigation
         const navLinks = document.querySelectorAll('.nav-link');

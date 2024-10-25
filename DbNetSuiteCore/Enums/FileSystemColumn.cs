@@ -7,6 +7,7 @@
         LastModified,
         IsDirectory,
         Length,
-        Extension
+        Extension,
+        Content
     };
 }

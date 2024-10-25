@@ -7,9 +7,10 @@
     <p style="width:700px; padding-bottom:20px">Only the pages in the <b>json</b> and <b>sqlite</b> folders are guaranteed to run without changes. For other databases you will need to add your own connection strings to the <b>appsettings.json</b> file and update the connection aliases in the relevant <b>BrowseDb.cshtml.cs</b> file</p>
     var columns = new List<GridColumn>()
     {
-        new GridColumn(FileSystemColumn.Name.ToString())
+        new GridColumn(FileSystemColumn.Name.ToString()),
+        new GridColumn(FileSystemColumn.Content.ToString(), "Summary") { RegularExpression = "<p data-summary>(.*?)</p>"}
     };
-    var gridModel = new GridModel(DataSourceType.FileSystem, "../Pages") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml')" };
+    var gridModel = new GridModel(DataSourceType.FileSystem, "../Pages") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml','index.cshtml')" };
     gridModel.Columns = columns;
     gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
 

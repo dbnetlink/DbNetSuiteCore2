@@ -4,6 +4,7 @@ using System.Data;
 using DbNetSuiteCore.Extensions;
 using Microsoft.Extensions.FileProviders;
 using DbNetSuiteCore.Helpers;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -87,10 +88,10 @@ namespace DbNetSuiteCore.Repositories
             var provider = new PhysicalFileProvider(path);
             var contents = provider.GetDirectoryContents(string.Empty);
 
-            return Tabulate(contents);
+            return Tabulate(contents, gridModel);
         }
 
-        private DataTable Tabulate(IDirectoryContents directoryContents)
+        private DataTable Tabulate(IDirectoryContents directoryContents, GridModel gridModel)
         {
             DataTable dataTable = new DataTable();
             dataTable.Clear();
@@ -101,6 +102,15 @@ namespace DbNetSuiteCore.Repositories
             dataTable.Columns.Add(FileSystemColumn.Length.ToString(), typeof(Int64));
             dataTable.Columns.Add(FileSystemColumn.LastModified.ToString(), typeof(DateTime));
 
+            var i = 0;
+            foreach (GridColumn gridColumn in gridModel.ContentColumns)
+            {
+                var name = $"{FileSystemColumn.Content}{i}";
+                gridColumn.Expression = name ;
+                dataTable.Columns.Add(name, typeof(string));
+            }
+           
+
             foreach (IFileInfo file in directoryContents)
             {
                 DataRow dataRow = dataTable.NewRow();
@@ -110,13 +120,33 @@ namespace DbNetSuiteCore.Repositories
                 dataRow[FileSystemColumn.Extension.ToString()] = file.IsDirectory ? string.Empty : file.Name.Split(".").Last();
                 dataRow[FileSystemColumn.Length.ToString()] = file.IsDirectory ? System.DBNull.Value : file.Length;
                 dataRow[FileSystemColumn.LastModified.ToString()] = file.LastModified.UtcDateTime;
+
+                if (file.IsDirectory == false && gridModel.ContentColumns.Any() && file.Length < (1024 * 16))
+                {
+                    var content = ReadFileContent(file);
+
+                    foreach (GridColumn gridColumn in gridModel.ContentColumns)
+                    {
+                        var match = Regex.Match(content, gridColumn.RegularExpression, RegexOptions.IgnoreCase);
+                        dataRow[gridColumn.Expression] = match.Success ? match.Groups[1].Value : string.Empty;
+                    }
+                }
+
                 dataTable.Rows.Add(dataRow);
             };
 
             return dataTable;
         }
 
-        private string AddFilterPart(GridModel gridModel)
+        private static string ReadFileContent(IFileInfo fileInfo)
+        {
+            using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+            private string AddFilterPart(GridModel gridModel)
         {
             string filter = string.Empty;
             List<string> filterParts = new List<string>();

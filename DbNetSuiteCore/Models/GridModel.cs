@@ -16,6 +16,7 @@ namespace DbNetSuiteCore.Models
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
         public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
+        public IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
         public int CurrentPage { get; set; } = 1;
         public string SearchInput { get; set; } = string.Empty;
         public string SortKey  
