@@ -20,7 +20,7 @@ namespace DbNetSuiteCore.ViewModels
         public string GridId => _gridModel.Id;
         public string TBodyId => $"tbody{_gridModel.Id}";
         public string ViewDialogId => $"viewDialog{_gridModel.Id}";
-        public string LinkedGridId => _gridModel.LinkedGrid?.Id ?? string.Empty;
+        public string LinkedGridIds => string.Join(",",_gridModel.LinkedGridIds);
         public string SearchInput => _gridModel.SearchInput;
         public string CurrentSortKey => _gridModel.CurrentSortKey;
         public HtmlString SortIcon => _gridModel.CurrentSortAscending ? IconHelper.ArrowUp() : IconHelper.ArrowDown();

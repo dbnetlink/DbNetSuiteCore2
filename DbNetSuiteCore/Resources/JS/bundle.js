@@ -129,7 +129,6 @@ class GridControl {
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
         let rowCount = parseInt(tbody.dataset.rowcount);
-        let queryLimit = parseInt(this.gridControlElement("#query-limited").dataset.querylimit);
         if (totalPages == 0) {
             this.updateLinkedGrids('');
         }
@@ -140,6 +139,7 @@ class GridControl {
             }
         }
         if (this.toolbarExists()) {
+            let queryLimit = parseInt(this.gridControlElement("#query-limited").dataset.querylimit);
             if (totalPages == 0) {
                 this.removeClass('#no-records', "hidden");
                 this.addClass('#navigation', "hidden");
@@ -282,9 +282,12 @@ class GridControl {
     }
     updateLinkedGrids(primaryKey) {
         let table = this.gridControlElement("table");
-        if (table.dataset.linkedgridid) {
-            this.isElementLoaded(`#${table.dataset.linkedgridid}`).then((selector) => {
-                DbNetSuiteCore.gridControlArray[table.dataset.linkedgridid].loadFromParent(primaryKey);
+        if (table.dataset.linkedgridids) {
+            var linkedGridIds = table.dataset.linkedgridids.split(",");
+            linkedGridIds.forEach(linkedGridId => {
+                this.isElementLoaded(`#${linkedGridId}`).then((selector) => {
+                    DbNetSuiteCore.gridControlArray[linkedGridId].loadFromParent(primaryKey);
+                });
             });
         }
     }

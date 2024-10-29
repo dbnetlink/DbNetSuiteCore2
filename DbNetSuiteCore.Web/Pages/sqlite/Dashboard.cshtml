@@ -29,7 +29,7 @@
                     };
                     resultsGrid.ToolbarPosition = ToolbarPosition.Hidden;
                     resultsGrid.Caption = leagues[league];
-                    resultsGrid.Headings = false;
+                    resultsGrid.HeadingMode = HeadingMode.Hidden;
                     resultsGrid.RowSelection = RowSelection.None;
 
                     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(resultsGrid));

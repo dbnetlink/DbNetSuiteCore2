@@ -9,9 +9,9 @@
     {
         new GridColumn(FileSystemColumn.Name.ToString())
     };
-    var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "/data/excel", FixedFilter = "(IsDirectory = 1 or Name like '%.xlsx' or Name like '%.xls' or Name like '%.csv' )" };
+    var gridModel = new GridModel(DataSourceType.FileSystem, "/data/excel") { FixedFilter = "(IsDirectory = 1 or Extension in ('xlsx','xls','csv'))" };
     gridModel.Columns = columns;
-    gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
+    gridModel.ClientEvents[GridClientEvent.CellTransform] = "createLink";
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }

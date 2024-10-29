@@ -9,40 +9,39 @@ namespace DbNetSuiteCore.Models
     {
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
-        private GridModel? _LinkedGrid;
+        [JsonIgnore]
+        private List<GridModel> _LinkedGrids = new List<GridModel> { };
         private RowSelection _RowSelection = RowSelection.Single;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
-        public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
         public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
-        public IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
+        internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
         public int CurrentPage { get; set; } = 1;
-        public string SearchInput { get; set; } = string.Empty;
-        public string SortKey  
+        internal string SearchInput { get; set; } = string.Empty;
+        internal string SortKey  
         { 
             get { return string.IsNullOrEmpty(_SortKey) ? InitalSortColumn?.Key ?? string.Empty : _SortKey; } 
             set { _SortKey = value; } 
         }
         public string CurrentSortKey { get; set; } = string.Empty;
+        public SortOrder? CurrentSortSequence { get; set; }
         public bool CurrentSortAscending => SortSequence == SortOrder.Asc;
-        public string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
-        public string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
-        public GridColumn? SortColumn => ((Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn);
-        public GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
-        public GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
-        public SortOrder? SortSequence 
+        internal string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
+        internal string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
+        internal GridColumn? SortColumn => ((Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn);
+        internal GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
+        internal GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
+        internal SortOrder? SortSequence 
         { 
             get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; } 
             set { _SortSequence = value; } 
         }
-        public string? PrimaryKey { get; set; }
         public string TableName { get; set; } = string.Empty;
         public string ProcedureName { get; set; } = string.Empty;
         public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
-        public string ExportFormat { get; set; } = string.Empty;
+        internal string ExportFormat { get; set; } = string.Empty;
         public string ConnectionAlias { get; set; } = string.Empty;
-        public string DatabaseName { get; set; } = string.Empty;
         public string Url 
         { 
             get 
@@ -64,33 +63,29 @@ namespace DbNetSuiteCore.Models
         }
         [JsonIgnore]
         public string JSON { get; set; } = string.Empty;
-        public string FixedFilter { get; set; } = string.Empty;
-        public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
-        public List<string> ColumnFilter { get; set; } = new List<string>();
+        internal List<string> ColumnFilter { get; set; } = new List<string>();
         public int PageSize { get; set; } = 20;
-        public bool Uninitialised => Columns.Any() == false || Columns.Where(c => c.Initialised == false).Any();
-        public GridModel? NestedGrid { get; set; } = null;
-        public GridModel? LinkedGrid
-        {
-            get { return _LinkedGrid; }
-            set 
-            { 
-                _LinkedGrid = value; 
-                if (value != null)
-                {
-                    value.IsLinked = true;
-                }
-            }
-        }
+        internal bool Uninitialised => Columns.Any() == false || Columns.Where(c => c.Initialised == false).Any();
         public bool IsNested { get; set; } = false;
         public bool IsLinked { get; set; } = false;
         public int ColSpan => VisbleColumns.ToList().Count;
         public string ParentKey { get; set; } = string.Empty;
-        public string Caption { get; set; } = string.Empty;
-        public Dictionary<ClientEvent,string> ClientEvents { get; set; } = new Dictionary<ClientEvent, string>();
         public DataSourceType DataSourceType { get; set; }
         public string HxFormTrigger => IsLinked ? "submit" : "load";
         public string TriggerName { get; set; } = string.Empty;
+        public List<string> LinkedGridIds { get; set; } = new List<string>();
+
+
+		public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
+		public string Caption { get; set; } = string.Empty;
+        public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
+        public string DatabaseName { get; set; } = string.Empty;
+        public string FixedFilter { get; set; } = string.Empty;
+        public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
+        public List<GridModel> LinkedGrids => _LinkedGrids;
+       
+        public GridModel? NestedGrid { get; set; } = null;
+
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
         public RowSelection RowSelection { 
             get 
@@ -114,11 +109,9 @@ namespace DbNetSuiteCore.Models
             } 
         }
         public MultiRowSelectLocation MultiRowSelectLocation { get; set; } = MultiRowSelectLocation.None;
-        public bool FrozenHeader { get; set; } = false;
-        public bool Headings { get; set; } = true;
+        public HeadingMode HeadingMode { get; set; } = HeadingMode.Normal;
         public bool IsStoredProcedure { get; set; } = false;
         public ViewDialog? ViewDialog { get; set; }
-        public bool SearchDialog { get; set; } = false;
         [Description("Boosts performance by caching data. Applied to Excel and JSON files only.")]
         public bool Cache { get; set; } = false;
         public int QueryLimit { get; set; } = -1;
@@ -168,20 +161,24 @@ namespace DbNetSuiteCore.Models
 
         public void AddLinkedGrid(GridModel gridModel)
         {
-            _LinkedGrid = gridModel;
+            _LinkedGrids.Add(gridModel);
+            LinkedGridIds.Add(gridModel.Id);
             gridModel.IsLinked = true;
 
-            var linkedGrid = gridModel;
+            AssignLinkedProperties(this, gridModel);
 
-            while (linkedGrid != null)
+            foreach (GridModel linkedGrid in gridModel.LinkedGrids)
             {
-                if (string.IsNullOrEmpty(ConnectionAlias) == false)
-                {
-                    linkedGrid.ConnectionAlias = ConnectionAlias;
-                    linkedGrid.DataSourceType = DataSourceType;
-                }
-                
-                linkedGrid = linkedGrid.LinkedGrid;
+                AssignLinkedProperties(gridModel, linkedGrid);
+            }
+        }
+
+        internal void AssignLinkedProperties(GridModel parent, GridModel child)
+        {
+            if (string.IsNullOrEmpty(child.ConnectionAlias))
+            {
+                child.ConnectionAlias = parent.ConnectionAlias;
+                child.DataSourceType = parent.DataSourceType;
             }
         }
 
@@ -201,7 +198,7 @@ namespace DbNetSuiteCore.Models
                 }
                 else
                 {
-                    SortSequence = SortSequence == SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
+                    SortSequence = (CurrentSortSequence ?? SortOrder.Asc) == SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
                 }
             }
             else
@@ -211,6 +208,8 @@ namespace DbNetSuiteCore.Models
                     CurrentSortKey = InitalSortColumn?.Key ?? string.Empty;
                 }
             }
+
+            CurrentSortSequence = SortSequence;
         }
 
         public string? PrimaryKeyValue(DataRow dataRow)
@@ -248,7 +247,7 @@ namespace DbNetSuiteCore.Models
             return defaultValue;
         }
 
-        public void Bind(ClientEvent clientEvent, string functionName)
+        public void Bind(GridClientEvent clientEvent, string functionName)
         {
             ClientEvents[clientEvent] = functionName;
         }

@@ -1,6 +1,6 @@
 ﻿namespace DbNetSuiteCore.Enums
 {
-    public enum ClientEvent
+    public enum GridClientEvent
     {
         PageLoaded,
         RowSelected,

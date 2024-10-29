@@ -59,8 +59,8 @@
     var stateModel = new GridModel(DataSourceType.Excel, "/data/excel/states.csv") { Columns = stateColumns, ViewDialog =  new ViewDialog(), PageSize = 5, Caption = "States" };
     var cityModel = new GridModel(DataSourceType.Excel, "/data/excel/cities.csv") { Columns = cityColumns, ViewDialog =  new ViewDialog(), PageSize = 5, Caption = "Cities" };
 
-    countryModel.LinkedGrid = stateModel;
-    stateModel.LinkedGrid = cityModel;
+    countryModel.AddLinkedGrid(stateModel);
+    stateModel.AddLinkedGrid(cityModel);
 }
 
 @(await new DbNetSuiteCore.GridControl(HttpContext).Render(countryModel))

@@ -5,6 +5,8 @@
 @{
     var moviesGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix", QueryLimit = 200 };
 
+    moviesGrid.QueryLimit = 200;
+
     moviesGrid.Columns = new List<GridColumn>() {
         new GridColumn("title"),
         new GridColumn("year"){DataType = typeof(Int32), Lookup = new Lookup()},

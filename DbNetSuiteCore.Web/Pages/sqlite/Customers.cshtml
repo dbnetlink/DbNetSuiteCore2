@@ -6,10 +6,12 @@
 @{
     var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers");
 
+    customerGrid.Caption = "Northwind Customers";
+
     customerGrid.Columns = new List<GridColumn>
     {
         new GridColumn("CompanyName", "Name"),
-        new GridColumn("coalesce(Address,'') || ', ' || coalesce(City,'')", "Address"),
+        new GridColumn("coalesce(Address,'') || ', ' || coalesce(City,'')"),
         new GridColumn("coalesce(Phone,'') || '/' || coalesce(Fax,'')", "Phone/Fax")
     };
 

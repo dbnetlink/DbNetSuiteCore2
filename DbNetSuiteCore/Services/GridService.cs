@@ -253,13 +253,14 @@ namespace DbNetSuiteCore.Services
 
         private async Task GetRecord(GridModel gridModel)
         {
+            /*
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
             if (gridModel.TriggerName == TriggerNames.LinkedGrid)
             {
                 gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
             }
-
+            */
             switch (gridModel.DataSourceType)
             {
                 case DataSourceType.SQLite:

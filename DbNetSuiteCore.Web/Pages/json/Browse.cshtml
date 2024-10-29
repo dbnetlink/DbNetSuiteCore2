@@ -11,7 +11,7 @@
     };
     var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "/data/json", FixedFilter = "(IsDirectory = 1 or Name like '%.json')" };
     gridModel.Columns = columns;
-    gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
+    gridModel.ClientEvents[GridClientEvent.CellTransform] = "createLink";
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }

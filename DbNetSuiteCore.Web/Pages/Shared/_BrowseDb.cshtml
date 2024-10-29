@@ -69,7 +69,7 @@
                 else
                 {
                         GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName);
-                        gridModel.ClientEvents[ClientEvent.FileDownload] = "setFileName";
+                        gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
                                 @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(gridModel))
                         }
             }

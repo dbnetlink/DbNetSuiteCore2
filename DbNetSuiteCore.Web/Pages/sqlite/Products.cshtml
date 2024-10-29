@@ -3,8 +3,8 @@
 @using DbNetSuiteCore.Models
 
 @{
-	var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
-	customerGrid.Columns = new List<GridColumn>() {
+	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
+	productsGrid.Columns = new List<GridColumn>() {
 		new GridColumn("ProductID") { PrimaryKey = true },
 		new GridColumn("ProductName"),
 		new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = true },
@@ -16,10 +16,10 @@
 		new GridColumn("ReorderLevel"),
 		new GridColumn("Discontinued") { DataType = typeof(Boolean)}
 	};
-    customerGrid.Bind(ClientEvent.RowTransform, "highlightGridLowStock");
-	customerGrid.Bind(ClientEvent.ViewDialogUpdated, "highlightViewLowStock");
+	productsGrid.Bind(GridClientEvent.RowTransform, "highlightGridLowStock");
+	productsGrid.Bind(GridClientEvent.ViewDialogUpdated, "highlightViewLowStock");
 
-	@(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+	@(await new DbNetSuiteCore.GridControl(HttpContext).Render(productsGrid))
 }
 <script>
 	function highlightGridLowStock(gridControl, args) {

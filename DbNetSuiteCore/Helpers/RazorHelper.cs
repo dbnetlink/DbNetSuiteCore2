@@ -6,6 +6,7 @@ namespace DbNetSuiteCore.Helpers
 {
     public static class RazorHelper
     {
+        private static List<string> IllegalDataValueChars => new List<string>() { "\"", "<" };
         public static HtmlString CellDataAttributes(List<string> classes, object value, string style)
         {
             List<string> dataAttributes = new List<string>();
@@ -15,7 +16,7 @@ namespace DbNetSuiteCore.Helpers
                 dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
             }
 
-            if (value != null && (value is byte) == false)
+            if (value != null && (value is byte) == false && IllegalDataValueChars.Any(c => value.ToString().Contains(c)) == false)
             {
                 dataAttributes.Add($"data-value=\"{value}\"");
             }

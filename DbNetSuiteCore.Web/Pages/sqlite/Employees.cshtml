@@ -2,9 +2,10 @@
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
 
-<p data-summary>At it's most basic you can generate a grid by simply specifying the connection alias and the name of the table or view. Default functionality includes a search box that will perform a wildcard search against all string based columns in the dataset, the ability to sort on any column by clicking on the heading, a copy page button and an option to export the data in HTML, Excel, CSV and PDF formats.</p>
+<p data-summary>At it's most basic you can generate a grid by simply <b>specifying</b> the connection alias and the name of the table or view. Default functionality includes a search box that will perform a wildcard search against all string based columns in the dataset, the ability to sort on any column by clicking on the heading, a copy page button and an option to export the data in HTML, Excel, CSV and PDF formats.</p>
 @{
-    var employeeGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") { ViewDialog = new ViewDialog() { MaxWidth = 300, MaxHeight = 400} };
+    var employeeGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") {  };
+    employeeGrid.ViewDialog = new ViewDialog() { MaxWidth = 300, MaxHeight = 400, LayoutColumns = 1 };
     employeeGrid.Columns = new List<GridColumn>()
     {
         new GridColumn("EmployeeID") { PrimaryKey = true},
@@ -25,5 +26,5 @@
         new GridColumn("Notes"),
         new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = true}
     };
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid)) {}
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid))
 }

@@ -12,7 +12,8 @@
     };
     var gridModel = new GridModel(DataSourceType.FileSystem, "../Pages") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml','index.cshtml')" };
     gridModel.Columns = columns;
-    gridModel.ClientEvents[ClientEvent.CellTransform] = "createLink";
+    gridModel.ToolbarPosition = ToolbarPosition.Hidden;
+    gridModel.ClientEvents[GridClientEvent.CellTransform] = "createLink";
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }
