@@ -14,35 +14,5 @@ Currently the components support the following data sources:
  - JSON
  - File System
 
-### To add **DbNetSuiteCore** to your web application add the following to your **program.cs** file ###
-```
-var builder = WebApplication.CreateBuilder(args);
-...
-builder.Services.AddDbNetSuiteCore()
-...
-app.UseDbNetSuiteCore();
-...
-```
-### To add to your Razor page ###
-```
-@page
-@using DbNetSuiteCore.Enums
-@using DbNetSuiteCore.Models
-@{
-   Layout = null;
-   var customerGrid = new GridModel(DataSourceType.SQlite, "Sakila", "Customer"); <-- Configure the component
-}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @DbNetSuiteCore.Resources.StyleSheet() <-- Add the stylesheet
-</head>
-<body>
-    <main style="padding:20px">
-        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid)) <-- Render the component
-   </main>
-    @DbNetSuiteCore.Resources.ClientScript() <-- Render the client script
-</body>
-</html>
-```
+### For information about installation and usage see the docs ###
 https://dbnetsuitecore.document360.io/docs
