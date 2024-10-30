@@ -45,3 +45,4 @@ app.UseDbNetSuiteCore();
 </body>
 </html>
 ```
+https://dbnetsuitecore.document360.io/docs
