@@ -165,7 +165,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (gridModel.Columns.Any(c => c.Filter))
+            if (gridModel.FilterColumns.Any())
             {
                 List<string> columnFilterPart = new List<string>();
                 for (var i = 0; i < gridModel.ColumnFilter.Count; i++)

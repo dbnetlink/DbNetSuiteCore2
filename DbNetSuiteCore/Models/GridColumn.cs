@@ -7,6 +7,7 @@ namespace DbNetSuiteCore.Models
 {
     public class GridColumn : ColumnModel
     {
+        private FilterType _Filter = FilterType.None;
         public bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
         public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml) && DataOnly == false;
         public bool Editable { get; set; } = false;
@@ -15,7 +16,18 @@ namespace DbNetSuiteCore.Models
         public bool ForeignKey { get; set; } = false;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
         public SortOrder? InitialSortOrder { get; set; } = null;
-        public bool Filter { get; set; } = false;
+        public FilterType Filter
+        {
+            get { return _Filter; }
+            set 
+            {
+                _Filter = value;
+                if (value == FilterType.Distinct && Lookup == null)
+                {
+                    Lookup = new Lookup();
+                }
+            }
+        }
         public string FilterError { get; set; } = string.Empty;
         public string Style { get; set; } = string.Empty;
         public bool DataOnly { get; set; } = false;

@@ -7,8 +7,8 @@
 	productsGrid.Columns = new List<GridColumn>() {
 		new GridColumn("ProductID") { PrimaryKey = true },
 		new GridColumn("ProductName"),
-		new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = true },
-		new GridColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"), Filter = true },
+		new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = FilterType.Default },
+		new GridColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"), Filter = FilterType.Default },
 		new GridColumn("QuantityPerUnit", "Qty."),
 		new GridColumn("UnitPrice","Price") { Format = "c"},
 		new GridColumn("UnitsInStock", "Stock"),

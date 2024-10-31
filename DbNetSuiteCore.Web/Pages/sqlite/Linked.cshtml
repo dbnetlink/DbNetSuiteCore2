@@ -45,18 +45,18 @@
     invoiceLineGridModel.Columns = invoiceItemColumns;
     invoiceLineGridModel.Caption = "Invoice Lines";
     invoiceLineGridModel.PageSize = 5;
-    invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+  //  invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
     var invoiceGridModel = new GridModel("Invoices");
     invoiceGridModel.Columns = invoiceColumns;
-    invoiceGridModel.AddLinkedGrid(invoiceLineGridModel);
+    invoiceGridModel.LinkedGrid = invoiceLineGridModel;
     invoiceGridModel.Caption = "Invoices";
     invoiceGridModel.PageSize = 5;
-    invoiceGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+   // invoiceGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
     var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
     customerGridModel.Columns = customerColumns;
-    customerGridModel.AddLinkedGrid(invoiceGridModel);
+    customerGridModel.LinkedGrid = invoiceGridModel;
     customerGridModel.PageSize = 5;
 }
 

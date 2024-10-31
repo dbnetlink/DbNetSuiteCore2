@@ -49,6 +49,7 @@
     <Content Remove="Views\GridToolbar.cshtml" />
     <Content Remove="Views\Grid\Hidden.cshtml" />
     <Content Remove="Views\Grid\ViewDialog.cshtml" />
+    <Content Remove="Views\Grid\ViewDialogContent.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -123,6 +124,7 @@
     <EmbeddedResource Include="Views\Error.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\ViewDialogContent.cshtml" />
     <EmbeddedResource Include="Views\HxIndicator.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

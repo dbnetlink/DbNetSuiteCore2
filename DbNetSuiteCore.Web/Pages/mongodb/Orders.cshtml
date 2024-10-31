@@ -18,12 +18,12 @@
         new GridColumn("Freight") { Format = "c"},
         new GridColumn("ShipName"),
         new GridColumn("ShipAddress"),
-        new GridColumn("ShipCity") {Filter = true, Lookup = new Lookup()},
-        new GridColumn("ShipRegion") {Filter = true, Lookup = new Lookup()},
+        new GridColumn("ShipCity") {Filter = FilterType.Distinct},
+        new GridColumn("ShipRegion") {Filter = FilterType.Distinct},
         new GridColumn("ShipPostalCode"),
-        new GridColumn("ShipCountry") {Filter = true, Lookup = new Lookup()}
+        new GridColumn("ShipCountry") {Filter = FilterType.Distinct}
     };
     
-    ordersGrid.Columns.ToList().ForEach(c => c.Filter = true);
+    ordersGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
 }

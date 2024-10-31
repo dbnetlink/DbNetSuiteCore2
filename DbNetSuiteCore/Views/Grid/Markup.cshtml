@@ -19,7 +19,7 @@
     <div class="flex mt-2">
         <table class="table-auto border-collapse" data-linkedgridids="@Model.LinkedGridIds">
             <colgroup>
-                @if (Model.GridModel.NestedGrid != null)
+                @if (Model.GridModel._NestedGrids.Any())
                 {
                     <col />
                 }
@@ -38,7 +38,7 @@
                     {
                         <th class="text-base"><input class="multi-select" type="checkbox" /></th>
                     }
-                    @if (Model.GridModel.NestedGrid != null)
+                    @if (Model.GridModel._NestedGrids.Any())
                     {
                         <th class="text-base w-12"></th>
                     }
@@ -65,14 +65,14 @@
                     }
                 </tr>
 
-                @if (Model.Columns.Any(c => c.Filter))
+                @if (Model.GridModel.FilterColumns.Any())
                 {
                     <tr class="filter-row">
                         @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
                         {
                             <th class="text-base"></th>
                         }
-                        @if (Model.GridModel.NestedGrid != null)
+                        @if (Model.GridModel._NestedGrids.Any())
                         {
                             <th class="text-base w-12"></th>
                         }
@@ -116,7 +116,7 @@
     void RenderColumnFilter(GridColumn columnInfo)
     {
         <th class="text-base">
-            @if (columnInfo?.Filter ?? false)
+            @if ((columnInfo?.Filter ?? FilterType.None) != FilterType.None)
             {
                 if (columnInfo.LookupOptions != null && columnInfo.LookupOptions.Any())
                 {

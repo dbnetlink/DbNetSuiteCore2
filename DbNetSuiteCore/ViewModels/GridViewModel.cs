@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.ViewModels
         public GridModel GridModel => _gridModel;
         public ViewDialog ViewDialog => _gridModel.ViewDialog!;
         public IEnumerable<DataRow> Rows => GridModel.Data.AsEnumerable().Skip((GridModel.CurrentPage - 1) * GridModel.PageSize).Take(GridModel.PageSize);
-        public int TotalPages => (int)Math.Ceiling((double)GridModel.Data.Rows.Count / GridModel.PageSize);
+        public int TotalPages => RowCount == 0 ? 0 : (int)Math.Ceiling((double)RowCount / GridModel.PageSize);
         public int RowCount => GridModel.Data.Rows.Count;
         public string GridId => _gridModel.Id;
         public string TBodyId => $"tbody{_gridModel.Id}";
@@ -40,7 +40,7 @@ namespace DbNetSuiteCore.ViewModels
 
             if (_gridModel.ToolbarPosition == ToolbarPosition.Hidden)
             {
-                _gridModel.PageSize = gridModel.Data.Rows.Count;
+                _gridModel.PageSize = RowCount > 0 ? RowCount : _gridModel.PageSize;
             }
 
             foreach (DataColumn column in DataColumns)

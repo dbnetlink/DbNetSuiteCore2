@@ -143,23 +143,26 @@ namespace DbNetSuiteCore.Services
             return gridViewModel;
         }
 
-        private GridModel ConfigureNestedGrid(GridModel gridModel)
+        private List<GridModel> ConfigureNestedGrid(GridModel gridModel)
         {
-            gridModel.NestedGrid!.IsNested = true;
-            gridModel.NestedGrid!.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
-            gridModel.NestedGrid.SetId();
-
-            if (gridModel.DataSourceType == DataSourceType.FileSystem)
+            foreach (var nestedGrid in gridModel._NestedGrids)
             {
-                gridModel.NestedGrid.NestedGrid = gridModel.NestedGrid.DeepCopy();
-            }
-            else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
-            {
-                gridModel.NestedGrid.ConnectionAlias = gridModel.ConnectionAlias;
-                gridModel.NestedGrid.DataSourceType = gridModel.DataSourceType;
+                nestedGrid.IsNested = true;
+                nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
+                nestedGrid.SetId();
+
+                if (gridModel.DataSourceType == DataSourceType.FileSystem)
+                {
+                    nestedGrid._NestedGrids.Add(gridModel._NestedGrids.First().DeepCopy());
+                }
+                else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
+                {
+                    nestedGrid.ConnectionAlias = gridModel.ConnectionAlias;
+                    nestedGrid.DataSourceType = gridModel.DataSourceType;
+                }
             }
 
-            return gridModel.NestedGrid;
+            return gridModel._NestedGrids;
         }
 
         private async Task ConfigureGridColumns(GridModel gridModel)
@@ -541,7 +544,7 @@ namespace DbNetSuiteCore.Services
                 var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
                 GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(model) ?? new GridModel();
                 gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
-                gridModel.CurrentPage = GetPageNumber(gridModel);
+                gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);

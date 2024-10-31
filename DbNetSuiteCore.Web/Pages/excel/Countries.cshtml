@@ -7,20 +7,20 @@
 @{
     var countriesGrid = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv");
     countriesGrid.Columns = new List<GridColumn>() {
-        new GridColumn("Id") { Filter = true },
-        new GridColumn("Name") { Filter = true },
-        new GridColumn("Iso3") { Filter = true },
-        new GridColumn("Iso2") { Filter = true },
-        new GridColumn("Numeric_Code") { Filter = true },
-        new GridColumn("Phone_Code") { Filter = true },
-        new GridColumn("Capital") { Filter = true },
-        new GridColumn("Currency") { Filter = true },
-        new GridColumn("Currency_Name") { Filter = true },
-        new GridColumn("Currency_Symbol") { Filter = true },
-        new GridColumn("Tld") { Filter = true },
-        new GridColumn("Native") { Filter = true },
-        new GridColumn("Region") { Filter = true, Lookup = new Lookup() },
-        new GridColumn("Subregion") { Filter = true, Lookup = new Lookup() }
+        new GridColumn("Id") { Filter = FilterType.Default },
+        new GridColumn("Name") { Filter = FilterType.Default },
+        new GridColumn("Iso3") { Filter = FilterType.Default },
+        new GridColumn("Iso2") { Filter = FilterType.Default },
+        new GridColumn("Numeric_Code") { Filter = FilterType.Default },
+        new GridColumn("Phone_Code") { Filter = FilterType.Default },
+        new GridColumn("Capital") { Filter = FilterType.Default },
+        new GridColumn("Currency") { Filter = FilterType.Default },
+        new GridColumn("Currency_Name") { Filter = FilterType.Default },
+        new GridColumn("Currency_Symbol") { Filter = FilterType.Default },
+        new GridColumn("Tld") { Filter = FilterType.Default },
+        new GridColumn("Native") { Filter = FilterType.Default },
+        new GridColumn("Region") { Filter = FilterType.Distinct },
+        new GridColumn("Subregion") { Filter = FilterType.Distinct }
     };
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(countriesGrid))

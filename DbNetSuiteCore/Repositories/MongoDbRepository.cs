@@ -294,7 +294,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (gridModel.Columns.Any(c => c.Filter))
+            if (gridModel.FilterColumns.Any())
             {
                 var match = new List<BsonDocument>();
                 for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
@@ -304,7 +304,7 @@ namespace DbNetSuiteCore.Repositories
                         continue;
                     }
 
-                    var column = gridModel.Columns.Where(c => c.Filter).Skip(i).First();
+                    var column = gridModel.Columns.Where(c => c.Filter != FilterType.None).Skip(i).First();
 
                     var columnFilter = ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
 

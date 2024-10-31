@@ -9,12 +9,11 @@ namespace DbNetSuiteCore.Models
     {
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
-        [JsonIgnore]
-        private List<GridModel> _LinkedGrids = new List<GridModel> { };
         private RowSelection _RowSelection = RowSelection.Single;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
         public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
+        public IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
         public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
         internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
         public int CurrentPage { get; set; } = 1;
@@ -74,18 +73,32 @@ namespace DbNetSuiteCore.Models
         public string HxFormTrigger => IsLinked ? "submit" : "load";
         public string TriggerName { get; set; } = string.Empty;
         public List<string> LinkedGridIds { get; set; } = new List<string>();
+        public List<GridModel> _LinkedGrids { get; set; } = new List<GridModel>();
+        public List<GridModel> _NestedGrids { get; set; } = new List<GridModel>();
 
 
-		public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
+        public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
 		public string Caption { get; set; } = string.Empty;
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
         public string DatabaseName { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;
         public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
-        public List<GridModel> LinkedGrids => _LinkedGrids;
-       
-        public GridModel? NestedGrid { get; set; } = null;
+        [JsonIgnore]
 
+        public GridModel NestedGrid
+        {
+            set
+            {
+                AddNestedGrid(value);
+            }
+        }
+        public GridModel LinkedGrid
+        {
+            set
+            {
+                AddLinkedGrid(value);
+            }
+        }
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Top;
         public RowSelection RowSelection { 
             get 
@@ -167,9 +180,22 @@ namespace DbNetSuiteCore.Models
 
             AssignLinkedProperties(this, gridModel);
 
-            foreach (GridModel linkedGrid in gridModel.LinkedGrids)
+            foreach (GridModel linkedGrid in gridModel._LinkedGrids)
             {
                 AssignLinkedProperties(gridModel, linkedGrid);
+            }
+        }
+
+        public void AddNestedGrid(GridModel gridModel)
+        {
+            _NestedGrids.Add(gridModel);
+            gridModel.IsNested = true;
+
+            AssignLinkedProperties(this, gridModel);
+
+            foreach (GridModel nestedGrid in gridModel._NestedGrids)
+            {
+                AssignLinkedProperties(gridModel, nestedGrid);
             }
         }
 

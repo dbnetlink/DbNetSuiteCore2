@@ -21,7 +21,7 @@
         new GridColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime), Format = "d"}
     };
 
-    moviesGrid.Columns.ToList().ForEach(c => c.Filter = true);
+    moviesGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(moviesGrid))
 }

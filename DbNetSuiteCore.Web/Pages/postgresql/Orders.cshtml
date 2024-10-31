@@ -24,7 +24,7 @@
     new GridColumn("Shipcountry") {Lookup = new Lookup()}
     };
 
-    columns.ForEach(c => c.Filter = true);
+    columns.ForEach(c => c.Filter = FilterType.Default);
 
     var ordersGrid = new GridModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "salesorder");
     ordersGrid.Columns = columns;

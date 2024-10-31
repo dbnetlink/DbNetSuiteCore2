@@ -16,7 +16,7 @@
             {
                 <td class="text-base"><input class="multi-select" type="checkbox" /></td>
             }
-            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page && Model.GridModel.NestedGrid != null)
+            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page && Model.GridModel._NestedGrids.Any())
             {
                 if (Model.DataSourceType == DataSourceType.FileSystem)
                 {
@@ -73,7 +73,9 @@
                 else if (column.Image != null)
                 {
                     <td @RazorHelper.CellDataAttributes(classes, new Byte[0], column.Style)>
-                        @Html.Raw(column.Image.Img(row[dataColumn] as byte[]))
+                        <div class="border-solid border-2 rounded-sm border-slate-400">
+                            @Html.Raw(column.Image.Img(row[dataColumn] as byte[]))
+                        </div>
                     </td>
                 }
                 else

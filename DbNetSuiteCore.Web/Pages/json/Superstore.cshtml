@@ -9,27 +9,27 @@
 @{
     var columns = new List<GridColumn>
     {
-        new GridColumn("Row ID"){ Filter = true },
-        new GridColumn("Order ID"){ Filter = true },
-        new GridColumn("Order Date"){ Filter = true },
+        new GridColumn("Row ID"){ Filter = FilterType.Default },
+        new GridColumn("Order ID"){ Filter = FilterType.Default },
+        new GridColumn("Order Date"){ Filter = FilterType.Default },
         new GridColumn("Ship Date"),
-        new GridColumn("Ship Mode") { Filter = true, Lookup = new Lookup()},
+        new GridColumn("Ship Mode") { Filter = FilterType.Distinct},
         new GridColumn("Customer ID"),
         new GridColumn("Customer Name"),
-        new GridColumn("Segment"){ Filter = true, Lookup = new Lookup()},
-        new GridColumn("Country"){ Filter = true, Lookup = new Lookup()},
-        new GridColumn("City"){ Filter = true, Lookup = new Lookup()},
-        new GridColumn("State"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Segment"){ Filter = FilterType.Distinct},
+        new GridColumn("Country"){ Filter = FilterType.Distinct},
+        new GridColumn("City"){ Filter = FilterType.Distinct},
+        new GridColumn("State"){ Filter = FilterType.Distinct},
         new GridColumn("Postal Code"),
-        new GridColumn("Region"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Region"){ Filter = FilterType.Distinct},
         new GridColumn("Product ID"),
-        new GridColumn("Category"){ Filter = true, Lookup = new Lookup()},
-        new GridColumn("Sub-Category"){ Filter = true, Lookup = new Lookup()},
+        new GridColumn("Category"){ Filter = FilterType.Distinct},
+        new GridColumn("Sub-Category"){ Filter = FilterType.Distinct},
         new GridColumn("Product Name"),
-        new GridColumn("Sales") { Format = "c",Filter = true},
-        new GridColumn("Quantity") { Filter = true},
-        new GridColumn("Discount") { Format = "p", Filter = true},
-        new GridColumn("Profit") { Format = "c", Filter = true}
+        new GridColumn("Sales") { Format = "c",Filter = FilterType.Default},
+        new GridColumn("Quantity") { Filter = FilterType.Default},
+        new GridColumn("Discount") { Format = "p", Filter = FilterType.Default},
+        new GridColumn("Profit") { Format = "c", Filter = FilterType.Default}
     };
 
     var port = Request.Query["port"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["port"];

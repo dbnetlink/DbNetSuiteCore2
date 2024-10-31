@@ -15,32 +15,25 @@
     {
         Columns = new List<GridColumn>()
         {
-            new GridColumn("film_id") {ForeignKey = true},
+            new GridColumn("film_id") {ForeignKey = true, DataOnly = true},
             new GridColumn("actor_id","Actor") {Lookup = new Lookup("actor","actor_id","last_name")}
         },
-        PageSize = 10
+        ToolbarPosition = ToolbarPosition.Hidden,
     };
 
     var categoryGrid = new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "film_category")
     {
         Columns = new List<GridColumn>()
         {
-            new GridColumn("film_id") {ForeignKey = true},
+            new GridColumn("film_id") {ForeignKey = true, DataOnly = true},
             new GridColumn("category_id","Category") {Lookup = new Lookup("category","category_id","name")}
         },
-                PageSize = 10
+                ToolbarPosition = ToolbarPosition.Hidden,
     };
 
-    filmGrid.LinkedGrid = actorsGrid;
-    filmGrid.LinkedGrid = categoryGrid;
+    filmGrid.NestedGrid = actorsGrid;
+    filmGrid.NestedGrid = categoryGrid;
 
-    <div>
-        <div>
-            <div> @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmGrid))</div>
-        </div>
-        <div style=display:flex;flex-direction: row;">
-            <div> @(await new DbNetSuiteCore.GridControl(HttpContext).Render(actorsGrid))</div>
-            <div> @(await new DbNetSuiteCore.GridControl(HttpContext).Render(categoryGrid))</div>
-        </div>
-    </div>
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmGrid))
+
 }

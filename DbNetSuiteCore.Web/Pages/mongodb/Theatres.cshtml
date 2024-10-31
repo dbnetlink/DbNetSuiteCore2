@@ -14,7 +14,7 @@
         new GridColumn("location.address.zipcode")
     };
 
-    theatresGrid.Columns.ToList().ForEach(c => c.Filter = true);
+    theatresGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
 
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(theatresGrid))

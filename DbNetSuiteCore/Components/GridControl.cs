@@ -17,8 +17,9 @@ namespace DbNetSuiteCore
         {
             if (gridModel.DataSourceType == DataSourceType.FileSystem)
             {
-                gridModel.NestedGrid = gridModel.DeepCopy();
+                gridModel._NestedGrids.Add(gridModel.DeepCopy());
             }
+
             var viewRenderService = _httpContext.RequestServices.GetService<RazorViewToStringRenderer>();
             return new HtmlString(await viewRenderService!.RenderViewToStringAsync("Grid/ControlForm", gridModel));
         }

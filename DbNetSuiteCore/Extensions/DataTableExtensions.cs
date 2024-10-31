@@ -88,7 +88,7 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
-            if (gridModel.Columns.Any(c => c.Filter))
+            if (gridModel.FilterColumns.Any())
             {
                 List<string> columnFilterPart = new List<string>();
                 for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
@@ -98,7 +98,7 @@ namespace DbNetSuiteCore.Extensions
                         continue;
                     }
 
-                    var column = gridModel.Columns.Where(c => c.Filter).Skip(i).First();
+                    var column = gridModel.Columns.Where(c => c.Filter != Enums.FilterType.None).Skip(i).First();
 
                     var columnFilter = GridModelExtensions.ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
 

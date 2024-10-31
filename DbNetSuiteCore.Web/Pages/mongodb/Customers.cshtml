@@ -22,6 +22,6 @@
         new GridColumn("Fax")
     };
 
-    customersGrid.Columns.ToList().ForEach(c => c.Filter = true);
+    customersGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
 }

@@ -77,7 +77,9 @@ class GridControl {
         }
         this.gridControlElements("tr.column-filter-refresh select").forEach((select) => {
             let filter = this.gridControlElement(`thead select[data-key="${select.dataset.key}"]`);
-            filter.innerHTML = select.innerHTML;
+            if (filter) {
+                filter.innerHTML = select.innerHTML;
+            }
         });
         this.gridControlElements("thead input[data-key]").forEach((input) => {
             input.title = "";
@@ -425,6 +427,25 @@ class GridControl {
     buttonSelector(buttonType) {
         return `button[button-type="${buttonType}"]`;
     }
+    getButton(name) {
+        return this.gridControlElement(this.buttonSelector(name));
+    }
+    triggerName(evt) {
+        var _a;
+        return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
+    }
+    selectedValues() {
+        let selectedValues = [];
+        this.gridControlElements(this.multiRowSelectSelector()).forEach((checkbox) => {
+            if (checkbox.checked) {
+                let tr = checkbox.closest("tr");
+                if (tr.dataset.id) {
+                    selectedValues.push(tr.dataset.id);
+                }
+            }
+        });
+        return selectedValues;
+    }
     columnCells(columnName) {
         let th = this.heading(columnName);
         return this.gridControlElements(`td:nth-child(${(th.cellIndex + 1)})`);
@@ -446,24 +467,5 @@ class GridControl {
         }
         let cell = this.columnCell(columnName, row);
         return cell ? cell.dataset.value : null;
-    }
-    getButton(name) {
-        return this.gridControlElement(this.buttonSelector(name));
-    }
-    triggerName(evt) {
-        var _a;
-        return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
-    }
-    selectedValues() {
-        let selectedValues = [];
-        this.gridControlElements(this.multiRowSelectSelector()).forEach((checkbox) => {
-            if (checkbox.checked) {
-                let tr = checkbox.closest("tr");
-                if (tr.dataset.id) {
-                    selectedValues.push(tr.dataset.id);
-                }
-            }
-        });
-        return selectedValues;
     }
 }

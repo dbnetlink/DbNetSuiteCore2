@@ -194,7 +194,7 @@ namespace DbNetSuiteCore.Extensions
 
         private static List<string> ColumnFilterParts(this GridModel gridModel, CommandConfig query, bool havingFilter = false)
         {
-            if (gridModel.Columns.Any(c => c.Filter) == false)
+            if (gridModel.FilterColumns.Any() == false)
             {
                 return new List<string>();
             }
@@ -206,7 +206,7 @@ namespace DbNetSuiteCore.Extensions
                     continue;
                 }
 
-                var column = gridModel.Columns.Where(c => c.Filter).Skip(i).First();
+                var column = gridModel.Columns.Where(c => c.Filter != FilterType.None).Skip(i).First();
                 if (column.Aggregate == AggregateType.None == havingFilter)
                 {
                     continue;

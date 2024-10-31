@@ -2,6 +2,7 @@
 {
     public enum GridClientEvent
     {
+        Initialised,
         PageLoaded,
         RowSelected,
         CellTransform,

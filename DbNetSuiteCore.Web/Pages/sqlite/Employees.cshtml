@@ -16,15 +16,15 @@
         new GridColumn("BirthDate"),
         new GridColumn("HireDate"),
         new GridColumn("Address"),
-        new GridColumn("City") { Lookup = new Lookup(), Filter = true},
-        new GridColumn("Region") { Lookup = new Lookup(), Filter = true},
+        new GridColumn("City") { Filter = FilterType.Distinct},
+        new GridColumn("Region") { Filter = FilterType.Distinct},
         new GridColumn("PostalCode"),
-        new GridColumn("Country") { Lookup = new Lookup(), Filter = true},
+        new GridColumn("Country") { Filter = FilterType.Distinct},
         new GridColumn("HomePhone"),
         new GridColumn("Extension"),
         new GridColumn("Photo") { Image = new Image(ImageType.Jpeg, 50)},
         new GridColumn("Notes"),
-        new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = true}
+        new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = FilterType.Default}
     };
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid))
 }
