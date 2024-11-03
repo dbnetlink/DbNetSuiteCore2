@@ -12,6 +12,7 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
+using DocumentFormat.OpenXml.InkML;
 
 namespace DbNetSuiteCore.Services
 {
@@ -177,16 +178,18 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.Columns.Any() == false)
             {
+                /*
                 switch (gridModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        gridModel.Columns = schema.Rows.Cast<DataRow>().Where(r => (bool)r["IsHidden"] == false).Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
+                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
                         break;
                     default:
                         gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                         break;
                 }
-                
+                */
+                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                 gridModel.QualifyColumnExpressions();
             }
             else
@@ -539,7 +542,7 @@ namespace DbNetSuiteCore.Services
             try
             {
                 var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
-                GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
+                GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(model) ?? new GridModel();
                 gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();

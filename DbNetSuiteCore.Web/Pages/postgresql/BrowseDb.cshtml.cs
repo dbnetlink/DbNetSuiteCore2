@@ -1,7 +1,6 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using DbNetSuiteCore.Web.ViewModels;
-using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Web.Pages.mssql
 {
@@ -11,7 +10,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public PostgreSqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.PostgreSql;
-            Connections = Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("port=5432")).Select(c => c.Key).ToList();
+            Connections = new List<string>{ "sakila(postgresql)", "Northwind(postgresql)" };
         }
     }
 }

@@ -20,8 +20,7 @@ namespace DbNetSuiteCore.Helpers
         }
         public static string ObfuscateString(string input)
         {
-       //     return Compress(input);
-            byte[] bytes = Encoding.ASCII.GetBytes(input);
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
             for (int i = 0; i < bytes.Length; i++)
             {
                 bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA
@@ -31,13 +30,12 @@ namespace DbNetSuiteCore.Helpers
 
         public static string DeobfuscateString(string input)
         {
-     //       return Decompress(input);
             byte[] bytes = Convert.FromBase64String(input);
             for (int i = 0; i < bytes.Length; i++)
             {
                 bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA again to reverse
             }
-            return Encoding.ASCII.GetString(bytes);
+            return Encoding.UTF8.GetString(bytes);
         }
 
         public static string DelimitColumn(string columnName, DataSourceType dataSourceType)

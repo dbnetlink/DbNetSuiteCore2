@@ -1,7 +1,6 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
-@using DbNetSuiteCore.Web.Enums
 
 @{
 	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
@@ -24,8 +23,7 @@
 }
 <script>
 	function highlightGridLowStock(gridControl, args) {
-		highlightLowStock(gridControl, args.row);
-		highlightDiscontinued(gridControl, args.row);
+		highlightLowStock(gridControl, args.row)
     }
 
 	function highlightViewLowStock(gridControl, args) {
@@ -49,18 +47,6 @@
 			reorderLevelCell.style.backgroundColor = "#CD6155"
 			reorderLevelCell.style.color = "#F2D7D5";
 		}
-	}
-
-	function highlightDiscontinued(gridControl, row) {
-	
-		if (gridControl.columnValue("Discontinued", row) == "False") {
-			return
-		}
-
-		console.log(gridControl.columnValue("Discontinued", row))
-
-		row.style.backgroundColor = "whitesmoke";
-		row.style.color = "gainsboro";
 	}
 </script>
 

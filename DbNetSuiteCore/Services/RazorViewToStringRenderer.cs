@@ -10,16 +10,16 @@ public class RazorViewToStringRenderer
 {
     private readonly IRazorViewEngine _razorViewEngine;
     private readonly ITempDataProvider _tempDataProvider;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IServiceProvider _serviceProvider;
 
     public RazorViewToStringRenderer(
         IRazorViewEngine razorViewEngine,
         ITempDataProvider tempDataProvider,
-        IServiceScopeFactory serviceScopeFactory)
+        IServiceProvider serviceProvider)
     {
         _razorViewEngine = razorViewEngine;
         _tempDataProvider = tempDataProvider;
-        _serviceScopeFactory = serviceScopeFactory;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model, bool isMainPage = false)
@@ -74,7 +74,7 @@ public class RazorViewToStringRenderer
 
     private ActionContext GetActionContext()
     {
-        var httpContext = new DefaultHttpContext { ServiceScopeFactory = _serviceScopeFactory };
+        var httpContext = new DefaultHttpContext { RequestServices = _serviceProvider };
         return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
     }
 }

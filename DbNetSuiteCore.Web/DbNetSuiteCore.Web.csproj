@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <Content Remove="appsettings.json" />
-    <Content Remove="Pages\mongodb\BrowseDb.cshtml" />
     <Content Remove="Pages\mssql\BrowseDb.cshtml" />
     <Content Remove="Pages\mysql\BrowseDb.cshtml" />
     <Content Remove="Pages\postgresql\BrowseDb.cshtml" />
@@ -26,7 +25,6 @@
 
   <ItemGroup>
     <None Include="appsettings.json" />
-    <None Include="Pages\mongodb\BrowseDb.cshtml" />
     <None Include="Pages\mssql\BrowseDb.cshtml" />
     <None Include="Pages\mysql\BrowseDb.cshtml" />
     <None Include="Pages\postgresql\BrowseDb.cshtml" />

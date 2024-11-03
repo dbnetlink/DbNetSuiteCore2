@@ -1,7 +1,13 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using DbNetSuiteCore.Helpers;
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
+using System.Data;
+using System.Text.RegularExpressions;
+using DbNetSuiteCore.Repositories;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DbNetSuiteCore.Extensions;
 
 namespace DbNetSuiteCore.Web.ViewModels
 {
@@ -9,14 +15,10 @@ namespace DbNetSuiteCore.Web.ViewModels
     {
         public DataSourceType DataSourceType { get; set; }
         public List<string> Tables { get; set; } = new List<string>();
-        public List<string> Databases { get; set; } = new List<string>();
-
         public List<string> Connections { get; set; } = new List<string>();
 
         [BindProperty]
         public string TableName { get; set; } = string.Empty;
-        [BindProperty]
-        public string DatabaseName { get; set; } = string.Empty;
         [BindProperty]
         public string ConnectionAlias { get; set; } = string.Empty;
 
@@ -29,27 +31,12 @@ namespace DbNetSuiteCore.Web.ViewModels
         }
         public void OnGet()
         {
-            LoadDatabases();
             LoadTables();
         }
 
         public void OnPost()
         {
-            LoadDatabases();
             LoadTables();
-        }
-
-        public void LoadDatabases()
-        {
-            if (string.IsNullOrEmpty(ConnectionAlias))
-            {
-                return;
-            }
-
-            if (DataSourceType == DataSourceType.MongoDB)
-            {
-                Databases = DbHelper.GetDatabases(ConnectionAlias, configuration);
-            }
         }
 
         public void LoadTables()
@@ -58,18 +45,28 @@ namespace DbNetSuiteCore.Web.ViewModels
             {
                 return;
             }
+            var connection = GetConnection();
 
-            if (DataSourceType == DataSourceType.MongoDB)
+            if (connection == null)
             {
-                if (string.IsNullOrEmpty(DatabaseName))
-                {
-                    return;
-                }
-                Tables = DbHelper.GetTables(ConnectionAlias, configuration, DatabaseName);
+                return;
             }
-            else
+            connection.Open();
+
+            switch(DataSourceType)
             {
-                Tables = DbHelper.GetTables(ConnectionAlias, DataSourceType, configuration, env);
+                case DataSourceType.MSSQL:
+                    LoadMSSQLTables(connection as SqlConnection);
+                    break;
+                case DataSourceType.SQLite:
+                    LoadSqliteTables(connection as SqliteConnection);
+                    break;
+                case DataSourceType.PostgreSql:
+                    LoadPostreSqlTables(connection);
+                    break;
+                case DataSourceType.MySql:
+                    LoadMySqlTables(connection);
+                    break;
             }
 
             if (string.IsNullOrEmpty(TableName) == false && TableName != "All")
@@ -78,6 +75,62 @@ namespace DbNetSuiteCore.Web.ViewModels
                 {
                     TableName = string.Empty;
                 }
+            }
+            connection.Close();
+        }
+
+
+        private void LoadMSSQLTables(SqlConnection connection)
+        {
+            var schemaTable = connection.GetSchema("Tables").Select(string.Empty, "TABLE_SCHEMA,TABLE_NAME").CopyToDataTable();
+
+            foreach (DataRow dataRow in schemaTable.Rows)
+            {
+                Tables.Add($"{dataRow[1]}.[{dataRow[2]}]");
+            }
+        }
+        private void LoadSqliteTables(SqliteConnection connection)
+        {
+            LoadSchemaTables("SELECT name FROM sqlite_master WHERE type in ('table','view') order by 1", connection);
+            Tables = Tables.Select(t => GridModelExtensions.QualifyExpression(t, DataSourceType.SQLite)).ToList();
+        }
+
+        private void LoadPostreSqlTables(IDbConnection connection)
+        {
+            LoadSchemaTables("SELECT table_schema || '.' || table_name AS name  FROM information_schema.tables where table_schema = 'public' order by 1", connection);
+        }
+
+        private void LoadMySqlTables(IDbConnection connection)
+        {
+            LoadSchemaTables("SELECT CONCAT(`table_schema`,'.',`table_name`) AS name  FROM information_schema.tables where table_schema in ('northwind','sakila') order by 1", connection);
+        }
+
+        private void LoadSchemaTables(string sql, IDbConnection connection)
+        {
+            var command = DbRepository.ConfigureCommand(sql, connection);
+
+            DataTable schemaTable = new DataTable();
+            schemaTable.Load(command.ExecuteReader(CommandBehavior.Default));
+
+            foreach (DataRow dataRow in schemaTable.Rows)
+            {
+                Tables.Add($"{dataRow[0]}");
+            }
+        }
+
+        private IDbConnection GetConnection()
+        {
+            string? connectionString = configuration.GetConnectionString(ConnectionAlias);
+            switch (DataSourceType)
+            {
+                default:
+                    return new SqlConnection(connectionString);
+                case DataSourceType.SQLite:
+                    connectionString = DbRepository.MapDatabasePath(connectionString, env);
+                    return new SqliteConnection(connectionString);
+                case DataSourceType.PostgreSql:
+                case DataSourceType.MySql:
+                    return DbRepository.GetCustomDbConnection(DataSourceType, connectionString);
             }
         }
     }
