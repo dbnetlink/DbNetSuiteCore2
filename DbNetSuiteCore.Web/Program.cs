@@ -6,6 +6,10 @@ builder.Configuration.AddJsonFile("appsettings.Development.json");
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
 
 builder.Services.AddRazorPages();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 
 var app = builder.Build();
 
@@ -30,7 +34,7 @@ app.MapGet("/superstore", () =>
 
 
 app.UseRouting();
-
+app.UseResponseCompression();
 app.UseAuthorization();
 app.MapRazorPages();
 

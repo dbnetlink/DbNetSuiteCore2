@@ -8,13 +8,13 @@
 
     var columns = new List<GridColumn>() {
         new GridColumn("OrderID") {Filter = FilterType.Default },
-        new GridColumn("CustomerID") {Filter = FilterType.Default, Lookup = new Lookup("Customers", "CustomerID", "CompanyName")},
-        new GridColumn("EmployeeID") {Filter = FilterType.Default, Lookup = new Lookup("Employees", "EmployeeID", "LastName + ',' + FirstName")},
-        new GridColumn("OrderDate", "Ordered") {Filter = FilterType.Default},
+        new GridColumn("CustomerID", "Customer") {Filter = FilterType.Default, Lookup = new Lookup("Customers", "CustomerID", "CompanyName")},
+        new GridColumn("EmployeeID", "Employee") {Filter = FilterType.Default, Lookup = new Lookup("Employees", "EmployeeID", "LastName || ', ' || FirstName")},
+        new GridColumn("OrderDate", "Ordered") {Filter = FilterType.Default, InitialSortOrder = SortOrder.Desc},
         new GridColumn("RequiredDate", "Required") {Filter = FilterType.Default},
         new GridColumn("ShippedDate", "Shipped"),
         new GridColumn("ShipVia") {Filter = FilterType.Default, Lookup = new Lookup("Shippers", "ShipperID", "CompanyName")},
-        new GridColumn("Freight"),
+        new GridColumn("Freight") {Format = "c"},
         new GridColumn("ShipName"),
         new GridColumn("ShipAddress"),
         new GridColumn("ShipCity") {Filter = FilterType.Distinct},
@@ -23,7 +23,7 @@
         new GridColumn("ShipCountry") {Filter = FilterType.Distinct}
     };
 
-    var ordersGrid = new GridModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Orders");
+    var ordersGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Orders");
     ordersGrid.Columns = columns;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
 }

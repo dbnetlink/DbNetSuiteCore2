@@ -1,6 +1,7 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using DbNetSuiteCore.Web.ViewModels;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Web.Pages.sqlite
 {
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Web.Pages.sqlite
         public SqLiteBrowseModel(IConfiguration configuration, IWebHostEnvironment env) : base(configuration, env)
         {
             DataSourceType = DataSourceType.SQLite;
-            Connections = new List<string> { "Sakila(sqlite)", "Chinook(sqlite)", "Northwind(sqlite)", "Euro(sqlite)" };
+            Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("cache=shared")).Select(c => c.Key).ToList();
         }
     }
 }

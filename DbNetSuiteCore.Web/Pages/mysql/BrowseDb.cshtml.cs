@@ -1,6 +1,7 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using DbNetSuiteCore.Web.ViewModels;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Web.Pages.mssql
 {
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public MySqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.MySql;
-            Connections = new List<string>{ "northwind(mysql)", "northwind2(mysql)" };
+            Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("port=3306")).Select(c => c.Key).ToList();
         }
     }
 }

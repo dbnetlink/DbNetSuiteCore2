@@ -22,7 +22,7 @@
     invoiceGrid.PageSize = 100;
 
    // invoiceGrid.FixedFilter = "InvoiceDate >= @EarliestDate";
-  //  invoiceGrid.FixedFilterParameters = new List<DbParameter>() { new DbParameter("@EarliestDate", DateTime.Today.AddDays(-60))};
+   // invoiceGrid.FixedFilterParameters = new List<DbParameter>() { new DbParameter("@EarliestDate", DateTime.Today.AddDays(-60))};
 
     invoiceGrid.HeadingMode = HeadingMode.Frozen;
     invoiceGrid.ClientEvents[GridClientEvent.SelectedRowsUpdated] = "showSelectedRows";

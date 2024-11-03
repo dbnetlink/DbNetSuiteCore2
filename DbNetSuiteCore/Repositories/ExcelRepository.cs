@@ -71,7 +71,7 @@ namespace DbNetSuiteCore.Repositories
                     string columns = gridModel.Columns.Any() ? String.Join(",", gridModel.Columns.Select(c => c.Expression)) : "*";
 
                     OleDbCommand command = new OleDbCommand(query.Sql, connection);
-                    DbRepository.AddCommandParameters(command, query.Params);
+                    DbHelper.AddCommandParameters(command, query.Params);
                     dataTable.Load(await command.ExecuteReaderAsync());
                     connection.Close();
                 }

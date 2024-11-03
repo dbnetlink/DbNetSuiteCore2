@@ -20,7 +20,7 @@
     var invoiceColumns = new List<GridColumn>
     {
         new GridColumn("invoiceid", "Invoice ID") {PrimaryKey = true },
-        new GridColumn("customerid", "Customer ID") {ForeignKey = true },
+        new GridColumn("customerid", "Customer ID") {ForeignKey = true, DataOnly = true },
         new GridColumn("invoicedate", "Date"),
         new GridColumn("billingaddress", "Address"),
         new GridColumn("billingcity", "City"),
@@ -31,10 +31,10 @@
 
     var invoiceItemColumns = new List<GridColumn>
     {
-        new GridColumn("invoicelineid", "Invoice Line ID"),
-        new GridColumn("invoiceid", "Invoice ID") {ForeignKey = true },
-        new GridColumn("trackid", "Track ID"),
-        new GridColumn("unitprice", "Price"),
+        new GridColumn("invoicelineid", "Line ID"),
+        new GridColumn("invoiceid", "Invoice ID") {ForeignKey = true, DataOnly = true },
+        new GridColumn("trackid", "Track") { Lookup = new Lookup("tracks","trackid","name")},
+        new GridColumn("unitprice", "Price") { Format = "c"},
         new GridColumn("quantity", "Qty"),
     };
 

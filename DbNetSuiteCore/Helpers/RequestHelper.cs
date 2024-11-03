@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using DbNetSuiteCore.Constants;
-using DocumentFormat.OpenXml.InkML;
+﻿using DbNetSuiteCore.Constants;
 using System.Text;
 
 namespace DbNetSuiteCore.Helpers

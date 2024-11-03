@@ -1,6 +1,7 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using DbNetSuiteCore.Web.ViewModels;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Web.Pages.mssql
 {
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public MsSqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.MSSQL;
-            Connections = new List<string>{ "AdventureWorks(mssql)", "Northwind(mssql)" };
+            Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("trusted_connection=true")).Select(c => c.Key).ToList();
         }
     }
 }

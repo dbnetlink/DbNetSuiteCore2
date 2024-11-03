@@ -8,6 +8,7 @@ using System.Text.Json;
 using DbNetSuiteCore.Helpers;
 using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Office2010.Word;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -51,7 +52,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
                 }
-                query.Params[DbRepository.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
+                query.Params[DbHelper.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
             }
         }
 
@@ -218,6 +219,16 @@ namespace DbNetSuiteCore.Extensions
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
                     object? paramValue = ParamValue(columnFilter.Value.Value, column, gridModel);
+
+                    if (paramValue is DateTime && gridModel.DataSourceType == DataSourceType.MSSQL)
+                    {
+                        int year = ((DateTime)paramValue).Year;
+                        if ( year < 1753 || year > 9999 )
+                        {
+                            column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
+                            continue;
+                        }
+                    }
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
                         column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
@@ -235,7 +246,7 @@ namespace DbNetSuiteCore.Extensions
                 }
                 else
                 {
-                    column.FilterError = "Invalid filter value for column data type";
+                    column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
                 }
             }
 
@@ -278,47 +289,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static void QualifyColumnExpressions(this GridModel gridModel)
         {
-            gridModel.Columns.ToList().ForEach(c => c.Expression = QualifyExpression(c.Expression, gridModel.DataSourceType));
-        }
-        public static string QualifyExpression(string expression, DataSourceType dataSourceType, bool userDefined = false)
-        {
-            if (QualifyTemplate(dataSourceType) == "@")
-            {
-                return expression;
-            }
-
-            if (expression.Substring(0, 1) == QualifyTemplate(dataSourceType).Substring(0, 1))
-            {
-                return expression;
-            }
-
-            if (expression.Substring(0, 1) == QualifyTemplate(dataSourceType).Substring(0, 1))
-            {
-                return expression;
-            }
-
-            if (userDefined && TextHelper.IsAlphaNumeric(expression))
-            {
-                return expression;
-            }
-
-            return QualifyTemplate(dataSourceType).Replace("@", expression);
-        }
-
-        public static string QualifyTemplate(DataSourceType dataSourceType)
-        {
-            switch (dataSourceType)
-            {
-                case DataSourceType.MSSQL:
-                case DataSourceType.Excel:
-                case DataSourceType.SQLite:
-                    return $"[@]";
-                case DataSourceType.MySql:
-                    return $"`@`";
-                case DataSourceType.PostgreSql:
-                    return $"\"@\"";
-            }
-            return "@";
+            gridModel.Columns.ToList().ForEach(c => c.Expression = DbHelper.QualifyExpression(c.Expression, gridModel.DataSourceType));
         }
 
         private static string AggregateExpression(GridColumn c)
