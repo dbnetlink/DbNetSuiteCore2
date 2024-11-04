@@ -1,9 +1,10 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
 
 @{
-	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
+	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog = new ViewDialog() { LayoutColumns = 2 } };
 	productsGrid.Columns = new List<GridColumn>() {
 		new GridColumn("ProductID") { PrimaryKey = true },
 		new GridColumn("ProductName"),
@@ -14,7 +15,7 @@
 		new GridColumn("UnitsInStock", "Stock"),
 		new GridColumn("UnitsOnOrder","On Order"),
 		new GridColumn("ReorderLevel"),
-		new GridColumn("Discontinued") { DataType = typeof(Boolean)}
+		new GridColumn("Discontinued") { DataType = typeof(Boolean), Filter = FilterType.Default, LookupEnum = typeof(DiscontinuedEnum)}
 	};
 	productsGrid.Bind(GridClientEvent.RowTransform, "highlightGridLowStock");
 	productsGrid.Bind(GridClientEvent.ViewDialogUpdated, "highlightViewLowStock");
@@ -23,8 +24,9 @@
 }
 <script>
 	function highlightGridLowStock(gridControl, args) {
-		highlightLowStock(gridControl, args.row)
-    }
+		highlightLowStock(gridControl, args.row);
+		highlightDiscontinued(gridControl, args.row);
+	}
 
 	function highlightViewLowStock(gridControl, args) {
 		highlightLowStock(args.viewDialog)
@@ -48,5 +50,16 @@
 			reorderLevelCell.style.color = "#F2D7D5";
 		}
 	}
-</script>
 
+	function highlightDiscontinued(gridControl, row) {
+
+		if (gridControl.columnValue("Discontinued", row) == "Active") {
+			return
+		}
+
+		console.log(gridControl.columnValue("Discontinued", row))
+
+		row.style.backgroundColor = "whitesmoke";
+		row.style.color = "gainsboro";
+	}
+</script>

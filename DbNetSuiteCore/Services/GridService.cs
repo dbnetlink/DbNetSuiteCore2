@@ -12,7 +12,6 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
-using DocumentFormat.OpenXml.InkML;
 
 namespace DbNetSuiteCore.Services
 {
@@ -28,7 +27,7 @@ namespace DbNetSuiteCore.Services
         private readonly IExcelRepository _excelRepository;
         private readonly IMongoDbRepository _mongoDbRepository;
         private HttpContext? _context = null;
-        
+
         public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository)
         {
             _msSqlRepository = msSqlRepository;
@@ -133,7 +132,7 @@ namespace DbNetSuiteCore.Services
 
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
 
-            var gridViewModel =  new GridViewModel(gridModel);
+            var gridViewModel = new GridViewModel(gridModel);
 
             if (gridModel.DiagnosticsMode)
             {
@@ -178,18 +177,16 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.Columns.Any() == false)
             {
-                /*
                 switch (gridModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        gridModel.Columns = schema.Rows.Cast<DataRow>().Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
+                        gridModel.Columns = schema.Rows.Cast<DataRow>().Where(r => (bool)r["IsHidden"] == false).Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
                         break;
                     default:
                         gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
                         break;
                 }
-                */
-                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
+
                 gridModel.QualifyColumnExpressions();
             }
             else
@@ -542,7 +539,7 @@ namespace DbNetSuiteCore.Services
             try
             {
                 var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
-                GridModel gridModel = System.Text.Json.JsonSerializer.Deserialize<GridModel>(model) ?? new GridModel();
+                GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
                 gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();

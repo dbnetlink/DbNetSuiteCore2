@@ -56,7 +56,7 @@
                     continue;
                 }
 
-                if (column.DataType == typeof(Boolean))
+                if (column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
                 {
                     classes.Add("text-center");
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));

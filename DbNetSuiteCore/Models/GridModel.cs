@@ -12,10 +12,14 @@ namespace DbNetSuiteCore.Models
         private RowSelection _RowSelection = RowSelection.Single;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
-        public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
-        public IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
-        public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
-        internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
+		[JsonIgnore]
+		public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
+		[JsonIgnore]
+		public IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
+		[JsonIgnore]
+		public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
+		[JsonIgnore]
+		internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
         public int CurrentPage { get; set; } = 1;
         internal string SearchInput { get; set; } = string.Empty;
         internal string SortKey  
