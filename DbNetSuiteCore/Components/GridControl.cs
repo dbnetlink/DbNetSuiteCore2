@@ -5,12 +5,10 @@ using Newtonsoft.Json;
 
 namespace DbNetSuiteCore
 {
-    public class GridControl
+    public class GridControl : ComponentControl
     {
-        private readonly HttpContext _httpContext;
-        public GridControl(HttpContext httpContext) 
+        public GridControl(HttpContext httpContext) : base(httpContext)
         {
-            _httpContext = httpContext;
         }
 
         public async Task<HtmlString> Render(GridModel gridModel)
@@ -20,8 +18,7 @@ namespace DbNetSuiteCore
                 gridModel._NestedGrids.Add(gridModel.DeepCopy());
             }
 
-            var viewRenderService = _httpContext.RequestServices.GetService<RazorViewToStringRenderer>();
-            return new HtmlString(await viewRenderService!.RenderViewToStringAsync("Grid/ControlForm", gridModel));
+            return await base.RenderView("Grid/ControlForm", gridModel);
         }
     }
     public static class ExtensionMethods

@@ -21,13 +21,16 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(GridModel gridModel, HttpContext httpContext)
+        public async Task GetRecords(ComponentModel componentModel, HttpContext httpContext)
         {
-            var dataTable = gridModel.Data.Columns.Count > 0 ? gridModel.Data : await BuildDataTable(gridModel, httpContext);
-            dataTable.FilterAndSort(gridModel);
-            gridModel.ConvertEnumLookups();
-            gridModel.GetDistinctLookups();
-
+            var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : await BuildDataTable(componentModel, httpContext);
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+                dataTable.FilterAndSort(gridModel);
+                gridModel.ConvertEnumLookups();
+                gridModel.GetDistinctLookups();
+            }
         }
 
         public async Task GetRecord(GridModel gridModel, HttpContext httpContext)
@@ -43,42 +46,48 @@ namespace DbNetSuiteCore.Repositories
             return gridModel.Data;
         }
 
-        private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext httpContext)
         {
-            if (gridModel.Cache && _memoryCache.TryGetValue(gridModel.Id, out DataTable dataTable))
+            componentModel.Data = await BuildDataTable(componentModel, httpContext);
+            return componentModel.Data;
+        }
+
+        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext httpContext)
+        {
+            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable dataTable))
             {
                 return dataTable;
             }
             else
             {
-                dataTable = await JsonToDataTable(gridModel, httpContext);
+                dataTable = await JsonToDataTable(componentModel, httpContext);
 
-                if (gridModel.Cache)
+                if (componentModel.Cache)
                 {
-                    _memoryCache.Set(gridModel.Id, dataTable, GetCacheOptions(gridModel));
+                    _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
                 }
 
                 return dataTable;
             }
         }
 
-        private async Task<DataTable> JsonToDataTable(GridModel gridModel, HttpContext httpContext)
+        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext httpContext)
         {
             string json = string.Empty;
 
-            if (string.IsNullOrEmpty(gridModel.Url))
+            if (string.IsNullOrEmpty(componentModel.Url))
             {
-                json = gridModel.JSON;
+                json = componentModel.JSON;
             }
             else
             {
-                if (TextHelper.IsAbsolutePath(gridModel.Url))
+                if (TextHelper.IsAbsolutePath(componentModel.Url))
                 {
-                    json = File.ReadAllText(gridModel.Url);
+                    json = File.ReadAllText(componentModel.Url);
                 }
                 else
                 {
-                    var url = gridModel.Url;
+                    var url = componentModel.Url;
                     if (url.StartsWith("/"))
                     {
                         url = url.Substring(1);
@@ -115,10 +124,9 @@ namespace DbNetSuiteCore.Repositories
                 throw new Exception("Unable to convert JSON to a table. Please ensure root element is an array", ex);
             }
 
-            if (gridModel.Columns.Any())
+            if (componentModel.GetColumns().Any())
             {
-                string[] selectedColumns = gridModel.Columns.Select(c => c.Expression).ToArray();
-
+                string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression).ToArray();
                 dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
             }
 

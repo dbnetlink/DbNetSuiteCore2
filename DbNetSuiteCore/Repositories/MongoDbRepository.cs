@@ -5,9 +5,6 @@ using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Office2013.Excel;
-using Microsoft.IdentityModel.Tokens;
-using DocumentFormat.OpenXml.Office2021.Excel.NamedSheetViews;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -20,16 +17,33 @@ namespace DbNetSuiteCore.Repositories
         {
             _configuration = configuration;
         }
-        public async Task GetRecords(GridModel gridModel)
+        public async Task GetRecords(ComponentModel componentModel)
         {
-            var database = GetDatabase(gridModel);
-            gridModel.Data = await CreateDataTableFromPipeline(database, gridModel);
-            foreach (var gridColumn in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false && c.LookupOptions == null))
+            var database = GetDatabase(componentModel);
+            componentModel.Data = await CreateDataTableFromPipeline(database, componentModel);
+
+            if (componentModel is GridModel)
             {
-                await GetLookupOptions(gridModel, gridColumn, database);
+                var gridModel = (GridModel)componentModel;
+                foreach (var gridColumn in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false && c.LookupOptions == null))
+                {
+                    await GetLookupOptions(gridModel, gridColumn, database);
+                }
+                gridModel.ConvertEnumLookups();
+                gridModel.GetDistinctLookups();
             }
-            gridModel.ConvertEnumLookups();
-            gridModel.GetDistinctLookups();
+        }
+
+        public async Task<DataTable> GetColumns(ComponentModel componentModel)
+        {
+            var database = GetDatabase(componentModel);
+            componentModel.TableName = CheckCollectionName(database, componentModel.TableName);
+            if (componentModel.GetColumns().Any() == false)
+            {
+                AddSchemaColumns(componentModel, database);
+            }
+            componentModel.Data = await CreateDataTableSampleFromPipeline(database, componentModel);
+            return componentModel.Data;
         }
 
         public async Task GetRecord(GridModel gridModel)
@@ -40,42 +54,45 @@ namespace DbNetSuiteCore.Repositories
             gridModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(GridModel gridModel)
+        public void GetRecords(SelectModel selectModel)
         {
-            var database = GetDatabase(gridModel);
-            gridModel.TableName = CheckCollectionName(database, gridModel.TableName);
-            if (gridModel.Columns.Any() == false)
-            {
-                AddSchemaColumns(gridModel, database);
-            }
-            gridModel.Data = await CreateDataTableFromPipeline(database, gridModel);
-            return gridModel.Data;
         }
 
-        private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, GridModel gridModel)
+        private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, ComponentModel componentModel)
         {
-            var collection = database.GetCollection<BsonDocument>(gridModel.TableName);
+            var collection = database.GetCollection<BsonDocument>(componentModel.TableName);
+            var pipeline = new List<BsonDocument>();
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+                pipeline.Add(new BsonDocument("$match", BuildMatchStage(gridModel)));
+                if (string.IsNullOrEmpty(gridModel.SortColumnName) == false)
+                {
+                    pipeline.Add(new BsonDocument("$sort", BuildSortStage(gridModel)));
+                }
+            }
+            pipeline.Add(new BsonDocument("$project", BuildProjectStage(componentModel)));
 
+            if (componentModel.QueryLimit > 0)
+            {
+                pipeline.Add(new BsonDocument("$limit", componentModel.QueryLimit));
+            }
+
+            return await BuildDataTableFromCursor(pipeline, collection, componentModel.GetColumns());
+        }
+
+        private async Task<DataTable> CreateDataTableSampleFromPipeline(IMongoDatabase database, ComponentModel componentModel)
+        {
+            var collection = database.GetCollection<BsonDocument>(componentModel.TableName);
             var pipeline = new List<BsonDocument>
             {
-                new BsonDocument("$match", BuildMatchStage(gridModel))
+                new BsonDocument("$project", BuildProjectStage(componentModel)),
+                new BsonDocument("$limit", 100)
             };
 
-            if (string.IsNullOrEmpty(gridModel.SortColumnName) == false)
-            {
-                pipeline.Add(new BsonDocument("$sort", BuildSortStage(gridModel)));
-            }
-            pipeline.Add(new BsonDocument("$project", BuildProjectStage(gridModel)));
-
-            if (gridModel.QueryLimit > 0)
-            {
-                pipeline.Add(new BsonDocument("$limit", gridModel.QueryLimit));
-            }
-
-            return await BuildDataTableFromCursor(pipeline, collection, gridModel.Columns);
+            return await BuildDataTableFromCursor(pipeline, collection, componentModel.GetColumns());
         }
-
-        private async Task<DataTable> BuildDataTableFromCursor(List<BsonDocument> pipeline, IMongoCollection<BsonDocument> collection, IEnumerable<GridColumn> columns)
+        private async Task<DataTable> BuildDataTableFromCursor(List<BsonDocument> pipeline, IMongoCollection<BsonDocument> collection, IEnumerable<ColumnModel> columns)
         {
             var dataTable = new DataTable();
 
@@ -200,14 +217,14 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public void AddSchemaColumns(GridModel gridModel, IMongoDatabase database)
+        public void AddSchemaColumns(ComponentModel componentModel, IMongoDatabase database)
         {
-            var collection = database.GetCollection<BsonDocument>(gridModel.TableName);
+            var collection = database.GetCollection<BsonDocument>(componentModel.TableName);
 
             var document = collection.Find(new BsonDocument()).FirstOrDefault();
             var schema = new Dictionary<string, string>();
 
-            List<GridColumn> columns = new List<GridColumn>();
+            List<ColumnModel> columns = new List<ColumnModel>();
 
             if (document != null)
             {
@@ -218,31 +235,30 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            gridModel.Columns = columns;
+            componentModel.SetColumns(columns);
         }
 
-        private IMongoDatabase GetDatabase(GridModel gridModel)
+        private IMongoDatabase GetDatabase(ComponentModel componentModel)
         {
-            string connectionString = _configuration.GetConnectionString(gridModel.ConnectionAlias);
+            string connectionString = _configuration.GetConnectionString(componentModel.ConnectionAlias);
 
             if (connectionString == null)
             {
-                connectionString = gridModel.ConnectionAlias;
+                connectionString = componentModel.ConnectionAlias;
             }
 
             var client = new MongoClient(connectionString);
 
             try
             {
-                gridModel.DatabaseName = CheckNameList(client.ListDatabaseNames().ToList(), gridModel.DatabaseName);
+                componentModel.DatabaseName = CheckNameList(client.ListDatabaseNames().ToList(), componentModel.DatabaseName);
             }
             catch (Exception)
             {
-                throw new Exception($"Database => [{gridModel.DatabaseName}] does not exist on this connection");
+                throw new Exception($"Database => [{componentModel.DatabaseName}] does not exist on this connection");
             }
 
-
-            return client.GetDatabase(gridModel.DatabaseName);
+            return client.GetDatabase(componentModel.DatabaseName);
         }
 
         private string CheckCollectionName(IMongoDatabase database, string collectionName)
@@ -450,28 +466,28 @@ namespace DbNetSuiteCore.Repositories
             };
         }
 
-        private BsonDocument BuildProjectStage(GridModel gridModel)
+        private BsonDocument BuildProjectStage(ComponentModel componentModel)
         {
             var project = new BsonDocument();
-            foreach (var gridColumn in gridModel.Columns)
+            foreach (var column in componentModel.GetColumns())
             {
-                if (gridColumn.DataType == typeof(DateTime))
+                if (column.DataType == typeof(DateTime))
                 {
                     //    project.Add(gridColumn.ColumnAlias, new BsonDocument("$toDate", $"${gridColumn.Expression}"));
                     var dateTruncExpression = new BsonDocument
                     {
                         { "$dateTrunc", new BsonDocument
                             {
-                                { "date", new BsonDocument("$toDate", $"${gridColumn.Expression}") },
+                                { "date", new BsonDocument("$toDate", $"${column.Expression}") },
                                 { "unit", "day" }
                             }
                         }
                     };
-                    project.Add(gridColumn.ColumnAlias, dateTruncExpression);
+                    project.Add(column.ColumnAlias, dateTruncExpression);
                 }
                 else
                 {
-                    project.Add(gridColumn.ColumnAlias, $"${gridColumn.Expression}");
+                    project.Add(column.ColumnAlias, $"${column.Expression}");
                 }
             }
             return project;

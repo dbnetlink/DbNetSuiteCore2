@@ -6,25 +6,26 @@ using System.Globalization;
 using System.Data;
 using System.Text.Json;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Math;
-using DocumentFormat.OpenXml.Office2010.Word;
-using DocumentFormat.OpenXml.Bibliography;
 
 namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
-        public static QueryCommandConfig BuildQuery(this GridModel gridModel)
+        public static QueryCommandConfig BuildQuery(this ComponentModel componentModel)
         {
-            string sql = $"select {Top(gridModel)}{AddSelectPart(gridModel)} from {gridModel.TableName}";
+            string sql = $"select {Top(componentModel)}{AddSelectPart(componentModel)} from {componentModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
-            gridModel.AddFilterPart(query);
-            gridModel.AddGroupByPart(query);
-            gridModel.AddHavingPart(query);
-            gridModel.AddOrderPart(query);
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+                gridModel.AddFilterPart(query);
+                gridModel.AddGroupByPart(query);
+                gridModel.AddHavingPart(query);
+                gridModel.AddOrderPart(query);
+            }
 
-            query.Sql = $"{query.Sql}{Limit(gridModel)}";
+            query.Sql = $"{query.Sql}{Limit(componentModel)}";
             return query;
         }
 
@@ -37,10 +38,10 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
-        public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel)
+        public static QueryCommandConfig BuildProcedureCall(this ComponentModel componentModel)
         {
-            QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
-            AssignParameters(query, gridModel.ProcedureParameters);
+            QueryCommandConfig query = new QueryCommandConfig($"{componentModel.ProcedureName}");
+            AssignParameters(query, componentModel.ProcedureParameters);
             return query;
         }
 
@@ -61,21 +62,26 @@ namespace DbNetSuiteCore.Extensions
             return new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
         }
 
-        private static string AddSelectPart(this GridModel gridModel)
+        private static string AddSelectPart(this ComponentModel componentModel)
         {
-            if (gridModel.Columns.Any() == false)
+            if (componentModel.GetColumns().Any() == false)
             {
                 return "*";
             }
 
             List<string> selectPart = new List<string>();
 
-            foreach (var gridColumn in gridModel.Columns)
+            foreach (var column in componentModel.GetColumns())
             {
-                var columnExpression = gridColumn.Expression;
-                if (gridColumn.Aggregate != AggregateType.None)
+                var columnExpression = column.Expression;
+
+                if (column is GridColumn)
                 {
-                    columnExpression = $"{AggregateExpression(gridColumn)} as {gridColumn.ColumnName}";
+                    var gridColumn = (GridColumn)column;
+                    if (gridColumn.Aggregate != AggregateType.None)
+                    {
+                        columnExpression = $"{AggregateExpression(gridColumn)} as {column.ColumnName}";
+                    }
                 }
                 selectPart.Add(columnExpression);
             }
@@ -84,9 +90,8 @@ namespace DbNetSuiteCore.Extensions
 
         private static string GetColumnExpressions(this GridModel gridModel)
         {
-            return gridModel.Columns.Any() ? string.Join(",", gridModel.Columns.Select(x => x.Expression).ToList()) : "*";
+            return ColumnsHelper.GetColumnExpressions(gridModel.Columns.Cast<ColumnModel>());
         }
-
 
         private static void AddFilterPart(this GridModel gridModel, QueryCommandConfig query)
         {
@@ -285,11 +290,6 @@ namespace DbNetSuiteCore.Extensions
                 return string.Empty;
             }
             return $"{gridModel.SortColumnName} {gridModel.SortSequence}";
-        }
-
-        public static void QualifyColumnExpressions(this GridModel gridModel)
-        {
-            gridModel.Columns.ToList().ForEach(c => c.Expression = DbHelper.QualifyExpression(c.Expression, gridModel.DataSourceType));
         }
 
         private static string AggregateExpression(GridColumn c)
@@ -534,44 +534,44 @@ namespace DbNetSuiteCore.Extensions
             return gridModel.DataSourceType == DataSourceType.Excel && gridModel.TableName.ToLower().Replace("]", string.Empty).EndsWith(".csv");
         }
 
-        private static string Top(GridModel gridModel)
+        private static string Top(ComponentModel componentModel)
         {
-            switch (gridModel.DataSourceType)
+            switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
-                    return QueryLimit(gridModel);
+                    return QueryLimit(componentModel);
             }
 
             return string.Empty;
         }
 
-        private static string Limit(GridModel gridModel)
+        private static string Limit(ComponentModel componentModel)
         {
-            switch (gridModel.DataSourceType)
+            switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
                 case DataSourceType.SQLite:
-                    return QueryLimit(gridModel);
+                    return QueryLimit(componentModel);
             }
 
             return string.Empty;
         }
 
-        private static string QueryLimit(GridModel gridModel)
+        private static string QueryLimit(ComponentModel componentModel)
         {
             string limit = string.Empty;
-            if (gridModel.QueryLimit > 0)
+            if (componentModel.QueryLimit > 0)
             {
-                switch (gridModel.DataSourceType)
+                switch (componentModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        limit = $"TOP {gridModel.QueryLimit} ";
+                        limit = $"TOP {componentModel.QueryLimit} ";
                         break;
                     case DataSourceType.MySql:
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
-                        limit = $" LIMIT {gridModel.QueryLimit}";
+                        limit = $" LIMIT {componentModel.QueryLimit}";
                         break;
                 }
             }

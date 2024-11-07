@@ -49,14 +49,14 @@
 
     var invoiceGridModel = new GridModel("Invoices");
     invoiceGridModel.Columns = invoiceColumns;
-    invoiceGridModel.LinkedGrid = invoiceLineGridModel;
+    invoiceGridModel.LinkedControl = invoiceLineGridModel;
     invoiceGridModel.Caption = "Invoices";
     invoiceGridModel.PageSize = 5;
    // invoiceGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
     var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
     customerGridModel.Columns = customerColumns;
-    customerGridModel.LinkedGrid = invoiceGridModel;
+    customerGridModel.LinkedControl = invoiceGridModel;
     customerGridModel.PageSize = 5;
 }
 

@@ -30,7 +30,6 @@ namespace DbNetSuiteCore.Models
         }
         public string FilterError { get; set; } = string.Empty;
         public string Style { get; set; } = string.Empty;
-        public bool DataOnly { get; set; } = false;
         public Image? Image { get; set; }
 
         [Description("Apply reglular expression to value before displaying")]
@@ -40,19 +39,19 @@ namespace DbNetSuiteCore.Models
         public GridColumn()
         {
         }
+        public GridColumn(string name) : base(name, TextHelper.GenerateLabel(name))
+        {
+        }
+
         public GridColumn(string expression, string label) : base(expression, label)
         {
         }
 
-        public GridColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
+        internal GridColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
         {
         }
         
-        public GridColumn(DataRow dataRow) : base(dataRow)
-        {
-        }
-
-        public GridColumn(string name) : base(name, TextHelper.GenerateLabel(name))
+        internal GridColumn(DataRow dataRow) : base(dataRow)
         {
         }
     }

@@ -1,0 +1,24 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main>
+@{
+            var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+            @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customerSelect))
+}
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

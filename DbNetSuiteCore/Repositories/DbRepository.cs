@@ -26,31 +26,35 @@ namespace DbNetSuiteCore.Repositories
             return DbHelper.GetConnection(database, _dataSourceType, _configuration, _env);
         }
 
-        public async Task GetRecords(GridModel gridModel)
+        public async Task GetRecords(ComponentModel componentModel)
         {
-            QueryCommandConfig query = gridModel.IsStoredProcedure ? gridModel.BuildProcedureCall() : gridModel.BuildQuery();
-            gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias, gridModel.IsStoredProcedure);
+            QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
+            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel.IsStoredProcedure);
 
-            if (gridModel.Data.Rows.Count > 0)
+            if (componentModel is GridModel)
             {
-                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
+                var gridModel = (GridModel)componentModel;
+                if (gridModel.Data.Rows.Count > 0)
                 {
-                    await GetLookupOptions(gridModel, gridColumn);
+                    foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
+                    {
+                        await GetLookupOptions(gridModel, gridColumn);
+                    }
                 }
-            }
 
-            gridModel.ConvertEnumLookups();
+                gridModel.ConvertEnumLookups();
 
-            if (gridModel.IsStoredProcedure == false)
-            {
-                if (gridModel.SortColumn != null && gridModel.SortColumn.LookupOptions != null && gridModel.Data.Rows.Count > 0)
+                if (gridModel.IsStoredProcedure == false)
                 {
-                    gridModel.Data = gridModel.Data.Select(string.Empty, gridModel.AddDataTableOrderPart()).CopyToDataTable();
+                    if (gridModel.SortColumn != null && gridModel.SortColumn.LookupOptions != null && gridModel.Data.Rows.Count > 0)
+                    {
+                        gridModel.Data = gridModel.Data.Select(string.Empty, gridModel.AddDataTableOrderPart()).CopyToDataTable();
+                    }
                 }
-            }
-            else
-            {
-                gridModel.Data.FilterAndSort(gridModel);
+                else
+                {
+                    gridModel.Data.FilterAndSort(gridModel);
+                }
             }
         }
 
@@ -124,23 +128,24 @@ namespace DbNetSuiteCore.Repositories
             var dataTable = await GetDataTable(query, gridModel.ConnectionAlias);
             return dataTable.Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
         }
-        public async Task<DataTable> GetColumns(GridModel gridModel)
-        {
-            QueryCommandConfig query = gridModel.BuildEmptyQuery();
 
-            switch (gridModel.DataSourceType)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel)
+        {
+            QueryCommandConfig query = componentModel.BuildEmptyQuery();
+
+            switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
-                    if (gridModel.Columns.Any())
+                    if (componentModel.GetColumns().Any())
                     {
-                        return await GetDataTable(query, gridModel.ConnectionAlias);
+                        return await GetDataTable(query, componentModel.ConnectionAlias);
                     }
                     else
                     {
-                        return await GetSchemaTable(query, gridModel.ConnectionAlias);
+                        return await GetSchemaTable(query, componentModel.ConnectionAlias);
                     }
                 default:
-                    return await GetDataTable(query, gridModel.ConnectionAlias);
+                    return await GetDataTable(query, componentModel.ConnectionAlias);
             }
         }
 

@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Middleware
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
-        private IGridService _reportService = null;
+
         private string _extension = ".htmx";
 
 
@@ -19,12 +19,11 @@ namespace DbNetSuiteCore.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IGridService reportService)
+        public async Task Invoke(HttpContext context, IResourceService resourceService, IGridService gridService, ISelectService selectService)
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
-                _reportService = reportService;
-                await GenerateResponse(context);
+                await GenerateResponse(context, resourceService, gridService, selectService);
             }
             else
             {
@@ -32,14 +31,27 @@ namespace DbNetSuiteCore.Middleware
             }
         }
 
-        private async Task GenerateResponse(HttpContext context)
+        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, IGridService gridService, ISelectService selectService)
         {
             var request = context.Request;
             var resp = context.Response;
 
             string page = request.Path.ToString().Split('/').Last().Replace(_extension,string.Empty);
 
-            var response = await _reportService.Process(context, page);
+            byte[] response = null;
+
+            switch(page.ToLower())
+            {
+                case "gridcontrol":
+                    response = await gridService.Process(context, page);
+                    break;
+                case "selectcontrol":
+                    response = await selectService.Process(context, page);
+                    break;
+                default:
+                    response = resourceService.Process(context, page);
+                    break;
+            }
 
             if (response == null)
             {
@@ -57,7 +69,7 @@ namespace DbNetSuiteCore.Middleware
         }
     }
 
-    public static class WebReportingExtensions
+    public static class DbNetSuiteCoreExtensions
     {
         public static IApplicationBuilder UseDbNetSuiteCore(this IApplicationBuilder builder)
         {
@@ -79,6 +91,8 @@ namespace DbNetSuiteCore.Middleware
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
             services.AddScoped<IGridService, GridService>();
+            services.AddScoped<ISelectService, SelectService>();
+            services.AddScoped<IResourceService, ResourceService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();
             services.AddScoped<IJSONRepository, JSONRepository>();

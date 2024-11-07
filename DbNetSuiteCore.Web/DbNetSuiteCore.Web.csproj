@@ -15,10 +15,10 @@
 
   <ItemGroup>
     <Content Remove="appsettings.json" />
-    <Content Remove="Pages\mongodb\BrowseDb.cshtml" />
-    <Content Remove="Pages\mssql\BrowseDb.cshtml" />
-    <Content Remove="Pages\mysql\BrowseDb.cshtml" />
-    <Content Remove="Pages\postgresql\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\mongodb\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\mysql\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\postgresql\BrowseDb.cshtml" />
     <Content Remove="wwwroot\css\boostrap.icons.min.css" />
     <Content Remove="wwwroot\css\bootstrap.min.css" />
     <Content Remove="wwwroot\js\bootstrap.min.js" />
@@ -26,10 +26,10 @@
 
   <ItemGroup>
     <None Include="appsettings.json" />
-    <None Include="Pages\mongodb\BrowseDb.cshtml" />
-    <None Include="Pages\mssql\BrowseDb.cshtml" />
-    <None Include="Pages\mysql\BrowseDb.cshtml" />
-    <None Include="Pages\postgresql\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\mongodb\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\mssql\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\mysql\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\postgresql\BrowseDb.cshtml" />
     <None Include="wwwroot\css\bootstrap.min.css" />
     <None Include="wwwroot\js\bootstrap.min.js" />
   </ItemGroup>
@@ -44,39 +44,43 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\json\JsonString.cshtml">
+    <Content Update="Pages\GridControl\json\JsonString.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\mongodb\Customers.cshtml">
+    <Content Update="Pages\GridControl\mongodb\Customers.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\postgresql\StoredProc.cshtml">
+    <Content Update="Pages\GridControl\postgresql\StoredProc.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Dashboard.cshtml">
+    <Content Update="Pages\GridControl\sqlite\Dashboard.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\MultiNested.cshtml">
+    <Content Update="Pages\GridControl\sqlite\MultiNested.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\MultiLinked.cshtml">
+    <Content Update="Pages\GridControl\sqlite\MultiLinked.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Linked.cshtml">
+    <Content Update="Pages\GridControl\sqlite\Linked.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Invoices.cshtml">
+    <Content Update="Pages\GridControl\sqlite\Invoices.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Employees.cshtml">
+    <Content Update="Pages\GridControl\sqlite\Employees.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\SelectControl\sqlite\Customers.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -87,11 +91,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UpToDateCheckInput Remove="Pages\mssql\BrowseDb.cshtml" />
+    <UpToDateCheckInput Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\mssql\BrowseDb.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,17 +2,17 @@
 @using System.Text.Json
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-<form class="dbnetsuite dbnetsuite-grid" hx-post="gridcontrol.htmx" hx-trigger="@Model.HxFormTrigger" hx-indicator="next .htmx-indicator" hx-target="this" id="@Model.Id" name="@TriggerNames.InitialLoad" style="display:none">
+<form class="dbnetsuite dbnetsuite-grid" hx-post="@Model.PostUrl" hx-trigger="@Model.HxFormTrigger" hx-indicator="next .htmx-indicator" hx-target="this" id="@Model.Id" name="@TriggerNames.InitialLoad" style="display:none">
     @await Html.PartialAsync("Grid/Hidden",Model)
 </form>
 @await Html.PartialAsync("HxIndicator")
 <script>
     @if (Model.IsNested)
     {
-        <text>DbNetSuiteCore.createGridControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); </text>
+        <text>DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); </text>
     }
     else
     {
-        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createGridControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); });</text>
+        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); });</text>
     }
 </script>

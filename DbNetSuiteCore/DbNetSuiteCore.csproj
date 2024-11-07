@@ -48,8 +48,12 @@
     <Content Remove="Views\GridRows.cshtml" />
     <Content Remove="Views\GridToolbar.cshtml" />
     <Content Remove="Views\Grid\Hidden.cshtml" />
+    <Content Remove="Views\Grid\Markup - Copy.cshtml" />
+    <Content Remove="Views\Grid\Rows - Copy.cshtml" />
     <Content Remove="Views\Grid\ViewDialog.cshtml" />
     <Content Remove="Views\Grid\ViewDialogContent.cshtml" />
+    <Content Remove="Views\Select\ControlForm.cshtml" />
+    <Content Remove="Views\Select\Hidden.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,7 +64,6 @@
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bundle.js" />
-    <None Remove="Resources\JS\bundle.min.js" />
     <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridControl.js" />
     <None Remove="Resources\JS\htmx.js" />
@@ -70,8 +73,10 @@
     <None Remove="Resources\JS\tailwindcss.js" />
     <None Remove="Resources\JS\viewDialog.js" />
     <None Remove="Resources\SVG\spinner.svg" />
+    <None Remove="TypeScript\componentControl.ts" />
     <None Remove="TypeScript\draggableDialog.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
+    <None Remove="TypeScript\selectControl.ts" />
     <None Remove="TypeScript\viewDialog.ts" />
   </ItemGroup>
 
@@ -89,15 +94,22 @@
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
     <EmbeddedResource Include="Resources\JS\bundle.js" />
-    <EmbeddedResource Include="Resources\JS\bundle.min.js" />
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridControl.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
+    <EmbeddedResource Include="TypeScript\componentControl.ts" />
+    <EmbeddedResource Include="TypeScript\selectControl.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\Grid\Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Select\Options.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Select\Markup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Grid\ViewDialog.cshtml">
@@ -135,6 +147,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\JS\surreal.js" />
     <EmbeddedResource Include="Resources\JS\tailwindcss.js" />
+    <EmbeddedResource Include="Views\Select\ControlForm.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Select\Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -180,10 +198,6 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <DefineConstants>NET8_0</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-
-  </ItemGroup>
 
   <ItemGroup>
     <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />

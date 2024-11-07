@@ -23,12 +23,16 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(GridModel gridModel)
+        public async Task GetRecords(ComponentModel componentModel)
         {
-            QueryCommandConfig query = gridModel.BuildQuery();
-            gridModel.Data = await BuildDataTable(gridModel, query);
-            gridModel.ConvertEnumLookups();
-            gridModel.GetDistinctLookups();
+            QueryCommandConfig query = componentModel.BuildQuery();
+            componentModel.Data = await BuildDataTable(componentModel, query);
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+                gridModel.ConvertEnumLookups();
+                gridModel.GetDistinctLookups();
+            }
         }
 
         public async Task GetRecord(GridModel gridModel)
@@ -38,37 +42,38 @@ namespace DbNetSuiteCore.Repositories
             gridModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(GridModel gridModel)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            if (string.IsNullOrEmpty(gridModel.TableName))
+            if (string.IsNullOrEmpty(componentModel.TableName))
             {
-                AssignTableName(gridModel);
+                AssignTableName(componentModel);
             }
 
-            gridModel.TableName = TextHelper.DelimitColumn(gridModel.TableName, DataSourceType.Excel);
+            componentModel.TableName = TextHelper.DelimitColumn(componentModel.TableName, DataSourceType.Excel);
 
-            QueryCommandConfig query = gridModel.BuildEmptyQuery();
+            QueryCommandConfig query = componentModel.BuildEmptyQuery();
 
-            return await BuildDataTable(gridModel, query);
+            return await BuildDataTable(componentModel, query);
         }
 
-        private async Task<DataTable> BuildDataTable(GridModel gridModel, QueryCommandConfig query)
+
+        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, QueryCommandConfig query)
         {
-            return await LoadSpreadsheet(gridModel, query);
+            return await LoadSpreadsheet(componentModel, query);
         }
 
-        private async Task<DataTable> LoadSpreadsheet(GridModel gridModel, QueryCommandConfig query)
+        private async Task<DataTable> LoadSpreadsheet(ComponentModel componentModel, QueryCommandConfig query)
         {
             DataTable dataTable;
             try
             {
-                using (OleDbConnection connection = GetConnection(gridModel.Url))
+                using (OleDbConnection connection = GetConnection(componentModel.Url))
                 {
                     connection.Open();
 
                     dataTable = new DataTable();
 
-                    string columns = gridModel.Columns.Any() ? String.Join(",", gridModel.Columns.Select(c => c.Expression)) : "*";
+                    string columns = componentModel.GetColumns().Any() ? String.Join(",", componentModel.GetColumns().Select(c => c.Expression)) : "*";
 
                     OleDbCommand command = new OleDbCommand(query.Sql, connection);
                     DbHelper.AddCommandParameters(command, query.Params);
@@ -88,13 +93,13 @@ namespace DbNetSuiteCore.Repositories
                 throw new Exception($"Unable too read the Excel file {gridModel.TableName}");
             }
             */
-                throw new Exception($"Unable to read the Excel file {gridModel.TableName}", ex);
+                throw new Exception($"Unable to read the Excel file {componentModel.TableName}", ex);
             }
 
             return dataTable;
         }
 
-        private DataTable CsvToDataTable(GridModel gridModel)
+        private DataTable CsvToDataTable(ComponentModel componentModel)
         {
             DataTable dt = new DataTable();
             List<string> badData = new List<string>();
@@ -102,7 +107,7 @@ namespace DbNetSuiteCore.Repositories
             {
                 BadDataFound = null
             };
-            using (var reader = new StreamReader(FilePath(gridModel.Url)))
+            using (var reader = new StreamReader(FilePath(componentModel.Url)))
             using (var csv = new CsvReader(reader, config))
             {
                 using (var dr = new CsvDataReader(csv))
@@ -116,19 +121,19 @@ namespace DbNetSuiteCore.Repositories
             return dt;
         }
 
-        private async Task AssignTableName(GridModel gridModel)
+        private async Task AssignTableName(ComponentModel componentModel)
         {
-            if (gridModel.Url.ToLower().EndsWith(".csv"))
+            if (componentModel.Url.ToLower().EndsWith(".csv"))
             {
-                gridModel.TableName = FilePath(gridModel.Url).Split("\\").Last();
+                componentModel.TableName = FilePath(componentModel.Url).Split("\\").Last();
             }
             else
             {
-                using (OleDbConnection connection = GetConnection(gridModel.Url))
+                using (OleDbConnection connection = GetConnection(componentModel.Url))
                 {
                     connection.Open();
                     DataTable tables = connection.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-                    gridModel.TableName = tables.Rows[0]["TABLE_NAME"].ToString();
+                    componentModel.TableName = tables.Rows[0]["TABLE_NAME"].ToString();
                     connection.Close();
                 }
             }

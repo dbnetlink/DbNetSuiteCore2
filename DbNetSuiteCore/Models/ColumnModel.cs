@@ -13,7 +13,6 @@ namespace DbNetSuiteCore.Models
         private List<KeyValuePair<string, string>>? _EnumOptions;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
-
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
         public string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".","_") : Expression;
@@ -59,6 +58,8 @@ namespace DbNetSuiteCore.Models
         public bool Initialised { get; set; } = false;
         public bool Valid { get; set; } = true;
         public Lookup? Lookup { get; set; }
+        public bool DataOnly { get; set; } = false;
+
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()

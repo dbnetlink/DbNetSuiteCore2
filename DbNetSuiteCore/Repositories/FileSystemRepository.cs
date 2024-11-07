@@ -18,25 +18,26 @@ namespace DbNetSuiteCore.Repositories
             _configuration = configuration;
             _env = env;
         }
-        public async Task GetRecords(GridModel gridModel, HttpContext httpContext)
+        public async Task GetRecords(ComponentModel componentModel, HttpContext httpContext)
         {
-            var dataTable = await BuildDataTable(gridModel, httpContext);
+            var dataTable = await BuildDataTable(componentModel, httpContext);
+            componentModel.Data = dataTable;
 
-            var rows = dataTable.Select(AddFilterPart(gridModel), AddOrderPart(gridModel));
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+                var rows = dataTable.Select(AddFilterPart(gridModel), AddOrderPart(gridModel));
 
-            if (rows.Any()) 
-            {
-                gridModel.Data = rows.CopyToDataTable(); 
-            }
-            else
-            {
-                gridModel.Data = new DataTable();
+                if (rows.Any())
+                {
+                    gridModel.Data = rows.CopyToDataTable();
+                }
             }
         }
 
-        public async Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext httpContext)
         {
-            return await BuildDataTable(gridModel, httpContext);
+            return await BuildDataTable(componentModel, httpContext);
         }
 
         public static void UpdateUrl(GridModel gridModel)
@@ -58,18 +59,18 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private async Task<DataTable> BuildDataTable(GridModel gridModel, HttpContext httpContext)
+        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext httpContext)
         {
             var path = string.Empty;
 
-            if (TextHelper.IsAbsolutePath(gridModel.Url))
+            if (TextHelper.IsAbsolutePath(componentModel.Url))
             {
-                path = gridModel.Url;
+                path = componentModel.Url;
             }
             else
             {
                 var pathParts = _env.WebRootPath.Split("\\");
-                var urlParts = gridModel.Url.Split("/");
+                var urlParts = componentModel.Url.Split("/");
 
                 foreach (var part in urlParts)
                 {
@@ -88,10 +89,10 @@ namespace DbNetSuiteCore.Repositories
             var provider = new PhysicalFileProvider(path);
             var contents = provider.GetDirectoryContents(string.Empty);
 
-            return Tabulate(contents, gridModel);
+            return Tabulate(contents, componentModel);
         }
 
-        private DataTable Tabulate(IDirectoryContents directoryContents, GridModel gridModel)
+        private DataTable Tabulate(IDirectoryContents directoryContents, ComponentModel componentModel)
         {
             DataTable dataTable = new DataTable();
             dataTable.Clear();
@@ -102,14 +103,15 @@ namespace DbNetSuiteCore.Repositories
             dataTable.Columns.Add(FileSystemColumn.Length.ToString(), typeof(Int64));
             dataTable.Columns.Add(FileSystemColumn.LastModified.ToString(), typeof(DateTime));
 
+            var contentColumns = (componentModel is GridModel) ? (componentModel as GridModel)!.ContentColumns : new List<GridColumn>();
+
             var i = 0;
-            foreach (GridColumn gridColumn in gridModel.ContentColumns)
+            foreach (GridColumn gridColumn in contentColumns)
             {
                 var name = $"{FileSystemColumn.Content}{i}";
-                gridColumn.Expression = name ;
+                gridColumn.Expression = name;
                 dataTable.Columns.Add(name, typeof(string));
             }
-           
 
             foreach (IFileInfo file in directoryContents)
             {
@@ -121,11 +123,11 @@ namespace DbNetSuiteCore.Repositories
                 dataRow[FileSystemColumn.Length.ToString()] = file.IsDirectory ? System.DBNull.Value : file.Length;
                 dataRow[FileSystemColumn.LastModified.ToString()] = file.LastModified.UtcDateTime;
 
-                if (file.IsDirectory == false && gridModel.ContentColumns.Any() && file.Length < (1024 * 16))
+                if (file.IsDirectory == false && contentColumns.Any() && file.Length < (1024 * 16))
                 {
                     var content = ReadFileContent(file);
 
-                    foreach (GridColumn gridColumn in gridModel.ContentColumns)
+                    foreach (GridColumn gridColumn in contentColumns)
                     {
                         var match = Regex.Match(content, gridColumn.RegularExpression, RegexOptions.IgnoreCase);
                         dataRow[gridColumn.Expression] = match.Success ? match.Groups[1].Value : string.Empty;
@@ -146,7 +148,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-            private string AddFilterPart(GridModel gridModel)
+        private string AddFilterPart(GridModel gridModel)
         {
             string filter = string.Empty;
             List<string> filterParts = new List<string>();

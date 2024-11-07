@@ -29,7 +29,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         public async Task GoToPage(string page)
         {
-            await Page.GotoAsync($"{_baseUrl}{page}");
+            await Page.GotoAsync($"{_baseUrl}gridcontrol/{page}");
         }
 
         private int FreeTcpPort()

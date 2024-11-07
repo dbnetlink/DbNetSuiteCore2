@@ -1,0 +1,21 @@
+﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="flex flex-col m-1 p-1 relative">
+    <select id="@Model.SelectModel.Id" class="bg-white border border-gray-300 text-gray-900 text-md rounded-lg" @RazorHelper.DataAttribute("size", Model.SelectModel.Size, 0) @Multiple()>
+        @await Html.PartialAsync("Select/Options", Model)
+    </select>
+</div>
+
+@functions {
+    public HtmlString? Multiple()
+    {
+        return (Model.SelectModel.Size > 0 && Model.SelectModel.RowSelection == RowSelection.Multiple) ? new HtmlString("multiple") : null;
+    }
+}

@@ -62,16 +62,6 @@ namespace DbNetSuiteCore.ViewModels
             return _GetColumnInfo(column, _gridModel.Columns.Cast<ColumnModel>()) as GridColumn;
         }
 
-        public DataColumn? GetDataColumn(GridColumn column)
-        {
-            return _gridModel.GetDataColumn(column);
-        }
-
-
-        public bool IsFolder(DataRow dataRow)
-        {
-            return Convert.ToBoolean(GridModel.RowValue(dataRow, "IsDirectory", false));
-        }
 
         public int SelectWidth(List<KeyValuePair<string, string>> options)
         {

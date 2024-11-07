@@ -2,7 +2,9 @@
   {
     "outputFileName": "Resources/JS/bundle.js",
     "inputFiles": [
+      "Resources/JS/componentControl.js",
       "Resources/JS/gridControl.js",
+      "Resources/JS/selectControl.js",
       "Resources/JS/draggableDialog.js",
       "Resources/JS/viewDialog.js"
     ]

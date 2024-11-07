@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Repositories;
-using System.Reflection;
 using System.Text;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Extensions;
@@ -15,30 +14,10 @@ using DbNetSuiteCore.ViewModels;
 
 namespace DbNetSuiteCore.Services
 {
-    public class GridService : IGridService
+    public class GridService : ComponentService, IGridService
     {
-        private readonly IMSSQLRepository _msSqlRepository;
-        private readonly ISQLiteRepository _sqliteRepository;
-        private readonly RazorViewToStringRenderer _razorRendererService;
-        private readonly IJSONRepository _jsonRepository;
-        private readonly IFileSystemRepository _fileSystemRepository;
-        private readonly IMySqlRepository _mySqlRepository;
-        private readonly IPostgreSqlRepository _postgreSqlRepository;
-        private readonly IExcelRepository _excelRepository;
-        private readonly IMongoDbRepository _mongoDbRepository;
-        private HttpContext? _context = null;
-
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository)
         {
-            _msSqlRepository = msSqlRepository;
-            _razorRendererService = razorRendererService;
-            _sqliteRepository = sqliteRepository;
-            _jsonRepository = jsonRepository;
-            _fileSystemRepository = fileSystemRepository;
-            _mySqlRepository = mySqlRepository;
-            _postgreSqlRepository = postgreSqlRepository;
-            _excelRepository = excelRepository;
-            _mongoDbRepository = mongoDbRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -48,13 +27,10 @@ namespace DbNetSuiteCore.Services
                 _context = context;
                 switch (page.ToLower())
                 {
-                    case "css":
-                    case "js":
-                        return GetResources(page);
                     case "gridcontrol":
                         return await GridView();
                     default:
-                        return GetResource(page.Split(".").Last(), page.Split(".").First());
+                        return new byte[0];
                 }
             }
             catch (Exception ex)
@@ -100,10 +76,6 @@ namespace DbNetSuiteCore.Services
             {
                 throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
             }
-        }
-        private async Task<Byte[]> View<TModel>(string viewName, TModel model)
-        {
-            return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
         }
 
         private async Task<GridViewDialogViewModel> ViewDialogContent(GridModel gridModel)
@@ -152,7 +124,9 @@ namespace DbNetSuiteCore.Services
 
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
-                    nestedGrid._NestedGrids.Add(gridModel._NestedGrids.First().DeepCopy());
+                    var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
+                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentKey}";
+                    nestedGrid._NestedGrids.Add(nestedChildGrid);
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
                 {
@@ -166,12 +140,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task ConfigureGridColumns(GridModel gridModel)
         {
-            if (gridModel.Columns.Any(c => c.DataOnly))
-            {
-                List<GridColumn> gridColumns = gridModel.Columns.Where(c => c.DataOnly == false).ToList();
-                gridColumns.AddRange(gridModel.Columns.Where(c => c.DataOnly).ToList());
-                gridModel.Columns = gridColumns;
-            }
+            gridModel.Columns = ColumnsHelper.MoveDataOnlyColumnsToEnd(gridModel.Columns.Cast<ColumnModel>()).Cast<GridColumn>().ToList();
 
             DataTable schema = await GetColumns(gridModel);
 
@@ -187,7 +156,7 @@ namespace DbNetSuiteCore.Services
                         break;
                 }
 
-                gridModel.QualifyColumnExpressions();
+                ColumnsHelper.QualifyColumnExpressions(gridModel.Columns, gridModel.DataSourceType);
             }
             else
             {
@@ -221,7 +190,7 @@ namespace DbNetSuiteCore.Services
             if (gridModel.Columns.Any() == false)
             {
                 gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumn(dc, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
-                gridModel.QualifyColumnExpressions();
+                ColumnsHelper.QualifyColumnExpressions(gridModel.Columns, gridModel.DataSourceType);
             }
             else
             {
@@ -591,56 +560,6 @@ namespace DbNetSuiteCore.Services
             }
 
             return contentType;
-        }
-
-        private Byte[] GetResources(string type)
-        {
-            var resources = new string[] { };
-            switch (type)
-            {
-                case "css":
-                    resources = new string[] { "output", "gridControl" };
-                    break;
-                case "js":
-                    resources = new string[] { "htmx.min", "bundle.min" };
-                    break;
-            }
-
-            return GetResource(type, resources);
-        }
-
-        private Byte[] GetResource(string type, string[] resources)
-        {
-            byte[] bytes = new byte[0];
-
-            foreach (string resource in resources)
-            {
-                var resourceBytes = GetResource(type, resource);
-                bytes = CombineByteArrays(bytes, resourceBytes);
-                bytes = CombineByteArrays(bytes, Encoding.UTF8.GetBytes(Environment.NewLine));
-            }
-            return bytes;
-        }
-
-        private Byte[] GetResource(string type, string resource)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"{assembly.FullName!.Split(",").First()}.Resources.{type.ToUpper()}.{resource}.{type}";
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
-            using (var binaryReader = new BinaryReader(stream))
-            {
-                var bytes = binaryReader.ReadBytes((int)stream.Length);
-                return bytes;
-            }
-        }
-
-        public static byte[] CombineByteArrays(byte[] first, byte[] second)
-        {
-            byte[] ret = new byte[first.Length + second.Length];
-            Buffer.BlockCopy(first, 0, ret, 0, first.Length);
-            Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
-            return ret;
         }
     }
 }

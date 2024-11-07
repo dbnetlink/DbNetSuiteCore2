@@ -45,5 +45,28 @@ namespace DbNetSuiteCore.Helpers
 
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
         }
+
+        public static HtmlString DataAttributes(DataRow row)
+        {
+            List<string> dataAttributes = new List<string>();
+
+            foreach (DataColumn dataColumn in row.Table.Columns)
+            {
+                dataAttributes.Add($"data-{dataColumn.ColumnName.ToLower()}=\"{row[dataColumn]}\"");
+            }
+
+            return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
+        }
+
+        public static HtmlString DataAttribute(string name, object value, object defaultValue)
+        {
+            string htmlString = string.Empty;
+
+            if (value != defaultValue)
+            {
+                htmlString = $"{name}=\"{value}\"";
+            }
+            return new HtmlString(htmlString);
+        }
     }
 }

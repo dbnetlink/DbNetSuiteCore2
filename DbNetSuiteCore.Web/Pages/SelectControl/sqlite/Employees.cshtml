@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var employeeSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") {  };
+    employeeSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("EmployeeID"),
+        new SelectColumn("coalesce(LastName,'') || ', ' || coalesce(FirstName,'') as full_name"),
+        new SelectColumn("LastName"),
+        new SelectColumn("FirstName"),
+        new SelectColumn("Title"),
+        new SelectColumn("TitleOfCourtesy"),
+        new SelectColumn("BirthDate"),
+        new SelectColumn("HireDate"),
+        new SelectColumn("Address"),
+        new SelectColumn("City"),
+        new SelectColumn("Region"),
+        new SelectColumn("PostalCode"),
+        new SelectColumn("Country"),
+        new SelectColumn("HomePhone"),
+        new SelectColumn("Extension"),
+        new SelectColumn("Photo"),
+        new SelectColumn("Notes"),
+        new SelectColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName")}
+    };
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(employeeSelect))
+}
