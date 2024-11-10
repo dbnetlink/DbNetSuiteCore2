@@ -31,19 +31,20 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel.IsStoredProcedure);
 
+            
+            if (componentModel.Data.Rows.Count > 0)
+            {
+                foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
+                {
+                    await GetLookupOptions(componentModel, column);
+                }
+            }
+
+            ComponentModelExtensions.ConvertEnumLookups(componentModel);
+
             if (componentModel is GridModel)
             {
                 var gridModel = (GridModel)componentModel;
-                if (gridModel.Data.Rows.Count > 0)
-                {
-                    foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
-                    {
-                        await GetLookupOptions(gridModel, gridColumn);
-                    }
-                }
-
-                gridModel.ConvertEnumLookups();
-
                 if (gridModel.IsStoredProcedure == false)
                 {
                     if (gridModel.SortColumn != null && gridModel.SortColumn.LookupOptions != null && gridModel.Data.Rows.Count > 0)
@@ -56,6 +57,7 @@ namespace DbNetSuiteCore.Repositories
                     gridModel.Data.FilterAndSort(gridModel);
                 }
             }
+
         }
 
         public async Task GetRecord(GridModel gridModel)
@@ -71,7 +73,7 @@ namespace DbNetSuiteCore.Repositories
             gridModel.ConvertEnumLookups();
         }
 
-        private async Task GetLookupOptions(GridModel gridModel, GridColumn gridColumn)
+        private async Task GetLookupOptions(ComponentModel gridModel, ColumnModel gridColumn)
         {
             DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
 

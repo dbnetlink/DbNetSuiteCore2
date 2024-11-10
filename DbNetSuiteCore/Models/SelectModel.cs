@@ -5,11 +5,13 @@ namespace DbNetSuiteCore.Models
 {
     public class SelectModel : ComponentModel
     {
-        private RowSelection _RowSelection = RowSelection.Single;
         public List<string> LinkedSelectIds => GetLinkedControlIds(nameof(SelectModel));
         public IEnumerable<SelectColumn> Columns { get; set; } = new List<SelectColumn>();
         public Dictionary<SelectClientEvent, string> ClientEvents { get; set; } = new Dictionary<SelectClientEvent, string>();
-        public int Size { get; set; } = 0;
+        public int Size { get; set; } = 1;
+        public string EmptyOption { get; set; } = string.Empty;
+        public bool Searchable { get; set; } = false;
+
 
         public RowSelection RowSelection { 
             get 
@@ -51,28 +53,15 @@ namespace DbNetSuiteCore.Models
             Columns = columns.Cast<SelectColumn>();
         }
 
-        public string? PrimaryKeyValue(DataRow dataRow)
+        public override ColumnModel NewColumn(DataRow dataRow)
         {
-            if (DataSourceType == DataSourceType.FileSystem)
-            {
-                return Convert.ToString(RowValue(dataRow, "Name", false));
-            }
-            else
-            {
-                var primaryKeyColumn = Columns.FirstOrDefault(c => c.PrimaryKey);
-                if (primaryKeyColumn != null)
-                {
-                    var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == primaryKeyColumn.Name || primaryKeyColumn.Name.Split(".").Last() == c.ColumnName);
-
-                    if (dataColumn != null)
-                    {
-                        return dataRow[dataColumn].ToString();
-                    }
-                }
-
-                return null;
-            }
+            return new SelectColumn(dataRow);
         }
+        public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
+        {
+            return new SelectColumn(dataColumn, dataSourceType);
+        }
+
 
         public void Bind(SelectClientEvent clientEvent, string functionName)
         {

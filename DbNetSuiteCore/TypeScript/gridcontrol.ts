@@ -233,33 +233,12 @@ class GridControl extends ComponentControl{
         icons[1].style.display = show ? "block" : "none"
     }
 
-    private loadFromParent(primaryKey: string) {
-        let selector = `#${this.controlId} input[name="primaryKey"]`
-        let pk = htmx.find(selector) as HTMLInputElement
-
-        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }))
-
-        if (pk) {
-            htmx.trigger(selector, "changed");
-        }
-        else {
-            htmx.trigger(`#${this.controlId}`, "submit");
-        }
-    }
-
     private refresh() {
         let pageSelect = this.controlElement('[name="page"]')
         pageSelect.value = "1";
         htmx.trigger(pageSelect, "changed");
     }
-
-    private isElementLoaded = async selector => {
-        while (document.querySelector(selector) === null) {
-            await new Promise(resolve => requestAnimationFrame(resolve))
-        }
-        return document.querySelector(selector);
-    };
-
+ 
     private updateMultiRowSelect(ev: Event) {
         let checked = (ev.target as HTMLInputElement).checked
         this.controlElements(this.multiRowSelectSelector()).forEach((e: HTMLInputElement) => {
@@ -313,12 +292,7 @@ class GridControl extends ComponentControl{
         let table = this.controlElement("table") as HTMLElement;
 
         if (table.dataset.linkedgridids) {
-            var linkedGridIds = table.dataset.linkedgridids.split(",");
-            linkedGridIds.forEach(linkedGridId => {
-                this.isElementLoaded(`#${linkedGridId}`).then((selector) => {
-                    DbNetSuiteCore.controlArray[linkedGridId].loadFromParent(primaryKey);
-                })
-            })
+            this.updateLinkedControls(table.dataset.linkedgridids, primaryKey)
         }
     }
 

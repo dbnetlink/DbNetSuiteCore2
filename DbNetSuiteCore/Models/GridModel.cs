@@ -8,7 +8,6 @@ namespace DbNetSuiteCore.Models
     {
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
-        private RowSelection _RowSelection = RowSelection.Single;
 		[JsonIgnore]
 		public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
 		[JsonIgnore]
@@ -18,8 +17,7 @@ namespace DbNetSuiteCore.Models
 		[JsonIgnore]
 		internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
         public int CurrentPage { get; set; } = 1;
-        internal string SearchInput { get; set; } = string.Empty;
-        internal string SortKey  
+         internal string SortKey  
         { 
             get { return string.IsNullOrEmpty(_SortKey) ? InitalSortColumn?.Key ?? string.Empty : _SortKey; } 
             set { _SortKey = value; } 
@@ -115,6 +113,15 @@ namespace DbNetSuiteCore.Models
         public override void SetColumns(IEnumerable<ColumnModel> columns)
         {
             Columns = columns.Cast<GridColumn>();
+        }
+
+        public override ColumnModel NewColumn(DataRow dataRow)
+        { 
+            return new GridColumn(dataRow); 
+        }
+        public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
+        {
+            return new GridColumn(dataColumn, dataSourceType);
         }
 
         public void AddNestedGrid(GridModel gridModel)

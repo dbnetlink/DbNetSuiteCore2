@@ -22,6 +22,12 @@ class ComponentControl {
     constructor(controlId) {
         this.controlId = "";
         this.eventHandlers = {};
+        this.isElementLoaded = async (selector) => {
+            while (document.querySelector(selector) === null) {
+                await new Promise(resolve => requestAnimationFrame(resolve));
+            }
+            return document.querySelector(selector);
+        };
         this.controlId = controlId;
         this.formControl = document.querySelector(this.formSelector());
         this.formControl.style.display = '';
@@ -65,5 +71,24 @@ class ComponentControl {
     triggerName(evt) {
         var _a;
         return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
+    }
+    updateLinkedControls(linkedIds, primaryKey) {
+        var linkedIdArray = linkedIds.split(",");
+        linkedIdArray.forEach(linkedId => {
+            this.isElementLoaded(`#${linkedId}`).then((selector) => {
+                DbNetSuiteCore.controlArray[linkedId].loadFromParent(primaryKey);
+            });
+        });
+    }
+    loadFromParent(primaryKey) {
+        let selector = `#${this.controlId} input[name="primaryKey"]`;
+        let pk = htmx.find(selector);
+        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
+        if (pk) {
+            htmx.trigger(selector, "changed");
+        }
+        else {
+            htmx.trigger(`#${this.controlId}`, "submit");
+        }
     }
 }

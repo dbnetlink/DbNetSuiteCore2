@@ -1,0 +1,61 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    Layout = null;
+}
+
+@{
+    var customerColumns = new List<SelectColumn>
+    {
+        new SelectColumn("customerid") {PrimaryKey = true },
+        new SelectColumn("firstname"),
+    };
+
+    var invoiceColumns = new List<SelectColumn>
+    {
+        new SelectColumn("invoiceid") {PrimaryKey = true },
+        new SelectColumn("invoicedate"),
+        new SelectColumn("customerid") {ForeignKey = true }
+    };
+
+    var invoiceItemColumns = new List<SelectColumn>
+    {
+        new SelectColumn("invoicelineid"),
+        new SelectColumn("trackid") {Lookup = new Lookup("tracks","trackid","name")},
+        new SelectColumn("invoiceid") {ForeignKey = true }
+    };
+
+    var invoiceLineSelectModel = new SelectModel("Invoice_items");
+    invoiceLineSelectModel.Columns = invoiceItemColumns;
+
+    var invoiceSelectModel = new SelectModel("Invoices");
+    invoiceSelectModel.Columns = invoiceColumns;
+    invoiceSelectModel.LinkedControl = invoiceLineSelectModel;
+    
+
+    var customerSelectModel = new SelectModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
+    customerSelectModel.Columns = customerColumns;
+    customerSelectModel.LinkedControl = invoiceSelectModel;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main style="padding:20px">
+        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customerSelectModel))
+        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(invoiceSelectModel))
+        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(invoiceLineSelectModel))
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

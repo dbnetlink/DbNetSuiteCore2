@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 using System.Data;
 using DbNetSuiteCore.Enums;
-using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace DbNetSuiteCore.Models
 {
     public abstract class ComponentModel
     {
+        protected RowSelection _RowSelection = RowSelection.Single;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
         public DataSourceType DataSourceType { get; set; }
@@ -20,6 +20,7 @@ namespace DbNetSuiteCore.Models
         public bool IsStoredProcedure { get; set; } = false;
         public Dictionary<string, List<string>> LinkedControlIds { get; set; } = new Dictionary<string, List<string>>();
         internal bool Uninitialised => GetColumns().Any() == false || GetColumns().Where(c => c.Initialised == false).Any();
+        internal string SearchInput { get; set; } = string.Empty;
 
         public string Url
         {
@@ -160,5 +161,7 @@ namespace DbNetSuiteCore.Models
 
         public abstract IEnumerable<ColumnModel> GetColumns();
         public abstract void SetColumns(IEnumerable<ColumnModel> columns);
+        public abstract ColumnModel NewColumn(DataRow dataRow);
+        public abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
     }
 }

@@ -1,14 +1,13 @@
 var DbNetSuiteCore: any = {};
 
 DbNetSuiteCore.controlArray = {}
-DbNetSuiteCore.createClientControl = function (controlId:string, clientEvents) {
+DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents) {
     document.addEventListener('htmx:afterRequest', function (evt) {
         if (!DbNetSuiteCore.controlArray[controlId]) {
 
             var clientControl = {}
 
-            if (controlId.startsWith("Grid"))
-            {
+            if (controlId.startsWith("Grid")) {
                 clientControl = new GridControl(controlId);
             }
             if (controlId.startsWith("Select")) {
@@ -80,4 +79,34 @@ class ComponentControl {
     protected triggerName(evt: any) {
         return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase()
     }
+
+    protected updateLinkedControls(linkedIds: string, primaryKey: string) {
+        var linkedIdArray = linkedIds.split(",");
+        linkedIdArray.forEach(linkedId => {
+            this.isElementLoaded(`#${linkedId}`).then((selector) => {
+                DbNetSuiteCore.controlArray[linkedId].loadFromParent(primaryKey);
+            })
+        })
+    }
+
+    protected loadFromParent(primaryKey: string) {
+        let selector = `#${this.controlId} input[name="primaryKey"]`
+        let pk = htmx.find(selector) as HTMLInputElement
+
+        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }))
+
+        if (pk) {
+            htmx.trigger(selector, "changed");
+        }
+        else {
+            htmx.trigger(`#${this.controlId}`, "submit");
+        }
+    }
+
+    protected isElementLoaded = async selector => {
+        while (document.querySelector(selector) === null) {
+            await new Promise(resolve => requestAnimationFrame(resolve))
+        }
+        return document.querySelector(selector);
+    };
 }

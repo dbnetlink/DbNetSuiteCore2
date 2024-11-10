@@ -21,10 +21,10 @@
     .dbnetsuite select {
         @apply border-gray-300 rounded-lg shadow-sm focus:border-cyan-700 focus:ring-cyan-700 py-1 px-1 font-normal;
     }
-
-        .dbnetsuite select.column-filter {
-            @apply pr-8;
-        }
+    
+    .dbnetsuite select.column-filter {
+        @apply pr-8;
+    }
 
     .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {

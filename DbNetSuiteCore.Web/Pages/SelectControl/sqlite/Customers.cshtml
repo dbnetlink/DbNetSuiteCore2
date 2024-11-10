@@ -4,12 +4,12 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers");
+    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { EmptyOption = "Please select a customer", Searchable = true};
 
     customerSelect.Columns = new List<SelectColumn>
     {
         new SelectColumn("CustomerID"),
-        new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')")
+        new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')") {DataType = typeof(String)}
     };
 
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customerSelect))

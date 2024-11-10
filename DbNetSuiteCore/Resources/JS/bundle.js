@@ -22,6 +22,12 @@ class ComponentControl {
     constructor(controlId) {
         this.controlId = "";
         this.eventHandlers = {};
+        this.isElementLoaded = async (selector) => {
+            while (document.querySelector(selector) === null) {
+                await new Promise(resolve => requestAnimationFrame(resolve));
+            }
+            return document.querySelector(selector);
+        };
         this.controlId = controlId;
         this.formControl = document.querySelector(this.formSelector());
         this.formControl.style.display = '';
@@ -66,6 +72,25 @@ class ComponentControl {
         var _a;
         return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
     }
+    updateLinkedControls(linkedIds, primaryKey) {
+        var linkedIdArray = linkedIds.split(",");
+        linkedIdArray.forEach(linkedId => {
+            this.isElementLoaded(`#${linkedId}`).then((selector) => {
+                DbNetSuiteCore.controlArray[linkedId].loadFromParent(primaryKey);
+            });
+        });
+    }
+    loadFromParent(primaryKey) {
+        let selector = `#${this.controlId} input[name="primaryKey"]`;
+        let pk = htmx.find(selector);
+        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
+        if (pk) {
+            htmx.trigger(selector, "changed");
+        }
+        else {
+            htmx.trigger(`#${this.controlId}`, "submit");
+        }
+    }
 }
 
 class GridControl extends ComponentControl {
@@ -73,12 +98,6 @@ class GridControl extends ComponentControl {
         super(gridId);
         this.bgColourClass = "bg-cyan-600";
         this.textColourClass = "text-zinc-100";
-        this.isElementLoaded = async (selector) => {
-            while (document.querySelector(selector) === null) {
-                await new Promise(resolve => requestAnimationFrame(resolve));
-            }
-            return document.querySelector(selector);
-        };
     }
     afterRequest(evt) {
         let gridId = evt.target.closest("form").id;
@@ -258,17 +277,6 @@ class GridControl extends ComponentControl {
         icons[0].style.display = show ? "none" : "block";
         icons[1].style.display = show ? "block" : "none";
     }
-    loadFromParent(primaryKey) {
-        let selector = `#${this.controlId} input[name="primaryKey"]`;
-        let pk = htmx.find(selector);
-        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
-        if (pk) {
-            htmx.trigger(selector, "changed");
-        }
-        else {
-            htmx.trigger(`#${this.controlId}`, "submit");
-        }
-    }
     refresh() {
         let pageSelect = this.controlElement('[name="page"]');
         pageSelect.value = "1";
@@ -318,12 +326,7 @@ class GridControl extends ComponentControl {
     updateLinkedGrids(primaryKey) {
         let table = this.controlElement("table");
         if (table.dataset.linkedgridids) {
-            var linkedGridIds = table.dataset.linkedgridids.split(",");
-            linkedGridIds.forEach(linkedGridId => {
-                this.isElementLoaded(`#${linkedGridId}`).then((selector) => {
-                    DbNetSuiteCore.controlArray[linkedGridId].loadFromParent(primaryKey);
-                });
-            });
+            this.updateLinkedControls(table.dataset.linkedgridids, primaryKey);
         }
     }
     clearHighlighting(row) {
@@ -491,9 +494,15 @@ class SelectControl extends ComponentControl {
         if (selectId.startsWith(this.controlId) == false) {
             return;
         }
+        this.select = this.controlElement("select");
+        let selectElements = this.controlElements("select");
+        this.select.innerHTML = selectElements[1].innerHTML;
+        selectElements[1].remove();
         if (this.triggerName(evt) == "initialload") {
             this.initialise();
         }
+        this.selectChanged(this.select);
+        this.checkForError();
     }
     initialise() {
         this.controlElement("select").addEventListener("change", (ev) => {
@@ -502,7 +511,20 @@ class SelectControl extends ComponentControl {
         this.invokeEventHandler('Initialised');
     }
     selectChanged(target) {
+        this.updateLinkedSelects(target.value);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
+    }
+    updateLinkedSelects(primaryKey) {
+        if (this.select.dataset.linkedselectids) {
+            this.updateLinkedControls(this.select.dataset.linkedselectids, primaryKey);
+        }
+    }
+    checkForError() {
+        var select = this.controlElement("select");
+        const error = select.querySelector("div");
+        if (error) {
+            select.parentElement.nextElementSibling.after(error);
+        }
     }
 }
 

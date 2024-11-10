@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Data;
@@ -11,81 +12,20 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
-        public static QueryCommandConfig BuildQuery(this ComponentModel componentModel)
-        {
-            string sql = $"select {Top(componentModel)}{AddSelectPart(componentModel)} from {componentModel.TableName}";
-            QueryCommandConfig query = new QueryCommandConfig(sql);
-
-            if (componentModel is GridModel)
-            {
-                var gridModel = (GridModel)componentModel;
-                gridModel.AddFilterPart(query);
-                gridModel.AddGroupByPart(query);
-                gridModel.AddHavingPart(query);
-                gridModel.AddOrderPart(query);
-            }
-
-            query.Sql = $"{query.Sql}{Limit(componentModel)}";
-            return query;
-        }
 
         public static QueryCommandConfig BuildRecordQuery(this GridModel gridModel)
         {
-            string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
+            string sql = $"select {ComponentModelExtensions.AddSelectPart(gridModel)} from {gridModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             gridModel.AddPrimaryKeyFilterPart(query);
             return query;
         }
 
-        public static QueryCommandConfig BuildProcedureCall(this ComponentModel componentModel)
-        {
-            QueryCommandConfig query = new QueryCommandConfig($"{componentModel.ProcedureName}");
-            AssignParameters(query, componentModel.ProcedureParameters);
-            return query;
-        }
-
-        public static void AssignParameters(QueryCommandConfig query, List<DbParameter> parameters)
-        {
-            foreach (var parameter in parameters)
-            {
-                if (parameter.Value is JsonElement)
-                {
-                    parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
-                }
-                query.Params[DbHelper.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
-            }
-        }
 
         public static QueryCommandConfig BuildEmptyQuery(this GridModel gridModel)
         {
             return new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
-        }
-
-        private static string AddSelectPart(this ComponentModel componentModel)
-        {
-            if (componentModel.GetColumns().Any() == false)
-            {
-                return "*";
-            }
-
-            List<string> selectPart = new List<string>();
-
-            foreach (var column in componentModel.GetColumns())
-            {
-                var columnExpression = column.Expression;
-
-                if (column is GridColumn)
-                {
-                    var gridColumn = (GridColumn)column;
-                    if (gridColumn.Aggregate != AggregateType.None)
-                    {
-                        columnExpression = $"{AggregateExpression(gridColumn)} as {column.ColumnName}";
-                    }
-                }
-                selectPart.Add(columnExpression);
-            }
-            return string.Join(",", selectPart);
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)
@@ -93,7 +33,7 @@ namespace DbNetSuiteCore.Extensions
             return ColumnsHelper.GetColumnExpressions(gridModel.Columns.Cast<ColumnModel>());
         }
 
-        private static void AddFilterPart(this GridModel gridModel, QueryCommandConfig query)
+        public static void AddFilterPart(this GridModel gridModel, QueryCommandConfig query)
         {
             List<string> filterParts = new List<string>();
 
@@ -103,17 +43,7 @@ namespace DbNetSuiteCore.Extensions
 
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.Searchable))
                 {
-                    string searchInput = gridModel.SearchInput;
-                    string expression = RefineSearchExpression(gridColumn, gridModel);
-
-                    if (IsCsvFile(gridModel))
-                    {
-                        searchInput = searchInput.ToLower();
-                        expression = $"LCASE({expression})";
-                    }
-
-                    query.Params[$"@{gridColumn.ParamName}"] = $"%{searchInput}%";
-                    quickSearchFilterPart.Add($"{expression} like @{gridColumn.ParamName}");
+                    ComponentModelExtensions.AddSearchFilterPart(gridModel, gridColumn, query, quickSearchFilterPart);
                 }
 
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
@@ -156,7 +86,7 @@ namespace DbNetSuiteCore.Extensions
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
                 filterParts.Add($"({gridModel.FixedFilter})");
-                AssignParameters(query, gridModel.FixedFilterParameters);
+                ComponentModelExtensions.AssignParameters(query, gridModel.FixedFilterParameters);
             }
 
             if (filterParts.Any())
@@ -172,7 +102,7 @@ namespace DbNetSuiteCore.Extensions
             query.Params[$"@{primaryKeyColumn.ParamName}"] = primaryKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
         }
 
-        private static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
+        public static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
         {
             if (gridModel.Columns.Any(c => c.Aggregate != AggregateType.None) == false)
             {
@@ -181,7 +111,7 @@ namespace DbNetSuiteCore.Extensions
             query.Sql += $" group by {string.Join(",", gridModel.Columns.Where(c => c.Aggregate == AggregateType.None).Select(c => c.Expression).ToList())}";
         }
 
-        private static void AddHavingPart(this GridModel gridModel, CommandConfig query)
+        public static void AddHavingPart(this GridModel gridModel, CommandConfig query)
         {
             List<string> havingParts = new List<string>();
 
@@ -240,7 +170,7 @@ namespace DbNetSuiteCore.Extensions
                         continue;
                     }
 
-                    if (IsCsvFile(gridModel) && columnFilter.Value.Key == "like")
+                    if (ComponentModelExtensions.IsCsvFile(gridModel) && columnFilter.Value.Key == "like")
                     {
                         expression = $"LCASE({expression})";
                         paramValue = paramValue.ToString().ToLower();
@@ -270,11 +200,11 @@ namespace DbNetSuiteCore.Extensions
                 case DataSourceType.SQLite:
                     return gridColumnModel.ColumnName;
                 default:
-                    return AggregateExpression(gridColumnModel);
+                    return ComponentModelExtensions.AggregateExpression(gridColumnModel);
             }
         }
 
-        private static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
+        public static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
         {
             if (string.IsNullOrEmpty(gridModel.SortColumnOrdinal))
             {
@@ -290,11 +220,6 @@ namespace DbNetSuiteCore.Extensions
                 return string.Empty;
             }
             return $"{gridModel.SortColumnName} {gridModel.SortSequence}";
-        }
-
-        private static string AggregateExpression(GridColumn c)
-        {
-            return $"{c.Aggregate}({Regex.Replace(c.Expression, @" as \w*$", "", RegexOptions.IgnoreCase)})";
         }
 
         public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
@@ -355,15 +280,6 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static void ConvertEnumLookups(this GridModel gridModel)
-        {
-            foreach (var gridColumn in gridModel.Columns.Where(c => c.LookupOptions != null && c.Lookup == null))
-            {
-                DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
-                gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
-            }
-        }
-
         public static void GetDistinctLookups(this GridModel gridModel)
         {
             if (gridModel.Data.Rows.Count > 0)
@@ -377,13 +293,18 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        private static string RefineSearchExpression(GridColumn col, GridModel gridModel)
+        private static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel)
         {
-            string columnExpression = StripColumnRename(col.Expression);
+            string columnExpression = DbHelper.StripColumnRename(col.Expression);
 
-            if (col.Aggregate != AggregateType.None)
+
+            if (col is GridColumn)
             {
-                columnExpression = AggregateExpression(col);
+                var gridCol = (GridColumn)col;
+                if (gridCol.Aggregate != AggregateType.None)
+                {
+                    columnExpression = ComponentModelExtensions.AggregateExpression(gridCol);
+                }
             }
 
             if (col.DataType != typeof(DateTime))
@@ -391,7 +312,7 @@ namespace DbNetSuiteCore.Extensions
                 return columnExpression;
             }
 
-            switch (gridModel.DataSourceType)
+            switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
                     if (col.DbDataType != "31") // "Date"
@@ -407,14 +328,6 @@ namespace DbNetSuiteCore.Extensions
             return columnExpression;
         }
 
-        private static string StripColumnRename(string columnExpression)
-        {
-            string[] columnParts = columnExpression.Split(')');
-            columnParts[columnParts.Length - 1] = Regex.Replace(columnParts[columnParts.Length - 1], " as .*", "", RegexOptions.IgnoreCase);
-            columnParts[0] = Regex.Replace(columnParts[0], "unique |distinct ", "", RegexOptions.IgnoreCase);
-
-            return String.Join(")", columnParts);
-        }
 
         private static object? ParamValue(object value, GridColumn column, GridModel gridModel)
         {
@@ -529,54 +442,5 @@ namespace DbNetSuiteCore.Extensions
             return Type.GetType("System." + typeName);
         }
 
-        private static bool IsCsvFile(GridModel gridModel)
-        {
-            return gridModel.DataSourceType == DataSourceType.Excel && gridModel.TableName.ToLower().Replace("]", string.Empty).EndsWith(".csv");
-        }
-
-        private static string Top(ComponentModel componentModel)
-        {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.MSSQL:
-                    return QueryLimit(componentModel);
-            }
-
-            return string.Empty;
-        }
-
-        private static string Limit(ComponentModel componentModel)
-        {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.MySql:
-                case DataSourceType.PostgreSql:
-                case DataSourceType.SQLite:
-                    return QueryLimit(componentModel);
-            }
-
-            return string.Empty;
-        }
-
-        private static string QueryLimit(ComponentModel componentModel)
-        {
-            string limit = string.Empty;
-            if (componentModel.QueryLimit > 0)
-            {
-                switch (componentModel.DataSourceType)
-                {
-                    case DataSourceType.MSSQL:
-                        limit = $"TOP {componentModel.QueryLimit} ";
-                        break;
-                    case DataSourceType.MySql:
-                    case DataSourceType.PostgreSql:
-                    case DataSourceType.SQLite:
-                        limit = $" LIMIT {componentModel.QueryLimit}";
-                        break;
-                }
-            }
-
-            return limit;
-        }
     }
 }

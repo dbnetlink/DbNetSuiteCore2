@@ -49,9 +49,9 @@ namespace DbNetSuiteCore.Extensions
             return value;
         }
 
-        public static object? TypedValue(this GridColumn gridColumnModel, object value)
+        public static object? TypedValue(this ColumnModel columnModel, object value)
         {
-            return TypedValue(gridColumnModel?.DataType.Name, value);
+            return TypedValue(columnModel?.DataType.Name, value);
         }
 
         public static object? TypedValue(string dataTypeName, object value)

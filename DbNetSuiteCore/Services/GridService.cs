@@ -94,12 +94,12 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.IsStoredProcedure == false && gridModel.Uninitialised)
             {
-                await ConfigureGridColumns(gridModel);
+                await ConfigureColumns(gridModel);
             }
-            await GetRecords(gridModel);
+            await GetGridRecords(gridModel);
             if (gridModel.IsStoredProcedure && gridModel.Uninitialised)
             {
-                ConfigureGridColumnsForStoredProcedure(gridModel);
+                ConfigureColumnsForStoredProcedure(gridModel);
             }
 
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
@@ -138,98 +138,8 @@ namespace DbNetSuiteCore.Services
             return gridModel._NestedGrids;
         }
 
-        private async Task ConfigureGridColumns(GridModel gridModel)
-        {
-            gridModel.Columns = ColumnsHelper.MoveDataOnlyColumnsToEnd(gridModel.Columns.Cast<ColumnModel>()).Cast<GridColumn>().ToList();
-
-            DataTable schema = await GetColumns(gridModel);
-
-            if (gridModel.Columns.Any() == false)
-            {
-                switch (gridModel.DataSourceType)
-                {
-                    case DataSourceType.MSSQL:
-                        gridModel.Columns = schema.Rows.Cast<DataRow>().Where(r => (bool)r["IsHidden"] == false).Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
-                        break;
-                    default:
-                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
-                        break;
-                }
-
-                ColumnsHelper.QualifyColumnExpressions(gridModel.Columns, gridModel.DataSourceType);
-            }
-            else
-            {
-                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-
-                if (gridModel.DataSourceType == DataSourceType.FileSystem)
-                {
-                    foreach (GridColumn gridColumn in gridModel.Columns)
-                    {
-                        gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression), gridModel.DataSourceType);
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < dataColumns.Count; i++)
-                    {
-                        gridModel.Columns.ToList()[i].Update(dataColumns[i], gridModel.DataSourceType);
-                    }
-                }
-            }
-            for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
-            {
-                gridModel.Columns.ToList()[i].Ordinal = i + 1;
-            }
-        }
-
-        private void ConfigureGridColumnsForStoredProcedure(GridModel gridModel)
-        {
-            DataTable schema = gridModel.Data;
-
-            if (gridModel.Columns.Any() == false)
-            {
-                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumn(dc, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
-                ColumnsHelper.QualifyColumnExpressions(gridModel.Columns, gridModel.DataSourceType);
-            }
-            else
-            {
-                var gridColumns = gridModel.Columns.DeepCopy();
-                gridModel.Columns = new List<GridColumn>();
-                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-
-                for (var i = 0; i < dataColumns.Count; i++)
-                {
-                    var dataColumn = dataColumns[i];
-                    var gridColumn = gridColumns.FirstOrDefault(c => c.Expression.ToLower() == dataColumn.ColumnName.ToLower());
-
-                    if (gridColumn == null)
-                    {
-                        gridColumn = new GridColumn(dataColumn, gridModel.DataSourceType);
-                    }
-                    else
-                    {
-                        gridColumn.Update(dataColumn, gridModel.DataSourceType);
-                    }
-                    gridModel.Columns = gridModel.Columns.Append(gridColumn);
-                }
-            }
-            for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
-            {
-                gridModel.Columns.ToList()[i].Ordinal = i + 1;
-            }
-        }
-
         private async Task GetRecord(GridModel gridModel)
         {
-            /*
-            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
-
-            if (gridModel.TriggerName == TriggerNames.LinkedGrid)
-            {
-                gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
-            }
-            */
             switch (gridModel.DataSourceType)
             {
                 case DataSourceType.SQLite:
@@ -256,7 +166,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task GetRecords(GridModel gridModel)
+        private async Task GetGridRecords(GridModel gridModel)
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
@@ -265,57 +175,9 @@ namespace DbNetSuiteCore.Services
                 gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
             }
 
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.JSON:
-                    await _jsonRepository.GetRecords(gridModel, _context);
-                    break;
-                case DataSourceType.Excel:
-                    await _excelRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.FileSystem:
-                    await _fileSystemRepository.GetRecords(gridModel, _context);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecords(gridModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetRecords(gridModel);
-                    break;
-            }
+            await GetRecords(gridModel);
         }
 
-        private async Task<DataTable> GetColumns(GridModel gridModel)
-        {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.GetColumns(gridModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.GetColumns(gridModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetColumns(gridModel);
-                case DataSourceType.JSON:
-                    return await _jsonRepository.GetColumns(gridModel, _context);
-                case DataSourceType.Excel:
-                    return await _excelRepository.GetColumns(gridModel);
-                case DataSourceType.FileSystem:
-                    return await _fileSystemRepository.GetColumns(gridModel, _context);
-                case DataSourceType.MongoDB:
-                    return await _mongoDbRepository.GetColumns(gridModel);
-                default:
-                    return await _msSqlRepository.GetColumns(gridModel);
-            }
-        }
 
         private async Task<Byte[]> ExportRecords(GridModel gridModel)
         {

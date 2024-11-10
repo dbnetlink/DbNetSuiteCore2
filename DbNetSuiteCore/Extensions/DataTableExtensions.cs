@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class DataTableExtensions
     {
-        public static void ConvertLookupColumn(this DataTable dataTable, DataColumn? currentColumn, GridColumn gridColumnModel, GridModel gridModel)
+        public static void ConvertLookupColumn(this DataTable dataTable, DataColumn? currentColumn, ColumnModel gridColumnModel, ComponentModel gridModel)
         {
             if (currentColumn == null)
             {

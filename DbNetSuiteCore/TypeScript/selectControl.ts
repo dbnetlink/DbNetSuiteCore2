@@ -1,4 +1,5 @@
 class SelectControl extends ComponentControl {
+    select: HTMLSelectElement;
     constructor(selectId) {
         super(selectId)
     }
@@ -9,9 +10,19 @@ class SelectControl extends ComponentControl {
             return
         }
 
+        this.select = this.controlElement("select");
+
+        let selectElements = this.controlElements("select");
+        this.select.innerHTML = selectElements[1].innerHTML;
+        selectElements[1].remove();
+
         if (this.triggerName(evt) == "initialload") {
             this.initialise()
         }
+
+        this.selectChanged(this.select);
+
+        this.checkForError();
     }
 
     private initialise() {
@@ -22,6 +33,21 @@ class SelectControl extends ComponentControl {
     }
 
     private selectChanged(target: HTMLSelectElement) {
+        this.updateLinkedSelects(target.value);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
+    }
+
+    private updateLinkedSelects(primaryKey: string) {
+        if (this.select.dataset.linkedselectids) {
+            this.updateLinkedControls(this.select.dataset.linkedselectids, primaryKey)
+        }
+    }
+
+    private checkForError() {
+        var select = this.controlElement("select") as HTMLSelectElement;
+        const error = select.querySelector("div");
+        if (error) {
+            select.parentElement.nextElementSibling.after(error)
+        }
     }
 }

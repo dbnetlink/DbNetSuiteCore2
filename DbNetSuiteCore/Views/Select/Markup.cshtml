@@ -7,10 +7,19 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="flex flex-col m-1 p-1 relative">
-    <select id="@Model.SelectModel.Id" class="bg-white border border-gray-300 text-gray-900 text-md rounded-lg" @RazorHelper.DataAttribute("size", Model.SelectModel.Size, 0) @Multiple()>
+<div class="flex flex-col m-1 p-1 relative gap-1">
+    @if (Model.SelectModel.Searchable)
+    {
+        <div class="flex">
+            <input type="search" class="w-full" aria-label="Search" name="searchInput" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" />
+        </div>
+    }
+    <div class="flex">
+        <select id="@Model.SelectModel.Id" class="w-full" style="padding-right:2rem" @RazorHelper.DataAttribute("size", Model.SelectModel.Size) @Multiple() data-linkedselectids="@Model.LinkedSelectIds">></select>
+    </div>
+    <div class="flex target">
         @await Html.PartialAsync("Select/Options", Model)
-    </select>
+    </div>
 </div>
 
 @functions {

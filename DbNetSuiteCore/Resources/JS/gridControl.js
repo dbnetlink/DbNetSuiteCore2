@@ -3,12 +3,6 @@ class GridControl extends ComponentControl {
         super(gridId);
         this.bgColourClass = "bg-cyan-600";
         this.textColourClass = "text-zinc-100";
-        this.isElementLoaded = async (selector) => {
-            while (document.querySelector(selector) === null) {
-                await new Promise(resolve => requestAnimationFrame(resolve));
-            }
-            return document.querySelector(selector);
-        };
     }
     afterRequest(evt) {
         let gridId = evt.target.closest("form").id;
@@ -188,17 +182,6 @@ class GridControl extends ComponentControl {
         icons[0].style.display = show ? "none" : "block";
         icons[1].style.display = show ? "block" : "none";
     }
-    loadFromParent(primaryKey) {
-        let selector = `#${this.controlId} input[name="primaryKey"]`;
-        let pk = htmx.find(selector);
-        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
-        if (pk) {
-            htmx.trigger(selector, "changed");
-        }
-        else {
-            htmx.trigger(`#${this.controlId}`, "submit");
-        }
-    }
     refresh() {
         let pageSelect = this.controlElement('[name="page"]');
         pageSelect.value = "1";
@@ -248,12 +231,7 @@ class GridControl extends ComponentControl {
     updateLinkedGrids(primaryKey) {
         let table = this.controlElement("table");
         if (table.dataset.linkedgridids) {
-            var linkedGridIds = table.dataset.linkedgridids.split(",");
-            linkedGridIds.forEach(linkedGridId => {
-                this.isElementLoaded(`#${linkedGridId}`).then((selector) => {
-                    DbNetSuiteCore.controlArray[linkedGridId].loadFromParent(primaryKey);
-                });
-            });
+            this.updateLinkedControls(table.dataset.linkedgridids, primaryKey);
         }
     }
     clearHighlighting(row) {

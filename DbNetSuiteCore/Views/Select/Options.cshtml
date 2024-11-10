@@ -7,10 +7,29 @@
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
+@{
+    var first = true;
+    <select style="display:none">
+        @if (Model.Rows.Count() > 0 && string.IsNullOrEmpty(Model.SelectModel.EmptyOption) == false)
+        {
+            <option selected>@Model.SelectModel.EmptyOption</option>
+        }
+        @foreach (DataRow row in Model.Rows)
+        {
+            var value = @row[0].ToString();
+            var description = row.ItemArray.Length == 1 ? value : @row[1].ToString();
+            <option value="@value" @(first && Model.SelectFirstOption ? "selected" : null) @RazorHelper.DataAttributes(row)>@description</option>
 
-@foreach (DataRow row in Model.Rows)
+            first = false;
+        }
+        @if (Model.Rows.Count() == 0)
+        {
+            <option disabled selected>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</option>
+        }
+    </select>
+}
+@await Html.PartialAsync("Select/Hidden", Model.SelectModel)
+@if (Model.SelectModel.IsLinked)
 {
-    var value = @row[0].ToString();
-    var description = row.ItemArray.Length == 1 ? value : @row[1].ToString();
-    <option value="@value" @RazorHelper.DataAttributes(row)>@description</option>
+    <input type="hidden" name="@TriggerNames.LinkedGrid" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest div.target" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.SelectModel.ParentKey" />
 }

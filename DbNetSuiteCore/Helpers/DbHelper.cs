@@ -120,6 +120,15 @@ namespace DbNetSuiteCore.Helpers
             return command;
         }
 
+        public static string StripColumnRename(string columnExpression)
+        {
+            string[] columnParts = columnExpression.Split(')');
+            columnParts[columnParts.Length - 1] = Regex.Replace(columnParts[columnParts.Length - 1], " as .*", "", RegexOptions.IgnoreCase);
+            columnParts[0] = Regex.Replace(columnParts[0], "unique |distinct ", "", RegexOptions.IgnoreCase);
+
+            return String.Join(")", columnParts);
+        }
+
         public static void AddCommandParameters(IDbCommand command, Dictionary<string, object>? @params)
         {
             if (@params == null)

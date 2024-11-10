@@ -58,15 +58,9 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
         }
 
-        public static HtmlString DataAttribute(string name, object value, object defaultValue)
+        public static HtmlString DataAttribute(string name, object value)
         {
-            string htmlString = string.Empty;
-
-            if (value != defaultValue)
-            {
-                htmlString = $"{name}=\"{value}\"";
-            }
-            return new HtmlString(htmlString);
+            return new HtmlString($"{name}=\"{value}\"");
         }
     }
 }
