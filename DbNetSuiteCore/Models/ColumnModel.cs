@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Models
 {
-    public class ColumnModel
+    public abstract class ColumnModel
     {
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte), nameof(SByte) };
         private Type? _DataType = null;
@@ -59,6 +59,9 @@ namespace DbNetSuiteCore.Models
         public bool Valid { get; set; } = true;
         public Lookup? Lookup { get; set; }
         public bool DataOnly { get; set; } = false;
+        public bool PrimaryKey { get; set; } = false;
+        public bool ForeignKey { get; set; } = false;
+        public abstract bool Searchable { get; }
 
 
         [JsonIgnore]

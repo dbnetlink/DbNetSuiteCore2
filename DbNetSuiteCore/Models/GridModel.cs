@@ -25,12 +25,10 @@ namespace DbNetSuiteCore.Models
         public string CurrentSortKey { get; set; } = string.Empty;
         public SortOrder? CurrentSortSequence { get; set; }
         public bool CurrentSortAscending => SortSequence == SortOrder.Asc;
-        internal string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
-        internal string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
-        internal GridColumn? SortColumn => (Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
+        internal override GridColumn? SortColumn => (Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
         internal GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
         internal GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
-        internal SortOrder? SortSequence 
+        internal override SortOrder? SortSequence 
         { 
             get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; } 
             set { _SortSequence = value; } 
@@ -47,7 +45,6 @@ namespace DbNetSuiteCore.Models
         public List<GridModel> _NestedGrids { get; set; } = new List<GridModel>();
 
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
-		public string Caption { get; set; } = string.Empty;
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
 
         [JsonIgnore]

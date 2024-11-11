@@ -354,6 +354,9 @@ class GridControl extends ComponentControl {
     getButton(name) {
         return this.controlElement(this.buttonSelector(name));
     }
+    gridControlElement(selector) {
+        return this.controlElement(selector);
+    }
     selectedValues() {
         let selectedValues = [];
         this.controlElements(this.multiRowSelectSelector()).forEach((checkbox) => {

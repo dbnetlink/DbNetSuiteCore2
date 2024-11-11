@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using System.Data;
 
@@ -12,8 +13,11 @@ namespace DbNetSuiteCore.Extensions
             if (string.IsNullOrEmpty(selectModel.SearchInput) == false)
             {
                 List<string> quickSearchFilterPart = new List<string>();
-                var searchColumn = selectModel.Columns.Count() == 1 ? selectModel.Columns.First() : selectModel.Columns.Skip(1).First();
-                ComponentModelExtensions.AddSearchFilterPart(selectModel, searchColumn, query, quickSearchFilterPart);
+
+                foreach (var searchColumn in selectModel.SearchableColumns )
+                {
+                    ComponentModelExtensions.AddSearchFilterPart(selectModel, searchColumn, query, quickSearchFilterPart);
+                }
 
                 if (quickSearchFilterPart.Any())
                 {
@@ -28,7 +32,7 @@ namespace DbNetSuiteCore.Extensions
                     var foreignKeyColumn = selectModel.Columns.FirstOrDefault(c => c.ForeignKey);
                     if (foreignKeyColumn != null)
                     {
-                        filterParts.Add($"({foreignKeyColumn.Expression.Split(" ").First()} = @{foreignKeyColumn.ParamName})");
+                        filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
                         query.Params[$"@{foreignKeyColumn.ParamName}"] = foreignKeyColumn!.TypedValue(selectModel.ParentKey) ?? string.Empty;
                     }
                 }
@@ -56,9 +60,9 @@ namespace DbNetSuiteCore.Extensions
             return selectModel.Columns.Any() ? string.Join(",", selectModel.Columns.Select(x => x.Expression).ToList()) : "*";
         }
 
-        private static void AddOrderPart(this SelectModel selectModel, QueryCommandConfig query)
+        public static void AddOrderPart(this SelectModel selectModel, QueryCommandConfig query)
         {
-
+            query.Sql += $" order by {selectModel.SortColumnOrdinal} {selectModel.SortSequence}";
         }
     }
 }

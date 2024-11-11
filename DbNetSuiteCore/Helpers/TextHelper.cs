@@ -20,8 +20,8 @@ namespace DbNetSuiteCore.Helpers
         }
         public static string ObfuscateString(string input)
         {
-            return input;
-            //return Compress(input);
+            //return input;
+            return Compress(input);
             byte[] bytes = Encoding.UTF8.GetBytes(input);
             for (int i = 0; i < bytes.Length; i++)
             {
@@ -32,8 +32,8 @@ namespace DbNetSuiteCore.Helpers
 
         public static string DeobfuscateString(string input)
         {
-            return input;
-            //return Decompress(input);
+            //return input;
+            return Decompress(input);
             byte[] bytes = Convert.FromBase64String(input);
             for (int i = 0; i < bytes.Length; i++)
             {

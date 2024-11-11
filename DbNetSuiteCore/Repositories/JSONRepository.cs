@@ -31,8 +31,19 @@ namespace DbNetSuiteCore.Repositories
                 gridModel.ConvertEnumLookups();
                 gridModel.GetDistinctLookups();
             }
-        }
 
+            if (componentModel is SelectModel)
+            {
+                var selectModel = (SelectModel)componentModel;
+                if (selectModel.Distinct)
+                {
+                    var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
+                    dataTable = dataTable.DefaultView.ToTable(true, columnNames);
+                }
+                dataTable.FilterAndSort(selectModel);
+                selectModel.ConvertEnumLookups();
+            }
+        }
         public async Task GetRecord(GridModel gridModel, HttpContext httpContext)
         {
             var dataTable = await BuildDataTable(gridModel, httpContext);

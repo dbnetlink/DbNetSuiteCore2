@@ -24,7 +24,7 @@
             case "name":
                 var name = args.cell.dataset.value.toString()
                 if (name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".csv")) {
-                    args.cell.innerHTML = `<a target='_blank' href='${window.location.origin}/excel/renderfile?name=${name}'>${name}</a>`
+                    args.cell.innerHTML = `<a target='_blank' href='${window.location.origin}/gridcontrol/excel/renderfile?name=${name}'>${name}</a>`
                 }
                 break;
         }

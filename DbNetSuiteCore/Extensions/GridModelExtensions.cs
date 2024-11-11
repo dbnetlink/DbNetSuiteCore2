@@ -73,7 +73,7 @@ namespace DbNetSuiteCore.Extensions
                     var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
                     if (foreignKeyColumn != null)
                     {
-                        filterParts.Add($"({foreignKeyColumn.Expression.Split(" ").First()} = @{foreignKeyColumn.ParamName})");
+                        filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
                         query.Params[$"@{foreignKeyColumn.ParamName}"] = foreignKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
                     }
                 }

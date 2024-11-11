@@ -342,11 +342,11 @@ class GridControl extends ComponentControl{
         window.getSelection().removeAllRanges();
     }
 
-    private previousRow() {
+    public previousRow() {
         (this.selectedRow.previousElementSibling as HTMLTableRowElement).click()
     }
 
-    private nextRow() {
+    public nextRow() {
         (this.selectedRow.nextElementSibling as HTMLTableRowElement).click()
     }
 
@@ -427,14 +427,16 @@ class GridControl extends ComponentControl{
         return `td > input.multi-select`
     }
 
-
-
-    private buttonSelector(buttonType) {
+    public buttonSelector(buttonType) {
         return `button[button-type="${buttonType}"]`
     }
 
-    private getButton(name): HTMLButtonElement {
+    public getButton(name): HTMLButtonElement {
         return this.controlElement(this.buttonSelector(name))
+    }
+
+    public gridControlElement(selector): HTMLButtonElement {
+        return this.controlElement(selector)
     }
 
     private selectedValues() {

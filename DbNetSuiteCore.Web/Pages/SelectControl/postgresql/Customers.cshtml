@@ -1,0 +1,11 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives;
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customersSelect = new SelectModel(DataSourceType.PostgreSql, "Northwind(postgresql)", "customer");
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customersSelect))
+}

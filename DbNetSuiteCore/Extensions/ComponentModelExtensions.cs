@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static QueryCommandConfig BuildQuery(this ComponentModel componentModel)
         {
-            string sql = $"select {Top(componentModel)}{ComponentModelExtensions.AddSelectPart(componentModel)} from {componentModel.TableName}";
+            string sql = $"select {Distinct(componentModel)}{Top(componentModel)}{ComponentModelExtensions.AddSelectPart(componentModel)} from {componentModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
 
             if (componentModel is GridModel)
@@ -30,11 +30,11 @@ namespace DbNetSuiteCore.Extensions
                 gridModel.AddOrderPart(query);
             }
 
-
             if (componentModel is SelectModel)
             {
                 var selectModel = (SelectModel)componentModel;
                 selectModel.AddFilterPart(query);
+                selectModel.AddOrderPart(query);
             }
 
             query.Sql = $"{query.Sql}{Limit(componentModel)}";
@@ -129,6 +129,11 @@ namespace DbNetSuiteCore.Extensions
             }
 
             return string.Empty;
+        }
+
+        public static string Distinct(ComponentModel componentModel)
+        {
+            return componentModel.Distinct ? "distinct " : string.Empty;
         }
 
         public static string Limit(ComponentModel componentModel)

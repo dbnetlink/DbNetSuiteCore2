@@ -34,6 +34,39 @@ namespace DbNetSuiteCore.Services
             _mongoDbRepository = mongoDbRepository;
         }
 
+
+        protected void ValidateModel(ComponentModel componentModel)
+        {
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+
+                var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
+                if (primaryKeyAssigned == false)
+                {
+                    if (gridModel.ViewDialog != null)
+                    {
+                        throw new Exception("A column designated as a <b>PrimaryKey</b> is required for the view dialog");
+                    }
+
+                    if (gridModel.GetLinkedControlIds().Any()) 
+                    {
+                        throw new Exception("A parent control must have a column designated as a <b>PrimaryKey</b>");
+                    }
+                }
+            }
+
+            if (componentModel.DataSourceType == DataSourceType.MongoDB && string.IsNullOrEmpty(componentModel.DatabaseName))
+            {
+                throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
+            }
+
+            if (componentModel.IsLinked && componentModel.GetColumns().Any(c => c.ForeignKey) == false)
+            {
+                throw new Exception("A linked control must have a column designated as a <b>ForeignKey</b>");
+            }
+        }
+
         protected async Task<Byte[]> View<TModel>(string viewName, TModel model)
         {
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));

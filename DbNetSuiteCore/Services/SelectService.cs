@@ -6,6 +6,7 @@ using System.Data;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
+using DbNetSuiteCore.Constants;
 
 namespace DbNetSuiteCore.Services
 {
@@ -15,7 +16,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-        public async Task<Byte[]> Process(HttpContext context, string page)
+    public async Task<Byte[]> Process(HttpContext context, string page)
         {
             try
             {
@@ -39,6 +40,11 @@ namespace DbNetSuiteCore.Services
         {
             SelectModel selectModel = GetSelectModel() ?? new SelectModel();
             selectModel.TriggerName = RequestHelper.TriggerName(_context);
+
+            if (selectModel.TriggerName == TriggerNames.InitialLoad)
+            {
+                ValidateModel(selectModel);
+            }
 
             switch (selectModel.TriggerName)
             {

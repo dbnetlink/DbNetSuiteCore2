@@ -28,8 +28,8 @@ class SelectControl extends ComponentControl {
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
     updateLinkedSelects(primaryKey) {
-        if (this.select.dataset.linkedselectids) {
-            this.updateLinkedControls(this.select.dataset.linkedselectids, primaryKey);
+        if (this.select.dataset.linkedcontrolids) {
+            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey);
         }
     }
     checkForError() {

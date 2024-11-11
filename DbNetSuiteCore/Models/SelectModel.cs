@@ -5,14 +5,33 @@ namespace DbNetSuiteCore.Models
 {
     public class SelectModel : ComponentModel
     {
+        private SortOrder? _SortSequence = SortOrder.Asc;
         public List<string> LinkedSelectIds => GetLinkedControlIds(nameof(SelectModel));
         public IEnumerable<SelectColumn> Columns { get; set; } = new List<SelectColumn>();
+
+        public IEnumerable<SelectColumn> SearchableColumns
+        {
+            get 
+            {
+                return new List<SelectColumn>() { Columns.Count() == 1 ? Columns.First() : Columns.Skip(1).First() };
+            }
+        }
         public Dictionary<SelectClientEvent, string> ClientEvents { get; set; } = new Dictionary<SelectClientEvent, string>();
         public int Size { get; set; } = 1;
         public string EmptyOption { get; set; } = string.Empty;
         public bool Searchable { get; set; } = false;
-
-
+        internal override SelectColumn? SortColumn => Columns.Count() == 1 ? Columns.First() : Columns.Skip(1).First();
+        internal override SortOrder? SortSequence
+        {
+            get
+            {
+                return _SortSequence;
+            }
+            set
+            {
+                _SortSequence = value;
+            }
+        }
         public RowSelection RowSelection { 
             get 
             { 

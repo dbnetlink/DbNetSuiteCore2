@@ -7,7 +7,14 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="flex flex-col m-1 p-1 relative gap-1">
+<div class="flex flex-col relative gap-1">
+
+    @if (string.IsNullOrEmpty(Model.SelectModel.Caption) == false)
+    {
+        <div class="flex">
+            <div class="flex text-lg caption">@Model.SelectModel.Caption</div>
+        </div>
+    }
     @if (Model.SelectModel.Searchable)
     {
         <div class="flex">
@@ -15,7 +22,7 @@
         </div>
     }
     <div class="flex">
-        <select id="@Model.SelectModel.Id" class="w-full" style="padding-right:2rem" @RazorHelper.DataAttribute("size", Model.SelectModel.Size) @Multiple() data-linkedselectids="@Model.LinkedSelectIds">></select>
+        <select id="@Model.SelectModel.Id" class="w-full" style="padding-right:2rem" @RazorHelper.DataAttribute("size", Model.SelectModel.Size) @Multiple() data-linkedselectids="@Model.LinkedSelectIds" data-linkedcontrolids="@Model.LinkedControlIds">></select>
     </div>
     <div class="flex target">
         @await Html.PartialAsync("Select/Options", Model)

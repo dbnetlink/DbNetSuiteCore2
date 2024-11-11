@@ -449,6 +449,9 @@ class GridControl extends ComponentControl {
     getButton(name) {
         return this.controlElement(this.buttonSelector(name));
     }
+    gridControlElement(selector) {
+        return this.controlElement(selector);
+    }
     selectedValues() {
         let selectedValues = [];
         this.controlElements(this.multiRowSelectSelector()).forEach((checkbox) => {
@@ -515,8 +518,8 @@ class SelectControl extends ComponentControl {
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
     updateLinkedSelects(primaryKey) {
-        if (this.select.dataset.linkedselectids) {
-            this.updateLinkedControls(this.select.dataset.linkedselectids, primaryKey);
+        if (this.select.dataset.linkedcontrolids) {
+            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey);
         }
     }
     checkForError() {

@@ -38,8 +38,8 @@ class SelectControl extends ComponentControl {
     }
 
     private updateLinkedSelects(primaryKey: string) {
-        if (this.select.dataset.linkedselectids) {
-            this.updateLinkedControls(this.select.dataset.linkedselectids, primaryKey)
+        if (this.select.dataset.linkedcontrolids) {
+            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey)
         }
     }
 

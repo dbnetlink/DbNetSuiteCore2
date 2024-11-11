@@ -66,10 +66,11 @@ namespace DbNetSuiteCore.Repositories
             {
                 var gridModel = (GridModel)componentModel;
                 pipeline.Add(new BsonDocument("$match", BuildMatchStage(gridModel)));
-                if (string.IsNullOrEmpty(gridModel.SortColumnName) == false)
-                {
-                    pipeline.Add(new BsonDocument("$sort", BuildSortStage(gridModel)));
-                }
+
+            }
+            if (string.IsNullOrEmpty(componentModel.SortColumnName) == false)
+            {
+                pipeline.Add(new BsonDocument("$sort", BuildSortStage(componentModel)));
             }
             pipeline.Add(new BsonDocument("$project", BuildProjectStage(componentModel)));
 
@@ -458,11 +459,11 @@ namespace DbNetSuiteCore.Repositories
             return $"${filterOperator}";
         }
 
-        private BsonDocument BuildSortStage(GridModel gridModel)
+        private BsonDocument BuildSortStage(ComponentModel componentModel)
         {
             return new BsonDocument
             {
-                { gridModel.SortColumnName, gridModel.SortSequence == Enums.SortOrder.Asc ? 1 : -1 }
+                { componentModel.SortColumnName, componentModel.SortSequence == Enums.SortOrder.Asc ? 1 : -1 }
             };
         }
 

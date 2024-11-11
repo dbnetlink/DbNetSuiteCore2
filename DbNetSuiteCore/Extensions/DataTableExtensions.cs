@@ -55,6 +55,20 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
+        public static void FilterAndSort(this DataTable dataTable, SelectModel selectModel)
+        {
+            var rows = dataTable.Select(AddFilter(selectModel), AddOrder(selectModel));
+
+            if (rows.Any())
+            {
+                selectModel.Data = rows.CopyToDataTable();
+            }
+            else
+            {
+                selectModel.Data = new DataTable();
+            }
+        }
+
         public static void FilterWithPrimaryKey(this DataTable dataTable, GridModel gridModel)
         {
             var rows = dataTable.Select(AddPrimaryKeyFilter(gridModel));
@@ -149,13 +163,56 @@ namespace DbNetSuiteCore.Extensions
             return String.Join(" and ", filterParts);
         }
 
+        private static string AddFilter(SelectModel selectModel)
+        {
+            string filter = string.Empty;
+            List<string> filterParts = new List<string>();
+            if (string.IsNullOrEmpty(selectModel.SearchInput) == false)
+            {
+                List<string> searchFilterPart = new List<string>();
+
+                foreach (var columnName in selectModel.SearchableColumns.Select(c => c.Name).ToList())
+                {
+                    searchFilterPart.Add($"{TextHelper.DelimitColumn(columnName, selectModel.DataSourceType)} like '%{selectModel.SearchInput}%'");
+                }
+
+                if (searchFilterPart.Any())
+                {
+                    filterParts.Add($"({string.Join(" or ", searchFilterPart)})");
+                }
+            }
+
+            if (selectModel.IsLinked)
+            {
+                if (!string.IsNullOrEmpty(selectModel.ParentKey))
+                {
+                    var foreignKeyColumn = selectModel.GetColumns().FirstOrDefault(c => c.ForeignKey);
+                    if (foreignKeyColumn != null)
+                    {
+                        filterParts.Add($"({TextHelper.DelimitColumn(foreignKeyColumn.Name, selectModel.DataSourceType)} = {Quoted(foreignKeyColumn)}{selectModel.ParentKey}{Quoted(foreignKeyColumn)})");
+                    }
+                }
+                else
+                {
+                    filterParts.Add("(1=2)");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(selectModel.FixedFilter))
+            {
+                filterParts.Add($"({selectModel.FixedFilter})");
+            }
+
+            return String.Join(" and ", filterParts);
+        }
+
         private static string AddPrimaryKeyFilter(GridModel gridModel)
         {
             var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
             return $"({primaryKeyColumn.Name} = {Quoted(primaryKeyColumn)}{gridModel.ParentKey}{Quoted(primaryKeyColumn)})";
         }
 
-        private static string AddOrder(GridModel gridModel)
+        public static string AddOrder(ComponentModel gridModel)
         {
             if (string.IsNullOrEmpty(gridModel.SortColumnName))
             {
@@ -165,7 +222,7 @@ namespace DbNetSuiteCore.Extensions
             return $"{TextHelper.DelimitColumn(gridModel.SortColumnName, gridModel.DataSourceType)} {gridModel.SortSequence}";
         }
 
-        private static string Quoted(GridColumn column)
+        private static string Quoted(ColumnModel column)
         {
             return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
         }

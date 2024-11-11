@@ -48,7 +48,7 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.TriggerName == TriggerNames.InitialLoad)
             {
-                ValidateGridModel(gridModel);
+                ValidateModel(gridModel);
             }
 
             switch (gridModel.TriggerName)
@@ -62,19 +62,6 @@ namespace DbNetSuiteCore.Services
                 default:
                     string viewName = gridModel.Uninitialised ? "Grid/Markup" : "Grid/Rows";
                     return await View(viewName, await GetGridViewModel(gridModel));
-            }
-        }
-
-        private void ValidateGridModel(GridModel gridModel)
-        {
-            var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
-            if (gridModel.ViewDialog != null && primaryKeyAssigned == false)
-            {
-                throw new Exception("A column designated as a primary key is required for the view dialog");
-            }
-            if (gridModel.DataSourceType == DataSourceType.MongoDB && string.IsNullOrEmpty(gridModel.DatabaseName))
-            {
-                throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
             }
         }
 

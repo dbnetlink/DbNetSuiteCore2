@@ -21,6 +21,10 @@ namespace DbNetSuiteCore.Models
         public Dictionary<string, List<string>> LinkedControlIds { get; set; } = new Dictionary<string, List<string>>();
         internal bool Uninitialised => GetColumns().Any() == false || GetColumns().Where(c => c.Initialised == false).Any();
         internal string SearchInput { get; set; } = string.Empty;
+        internal string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
+        internal string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
+        public bool Distinct { get; set; } = false;
+        public string Caption { get; set; } = string.Empty;
 
         public string Url
         {
@@ -129,6 +133,12 @@ namespace DbNetSuiteCore.Models
             return LinkedControlIds.ContainsKey(typeName) ? LinkedControlIds[typeName] : new List<string>();
         }
 
+
+        public List<string> GetLinkedControlIds()
+        {
+            return LinkedControlIds.SelectMany(d => d.Value).ToList();
+        }
+
         public void AddLinkedControl(ComponentModel componentModel)
         {
             _LinkedControls.Add(componentModel);
@@ -163,5 +173,7 @@ namespace DbNetSuiteCore.Models
         public abstract void SetColumns(IEnumerable<ColumnModel> columns);
         public abstract ColumnModel NewColumn(DataRow dataRow);
         public abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
+        internal abstract ColumnModel? SortColumn { get; }
+        internal abstract SortOrder? SortSequence { get; set; }
     }
 }

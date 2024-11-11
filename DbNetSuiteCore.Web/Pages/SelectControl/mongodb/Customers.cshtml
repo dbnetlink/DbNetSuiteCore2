@@ -1,0 +1,16 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var customersSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Customers") { DatabaseName = "Northwind" };
+
+    customersSelect.Columns = new List<SelectColumn>() {
+        new SelectColumn("CustomerID"),
+        new SelectColumn("CompanyName")
+    };
+
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customersSelect))
+}

@@ -31,5 +31,8 @@ namespace DbNetSuiteCore.ViewModels
         {
             return Convert.ToBoolean(_componentModel.RowValue(dataRow, FileSystemColumn.IsDirectory.ToString(), false));
         }
+
+        public string LinkedControlIds => string.Join(",", _componentModel.GetLinkedControlIds());
+
     }
 }

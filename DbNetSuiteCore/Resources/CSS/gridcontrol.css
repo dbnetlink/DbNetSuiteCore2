@@ -30,6 +30,9 @@
         display:flex;
     }
 
+.dbnetsuite-select div.caption {
+    font-weight: bold;
+}
 
 .dbnetsuite .dialog {
     position: fixed;

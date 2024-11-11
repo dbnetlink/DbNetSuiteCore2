@@ -18,6 +18,8 @@ namespace DbNetSuiteCore.ViewModels
         public IEnumerable<DataRow> Rows => SelectModel.Data.AsEnumerable();
         public bool SelectFirstOption => SelectModel.RowSelection != RowSelection.None && string.IsNullOrEmpty(SelectModel.EmptyOption);
         public string HxTarget => $"next div.target";
+        public DataColumn ValueColumn => GetDataColumn(Columns.First());
+        public DataColumn DescriptionColumn => GetDataColumn(Columns.Count() == 1 ? Columns.First() : Columns.Skip(1).First());
         public SelectViewModel(SelectModel selectModel) : base(selectModel)
         {
             _selectModel = selectModel;
