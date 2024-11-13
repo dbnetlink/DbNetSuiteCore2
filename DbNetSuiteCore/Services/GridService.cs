@@ -16,7 +16,7 @@ namespace DbNetSuiteCore.Services
 {
     public class GridService : ComponentService, IGridService
     {
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration)
         {
         }
 
@@ -43,13 +43,9 @@ namespace DbNetSuiteCore.Services
         private async Task<Byte[]> GridView()
         {
             GridModel gridModel = GetGridModel() ?? new GridModel();
-
             gridModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            if (gridModel.TriggerName == TriggerNames.InitialLoad)
-            {
-                ValidateModel(gridModel);
-            }
+            ValidateModel(gridModel);
 
             switch (gridModel.TriggerName)
             {
@@ -356,7 +352,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration);
                 GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
                 gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
@@ -364,7 +360,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
-                gridModel.ParentKey = RequestHelper.FormValue("primaryKey", gridModel.ParentKey, _context);
+                AssignParentKey(gridModel);
 
                 gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
 

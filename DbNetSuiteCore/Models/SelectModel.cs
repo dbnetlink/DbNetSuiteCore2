@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using System.Data;
+using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Models
 {
@@ -9,39 +10,44 @@ namespace DbNetSuiteCore.Models
         public List<string> LinkedSelectIds => GetLinkedControlIds(nameof(SelectModel));
         public IEnumerable<SelectColumn> Columns { get; set; } = new List<SelectColumn>();
 
+        [JsonIgnore]
+        public IEnumerable<SelectColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false);
+        [JsonIgnore]
+        public SelectColumn ValueColumn => NonOptionGroupColumns.First();
+        [JsonIgnore]
+        public SelectColumn DescriptionColumn => NonOptionGroupColumns.Count() == 1 ? NonOptionGroupColumns.First() : NonOptionGroupColumns.Skip(1).First();
+        [JsonIgnore]
+        public SelectColumn OptionGroupColumn => Columns.Where(c => c.OptionGroup).First();
+        [JsonIgnore]
         public IEnumerable<SelectColumn> SearchableColumns
         {
-            get 
+            get
             {
-                return new List<SelectColumn>() { Columns.Count() == 1 ? Columns.First() : Columns.Skip(1).First() };
+                var searchableColumns = new List<SelectColumn>() { DescriptionColumn };
+                if (IsGrouped)
+                {
+                    searchableColumns.Add(Columns.First(c => c.OptionGroup));
+                }
+                return searchableColumns;
             }
         }
         public Dictionary<SelectClientEvent, string> ClientEvents { get; set; } = new Dictionary<SelectClientEvent, string>();
         public int Size { get; set; } = 1;
         public string EmptyOption { get; set; } = string.Empty;
         public bool Searchable { get; set; } = false;
-        internal override SelectColumn? SortColumn => Columns.Count() == 1 ? Columns.First() : Columns.Skip(1).First();
+        internal override SelectColumn? SortColumn => DescriptionColumn;
         internal override SortOrder? SortSequence
         {
-            get
-            {
-                return _SortSequence;
-            }
-            set
-            {
-                _SortSequence = value;
-            }
+            get { return _SortSequence; }
+            set { _SortSequence = value; }
         }
-        public RowSelection RowSelection { 
-            get 
-            { 
-                return _RowSelection;
-            } 
-            set 
-            {   
-                _RowSelection = value;
-            } 
+        public RowSelection RowSelection
+        {
+            get { return _RowSelection; }
+            set { _RowSelection = value; }
         }
+
+        public bool IsGrouped => Columns.Any(c => c.OptionGroup);
 
         public SelectModel() : base()
         {
@@ -80,7 +86,6 @@ namespace DbNetSuiteCore.Models
         {
             return new SelectColumn(dataColumn, dataSourceType);
         }
-
 
         public void Bind(SelectClientEvent clientEvent, string functionName)
         {

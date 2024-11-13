@@ -8,27 +8,36 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @{
-    var first = true;
+    var rowNumber = 0;
     <select style="display:none">
-        @if (Model.Rows.Count() > 0 && string.IsNullOrEmpty(Model.SelectModel.EmptyOption) == false)
+        @if (Model.Rows.Count > 0 && string.IsNullOrEmpty(Model.SelectModel.EmptyOption) == false)
         {
             <option value="">@Model.SelectModel.EmptyOption</option>
         }
 
+        @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)
+        {
+            @OpenOptionGroup(Model.Rows[0])
+        }
+
         @foreach (DataRow row in Model.Rows)
         {
-            DataColumn valueColumn = Model.ValueColumn;
-            DataColumn descriptionColumn = Model.DescriptionColumn;
-
-            var value = @row[valueColumn].ToString();
-            var description = @row[descriptionColumn].ToString(); ;
-            <option value="@value" @(first && Model.SelectFirstOption ? "selected" : null) @RazorHelper.DataAttributes(row)>@description</option>
-
-            first = false;
+            @if (rowNumber > 0 && Model.ChangeInGroup(rowNumber))
+            {
+                @CloseOptionGroup()
+                @OpenOptionGroup(row)
+            }
+            <option value="@Model.Value(row)" @(rowNumber == 0 && Model.SelectFirstOption ? "selected" : null) @RazorHelper.DataAttributes(row)>@Model.Description(row)</option>
+            rowNumber++;
         }
-        @if (Model.Rows.Count() == 0)
+        @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)
         {
-            <option disabled selected>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</option>
+            @CloseOptionGroup()
+        }
+
+        @if (Model.Rows.Count == 0 && Model.SelectModel.IsLinked == false)
+        {
+            <option disabled selected value="">@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</option>
         }
     </select>
 }
@@ -36,4 +45,14 @@
 @if (Model.SelectModel.IsLinked)
 {
     <input type="hidden" name="@TriggerNames.LinkedGrid" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest div.target" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.SelectModel.ParentKey" />
+}
+@functions {
+    public HtmlString OpenOptionGroup(DataRow row)
+    {
+        return new HtmlString($"<optgroup label=\"{Model.GroupValue(row)}\">");
+    }
+    public HtmlString CloseOptionGroup()
+    {
+        return new HtmlString("</optgroup>");
+    }
 }

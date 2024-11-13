@@ -1,9 +1,6 @@
-﻿using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Enums;
-using Microsoft.AspNetCore.Html;
+﻿using DbNetSuiteCore.Enums;
 using System.Data;
 using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -15,11 +12,32 @@ namespace DbNetSuiteCore.ViewModels
         public int RowCount => SelectModel.Data.Rows.Count;
         public string SelectId => _selectModel.Id;
         public string LinkedSelectIds => string.Join(",", SelectModel.LinkedSelectIds);
-        public IEnumerable<DataRow> Rows => SelectModel.Data.AsEnumerable();
+        public DataRowCollection Rows => SelectModel.Data.Rows;
         public bool SelectFirstOption => SelectModel.RowSelection != RowSelection.None && string.IsNullOrEmpty(SelectModel.EmptyOption);
         public string HxTarget => $"next div.target";
-        public DataColumn ValueColumn => GetDataColumn(Columns.First());
-        public DataColumn DescriptionColumn => GetDataColumn(Columns.Count() == 1 ? Columns.First() : Columns.Skip(1).First());
+        public string Value(DataRow dataRow) 
+        {
+            return RowValue(dataRow, GetDataColumn(SelectModel.ValueColumn));
+        }
+        public string Description(DataRow dataRow)
+        {
+            return RowValue(dataRow, GetDataColumn(SelectModel.DescriptionColumn));
+        }
+        public string GroupValue(DataRow dataRow)
+        {
+            return RowValue(dataRow,GetDataColumn(Columns.First(c => c.OptionGroup)));
+        }
+
+        private string RowValue(DataRow dataRow, DataColumn? dataColumn)
+        {
+            return dataRow[dataColumn!]?.ToString() ?? string.Empty;
+        }
+
+        public bool ChangeInGroup(int rowNumber)
+        {
+            return SelectModel.IsGrouped && (GroupValue(Rows[rowNumber]) != GroupValue(Rows[rowNumber-1]));
+        }
+
         public SelectViewModel(SelectModel selectModel) : base(selectModel)
         {
             _selectModel = selectModel;

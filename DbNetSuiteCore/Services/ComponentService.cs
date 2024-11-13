@@ -4,6 +4,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Repositories;
 using System.Data;
 using System.Text;
+using DbNetSuiteCore.Constants;
 
 
 namespace DbNetSuiteCore.Services
@@ -20,8 +21,9 @@ namespace DbNetSuiteCore.Services
         protected readonly IExcelRepository _excelRepository;
         protected readonly IMongoDbRepository _mongoDbRepository;
         protected HttpContext? _context = null;
+        protected readonly IConfiguration _configuration;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository)
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -32,11 +34,17 @@ namespace DbNetSuiteCore.Services
             _postgreSqlRepository = postgreSqlRepository;
             _excelRepository = excelRepository;
             _mongoDbRepository = mongoDbRepository;
+            _configuration = configuration;
         }
 
 
         protected void ValidateModel(ComponentModel componentModel)
         {
+            if (componentModel.TriggerName != TriggerNames.InitialLoad)
+            {
+                return;
+            }
+
             if (componentModel is GridModel)
             {
                 var gridModel = (GridModel)componentModel;
@@ -56,14 +64,39 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
-            if (componentModel.DataSourceType == DataSourceType.MongoDB && string.IsNullOrEmpty(componentModel.DatabaseName))
+            switch(componentModel.DataSourceType)
             {
-                throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
+                case DataSourceType.MongoDB:
+                    if (string.IsNullOrEmpty(componentModel.DatabaseName))
+                    {
+                        throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
+                    }
+                    break;
             }
 
-            if (componentModel.IsLinked && componentModel.GetColumns().Any(c => c.ForeignKey) == false)
+            switch (componentModel.DataSourceType)
             {
-                throw new Exception("A linked control must have a column designated as a <b>ForeignKey</b>");
+                case DataSourceType.FileSystem:
+                    break;
+                default:
+                    if (componentModel.IsLinked && componentModel.GetColumns().Any(c => c.ForeignKey) == false)
+                    {
+                        throw new Exception("A linked control must have a column designated as a <b>ForeignKey</b>");
+                    }
+                    break;
+            }
+        }
+
+        protected void AssignParentKey(ComponentModel componentModel)
+        {
+            var primaryKey = RequestHelper.FormValue("primaryKey", componentModel.ParentKey, _context);
+            if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)
+            {
+                componentModel.Url = primaryKey;
+            }
+            else
+            {
+                componentModel.ParentKey = primaryKey;
             }
         }
 

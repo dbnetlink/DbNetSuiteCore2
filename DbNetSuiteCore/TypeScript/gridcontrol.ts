@@ -481,4 +481,11 @@ class GridControl extends ComponentControl{
         let cell = this.columnCell(columnName, row)
         return cell ? cell.dataset.value : null;
     }
+
+    public setCaption(text) {
+        var caption = this.controlElement("div.caption")
+        if (caption) {
+            caption.innerText = text;
+        }
+    }
 }

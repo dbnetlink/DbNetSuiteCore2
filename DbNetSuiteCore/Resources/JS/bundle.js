@@ -72,13 +72,20 @@ class ComponentControl {
         var _a;
         return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
     }
-    updateLinkedControls(linkedIds, primaryKey) {
+    updateLinkedControls(linkedIds, primaryKey, url = null) {
         var linkedIdArray = linkedIds.split(",");
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
-                DbNetSuiteCore.controlArray[linkedId].loadFromParent(primaryKey);
+                var linkedControl = DbNetSuiteCore.controlArray[linkedId];
+                if (url != null && linkedControl.dataSourceIsFileSystem()) {
+                    primaryKey = url;
+                }
+                linkedControl.loadFromParent(primaryKey);
             });
         });
+    }
+    dataSourceIsFileSystem() {
+        return this.formControl.dataset.datasourcetype == "FileSystem";
     }
     loadFromParent(primaryKey) {
         let selector = `#${this.controlId} input[name="primaryKey"]`;
@@ -486,6 +493,12 @@ class GridControl extends ComponentControl {
         let cell = this.columnCell(columnName, row);
         return cell ? cell.dataset.value : null;
     }
+    setCaption(text) {
+        var caption = this.controlElement("div.caption");
+        if (caption) {
+            caption.innerText = text;
+        }
+    }
 }
 
 class SelectControl extends ComponentControl {
@@ -514,12 +527,17 @@ class SelectControl extends ComponentControl {
         this.invokeEventHandler('Initialised');
     }
     selectChanged(target) {
-        this.updateLinkedSelects(target.value);
+        let url = '';
+        if (target.selectedOptions.length) {
+            var dataset = target.selectedOptions[0].dataset;
+            url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : '';
+        }
+        this.updateLinkedSelects(target.value, url);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
-    updateLinkedSelects(primaryKey) {
+    updateLinkedSelects(primaryKey, url) {
         if (this.select.dataset.linkedcontrolids) {
-            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey);
+            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey, url);
         }
     }
     checkForError() {

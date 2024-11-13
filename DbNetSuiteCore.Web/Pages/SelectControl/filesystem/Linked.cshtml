@@ -1,0 +1,71 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+
+@{
+    var selectModels = new List<SelectModel>();
+    while (selectModels.Count() < 6)
+    {
+        var model = new SelectModel(DataSourceType.FileSystem, string.Empty) { Searchable = false };
+        model.Columns = new List<SelectColumn>() { new SelectColumn(FileSystemColumn.Name.ToString()) };
+        model.ClientEvents[SelectClientEvent.OptionSelected] = "showSelectedFile";
+
+        if (selectModels.Any())
+        {
+            selectModels.Last().LinkedControl = model;
+        }
+
+        selectModels.Add(model);
+    }
+
+    var rootFolder = new SelectModel(DataSourceType.FileSystem, "/data") { Searchable = false };
+    rootFolder.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn(FileSystemColumn.Name.ToString())
+    };
+
+    rootFolder.LinkedControl = selectModels.First();
+
+    <div class="flex flex-row gap-1 items-center">
+
+        @{
+            <div class="flex">
+                @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(rootFolder))
+            </div>
+
+
+            foreach (SelectModel subFolder in selectModels)
+            {
+                <div class="flex">
+                    @RightChevron()
+                </div>
+                <div class="flex">
+                    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(subFolder))
+                </div>
+            }
+        }
+    </div>
+    <div class="flex flex-row gap-1 items-center">
+        <div><b>Selected file</b>
+        </div>
+        <div class="flex">
+            @RightChevron()
+        </div>
+        <div id="selectedFile"></div>
+    </div>
+}
+<script>
+    function showSelectedFile(selectControl, args) {
+        document.querySelector("#selectedFile").innerHTML = `${args.selectedOptions[0].text} ( ${args.selectedOptions[0].dataset.path} )`
+    }
+</script>
+
+@functions
+{
+        HtmlString RightChevron()
+        {
+            return new HtmlString("<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\" width=\"24px\" fill=\"#5f6368\"><path d=\"M472-480 288-664l88-88 272 272-272 272-88-88 184-184Z\" /></svg>");
+    }
+}

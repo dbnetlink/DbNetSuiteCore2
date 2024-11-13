@@ -212,7 +212,7 @@ namespace DbNetSuiteCore.Extensions
             return $"({primaryKeyColumn.Name} = {Quoted(primaryKeyColumn)}{gridModel.ParentKey}{Quoted(primaryKeyColumn)})";
         }
 
-        public static string AddOrder(ComponentModel gridModel)
+        public static string AddOrder(GridModel gridModel)
         {
             if (string.IsNullOrEmpty(gridModel.SortColumnName))
             {
@@ -220,6 +220,18 @@ namespace DbNetSuiteCore.Extensions
             }
 
             return $"{TextHelper.DelimitColumn(gridModel.SortColumnName, gridModel.DataSourceType)} {gridModel.SortSequence}";
+        }
+
+        public static string AddOrder(SelectModel selectModel)
+        {
+            string optionGroupSortColumnName = string.Empty;
+
+            if (selectModel.IsGrouped)
+            {
+                optionGroupSortColumnName = $"{TextHelper.DelimitColumn(selectModel.OptionGroupColumn.ColumnName, selectModel.DataSourceType)},";
+            }
+
+            return $"{optionGroupSortColumnName}{TextHelper.DelimitColumn(selectModel.SortColumnName, selectModel.DataSourceType)}";
         }
 
         private static string Quoted(ColumnModel column)

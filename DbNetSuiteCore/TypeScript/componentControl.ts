@@ -80,13 +80,22 @@ class ComponentControl {
         return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase()
     }
 
-    protected updateLinkedControls(linkedIds: string, primaryKey: string) {
+    protected updateLinkedControls(linkedIds: string, primaryKey: string, url:string = null) {
         var linkedIdArray = linkedIds.split(",");
+        
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
-                DbNetSuiteCore.controlArray[linkedId].loadFromParent(primaryKey);
+                var linkedControl = DbNetSuiteCore.controlArray[linkedId]
+                if (url != null && linkedControl.dataSourceIsFileSystem()) {
+                    primaryKey = url;
+                }
+                linkedControl.loadFromParent(primaryKey);
             })
         })
+    }
+
+    public dataSourceIsFileSystem() {
+        return this.formControl.dataset.datasourcetype == "FileSystem"
     }
 
     protected loadFromParent(primaryKey: string) {

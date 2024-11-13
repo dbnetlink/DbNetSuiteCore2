@@ -6,9 +6,17 @@ namespace DbNetSuiteCore
     public class ComponentControl
     {
         protected readonly HttpContext _httpContext;
-        public ComponentControl(HttpContext httpContext) 
+        public ComponentControl(HttpContext httpContext)
         {
             _httpContext = httpContext;
+        }
+
+        protected void ValidateControl(ComponentModel componentModel)
+        {
+            if (componentModel.DataSourceType == Enums.DataSourceType.FileSystem && componentModel.IsLinked)
+            {
+                componentModel.Url = string.Empty;
+            }
         }
 
         protected async Task<HtmlString> RenderView(string viewName, ComponentModel componentModel)

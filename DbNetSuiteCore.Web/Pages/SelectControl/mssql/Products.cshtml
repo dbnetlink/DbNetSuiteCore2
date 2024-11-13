@@ -1,0 +1,14 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var productSelect = new SelectModel(DataSourceType.MSSQL, "Northwind(mssql)", "Products join Categories on Products.CategoryID = Categories.CategoryID") { Searchable = true };
+    productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("ProductID"),
+        new SelectColumn("ProductName"),
+        new SelectColumn("CategoryName") {OptionGroup = true}
+    };
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(productSelect))
+}

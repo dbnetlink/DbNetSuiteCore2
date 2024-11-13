@@ -106,7 +106,14 @@ namespace DbNetSuiteCore.Helpers
             Object[] args = new Object[1];
             args[0] = connectionString;
 
-            return (IDbConnection)Activator.CreateInstance(connectionType!, args);
+            try
+            {
+                return (IDbConnection)Activator.CreateInstance(connectionType!, args);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>");
+            }
         }
 
         public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null, CommandType commandType = CommandType.Text)

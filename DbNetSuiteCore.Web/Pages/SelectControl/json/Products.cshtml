@@ -1,0 +1,13 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var productSelect = new SelectModel(DataSourceType.JSON, $"/data/json/superstore.json") { Searchable = true, Distinct = true };
+    productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("City"),
+        new SelectColumn("State") {OptionGroup = true}
+    };
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(productSelect))
+}

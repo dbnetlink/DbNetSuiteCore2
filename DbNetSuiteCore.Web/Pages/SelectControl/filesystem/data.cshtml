@@ -4,10 +4,11 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var fileSelect = new SelectModel(DataSourceType.FileSystem, "/data/files") { FixedFilter = "(IsDirectory = 0)" };
+    var fileSelect = new SelectModel(DataSourceType.FileSystem, "/data") {  Searchable = true};
     fileSelect.Columns = new List<SelectColumn>()
     {
-        new SelectColumn(FileSystemColumn.Name.ToString())
+        new SelectColumn(FileSystemColumn.Name.ToString()),
+        new SelectColumn(FileSystemColumn.Folder.ToString()) { OptionGroup = true}
     };
 
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(fileSelect));

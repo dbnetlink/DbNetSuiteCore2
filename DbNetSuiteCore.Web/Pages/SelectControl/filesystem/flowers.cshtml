@@ -1,0 +1,27 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var fileSelect = new SelectModel(DataSourceType.FileSystem, "/data/files") {  Searchable = true};
+    fileSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn(FileSystemColumn.Name.ToString())
+    };
+
+    fileSelect.ClientEvents[SelectClientEvent.OptionSelected] = "showImage";
+
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(fileSelect))
+}
+
+<img id="flowerImage" />
+
+<script>
+    var caption = ''
+
+    function showImage(selectControl, args) {
+        var selectedOption = args.selectedOptions[0]
+        document.querySelector("#flowerImage").src = selectedOption.dataset.path
+    }
+</script>

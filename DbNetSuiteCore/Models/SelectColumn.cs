@@ -8,6 +8,8 @@ namespace DbNetSuiteCore.Models
         internal bool _searchable = false;
         public override bool Searchable => _searchable;
 
+        public bool OptionGroup { get; set; } = false;
+
         public SelectColumn()
         {
         }

@@ -2,7 +2,7 @@
 @using System.Text.Json
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-<form class="dbnetsuite dbnetsuite-select" hx-post="@Model.PostUrl" hx-trigger="@Model.HxFormTrigger" hx-indicator="next .htmx-indicator" hx-target="this" id="@Model.Id" name="@TriggerNames.InitialLoad" style="display:none">
+<form class="dbnetsuite dbnetsuite-select" hx-post="@Model.PostUrl" hx-trigger="@Model.HxFormTrigger" hx-indicator="next .htmx-indicator" hx-target="this" id="@Model.Id" name="@TriggerNames.InitialLoad" style="display:none" data-datasourcetype="@Model.DataSourceType">
     @await Html.PartialAsync("Select/Hidden",Model)
 </form>
 @await Html.PartialAsync("HxIndicator")

@@ -12,7 +12,7 @@ namespace DbNetSuiteCore.Services
 {
     public class SelectService : ComponentService, ISelectService
     {
-        public SelectService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository)
+        public SelectService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration)
         {
         }
 
@@ -41,10 +41,7 @@ namespace DbNetSuiteCore.Services
             SelectModel selectModel = GetSelectModel() ?? new SelectModel();
             selectModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            if (selectModel.TriggerName == TriggerNames.InitialLoad)
-            {
-                ValidateModel(selectModel);
-            }
+            ValidateModel(selectModel);
 
             switch (selectModel.TriggerName)
             {
@@ -80,12 +77,11 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context),_configuration);
                 SelectModel selectModel = JsonConvert.DeserializeObject<SelectModel>(model) ?? new SelectModel();
-                selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
-                selectModel.ParentKey = RequestHelper.FormValue("primaryKey", selectModel.ParentKey, _context);
+                selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
+                AssignParentKey(selectModel);
                 selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
-
                 return selectModel;
             }
             catch

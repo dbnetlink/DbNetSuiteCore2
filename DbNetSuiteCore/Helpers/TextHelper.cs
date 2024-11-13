@@ -18,28 +18,28 @@ namespace DbNetSuiteCore.Helpers
         {
             return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(text);
         }
-        public static string ObfuscateString(string input)
+        public static string ObfuscateString(string input, IConfiguration configuration)
         {
             //return input;
-            return Compress(input);
-            byte[] bytes = Encoding.UTF8.GetBytes(input);
-            for (int i = 0; i < bytes.Length; i++)
+            var encryptionConfig = GetEncryptionConfig(configuration);
+
+            if (encryptionConfig.IsValid == false)
             {
-                bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA
+                return Compress(input);
             }
-            return Convert.ToBase64String(bytes);
+            return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
-        public static string DeobfuscateString(string input)
+        public static string DeobfuscateString(string input, IConfiguration configuration)
         {
             //return input;
-            return Decompress(input);
-            byte[] bytes = Convert.FromBase64String(input);
-            for (int i = 0; i < bytes.Length; i++)
+            var encryptionConfig = GetEncryptionConfig(configuration);
+
+            if (encryptionConfig.IsValid == false)
             {
-                bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA again to reverse
+                return Decompress(input);
             }
-            return Encoding.UTF8.GetString(bytes);
+            return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
         public static string DelimitColumn(string columnName, DataSourceType dataSourceType)
@@ -82,6 +82,23 @@ namespace DbNetSuiteCore.Helpers
         public static bool IsAbsolutePath(string path)
         {
             return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+        }
+
+        private static EncryptionConfig GetEncryptionConfig(IConfiguration configuration)
+        {
+            return new EncryptionConfig()
+            {
+                Key = configuration["DbNetSuiteCore:EncryptionKey"] ?? string.Empty,
+                Salt = configuration["DbNetSuiteCore:EncryptionSalt"] ?? string.Empty
+            };
+        }
+
+        internal class EncryptionConfig
+        {
+            public string Key { get; set; } = string.Empty;
+            public string Salt { get; set; } = string.Empty;
+
+            public bool IsValid => !string.IsNullOrEmpty(Key) && !string.IsNullOrEmpty(Salt);
         }
     }
 }

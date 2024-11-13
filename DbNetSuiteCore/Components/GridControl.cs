@@ -18,6 +18,8 @@ namespace DbNetSuiteCore
                 gridModel._NestedGrids.Add(gridModel.DeepCopy());
             }
 
+            ValidateControl(gridModel);
+
             return await base.RenderView("Grid/ControlForm", gridModel);
         }
     }

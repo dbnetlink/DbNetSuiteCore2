@@ -24,12 +24,17 @@ class SelectControl extends ComponentControl {
         this.invokeEventHandler('Initialised');
     }
     selectChanged(target) {
-        this.updateLinkedSelects(target.value);
+        let url = '';
+        if (target.selectedOptions.length) {
+            var dataset = target.selectedOptions[0].dataset;
+            url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : '';
+        }
+        this.updateLinkedSelects(target.value, url);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
-    updateLinkedSelects(primaryKey) {
+    updateLinkedSelects(primaryKey, url) {
         if (this.select.dataset.linkedcontrolids) {
-            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey);
+            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey, url);
         }
     }
     checkForError() {

@@ -123,6 +123,9 @@
   <data name="ColumnFilterNoData" xml:space="preserve">
     <value>No filter value supplied</value>
   </data>
+  <data name="NoFilesFound" xml:space="preserve">
+    <value>No files found</value>
+  </data>
   <data name="NoRecordsFound" xml:space="preserve">
     <value>No records found</value>
   </data>

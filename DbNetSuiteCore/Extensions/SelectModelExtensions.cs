@@ -62,7 +62,13 @@ namespace DbNetSuiteCore.Extensions
 
         public static void AddOrderPart(this SelectModel selectModel, QueryCommandConfig query)
         {
-            query.Sql += $" order by {selectModel.SortColumnOrdinal} {selectModel.SortSequence}";
+            string optionGroupOrdinal = string.Empty; 
+
+            if (selectModel.IsGrouped)
+            {
+                optionGroupOrdinal = $"{selectModel.OptionGroupColumn.Ordinal},";
+            }
+            query.Sql += $" order by {optionGroupOrdinal}{selectModel.SortColumnOrdinal} {selectModel.SortSequence}";
         }
     }
 }
