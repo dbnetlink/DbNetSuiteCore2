@@ -42,6 +42,12 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
+            if (!string.IsNullOrEmpty(selectModel.FixedFilter))
+            {
+                filterParts.Add($"({selectModel.FixedFilter})");
+                ComponentModelExtensions.AssignParameters(query, selectModel.FixedFilterParameters);
+            }
+
             if (filterParts.Any())
             {
                 query.Sql += $" where {string.Join(" and ", filterParts)}";

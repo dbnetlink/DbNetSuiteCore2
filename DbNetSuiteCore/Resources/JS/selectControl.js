@@ -14,6 +14,7 @@ class SelectControl extends ComponentControl {
         if (this.triggerName(evt) == "initialload") {
             this.initialise();
         }
+        this.invokeEventHandler('OptionsLoaded');
         this.selectChanged(this.select);
         this.checkForError();
     }

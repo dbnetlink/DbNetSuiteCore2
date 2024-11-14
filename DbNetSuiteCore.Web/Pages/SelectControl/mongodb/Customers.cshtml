@@ -5,12 +5,14 @@
 @using DbNetSuiteCore.Models
 @using Microsoft.Extensions.Primitives
 @{
-    var customersSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Customers") { DatabaseName = "Northwind" };
+    var customersSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Customers") { DatabaseName = "Northwind", Searchable = true };
 
     customersSelect.Columns = new List<SelectColumn>() {
         new SelectColumn("CustomerID"),
         new SelectColumn("CompanyName")
     };
+
+    customersSelect.FixedFilter = "{\"CompanyName\": {\"$regex\": \"^b\", \"$options\": \"i\"}}"; 
 
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customersSelect))
 }

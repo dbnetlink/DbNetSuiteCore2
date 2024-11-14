@@ -1,0 +1,93 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var citiesGrid = new GridModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "."};
+    citiesGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("id") { ForeignKey = true},
+        new GridColumn("Name", "City") ,
+        new GridColumn("state_name", "State"),
+        new GridColumn("country_name", "Country"),
+        new GridColumn("latitude"),
+        new GridColumn("longitude"),
+        new GridColumn("(latitude & ',' & longitude)", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
+        new GridColumn("wikiDataId") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
+    };
+    citiesGrid.ClientEvents[GridClientEvent.RowSelected] = "updateMap";
+
+    var citySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "City", Searchable = true };
+    citySelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("id") {PrimaryKey = true },
+        new SelectColumn("name"),
+        new SelectColumn("state_id") { ForeignKey = true }
+    };
+
+    citySelect.LinkedControl = citiesGrid;
+
+    var stateSelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "State", Searchable = true, Distinct = true };
+    stateSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("state_id") {PrimaryKey = true },
+        new SelectColumn("state_name"),
+        new SelectColumn("country_id") { ForeignKey = true }
+    };
+    stateSelect.LinkedControl = citySelect;
+
+    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "Country", Searchable = true, Distinct = true };
+    countrySelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("country_id") {PrimaryKey = true },
+        new SelectColumn("country_name")
+    };
+    countrySelect.LinkedControl = stateSelect;
+}
+<div class="flex flex-row">
+    <div class="flex">
+        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(countrySelect))
+    </div>
+    <div class="flex">
+        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(stateSelect))
+    </div>
+    <div class="flex">
+        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
+    </div>
+</div>
+<div class="flex">
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(citiesGrid))
+</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<div class="flex p-1" id="map" style="height:400px; width:800px;"></div>
+
+
+<script>
+    var map, marker;
+
+    function updateMap(gridControl, args) {
+        gridControl.setCaption(gridControl.columnValue("name", args.row))
+        let latitude = gridControl.columnValue("latitude", args.row);
+        let longitude = gridControl.columnValue("longitude", args.row);
+        renderMap(Number(latitude), Number(longitude))
+    }
+
+    function renderMap(latitude, longitude) {
+        if (map) {
+            marker.setLatLng([latitude, longitude]);
+            map.panTo([latitude, longitude]);
+        }
+        else {
+            map = L.map('map').setView([latitude, longitude], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            marker = L.marker([latitude, longitude]).addTo(map);
+        }
+    }
+</script>

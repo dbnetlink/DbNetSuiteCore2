@@ -13,8 +13,10 @@
 </head>
 <body>
     <main>
-@{
+        @{
             var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+            customerSelect.FixedFilter = "companyname like @companyname";
+            customerSelect.FixedFilterParameters.Add(new DbParameter("@companyname", "B%"));
             @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customerSelect))
 }
     </main>

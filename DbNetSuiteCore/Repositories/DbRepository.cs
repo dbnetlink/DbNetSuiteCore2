@@ -57,7 +57,6 @@ namespace DbNetSuiteCore.Repositories
                     gridModel.Data.FilterAndSort(gridModel);
                 }
             }
-
         }
 
         public async Task GetRecord(GridModel gridModel)

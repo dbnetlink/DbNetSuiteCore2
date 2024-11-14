@@ -5,6 +5,8 @@ using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using DbNetSuiteCore.Helpers;
+using System.Text.RegularExpressions;
+using MongoDB.Bson.IO;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -66,6 +68,12 @@ namespace DbNetSuiteCore.Repositories
             {
                 var gridModel = (GridModel)componentModel;
                 pipeline.Add(new BsonDocument("$match", BuildMatchStage(gridModel)));
+
+            }
+            if (componentModel is SelectModel)
+            {
+                var selectModel = (SelectModel)componentModel;
+                pipeline.Add(new BsonDocument("$match", BuildMatchStage(selectModel)));
 
             }
             if (string.IsNullOrEmpty(componentModel.SortColumnName) == false)
@@ -346,6 +354,37 @@ namespace DbNetSuiteCore.Repositories
                 {
                     filter.AddRange(new BsonDocument(new Dictionary<string, object>() { { GetFilterOperator(MongoDbFilterOperator.and), match.ToArray() } }));
                 }
+            }
+
+            if (string.IsNullOrEmpty(gridModel.FixedFilter) == false)
+            {
+                filter.AddRange(BsonDocument.Parse(gridModel.FixedFilter));
+            }
+
+            return filter;
+        }
+
+        private BsonDocument BuildMatchStage(SelectModel selectModel)
+        {
+            var filter = new BsonDocument();
+            if (string.IsNullOrEmpty(selectModel.SearchInput) == false)
+            {
+                var match = new List<BsonDocument>();
+
+                foreach (var expression in selectModel.SearchableColumns.Select(c => c.Expression).ToList())
+                {
+                    match.Add(new BsonDocument(expression, new BsonDocument(GetFilterOperator(MongoDbFilterOperator.regex), new BsonRegularExpression(selectModel.SearchInput, "i"))));
+                }
+
+                if (match.Any())
+                {
+                    filter.AddRange(new BsonDocument(new Dictionary<string, object>() { { GetFilterOperator(MongoDbFilterOperator.or), match.ToArray() } }));
+                }
+            }
+
+            if (string.IsNullOrEmpty(selectModel.FixedFilter) == false)
+            {
+                filter.AddRange(BsonDocument.Parse(selectModel.FixedFilter)); 
             }
 
             return filter;

@@ -37,7 +37,7 @@
         new SelectColumn("City"),
         new SelectColumn("State") {OptionGroup = true}
     };
-
+    productSelect.FixedFilter = "City like 'A%'";
     productSelect.LinkedControl = superstoreGrid;
     productSelect.ClientEvents[SelectClientEvent.OptionSelected] = "getCaption";
 }

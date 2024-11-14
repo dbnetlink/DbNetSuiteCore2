@@ -1,0 +1,31 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products");
+	productsGrid.Columns = new List<GridColumn>() {
+		new GridColumn("ProductID") { PrimaryKey = true },
+		new GridColumn("ProductName"),
+		new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = FilterType.Default },
+		new GridColumn("CategoryID","Category") { ForeignKey = true,  Lookup = new Lookup("Categories", "CategoryID", "CategoryName"), Filter = FilterType.Default },
+		new GridColumn("QuantityPerUnit", "Qty."),
+		new GridColumn("UnitPrice","Price") { Format = "c"},
+		new GridColumn("UnitsInStock", "Stock"),
+		new GridColumn("UnitsOnOrder","On Order"),
+		new GridColumn("ReorderLevel"),
+		new GridColumn("Discontinued") { DataType = typeof(Boolean), Filter = FilterType.Default, LookupEnum = typeof(DiscontinuedEnum)}
+	};
+
+	var productSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Categories") { Caption = "Category"};
+	productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("CategoryID"),
+        new SelectColumn("CategoryName")
+    };
+	productSelect.LinkedControl = productsGrid;
+
+	@(await new DbNetSuiteCore.SelectControl(HttpContext).Render(productSelect))
+	@(await new DbNetSuiteCore.GridControl(HttpContext).Render(productsGrid))
+}

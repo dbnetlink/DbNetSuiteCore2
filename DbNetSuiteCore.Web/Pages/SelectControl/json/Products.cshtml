@@ -9,5 +9,6 @@
         new SelectColumn("City"),
         new SelectColumn("State") {OptionGroup = true}
     };
+    productSelect.FixedFilter = "City like 'A%'";
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(productSelect))
 }

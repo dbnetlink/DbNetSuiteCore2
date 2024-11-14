@@ -3,6 +3,7 @@
     public enum SelectClientEvent
     {
         Initialised,
+        OptionsLoaded,
         OptionSelected
     };
 }

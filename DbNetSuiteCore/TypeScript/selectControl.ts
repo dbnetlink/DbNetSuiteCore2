@@ -20,8 +20,8 @@ class SelectControl extends ComponentControl {
             this.initialise()
         }
 
+        this.invokeEventHandler('OptionsLoaded');
         this.selectChanged(this.select);
-
         this.checkForError();
     }
 

@@ -1,0 +1,35 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var citySelect = new SelectModel("cities") { Caption = "City", Searchable = true };
+    citySelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("id") {PrimaryKey = true },
+        new SelectColumn("name"),
+        new SelectColumn("state_id") { ForeignKey = true }
+    };
+
+    var stateSelect = new SelectModel("cities") { Caption = "State", Distinct = true };
+    stateSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("state_id") {PrimaryKey = true },
+        new SelectColumn("state_name"),
+        new SelectColumn("country_id") { ForeignKey = true}
+    };
+    stateSelect.LinkedControl = citySelect;
+
+    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "Country", Distinct = true };
+    countrySelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("country_id") {PrimaryKey = true },
+        new SelectColumn("country_name")
+    };
+    countrySelect.LinkedControl = stateSelect;
+}
+@(await new DbNetSuiteCore.SelectControl(HttpContext).Render(countrySelect))
+@(await new DbNetSuiteCore.SelectControl(HttpContext).Render(stateSelect))
+@(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
