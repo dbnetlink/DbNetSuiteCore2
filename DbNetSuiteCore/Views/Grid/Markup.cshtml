@@ -100,12 +100,7 @@
     <div class="flex">
         @await Html.PartialAsync("HxIndicator")
     </div>
-    <div class="absolute flex flex-row" style="left:50%;top:50%;display:none">
-        <div id="toastMessage" class="toast-message">
-            @IconHelper.Info()
-            <span class="pl-1"></span>
-        </div>
-    </div>
+    @await Html.PartialAsync("ToastMessage")
     @if (Model.GridModel.ViewDialog != null)
     {
         @await Html.PartialAsync("Grid/ViewDialog", Model)

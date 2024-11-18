@@ -1,6 +1,10 @@
-var DbNetSuiteCore: any = {};
+interface Dictionary<T> {
+    [Key: string]: T;
+}
 
-DbNetSuiteCore.controlArray = {}
+var DbNetSuiteCore: any = {};
+var controlArray: Dictionary<ComponentControl> = {}
+DbNetSuiteCore.controlArray = controlArray;
 DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents) {
     document.addEventListener('htmx:afterRequest', function (evt) {
         if (!DbNetSuiteCore.controlArray[controlId]) {
@@ -26,6 +30,8 @@ DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents) 
 class ComponentControl {
     controlId: string = "";
     formControl: HTMLFormElement;
+    parentControl: ComponentControl;
+    childControls: Dictionary<ComponentControl> = {};
     controlContainer: HTMLElement;
     eventHandlers = {};
 
@@ -86,6 +92,8 @@ class ComponentControl {
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
                 var linkedControl = DbNetSuiteCore.controlArray[linkedId]
+                linkedControl.parentControl = this;
+                this.childControls[linkedId] = linkedControl;
                 if (url != null && linkedControl.dataSourceIsFileSystem()) {
                     primaryKey = url;
                 }

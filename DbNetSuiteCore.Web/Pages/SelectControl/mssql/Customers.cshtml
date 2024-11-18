@@ -5,6 +5,6 @@
 @using DbNetSuiteCore.Models
 @using Microsoft.Extensions.Primitives
 @{
-    var customersSelect = new SelectModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "customers");
+    var customersSelect = new SelectModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "customers") { Searchable = true};
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customersSelect))
 }

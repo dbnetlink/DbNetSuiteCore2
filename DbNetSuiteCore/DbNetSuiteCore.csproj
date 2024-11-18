@@ -54,6 +54,7 @@
     <Content Remove="Views\Grid\ViewDialogContent.cshtml" />
     <Content Remove="Views\Select\ControlForm.cshtml" />
     <Content Remove="Views\Select\Hidden.cshtml" />
+    <Content Remove="Views\ToastMessage.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -104,6 +105,9 @@
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\Grid\Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ToastMessage.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Select\Options.cshtml">

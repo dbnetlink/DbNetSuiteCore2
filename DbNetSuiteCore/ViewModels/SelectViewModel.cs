@@ -13,7 +13,7 @@ namespace DbNetSuiteCore.ViewModels
         public string SelectId => _selectModel.Id;
         public string LinkedSelectIds => string.Join(",", SelectModel.LinkedSelectIds);
         public DataRowCollection Rows => SelectModel.Data.Rows;
-        public bool SelectFirstOption => SelectModel.RowSelection != RowSelection.None && string.IsNullOrEmpty(SelectModel.EmptyOption);
+        public bool SelectFirstOption => SelectModel.RowSelection == RowSelection.Single && string.IsNullOrEmpty(SelectModel.EmptyOption);
         public string HxTarget => $"next div.target";
         public string Value(DataRow dataRow) 
         {

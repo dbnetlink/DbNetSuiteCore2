@@ -6,6 +6,7 @@
     @await Html.PartialAsync("Select/Hidden",Model)
 </form>
 @await Html.PartialAsync("HxIndicator")
+
 <script>
     document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); }); 
 </script>

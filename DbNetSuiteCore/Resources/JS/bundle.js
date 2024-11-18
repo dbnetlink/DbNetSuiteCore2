@@ -1,5 +1,6 @@
 var DbNetSuiteCore = {};
-DbNetSuiteCore.controlArray = {};
+var controlArray = {};
+DbNetSuiteCore.controlArray = controlArray;
 DbNetSuiteCore.createClientControl = function (controlId, clientEvents) {
     document.addEventListener('htmx:afterRequest', function (evt) {
         if (!DbNetSuiteCore.controlArray[controlId]) {
@@ -21,6 +22,7 @@ DbNetSuiteCore.createClientControl = function (controlId, clientEvents) {
 class ComponentControl {
     constructor(controlId) {
         this.controlId = "";
+        this.childControls = {};
         this.eventHandlers = {};
         this.isElementLoaded = async (selector) => {
             while (document.querySelector(selector) === null) {
@@ -77,6 +79,8 @@ class ComponentControl {
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
                 var linkedControl = DbNetSuiteCore.controlArray[linkedId];
+                linkedControl.parentControl = this;
+                this.childControls[linkedId] = linkedControl;
                 if (url != null && linkedControl.dataSourceIsFileSystem()) {
                     primaryKey = url;
                 }

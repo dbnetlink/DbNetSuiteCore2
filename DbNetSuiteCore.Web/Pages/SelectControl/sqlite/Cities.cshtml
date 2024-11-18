@@ -13,6 +13,8 @@
         new SelectColumn("state_id") { ForeignKey = true }
     };
 
+    citySelect.ClientEvents[SelectClientEvent.OptionSelected] = "showSelectedCity";
+
     var stateSelect = new SelectModel("cities") { Caption = "State", Distinct = true };
     stateSelect.Columns = new List<SelectColumn>
     {
@@ -33,3 +35,19 @@
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(countrySelect))
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(stateSelect))
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
+
+
+<script>
+    function showSelectedCity(selectControl, args)
+    {
+        alert(`${selectControl.parentControl.parentControl.select.selectedOptions[0].text} => ${selectControl.parentControl.select.selectedOptions[0].text} => ${args.selectedOptions[0].text}`)
+
+        for (var id in selectControl.parentControl.parentControl.childControls) { 
+            alert(selectControl.parentControl.parentControl.childControls[id].select.selectedOptions[0].text)
+        }
+
+        for (var id in selectControl.parentControl.childControls) {
+            alert(selectControl.parentControl.childControls[id].select.selectedOptions[0].text)
+        }
+    }
+</script>
