@@ -7,6 +7,7 @@ using MongoDB.Driver;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
 using MongoDB.Bson.IO;
+using System.Text.Json;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -24,15 +25,15 @@ namespace DbNetSuiteCore.Repositories
             var database = GetDatabase(componentModel);
             componentModel.Data = await CreateDataTableFromPipeline(database, componentModel);
 
+            foreach (var column in componentModel.GetColumns().Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false && c.LookupOptions == null))
+            {
+                await GetLookupOptions(componentModel, column, database);
+            }
+            componentModel.ConvertEnumLookups();
+
             if (componentModel is GridModel)
             {
-                var gridModel = (GridModel)componentModel;
-                foreach (var gridColumn in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false && c.LookupOptions == null))
-                {
-                    await GetLookupOptions(gridModel, gridColumn, database);
-                }
-                gridModel.ConvertEnumLookups();
-                gridModel.GetDistinctLookups();
+                ((GridModel)componentModel).GetDistinctLookups();
             }
         }
 
@@ -56,10 +57,6 @@ namespace DbNetSuiteCore.Repositories
             gridModel.ConvertEnumLookups();
         }
 
-        public void GetRecords(SelectModel selectModel)
-        {
-        }
-
         private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, ComponentModel componentModel)
         {
             var collection = database.GetCollection<BsonDocument>(componentModel.TableName);
@@ -68,18 +65,18 @@ namespace DbNetSuiteCore.Repositories
             {
                 var gridModel = (GridModel)componentModel;
                 pipeline.Add(new BsonDocument("$match", BuildMatchStage(gridModel)));
-
+                if (string.IsNullOrEmpty(componentModel.SortColumnName) == false)
+                {
+                    pipeline.Add(new BsonDocument("$sort", BuildSortStage(gridModel)));
+                }
             }
             if (componentModel is SelectModel)
             {
                 var selectModel = (SelectModel)componentModel;
                 pipeline.Add(new BsonDocument("$match", BuildMatchStage(selectModel)));
+                pipeline.Add(new BsonDocument("$sort", BuildSortStage(selectModel)));
+            }
 
-            }
-            if (string.IsNullOrEmpty(componentModel.SortColumnName) == false)
-            {
-                pipeline.Add(new BsonDocument("$sort", BuildSortStage(componentModel)));
-            }
             pipeline.Add(new BsonDocument("$project", BuildProjectStage(componentModel)));
 
             if (componentModel.QueryLimit > 0)
@@ -146,56 +143,56 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private async Task GetLookupOptions(GridModel gridModel, GridColumn gridColumn, IMongoDatabase database)
+        private async Task GetLookupOptions(ComponentModel componentModel, ColumnModel column, IMongoDatabase database)
         {
-            DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+            DataColumn? dataColumn = componentModel.GetDataColumn(column);
 
-            gridColumn.DbLookupOptions = new List<KeyValuePair<string, string>>();
+            column.DbLookupOptions = new List<KeyValuePair<string, string>>();
 
-            if (dataColumn == null || gridModel.Data.Rows.Count == 0)
+            if (dataColumn == null || componentModel.Data.Rows.Count == 0)
             {
                 return;
             }
 
-            var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
+            var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
 
-            var lookup = gridColumn.Lookup!;
+            var lookup = column.Lookup!;
 
-            DataTable lookupData = await CreateLookupOptionsFromPipeline(database, gridColumn, gridModel, lookupValues);
+            DataTable lookupData = await CreateLookupOptionsFromPipeline(database, column, lookupValues);
 
-            gridColumn.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
-            gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
+            column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+            componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
         }
 
-        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, GridColumn gridColumn, GridModel gridModel, List<object> values)
+        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, ColumnModel columnModel, List<object> values)
         {
-            var collection = database.GetCollection<BsonDocument>(gridColumn.Lookup.TableName);
+            var collection = database.GetCollection<BsonDocument>(columnModel.Lookup.TableName);
 
             var pipeline = new List<BsonDocument>
             {
-                new BsonDocument("$match", new BsonDocument(gridColumn.Lookup.KeyColumn, new BsonDocument("$in", new BsonArray(values))))
+                new BsonDocument("$match", new BsonDocument(columnModel.Lookup.KeyColumn, new BsonDocument("$in", new BsonArray(values))))
             };
 
             var project = new BsonDocument
             {
-                { gridColumn.Lookup.KeyColumn, $"${gridColumn.Lookup.KeyColumn}" }
+                { columnModel.Lookup.KeyColumn, $"${columnModel.Lookup.KeyColumn}" }
             };
 
-            var descriptionColumn = gridColumn.Lookup.DescriptionColumn;
+            var descriptionColumn = columnModel.Lookup.DescriptionColumn;
 
-            if (gridColumn.Lookup.DescriptionColumn.Contains(":"))
+            if (columnModel.Lookup.DescriptionColumn.Contains(":"))
             {
                 descriptionColumn = "description";
-                project.AddRange(new BsonDocument(descriptionColumn, new BsonDocument("$concat", new BsonArray(FormatConcatFields(gridColumn.Lookup.DescriptionColumn)))));
+                project.AddRange(new BsonDocument(descriptionColumn, new BsonDocument("$concat", new BsonArray(FormatConcatFields(columnModel.Lookup.DescriptionColumn)))));
             }
             else
             {
-                project.Add(gridColumn.Lookup.DescriptionColumn, $"${descriptionColumn}");
+                project.Add(columnModel.Lookup.DescriptionColumn, $"${descriptionColumn}");
             }
 
             pipeline.Add(new BsonDocument("$project", project));
 
-            var columns = new List<GridColumn> { new GridColumn(gridColumn.Lookup.KeyColumn), new GridColumn(descriptionColumn) };
+            var columns = new List<GridColumn> { new GridColumn(columnModel.Lookup.KeyColumn), new GridColumn(descriptionColumn) };
 
             return await BuildDataTableFromCursor(pipeline, collection, columns);
         }
@@ -384,7 +381,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (string.IsNullOrEmpty(selectModel.FixedFilter) == false)
             {
-                filter.AddRange(BsonDocument.Parse(selectModel.FixedFilter)); 
+                filter.AddRange(BsonDocument.Parse(selectModel.FixedFilter));
             }
 
             return filter;
@@ -498,12 +495,17 @@ namespace DbNetSuiteCore.Repositories
             return $"${filterOperator}";
         }
 
-        private BsonDocument BuildSortStage(ComponentModel componentModel)
+        private BsonDocument BuildSortStage(GridModel gridModel)
         {
             return new BsonDocument
             {
-                { componentModel.SortColumnName, componentModel.SortSequence == Enums.SortOrder.Asc ? 1 : -1 }
+                { gridModel.SortColumnName, gridModel.SortSequence == Enums.SortOrder.Asc ? 1 : -1 }
             };
+        }
+
+        private BsonDocument BuildSortStage(SelectModel selectModel)
+        {
+            return selectModel.IsGrouped ? new BsonDocument { { selectModel.OptionGroupColumn.ColumnName, 1 }, { selectModel.SortColumnName, 1 } } : new BsonDocument { { selectModel.SortColumnName, 1 } };
         }
 
         private BsonDocument BuildProjectStage(ComponentModel componentModel)

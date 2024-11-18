@@ -27,7 +27,7 @@
                 @CloseOptionGroup()
                 @OpenOptionGroup(row)
             }
-            <option value="@Model.Value(row)" @(rowNumber == 0 && Model.SelectFirstOption ? "selected" : null) @RazorHelper.DataAttributes(row)>@Model.Description(row)</option>
+            <option value="@Model.Value(row)" @(rowNumber == 0 && Model.SelectFirstOption ? "selected" : null) @RazorHelper.DataAttributes(row, Model.SelectModel)>@Model.Description(row)</option>
             rowNumber++;
         }
         @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)

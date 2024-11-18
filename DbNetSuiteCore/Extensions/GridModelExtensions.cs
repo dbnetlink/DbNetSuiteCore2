@@ -74,7 +74,7 @@ namespace DbNetSuiteCore.Extensions
                     if (foreignKeyColumn != null)
                     {
                         filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
-                        query.Params[$"@{foreignKeyColumn.ParamName}"] = foreignKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
+                        query.Params[$"@{foreignKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn,gridModel.ParentKey) ?? string.Empty;
                     }
                 }
                 else
@@ -99,7 +99,7 @@ namespace DbNetSuiteCore.Extensions
         {
             var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
             query.Sql += $" where {primaryKeyColumn.Expression} = @{primaryKeyColumn.ParamName}";
-            query.Params[$"@{primaryKeyColumn.ParamName}"] = primaryKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
+            query.Params[$"@{primaryKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn,gridModel.ParentKey) ?? string.Empty;
         }
 
         public static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
@@ -170,10 +170,10 @@ namespace DbNetSuiteCore.Extensions
                         continue;
                     }
 
-                    if (ComponentModelExtensions.IsCsvFile(gridModel) && columnFilter.Value.Key == "like")
+                    if (columnFilter.Value.Key == "like")
                     {
-                        expression = $"LCASE({expression})";
                         paramValue = paramValue.ToString().ToLower();
+                        expression = ComponentModelExtensions.CaseInsensitiveExpression(gridModel, expression);
                     }
 
                     columnFilterParts.Add($"{expression} {columnFilter.Value.Key} @columnfilter{i}");

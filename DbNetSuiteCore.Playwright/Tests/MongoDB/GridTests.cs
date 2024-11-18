@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace DbNetSuiteCore.Playwright.Tests.MongoDB
 {
     [TestFixture]
-    public class MongoDBGridTests : MongoDBDbSetUp
+    public class GridTests : MongoDBDbSetUp
     {
         [Test]
         public async Task QuickSearch()

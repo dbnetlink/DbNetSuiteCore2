@@ -5,6 +5,7 @@ using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
 
 
 namespace DbNetSuiteCore.Extensions
@@ -57,7 +58,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
                 }
-                query.Params[DbHelper.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
+                query.Params[DbHelper.ParameterName(parameter.Name)] = ColumnModelHelper.TypedValue(parameter.TypeName, parameter.Value);
             }
         }
 
@@ -94,17 +95,28 @@ namespace DbNetSuiteCore.Extensions
 
         public static void AddSearchFilterPart(ComponentModel componentModel, ColumnModel columnModel, QueryCommandConfig query, List<string> filterParts)
         {
-            string searchInput = componentModel.SearchInput;
+            string searchInput = componentModel.SearchInput.ToLower();
             string expression = DbHelper.StripColumnRename(columnModel.Expression);
+            expression = CaseInsensitiveExpression(componentModel, expression);
+            query.Params[$"@{columnModel.ParamName}"] = $"%{searchInput}%";
+            filterParts.Add($"{expression} like @{columnModel.ParamName}");
+        }
 
+        public static string CaseInsensitiveExpression(ComponentModel componentModel, string expression)
+        {
             if (IsCsvFile(componentModel))
             {
-                searchInput = searchInput.ToLower();
                 expression = $"LCASE({expression})";
             }
 
-            query.Params[$"@{columnModel.ParamName}"] = $"%{searchInput}%";
-            filterParts.Add($"{expression} like @{columnModel.ParamName}");
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.PostgreSql:
+                case DataSourceType.MySql:
+                    expression = $"LOWER({expression})";
+                    break;
+            }
+            return expression;
         }
 
         public static void ConvertEnumLookups(this ComponentModel componentModel)

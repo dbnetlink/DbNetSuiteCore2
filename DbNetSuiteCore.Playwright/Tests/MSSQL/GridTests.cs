@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace DbNetSuiteCore.Playwright.Tests.MSSQL
 {
     [TestFixture]
-    public class MSSQLGridTests : MSSQLDbSetUp
+    public class GridTests : MSSQLDbSetUp
     {
         [Test]
         public async Task QuickSearch()

@@ -1,12 +1,13 @@
-﻿using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using System.Data;
+using System.Text.Encodings.Web;
 
 namespace DbNetSuiteCore.Helpers
 {
     public static class RazorHelper
     {
-        private static List<string> IllegalDataValueChars => new List<string>() { "\"", "<" };
         public static HtmlString CellDataAttributes(List<string> classes, object value, string style)
         {
             List<string> dataAttributes = new List<string>();
@@ -16,14 +17,14 @@ namespace DbNetSuiteCore.Helpers
                 dataAttributes.Add($"class=\"{string.Join(" ", classes)}\"");
             }
 
-            if (value != null && (value is byte) == false && IllegalDataValueChars.Any(c => value.ToString().Contains(c)) == false)
+            if (value != null && (value is byte) == false)
             {
-                dataAttributes.Add($"data-value=\"{value}\"");
+                dataAttributes.Add($"data-value=\"{HtmlEncoder.Default.Encode(value?.ToString() ?? string.Empty)}\"");
             }
 
             if (string.IsNullOrEmpty(style) == false)
             {
-                dataAttributes.Add($"style=\"{style}\"");
+                dataAttributes.Add($"style=\"{HtmlEncoder.Default.Encode(style)}\"");
             }
 
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
@@ -46,13 +47,17 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
         }
 
-        public static HtmlString DataAttributes(DataRow row)
+        public static HtmlString DataAttributes(DataRow row, SelectModel selectModel)
         {
             List<string> dataAttributes = new List<string>();
 
-            foreach (DataColumn dataColumn in row.Table.Columns)
+            foreach (SelectColumn selectColumn in selectModel.Columns)
             {
-                dataAttributes.Add($"data-{dataColumn.ColumnName.ToLower()}=\"{row[dataColumn]}\"");
+                DataColumn? dataColumn = selectModel.GetDataColumn(selectColumn);
+                if (dataColumn != null)
+                {
+                    dataAttributes.Add($"data-{dataColumn.ColumnName.ToLower()}=\"{HtmlEncoder.Default.Encode(selectColumn.FormatValue(row[dataColumn])?.ToString() ?? string.Empty)}\"");
+                }
             }
 
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
@@ -60,7 +65,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static HtmlString DataAttribute(string name, object value)
         {
-            return new HtmlString($"{name}=\"{value}\"");
+            return new HtmlString($"{name}=\"{HtmlEncoder.Default.Encode(value?.ToString() ?? string.Empty)}\"");
         }
     }
 }

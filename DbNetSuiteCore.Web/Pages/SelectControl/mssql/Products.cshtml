@@ -1,9 +1,9 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
-
+@using DbNetSuiteCore.Web.Helpers
 @{
-    var productSelect = new SelectModel(DataSourceType.MSSQL, "Northwind(mssql)", "Products join Categories on Products.CategoryID = Categories.CategoryID") { Searchable = true };
+    var productSelect = new SelectModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Products join Categories on Products.CategoryID = Categories.CategoryID") { Searchable = true };
     productSelect.Columns = new List<SelectColumn>()
     {
         new SelectColumn("ProductID"),

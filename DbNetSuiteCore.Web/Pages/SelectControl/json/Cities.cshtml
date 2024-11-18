@@ -1,0 +1,31 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using System.Net.Http
+@{
+
+    var columns = new List<SelectColumn>() {
+        new SelectColumn("City"),
+        new SelectColumn("State") {OptionGroup = true}
+    };
+
+    var port = Request.Query["port"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["port"];
+    var mode = Request.Query["mode"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["string"];
+
+    var url = String.IsNullOrEmpty(port.ToString()) ? "/data/json/superstore.json" : $"https://localhost:{port}/superstore";
+
+    SelectModel citySelect;
+    if (port != string.Empty && mode != string.Empty)
+    {
+        HttpClient client = new HttpClient();
+        string json = await client.GetStringAsync(url);
+        citySelect = new SelectModel(DataSourceType.JSON, json) { Columns = columns, Searchable = true, Distinct = true,  Cache = true };
+    }
+    else
+    {
+        citySelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Distinct = true, Cache = true };
+    }
+
+    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
+}

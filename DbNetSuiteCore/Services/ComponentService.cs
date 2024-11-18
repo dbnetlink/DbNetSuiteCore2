@@ -64,7 +64,21 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
-            switch(componentModel.DataSourceType)
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.MongoDB:
+                case DataSourceType.SQLite:
+                case DataSourceType.MSSQL:
+                case DataSourceType.MySql:
+                case DataSourceType.PostgreSql:
+                    if (string.IsNullOrEmpty(componentModel.ConnectionAlias) && componentModel.IsLinked == false)
+                    {
+                        throw new Exception($"The ConnectionAlias must be specified if the control is not linked to a parent control (<b>{componentModel.TableName}</b>)");
+                    }
+                    break;
+            }
+                     
+            switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MongoDB:
                     if (string.IsNullOrEmpty(componentModel.DatabaseName))

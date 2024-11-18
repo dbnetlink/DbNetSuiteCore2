@@ -31,19 +31,21 @@
         new GridColumn("Profit") { Format = "c", Filter = FilterType.Default}
     };
 
-    var superstoreGrid = new GridModel(DataSourceType.JSON, $"/data/json/superstore.json") { Columns = columns, Caption = "Products" };
+    var superstoreGrid = new GridModel(DataSourceType.JSON, $"/data/json/superstore.json") { Columns = columns, Caption = "Products", Cache = true };
 
     var productSelect = new SelectModel(DataSourceType.JSON, $"/data/json/superstore.json")
-    {
-        Columns = new List<SelectColumn>
+            {
+                Columns = new List<SelectColumn>
         {
             new SelectColumn("Product ID"),
             new SelectColumn("Product Name")
         },
-        Distinct = true,
-        Searchable = true,
-        Caption = "Products"
-    };
+                Distinct = true,
+                Searchable = true,
+                Caption = "Products",
+                Cache = true
+
+            };
 
     productSelect.LinkedControl = superstoreGrid;
 }

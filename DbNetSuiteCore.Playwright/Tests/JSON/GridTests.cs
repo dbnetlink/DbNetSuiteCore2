@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.JSON
 {
-    public class JsonGridTests : GridTests
+    public class GridTests : ComponentTests
     {
 
         [Test]

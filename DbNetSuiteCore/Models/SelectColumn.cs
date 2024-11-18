@@ -5,9 +5,6 @@ namespace DbNetSuiteCore.Models
 {
     public class SelectColumn : ColumnModel
     {
-        internal bool _searchable = false;
-        public override bool Searchable => _searchable;
-
         public bool OptionGroup { get; set; } = false;
 
         public SelectColumn()

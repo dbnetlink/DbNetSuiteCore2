@@ -33,7 +33,7 @@ namespace DbNetSuiteCore.Extensions
                     if (foreignKeyColumn != null)
                     {
                         filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
-                        query.Params[$"@{foreignKeyColumn.ParamName}"] = foreignKeyColumn!.TypedValue(selectModel.ParentKey) ?? string.Empty;
+                        query.Params[$"@{foreignKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn,selectModel.ParentKey) ?? string.Empty;
                     }
                 }
                 else

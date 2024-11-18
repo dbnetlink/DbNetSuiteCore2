@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Data;
 using System.Text.Json.Serialization;
 
@@ -48,6 +49,7 @@ namespace DbNetSuiteCore.Models
         }
 
         public bool IsGrouped => Columns.Any(c => c.OptionGroup);
+        public LayoutType Layout { get; set; } = LayoutType.Column;
 
         public SelectModel() : base()
         {

@@ -24,6 +24,6 @@
 
     customersGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
 
-    customersGrid.FixedFilter = "{\"Country\": {\"$eq\": \"USA\"}}";
+  //  customersGrid.FixedFilter = "{\"Country\": {\"$eq\": \"USA\"}}";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
 }

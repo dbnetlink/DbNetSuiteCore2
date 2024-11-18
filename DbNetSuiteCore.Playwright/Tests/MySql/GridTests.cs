@@ -1,24 +1,21 @@
 ﻿using DbNetSuiteCore.Playwright.Models;
 using NUnit.Framework;
-using System.Diagnostics.Metrics;
-using System.Drawing;
-using System.Net;
 
-namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
+namespace DbNetSuiteCore.Playwright.Tests.MySql
 {
     [TestFixture]
-    public class PostgreSqlGridTests : PostgreSqlDbSetUp
+    public class GridTests : MySQLDbSetUp
     {
         [Test]
         public async Task QuickSearchTest()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
-                { "ger", 33 },
+                { "ger", 41 },
                 { "67", 60 },
                 { string.Empty, 91}
             };
 
-            await GridQuickSearchTest(searches, $"postgresql/customers?db={DatabaseName}");
+            await GridQuickSearchTest(searches, $"mysql/customers?db={DatabaseName}");
         }
 
         [Test]
@@ -32,14 +29,14 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
                 { "ContactTitle", "Accounting Manager" },
                 { "Address", "0123 Grizzly Peak Rd." },
                 { "City", "Aachen" },
-                { "Region", "AK" },
+                { "Region", " " },
                 { "PostalCode", "10038" },
                 { "Country", "Argentina" },
                 { "Phone", "(02) 890 12 34" },
-                { "Fax", "(02) 567 89 01" }
+                { "Fax", " " }
             };
 
-            await GridHeadingSort(sorts, $"postgresql/customers?db={DatabaseName}");
+            await GridHeadingSort(sorts, $"mysql/customers?db={DatabaseName}");
         }
 
         [Test]
@@ -53,14 +50,14 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
                 { "ContactTitle", new KeyValuePair<string, string>("Accounting Manager","Sales Representative") },
                 { "Address", new KeyValuePair<string, string>("0123 Grizzly Peak Rd.","Walserweg 4567") },
                 { "City", new KeyValuePair<string, string>("Aachen","Warszawa") },
-                { "Region", new KeyValuePair<string, string>("AK",string.Empty) },
+                { "Region", new KeyValuePair<string, string>(" ","WY") },
                 { "PostalCode", new KeyValuePair<string, string>("10038","10128") },
                 { "Country", new KeyValuePair<string, string>("Argentina","Venezuela") },
                 { "Phone", new KeyValuePair<string, string>("(02) 890 12 34","981-123456") },
-                { "Fax", new KeyValuePair<string, string>("(02) 567 89 01"," ") }
+                { "Fax", new KeyValuePair<string, string>(" ","981-789012") }
             };
 
-            await GridHeadingReverseSort(sorts, $"postgresql/customers?db={DatabaseName}");
+            await GridHeadingReverseSort(sorts, $"mysql/customers?db={DatabaseName}");
         }
 
         [Test]
@@ -79,8 +76,9 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
                 new ColumnFilterTest("ShipperId","",830, FilterType.Select),
             };
 
-            await GridColumnFilter(filterTests, $"postgresql/orders?db={DatabaseName}");
+            await GridColumnFilter(filterTests, $"mysql/orders?db={DatabaseName}");
         }
+
 
     }
 }

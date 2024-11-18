@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="flex flex-col relative gap-1">
+<div class="flex flex-@(Model.SelectModel.Layout == LayoutType.Column ? "col" : "row") relative gap-1">
 
     @if (string.IsNullOrEmpty(Model.SelectModel.Caption) == false)
     {
