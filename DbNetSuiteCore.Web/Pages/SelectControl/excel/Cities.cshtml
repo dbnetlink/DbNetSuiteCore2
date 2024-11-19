@@ -12,6 +12,7 @@
         new SelectColumn("name"),
         new SelectColumn("state_code") { ForeignKey = true }
     };
+  
 
     var stateSelect = new SelectModel(DataSourceType.Excel, "/Data/excel/cities.csv") { Caption = "State", Distinct = true };
     stateSelect.Columns = new List<SelectColumn>
@@ -20,7 +21,6 @@
         new SelectColumn("state_name"),
         new SelectColumn("country_code") { ForeignKey = true }
     };
-    stateSelect.LinkedControl = citySelect;
 
     var countrySelect = new SelectModel(DataSourceType.Excel, "/Data/excel/cities.csv") { Caption = "Country", Distinct = true };
     countrySelect.Columns = new List<SelectColumn>
@@ -28,8 +28,24 @@
         new SelectColumn("country_code") {PrimaryKey = true },
         new SelectColumn("country_name")
     };
+
+    stateSelect.LinkedControl = citySelect;
+    stateSelect.ClientEvents[SelectClientEvent.OptionsLoaded] = "setStateCaption";
+
     countrySelect.LinkedControl = stateSelect;
+    citySelect.ClientEvents[SelectClientEvent.OptionsLoaded] = "setCityCaption";
+   
 }
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(countrySelect))
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(stateSelect))
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
+
+<script>
+    function setStateCaption(selectControl, args) { 
+        selectControl.setCaption(`State (${selectControl.parentControl.select.selectedOptions[0].text})`);
+    }
+
+    function setCityCaption(selectControl, args) {
+        selectControl.setCaption(`City (${selectControl.parentControl.select.selectedOptions[0].text})`);
+    }
+</script>

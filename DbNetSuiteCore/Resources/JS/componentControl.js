@@ -35,6 +35,12 @@ class ComponentControl {
         this.formControl.style.display = '';
         this.controlContainer = this.formControl.parentElement;
     }
+    setCaption(text) {
+        var caption = this.controlElement("div.caption");
+        if (caption) {
+            caption.innerText = text;
+        }
+    }
     invokeEventHandler(eventName, args = {}) {
         window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
