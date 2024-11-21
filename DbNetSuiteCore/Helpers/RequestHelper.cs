@@ -28,6 +28,20 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
+        public static Dictionary<string,string> FormColumnValues(HttpContext httpContext)
+        {
+            Dictionary<string, string> formValues = new Dictionary<string, string>();
+            foreach (string key in httpContext.Request.Form.Keys)
+            {
+                if (key.StartsWith("_"))
+                {
+                    formValues[key.Substring(1)] = httpContext.Request.Form[key];
+                }
+            }
+
+            return formValues;
+        }
+
         public static List<string> FormValueList(string key, HttpContext httpContext)
         {
         #if NET8_0

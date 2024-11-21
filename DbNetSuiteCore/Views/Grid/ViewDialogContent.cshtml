@@ -11,7 +11,7 @@
     int rows = Math.Abs(Model.ColumnCount / layoutColumns) + (remainder == 0 ? 0 : 1);
 }
 
-<table class="table-auto border-collapse m-1" @RazorHelper.RowDataAttributes(Model.Row, Model.GridModel)>
+<table class="table-auto border-collapse m-1" @RazorHelper.RowDataAttributes(Model.Record, Model.GridModel)>
     <tbody>
         @for (int r = 0; r < rows; r++)
         {
@@ -24,10 +24,10 @@
                         GridColumn gridColumn = Model.Columns.ToList()[i];
                         DataColumn? dataColumn = Model.GridModel.GetDataColumn(gridColumn);
                         var classes = new List<string>() { "text-base", "view-cell" };
-                        var value = Model.Row[dataColumn!];
+                        var value = Model.Record[dataColumn!];
                         var formattedvalue = gridColumn.FormatValue(value);
 
-                        <td class="font-bold">@(gridColumn.Label)</td>
+                        <td class="font-bold whitespace-nowrap">@(gridColumn.Label)</td>
                         <td>
                             <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>
                                 @if (gridColumn.DataType == typeof(Boolean))

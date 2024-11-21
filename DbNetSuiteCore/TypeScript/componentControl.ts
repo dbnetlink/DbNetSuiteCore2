@@ -17,7 +17,9 @@ DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents) 
             if (controlId.startsWith("Select")) {
                 clientControl = new SelectControl(controlId);
             }
-
+            if (controlId.startsWith("Form")) {
+                clientControl = new FormControl(controlId);
+            }
             for (const [key, value] of Object.entries(clientEvents)) {
                 (clientControl as ComponentControl).eventHandlers[key] = window[value.toString()]
             }
@@ -58,11 +60,11 @@ class ComponentControl {
             this.eventHandlers[eventName](this, args)
         }
         else {
-            this.message(`Javascript function for event type '${eventName}' is not defined`, 'error', 3)
+            this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3)
         }
     }
 
-    protected message(text, style = 'info', delay = 1) {
+    protected toast(text, style = 'info', delay = 1) {
         var toast = this.controlContainer.querySelector("#toastMessage") as HTMLElement
         //toast.classList.add(`alert-${style}`)
         toast.querySelector("span").innerText = text;
@@ -74,7 +76,7 @@ class ComponentControl {
         }
         toast.parentElement.style.display = 'block'
         let self = this
-        window.setTimeout(() => { self.message("") }, delay * 1000)
+        window.setTimeout(() => { self.toast("") }, delay * 1000)
     }
 
     protected formSelector() {
@@ -93,9 +95,9 @@ class ComponentControl {
         return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase()
     }
 
-    protected updateLinkedControls(linkedIds: string, primaryKey: string, url:string = null) {
+    protected updateLinkedControls(linkedIds: string, primaryKey: string, url: string = null) {
         var linkedIdArray = linkedIds.split(",");
-        
+
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
                 var linkedControl = DbNetSuiteCore.controlArray[linkedId]
@@ -127,10 +129,51 @@ class ComponentControl {
         }
     }
 
+    protected toolbarExists() {
+        return this.controlElement('#navigation');
+    }
+
     protected isElementLoaded = async selector => {
         while (document.querySelector(selector) === null) {
             await new Promise(resolve => requestAnimationFrame(resolve))
         }
         return document.querySelector(selector);
     };
+
+    protected removeClass(selector: string, className: string) {
+        this.controlElement(selector).classList.remove(className);
+    }
+
+    protected addClass(selector: string, className: string) {
+        this.controlElement(selector).classList.add(className);
+    }
+
+    public getButton(name): HTMLButtonElement {
+        return this.controlElement(this.buttonSelector(name))
+    }
+
+    public buttonSelector(buttonType) {
+        return `button[button-type="${buttonType}"]`
+    }
+
+    protected setPageNumber(pageNumber: number, totalPages: number, name: string) {
+        var select = this.controlElement(`[name="${name}"]`) as HTMLSelectElement;
+
+        if (select.childElementCount != totalPages) {
+            select.querySelectorAll('option').forEach(option => option.remove())
+            for (var i = 1; i <= totalPages; i++) {
+                var opt = document.createElement('option') as HTMLOptionElement;
+                opt.value = i.toString();
+                opt.text = i.toString();
+                select.appendChild(opt);
+            }
+        }
+
+        select.value = pageNumber.toString();
+    }
+
+    public isControlEvent(evt) {
+        let formId = evt.target.closest("form").id;
+        return formId.startsWith(this.controlId)
+    }
 }

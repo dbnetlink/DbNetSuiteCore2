@@ -19,11 +19,11 @@ namespace DbNetSuiteCore.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IResourceService resourceService, IGridService gridService, ISelectService selectService)
+        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
-                await GenerateResponse(context, resourceService, gridService, selectService);
+                await GenerateResponse(context, resourceService, gridService, selectService, formService);
             }
             else
             {
@@ -31,7 +31,7 @@ namespace DbNetSuiteCore.Middleware
             }
         }
 
-        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, IGridService gridService, ISelectService selectService)
+        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
         {
             var request = context.Request;
             var resp = context.Response;
@@ -47,6 +47,9 @@ namespace DbNetSuiteCore.Middleware
                     break;
                 case "selectcontrol":
                     response = await selectService.Process(context, page);
+                    break;
+                case "formcontrol":
+                    response = await formService.Process(context, page);
                     break;
                 default:
                     response = resourceService.Process(context, page);
@@ -90,8 +93,9 @@ namespace DbNetSuiteCore.Middleware
             services.AddControllersWithViews();
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
-            services.AddScoped<IGridService, GridService>();
-            services.AddScoped<ISelectService, SelectService>();
+            services.AddScoped<GridService, GridService>();
+            services.AddScoped<SelectService, SelectService>();
+            services.AddScoped<FormService, FormService>();
             services.AddScoped<IResourceService, ResourceService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();

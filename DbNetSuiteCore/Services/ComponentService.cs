@@ -119,7 +119,6 @@ namespace DbNetSuiteCore.Services
             return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
         }
 
-
         protected async Task ConfigureColumns(ComponentModel componentModel)
         {
             componentModel.SetColumns(ColumnsHelper.MoveDataOnlyColumnsToEnd(componentModel.GetColumns()).ToList());
@@ -251,6 +250,34 @@ namespace DbNetSuiteCore.Services
                     break;
                 default:
                     await _msSqlRepository.GetRecords(componentModel);
+                    break;
+            }
+        }
+
+        protected async Task GetRecord(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.JSON:
+                    await _jsonRepository.GetRecord(componentModel, _context);
+                    break;
+                case DataSourceType.Excel:
+                    await _excelRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecord(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetRecord(componentModel);
                     break;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using System.Data;
 using DbNetSuiteCore.Enums;
+using MongoDB.Bson;
 
 namespace DbNetSuiteCore.Models
 {
@@ -12,6 +13,8 @@ namespace DbNetSuiteCore.Models
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
         public DataTable Data { get; set; } = new DataTable();
+        [JsonIgnore]
+        public DataTable Record { get; set; } = new DataTable();
         public string TableName { get; set; } = string.Empty;
         public string ProcedureName { get; set; } = string.Empty;
         public string DatabaseName { get; set; } = string.Empty;

@@ -1,6 +1,6 @@
 ﻿namespace DbNetSuiteCore.Services.Interfaces
 {
-    public interface IGridService
+    public interface IComponentService
     {
         Task<Byte[]> Process(HttpContext context, string page);
     }

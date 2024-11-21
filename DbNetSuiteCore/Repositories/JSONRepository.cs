@@ -44,17 +44,11 @@ namespace DbNetSuiteCore.Repositories
                 selectModel.ConvertEnumLookups();
             }
         }
-        public async Task GetRecord(GridModel gridModel, HttpContext httpContext)
+        public async Task GetRecord(ComponentModel componentModel, HttpContext httpContext)
         {
-            var dataTable = await BuildDataTable(gridModel, httpContext);
-            dataTable.FilterWithPrimaryKey(gridModel);
-            gridModel.ConvertEnumLookups();
-        }
-
-        public async Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext)
-        {
-            gridModel.Data = await BuildDataTable(gridModel, httpContext);
-            return gridModel.Data;
+            var dataTable = await BuildDataTable(componentModel, httpContext);
+            dataTable.FilterWithPrimaryKey(componentModel);
+            componentModel.ConvertEnumLookups();
         }
 
         public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext httpContext)

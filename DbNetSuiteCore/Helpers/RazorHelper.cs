@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.ViewModels;
 using Microsoft.AspNetCore.Html;
 using System.Data;
 using System.Text.Encodings.Web;

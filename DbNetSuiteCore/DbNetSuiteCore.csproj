@@ -44,6 +44,11 @@
     <Content Remove="bundleconfig.json" />
     <Content Remove="package.json" />
     <Content Remove="Views\Error.cshtml" />
+    <Content Remove="Views\Form\ControlForm.cshtml" />
+    <Content Remove="Views\Form\Form.cshtml" />
+    <Content Remove="Views\Form\Hidden.cshtml" />
+    <Content Remove="Views\Form\Markup.cshtml" />
+    <Content Remove="Views\Form\Toolbar.cshtml" />
     <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\GridRows.cshtml" />
     <Content Remove="Views\GridToolbar.cshtml" />
@@ -76,6 +81,7 @@
     <None Remove="Resources\SVG\spinner.svg" />
     <None Remove="TypeScript\componentControl.ts" />
     <None Remove="TypeScript\draggableDialog.ts" />
+    <None Remove="TypeScript\formControl.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
     <None Remove="TypeScript\selectControl.ts" />
     <None Remove="TypeScript\viewDialog.ts" />
@@ -101,9 +107,25 @@
     <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
     <EmbeddedResource Include="TypeScript\componentControl.ts" />
+    <EmbeddedResource Include="TypeScript\formControl.ts" />
     <EmbeddedResource Include="TypeScript\selectControl.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
+    <EmbeddedResource Include="Views\Form\ControlForm.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Form\Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Form\Form.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Form\Markup.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Form\Toolbar.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Grid\Hidden.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

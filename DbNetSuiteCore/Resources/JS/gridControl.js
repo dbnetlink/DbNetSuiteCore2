@@ -119,7 +119,7 @@ class GridControl extends ComponentControl {
             else {
                 this.addClass('#query-limited', "hidden");
             }
-            this.setPageNumber(currentPage, totalPages);
+            this.setPageNumber(currentPage, totalPages, "page");
             this.controlElement('[data-type="total-pages"]').value = totalPages.toString();
             this.controlElement('[data-type="row-count"]').value = rowCount.toString();
             this.getButton("first").disabled = currentPage == 1;
@@ -131,28 +131,6 @@ class GridControl extends ComponentControl {
     rowSelection() {
         let thead = this.controlElement("thead");
         return thead.dataset.rowselection.toLowerCase();
-    }
-    removeClass(selector, className) {
-        this.controlElement(selector).classList.remove(className);
-    }
-    addClass(selector, className) {
-        this.controlElement(selector).classList.add(className);
-    }
-    setPageNumber(pageNumber, totalPages) {
-        var select = this.controlElement('[name="page"]');
-        if (select.childElementCount != totalPages) {
-            select.querySelectorAll('option').forEach(option => option.remove());
-            for (var i = 1; i <= totalPages; i++) {
-                var opt = document.createElement('option');
-                opt.value = i.toString();
-                opt.text = i.toString();
-                select.appendChild(opt);
-            }
-        }
-        select.value = pageNumber.toString();
-    }
-    toolbarExists() {
-        return this.controlElement('#navigation');
     }
     configureSortIcon() {
         if (this.controlElements(`th[data-key]`).length == 0) {
@@ -253,7 +231,7 @@ class GridControl extends ComponentControl {
         var table = this.controlElement("table");
         try {
             this.copyElementToClipboard(table);
-            this.message("Page copied to clipboard");
+            this.toast("Page copied to clipboard");
         }
         catch (e) {
             try {
@@ -261,10 +239,10 @@ class GridControl extends ComponentControl {
                 const blobInput = new Blob([content], { type: 'text/html' });
                 const clipboardItemInput = new ClipboardItem({ 'text/html': blobInput });
                 navigator.clipboard.write([clipboardItemInput]);
-                this.message("Page copied to clipboard");
+                this.toast("Page copied to clipboard");
             }
             catch (e) {
-                this.message("Copy failed", "error", 5);
+                this.toast("Copy failed", "error", 5);
                 return;
             }
         }
@@ -347,12 +325,6 @@ class GridControl extends ComponentControl {
     }
     multiRowSelectSelector() {
         return `td > input.multi-select`;
-    }
-    buttonSelector(buttonType) {
-        return `button[button-type="${buttonType}"]`;
-    }
-    getButton(name) {
-        return this.controlElement(this.buttonSelector(name));
     }
     gridControlElement(selector) {
         return this.controlElement(selector);

@@ -69,17 +69,17 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static void FilterWithPrimaryKey(this DataTable dataTable, GridModel gridModel)
+        public static void FilterWithPrimaryKey(this DataTable dataTable, ComponentModel componentModel)
         {
-            var rows = dataTable.Select(AddPrimaryKeyFilter(gridModel));
+            var rows = dataTable.Select(AddPrimaryKeyFilter(componentModel));
 
             if (rows.Any())
             {
-                gridModel.Data = rows.CopyToDataTable();
+                componentModel.Data = rows.CopyToDataTable();
             }
             else
             {
-                gridModel.Data = new DataTable();
+                componentModel.Data = new DataTable();
             }
         }
 
@@ -206,10 +206,10 @@ namespace DbNetSuiteCore.Extensions
             return String.Join(" and ", filterParts);
         }
 
-        private static string AddPrimaryKeyFilter(GridModel gridModel)
+        private static string AddPrimaryKeyFilter(ComponentModel componentModel)
         {
-            var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
-            return $"({primaryKeyColumn.Name} = {Quoted(primaryKeyColumn)}{gridModel.ParentKey}{Quoted(primaryKeyColumn)})";
+            var primaryKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.PrimaryKey);
+            return $"({primaryKeyColumn.Name} = {Quoted(primaryKeyColumn)}{componentModel.ParentKey}{Quoted(primaryKeyColumn)})";
         }
 
         public static string AddOrder(GridModel gridModel)

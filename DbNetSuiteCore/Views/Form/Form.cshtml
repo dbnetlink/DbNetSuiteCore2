@@ -1,0 +1,60 @@
+﻿@model DbNetSuiteCore.ViewModels.FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-message="@Model.FormModel.ErrorMessage">
+    <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
+        @foreach (FormColumn formColumn in Model.Columns)
+        {
+
+            DataColumn? dataColumn = Model.GetDataColumn(formColumn);
+            var value = dataColumn == null ? string.Empty : Model.Record[dataColumn];
+
+            if (Model.FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
+            {
+                value = Model.FormModel.FormValues[formColumn.ColumnName];
+            }
+            <div style="display:grid;grid-template-columns: repeat(1, auto)">
+                @{
+                    FormControl(formColumn, value);
+                }
+            </div>
+        }
+    </div>
+    @await Html.PartialAsync("Form/Hidden", Model.FormModel)
+</div>
+
+@functions {
+    public void FormControl(FormColumn formColumn, object value)
+    {
+        List<string> attributes = new List<string>();
+        List<string> classes = new List<string>() { "w-full" };
+
+        if (formColumn.PrimaryKey)
+        {
+            attributes.Add("disabled");
+        }
+        if (formColumn.Required)
+        {
+            attributes.Add("required");
+        }
+
+        if (formColumn.IsNumeric)
+        {
+            classes.Add("text-right");
+        }
+
+        if (formColumn.InError)
+        {
+            classes.Add("bg-red-400");
+        }
+
+        <label for="@(formColumn.ColumnName)" class="font-bold">@formColumn.Label</label>
+        <input type="text" name="_@(formColumn.ColumnName)" class="@(string.Join(" ", classes))" value="@(value?.ToString() ?? string.Empty)" @(string.Join(" ", attributes)) />
+    }
+}

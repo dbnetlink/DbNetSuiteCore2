@@ -15,5 +15,8 @@
         public const string NestedGrid = "nestedGrid";
         public const string LinkedGrid = "primaryKey";
         public const string ViewDialogContent = "viewDialogContent";
+        public const string Record = "record";
+        public const string Apply = "apply";
+        public const string Cancel = "cancel";
     }
 }

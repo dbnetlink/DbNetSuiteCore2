@@ -1,12 +1,32 @@
-﻿namespace DbNetSuiteCore.Enums
+﻿using System.ComponentModel;
+
+namespace DbNetSuiteCore.Enums
 {
-    public enum EditControlType
+    public enum FormControlType
     {
-        MultiSelect,
+        Auto,
+        TextBox,
+        TextBoxLookup,
+        TextBoxSearchLookup,
+        CheckBox,
+        DropDownList,
+        RadioButtonList,
         TextArea,
-        Lookup,
-        EnumLookup,
-        Checkbox,
-        Input
+        Password,
+        Upload,
+        SuggestLookup,
+        Color,
+        Date,
+        Email,
+        Hidden,
+        Month,
+        Number,
+        Range,
+        Tel,
+        Time,
+        Url,
+        Week,
+        [Description("datetime-local")]
+        DateTime
     };
 }

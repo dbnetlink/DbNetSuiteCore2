@@ -8,7 +8,6 @@ namespace DbNetSuiteCore.Models
     public class GridColumn : ColumnModel
     {
         private FilterType _Filter = FilterType.None;
-        public bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
         public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml) && DataOnly == false;
         public bool Editable { get; set; } = false;
         public bool Viewable { get; set; } = true;

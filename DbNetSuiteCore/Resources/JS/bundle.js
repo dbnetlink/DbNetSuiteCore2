@@ -11,6 +11,9 @@ DbNetSuiteCore.createClientControl = function (controlId, clientEvents) {
             if (controlId.startsWith("Select")) {
                 clientControl = new SelectControl(controlId);
             }
+            if (controlId.startsWith("Form")) {
+                clientControl = new FormControl(controlId);
+            }
             for (const [key, value] of Object.entries(clientEvents)) {
                 clientControl.eventHandlers[key] = window[value.toString()];
             }
@@ -50,10 +53,10 @@ class ComponentControl {
             this.eventHandlers[eventName](this, args);
         }
         else {
-            this.message(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
+            this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
     }
-    message(text, style = 'info', delay = 1) {
+    toast(text, style = 'info', delay = 1) {
         var toast = this.controlContainer.querySelector("#toastMessage");
         //toast.classList.add(`alert-${style}`)
         toast.querySelector("span").innerText = text;
@@ -65,7 +68,7 @@ class ComponentControl {
         }
         toast.parentElement.style.display = 'block';
         let self = this;
-        window.setTimeout(() => { self.message(""); }, delay * 1000);
+        window.setTimeout(() => { self.toast(""); }, delay * 1000);
     }
     formSelector() {
         return `#${this.controlId}`;
@@ -107,6 +110,38 @@ class ComponentControl {
         else {
             htmx.trigger(`#${this.controlId}`, "submit");
         }
+    }
+    toolbarExists() {
+        return this.controlElement('#navigation');
+    }
+    removeClass(selector, className) {
+        this.controlElement(selector).classList.remove(className);
+    }
+    addClass(selector, className) {
+        this.controlElement(selector).classList.add(className);
+    }
+    getButton(name) {
+        return this.controlElement(this.buttonSelector(name));
+    }
+    buttonSelector(buttonType) {
+        return `button[button-type="${buttonType}"]`;
+    }
+    setPageNumber(pageNumber, totalPages, name) {
+        var select = this.controlElement(`[name="${name}"]`);
+        if (select.childElementCount != totalPages) {
+            select.querySelectorAll('option').forEach(option => option.remove());
+            for (var i = 1; i <= totalPages; i++) {
+                var opt = document.createElement('option');
+                opt.value = i.toString();
+                opt.text = i.toString();
+                select.appendChild(opt);
+            }
+        }
+        select.value = pageNumber.toString();
+    }
+    isControlEvent(evt) {
+        let formId = evt.target.closest("form").id;
+        return formId.startsWith(this.controlId);
     }
 }
 
@@ -231,7 +266,7 @@ class GridControl extends ComponentControl {
             else {
                 this.addClass('#query-limited', "hidden");
             }
-            this.setPageNumber(currentPage, totalPages);
+            this.setPageNumber(currentPage, totalPages, "page");
             this.controlElement('[data-type="total-pages"]').value = totalPages.toString();
             this.controlElement('[data-type="row-count"]').value = rowCount.toString();
             this.getButton("first").disabled = currentPage == 1;
@@ -243,28 +278,6 @@ class GridControl extends ComponentControl {
     rowSelection() {
         let thead = this.controlElement("thead");
         return thead.dataset.rowselection.toLowerCase();
-    }
-    removeClass(selector, className) {
-        this.controlElement(selector).classList.remove(className);
-    }
-    addClass(selector, className) {
-        this.controlElement(selector).classList.add(className);
-    }
-    setPageNumber(pageNumber, totalPages) {
-        var select = this.controlElement('[name="page"]');
-        if (select.childElementCount != totalPages) {
-            select.querySelectorAll('option').forEach(option => option.remove());
-            for (var i = 1; i <= totalPages; i++) {
-                var opt = document.createElement('option');
-                opt.value = i.toString();
-                opt.text = i.toString();
-                select.appendChild(opt);
-            }
-        }
-        select.value = pageNumber.toString();
-    }
-    toolbarExists() {
-        return this.controlElement('#navigation');
     }
     configureSortIcon() {
         if (this.controlElements(`th[data-key]`).length == 0) {
@@ -365,7 +378,7 @@ class GridControl extends ComponentControl {
         var table = this.controlElement("table");
         try {
             this.copyElementToClipboard(table);
-            this.message("Page copied to clipboard");
+            this.toast("Page copied to clipboard");
         }
         catch (e) {
             try {
@@ -373,10 +386,10 @@ class GridControl extends ComponentControl {
                 const blobInput = new Blob([content], { type: 'text/html' });
                 const clipboardItemInput = new ClipboardItem({ 'text/html': blobInput });
                 navigator.clipboard.write([clipboardItemInput]);
-                this.message("Page copied to clipboard");
+                this.toast("Page copied to clipboard");
             }
             catch (e) {
-                this.message("Copy failed", "error", 5);
+                this.toast("Copy failed", "error", 5);
                 return;
             }
         }
@@ -459,12 +472,6 @@ class GridControl extends ComponentControl {
     }
     multiRowSelectSelector() {
         return `td > input.multi-select`;
-    }
-    buttonSelector(buttonType) {
-        return `button[button-type="${buttonType}"]`;
-    }
-    getButton(name) {
-        return this.controlElement(this.buttonSelector(name));
     }
     gridControlElement(selector) {
         return this.controlElement(selector);
@@ -551,6 +558,73 @@ class SelectControl extends ComponentControl {
         if (error) {
             select.parentElement.nextElementSibling.after(error);
         }
+    }
+}
+
+class FormControl extends ComponentControl {
+    constructor(formId) {
+        super(formId);
+        this.formMessage = this.controlElement("#form-message");
+    }
+    afterRequest(evt) {
+        if (this.isControlEvent(evt) == false) {
+            return false;
+        }
+        if (!this.controlElement("div.form-body")) {
+            return;
+        }
+        this.configureNavigation();
+        this.form = this.controlElement("form");
+        if (this.triggerName(evt) == "initialload") {
+            this.initialise();
+        }
+        this.invokeEventHandler('FormLoaded');
+    }
+    initialise() {
+        document.body.addEventListener('htmx:configRequest', (ev) => { this.filterRequest(ev); });
+        this.invokeEventHandler('Initialised');
+    }
+    configureNavigation() {
+        let formBody = this.controlElement("div.form-body");
+        let currentRecord = parseInt(formBody.dataset.currentrecord);
+        let recordCount = parseInt(formBody.dataset.recordcount);
+        let message = formBody.dataset.message;
+        if (message != '') {
+            this.formMessage.innerText = message;
+            let self = this;
+            window.setTimeout(() => { self.clearErrorMessage(); }, 3000);
+        }
+        if (this.toolbarExists()) {
+            if (recordCount == 0) {
+                this.removeClass('#no-records', "hidden");
+                this.addClass('#navigation', "hidden");
+            }
+            else {
+                this.addClass('#no-records', "hidden");
+                this.removeClass('#navigation', "hidden");
+            }
+            this.setPageNumber(currentRecord, recordCount, "record");
+            this.controlElement('[data-type="record-count"]').value = recordCount.toString();
+            this.getButton("first").disabled = currentRecord == 1;
+            this.getButton("previous").disabled = currentRecord == 1;
+            this.getButton("next").disabled = currentRecord == recordCount;
+            this.getButton("last").disabled = currentRecord == recordCount;
+        }
+    }
+    filterRequest(evt) {
+        if (this.isControlEvent(evt) == false || evt.detail.headers["HX-Trigger-Name"] == "apply") {
+            return;
+        }
+        for (var p in evt.detail.parameters) {
+            if (typeof (evt.detail.parameters[p]) == 'string' && p.startsWith("_")) {
+                delete evt.detail.parameters[p];
+            }
+            ;
+        }
+    }
+    clearErrorMessage() {
+        this.formMessage.innerHTML = "&nbsp";
+        this.controlElements(".bg-red-400").forEach((el) => { el.classList.remove("bg-red-400"); });
     }
 }
 

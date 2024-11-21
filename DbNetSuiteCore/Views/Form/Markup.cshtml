@@ -1,0 +1,17 @@
+﻿@model DbNetSuiteCore.ViewModels.FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div>
+    <div class="form">
+        @await Html.PartialAsync("Form/Form")
+    </div>
+    @await Html.PartialAsync("Form/Toolbar")
+    <div id="form-message" class="border rounded border-slate-300 p-1 my-1">&nbsp;</div>
+    @await Html.PartialAsync("ToastMessage")
+</div>

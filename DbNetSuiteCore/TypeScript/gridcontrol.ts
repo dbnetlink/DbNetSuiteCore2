@@ -151,7 +151,7 @@ class GridControl extends ComponentControl{
                 this.addClass('#query-limited', "hidden");
             }
 
-            this.setPageNumber(currentPage, totalPages);
+            this.setPageNumber(currentPage, totalPages, "page");
             (this.controlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
             (this.controlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
 
@@ -167,33 +167,6 @@ class GridControl extends ComponentControl{
         return thead.dataset.rowselection.toLowerCase();
     }
 
-    private removeClass(selector: string, className: string) {
-        this.controlElement(selector).classList.remove(className);
-    }
-
-    private addClass(selector: string, className: string) {
-        this.controlElement(selector).classList.add(className);
-    }
-
-    private setPageNumber(pageNumber: number, totalPages: number) {
-        var select = this.controlElement('[name="page"]') as HTMLSelectElement;
-
-        if (select.childElementCount != totalPages) {
-            select.querySelectorAll('option').forEach(option => option.remove())
-            for (var i = 1; i <= totalPages; i++) {
-                var opt = document.createElement('option') as HTMLOptionElement;
-                opt.value = i.toString();
-                opt.text = i.toString();
-                select.appendChild(opt);
-            }
-        }
-
-        select.value = pageNumber.toString();
-    }
-
-    private toolbarExists() {
-        return this.controlElement('#navigation');
-    }
 
     private configureSortIcon() {
         if (this.controlElements(`th[data-key]`).length == 0) {
@@ -317,17 +290,17 @@ class GridControl extends ComponentControl{
         var table = this.controlElement("table");
         try {
             this.copyElementToClipboard(table);
-            this.message("Page copied to clipboard")
+            this.toast("Page copied to clipboard")
         } catch (e) {
             try {
                 const content = table.innerHTML;
                 const blobInput = new Blob([content], { type: 'text/html' });
                 const clipboardItemInput = new ClipboardItem({ 'text/html': blobInput });
                 navigator.clipboard.write([clipboardItemInput]);
-                this.message("Page copied to clipboard")
+                this.toast("Page copied to clipboard")
             }
             catch (e) {
-                this.message("Copy failed", "error", 5)
+                this.toast("Copy failed", "error", 5)
                 return
             }
         }
@@ -427,14 +400,6 @@ class GridControl extends ComponentControl{
         return `td > input.multi-select`
     }
 
-    public buttonSelector(buttonType) {
-        return `button[button-type="${buttonType}"]`
-    }
-
-    public getButton(name): HTMLButtonElement {
-        return this.controlElement(this.buttonSelector(name))
-    }
-
     public gridControlElement(selector): HTMLButtonElement {
         return this.controlElement(selector)
     }
@@ -453,7 +418,6 @@ class GridControl extends ComponentControl{
 
         return selectedValues;
     }
-
 
     public columnCells(columnName): NodeListOf<HTMLTableCellElement> {
         let th = this.heading(columnName);

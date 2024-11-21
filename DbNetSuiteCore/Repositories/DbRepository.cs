@@ -59,17 +59,26 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task GetRecord(GridModel gridModel)
+        public async Task GetRecord(ComponentModel componentModel)
         {
-            QueryCommandConfig query = gridModel.BuildRecordQuery();
-            gridModel.Data = await GetDataTable(query, gridModel.ConnectionAlias);
+            QueryCommandConfig query = componentModel.BuildRecordQuery();
+            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias);
 
-            foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && c.LookupOptions == null))
+            foreach (var gridColumn in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
             {
-                await GetLookupOptions(gridModel, gridColumn);
+                await GetLookupOptions(componentModel, gridColumn);
             }
 
-            gridModel.ConvertEnumLookups();
+            componentModel.ConvertEnumLookups();
+        }
+
+        public async Task UpdateRecord(FormModel formModel)
+        {
+            CommandConfig update = formModel.BuildUpdate();
+            var connection = GetConnection(formModel.ConnectionAlias);
+            connection.Open();
+            await ExecuteUpdate(update, connection);
+            connection.Close();
         }
 
         private async Task GetLookupOptions(ComponentModel gridModel, ColumnModel gridColumn)
@@ -184,24 +193,10 @@ namespace DbNetSuiteCore.Repositories
             return await ((DbCommand)command).ExecuteReaderAsync(commandBehavour);
         }
 
-        public async Task<int> ExecuteNonQuery(CommandConfig commandConfig, IDbConnection connection)
+        public async Task ExecuteUpdate(CommandConfig update, IDbConnection connection)
         {
-            if (Regex.Match(commandConfig.Sql, "^(delete|update) ", RegexOptions.IgnoreCase).Success)
-                if (!Regex.Match(commandConfig.Sql, " where ", RegexOptions.IgnoreCase).Success)
-                    throw new Exception("Unqualified updates and deletes are not allowed.");
-
-            IDbCommand command = DbHelper.ConfigureCommand(commandConfig.Sql, connection, commandConfig.Params);
-            int returnValue = 0;
-
-            try
-            {
-                returnValue = await ((DbCommand)command).ExecuteNonQueryAsync();
-            }
-            catch (Exception)
-            {
-            }
-
-            return returnValue;
+            IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text);
+            await ((DbCommand)command).ExecuteNonQueryAsync();
         }
     }
 }

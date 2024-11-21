@@ -1,0 +1,65 @@
+﻿@model FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.ViewModels
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+
+<div class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 justify-between">
+    <input class="" style="width:10rem" autofocus type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
+
+    <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2" @(Model.RecordCount > 0 ? "hidden" : "")>
+        @IconHelper.Info()
+        <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
+    </div>
+
+    <div id="navigation" class="flex flex-row gap-1 items-center @(Model.RecordCount == 0 ? "hidden" : "")">
+    @{
+        RenderButton(TriggerNames.First, IconHelper.First(), NavButtonText(ResourceNames.First));
+        RenderButton(TriggerNames.Previous, IconHelper.Previous(), NavButtonText(ResourceNames.Previous));
+        <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Record)</span>
+        RenderRecordNumber(Model.CurrentRecord, Model.RecordCount);
+        <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
+        RenderRecordCount(Model.RecordCount);
+        RenderButton(TriggerNames.Next, IconHelper.Next(), NavButtonText(ResourceNames.Next));
+        RenderButton(TriggerNames.Last, IconHelper.Last(), NavButtonText(ResourceNames.Last));
+    }
+    </div>
+    <div class="flex flex-row gap-1">
+    @{
+        RenderButton(TriggerNames.Apply, IconHelper.Apply(), NavButtonText(ResourceNames.Apply));
+        RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), NavButtonText(ResourceNames.Cancel));
+    }
+    </div>
+
+</div>
+
+@functions {
+    void RenderButton(string name, HtmlString icon, string title, string classname = "")
+    {
+        <button type="button" class="@classname" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
+    }
+
+    void RenderRecordCount(int recordCount)
+    {
+        <input class="text-center" style="width:@(recordCount.ToString().Length + 1)em" readonly type="text" data-type="record-count" value="@recordCount" />
+    }
+
+    void RenderRecordNumber(int recordNumber, int recordCount)
+    {
+        <select name="@TriggerNames.Record" value="@recordNumber" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" style="padding-right:2em">
+            @{
+                for (var i = 1; i <= recordCount; i++)
+                {
+                    <option value="@i" @(i == recordNumber ? "selected" : string.Empty)>@i</option>
+                }
+            }
+        </select>
+    }
+
+    string NavButtonText(ResourceNames resourceName)
+    {
+        return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
+    }
+}

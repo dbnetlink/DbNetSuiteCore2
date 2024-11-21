@@ -14,7 +14,14 @@ namespace DbNetSuiteCore.Helpers
         Rows,
         NoRecordsFound,
         NoFilesFound,
-        QueryLimited
+        QueryLimited,
+        Record,
+        Next,
+        Previous,
+        First,
+        Last,
+        Apply,
+        Cancel
     }
     public static class ResourceHelper
     {

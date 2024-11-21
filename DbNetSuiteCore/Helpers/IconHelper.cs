@@ -102,6 +102,16 @@ namespace DbNetSuiteCore.Helpers
             return MaterialSVG("M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z");
         }
 
+        public static HtmlString Apply()
+        {
+            return MaterialSVG("M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z");
+        }
+
+        public static HtmlString Cancel()
+        {
+            return MaterialSVG("m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z");
+        }
+
         private static HtmlString MaterialSVG(string data, string colour = "#336699", string size = "24px" )
         {
             return new HtmlString(IconHelper.MaterialSvgTemplate.Replace("{data}", data).Replace("{colour}", colour).Replace("{size}", size));

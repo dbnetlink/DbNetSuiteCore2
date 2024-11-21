@@ -1,0 +1,9 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products");
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+}

@@ -5,9 +5,6 @@ using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using DbNetSuiteCore.Helpers;
-using System.Text.RegularExpressions;
-using MongoDB.Bson.IO;
-using System.Text.Json;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -49,12 +46,12 @@ namespace DbNetSuiteCore.Repositories
             return componentModel.Data;
         }
 
-        public async Task GetRecord(GridModel gridModel)
+        public async Task GetRecord(ComponentModel componentModel)
         {
-            var database = GetDatabase(gridModel);
-            var dataTable = await CreateDataTableFromPipeline(database, gridModel);
-            dataTable.FilterWithPrimaryKey(gridModel);
-            gridModel.ConvertEnumLookups();
+            var database = GetDatabase(componentModel);
+            var dataTable = await CreateDataTableFromPipeline(database, componentModel);
+            dataTable.FilterWithPrimaryKey(componentModel);
+            componentModel.ConvertEnumLookups();
         }
 
         private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, ComponentModel componentModel)
@@ -434,7 +431,7 @@ namespace DbNetSuiteCore.Repositories
             switch (gridColumn.DataTypeName)
             {
                 case nameof(System.Boolean):
-                    return new ColumnFilter(MongoDbFilterOperator.eq, GridModelExtensions.ParseBoolean(filterColumnValue));
+                    return new ColumnFilter(MongoDbFilterOperator.eq, ComponentModelExtensions.ParseBoolean(filterColumnValue));
                 case nameof(DateTime):
                     try
                     {

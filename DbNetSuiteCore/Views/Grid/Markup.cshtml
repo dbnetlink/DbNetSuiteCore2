@@ -125,7 +125,7 @@
                             RenderColumnSelectFilter(GridColumn.BooleanFilterOptions, columnInfo.Key);
                             break;
                         default:
-                            <input class="w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" data-key="@columnInfo.Key" />
+                            <input class="w-full" type="search" name="columnFilter" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" data-key="@columnInfo.Key" autocomplete="off" />
                             break;
                     }
                 }

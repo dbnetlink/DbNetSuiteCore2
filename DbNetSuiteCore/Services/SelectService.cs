@@ -10,7 +10,7 @@ using DbNetSuiteCore.Constants;
 
 namespace DbNetSuiteCore.Services
 {
-    public class SelectService : ComponentService, ISelectService
+    public class SelectService : ComponentService, IComponentService
     {
         public SelectService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration)
         {

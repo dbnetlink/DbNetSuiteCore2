@@ -11,6 +11,9 @@ DbNetSuiteCore.createClientControl = function (controlId, clientEvents) {
             if (controlId.startsWith("Select")) {
                 clientControl = new SelectControl(controlId);
             }
+            if (controlId.startsWith("Form")) {
+                clientControl = new FormControl(controlId);
+            }
             for (const [key, value] of Object.entries(clientEvents)) {
                 clientControl.eventHandlers[key] = window[value.toString()];
             }
@@ -50,10 +53,10 @@ class ComponentControl {
             this.eventHandlers[eventName](this, args);
         }
         else {
-            this.message(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
+            this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
     }
-    message(text, style = 'info', delay = 1) {
+    toast(text, style = 'info', delay = 1) {
         var toast = this.controlContainer.querySelector("#toastMessage");
         //toast.classList.add(`alert-${style}`)
         toast.querySelector("span").innerText = text;
@@ -65,7 +68,7 @@ class ComponentControl {
         }
         toast.parentElement.style.display = 'block';
         let self = this;
-        window.setTimeout(() => { self.message(""); }, delay * 1000);
+        window.setTimeout(() => { self.toast(""); }, delay * 1000);
     }
     formSelector() {
         return `#${this.controlId}`;
@@ -107,5 +110,37 @@ class ComponentControl {
         else {
             htmx.trigger(`#${this.controlId}`, "submit");
         }
+    }
+    toolbarExists() {
+        return this.controlElement('#navigation');
+    }
+    removeClass(selector, className) {
+        this.controlElement(selector).classList.remove(className);
+    }
+    addClass(selector, className) {
+        this.controlElement(selector).classList.add(className);
+    }
+    getButton(name) {
+        return this.controlElement(this.buttonSelector(name));
+    }
+    buttonSelector(buttonType) {
+        return `button[button-type="${buttonType}"]`;
+    }
+    setPageNumber(pageNumber, totalPages, name) {
+        var select = this.controlElement(`[name="${name}"]`);
+        if (select.childElementCount != totalPages) {
+            select.querySelectorAll('option').forEach(option => option.remove());
+            for (var i = 1; i <= totalPages; i++) {
+                var opt = document.createElement('option');
+                opt.value = i.toString();
+                opt.text = i.toString();
+                select.appendChild(opt);
+            }
+        }
+        select.value = pageNumber.toString();
+    }
+    isControlEvent(evt) {
+        let formId = evt.target.closest("form").id;
+        return formId.startsWith(this.controlId);
     }
 }

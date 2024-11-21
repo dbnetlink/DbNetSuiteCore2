@@ -14,7 +14,7 @@ using DbNetSuiteCore.ViewModels;
 
 namespace DbNetSuiteCore.Services
 {
-    public class GridService : ComponentService, IGridService
+    public class GridService : ComponentService, IComponentService
     {
         public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration)
         {
@@ -121,34 +121,6 @@ namespace DbNetSuiteCore.Services
             return gridModel._NestedGrids;
         }
 
-        private async Task GetRecord(GridModel gridModel)
-        {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.JSON:
-                    await _jsonRepository.GetRecord(gridModel, _context);
-                    break;
-                case DataSourceType.Excel:
-                    await _excelRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecord(gridModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetRecord(gridModel);
-                    break;
-            }
-        }
-
         private async Task GetGridRecords(GridModel gridModel)
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
@@ -160,7 +132,6 @@ namespace DbNetSuiteCore.Services
 
             await GetRecords(gridModel);
         }
-
 
         private async Task<Byte[]> ExportRecords(GridModel gridModel)
         {

@@ -61,7 +61,8 @@ namespace DbNetSuiteCore.Models
         public bool DataOnly { get; set; } = false;
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
- 
+        internal bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
+
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
@@ -80,6 +81,7 @@ namespace DbNetSuiteCore.Models
             Name = (dataSourceType == DataSourceType.Excel || dataSourceType == DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
             DataType = dataColumn.DataType;
             Initialised = true;
+            PrimaryKey = dataColumn.Unique;
         }
 
         public ColumnModel(DataRow dataRow) : this()

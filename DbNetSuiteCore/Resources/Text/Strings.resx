@@ -117,11 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply your changes</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel your changes</value>
+  </data>
   <data name="ColumnFilterDataError" xml:space="preserve">
     <value>Invalid filter value for column data type</value>
   </data>
   <data name="ColumnFilterNoData" xml:space="preserve">
     <value>No filter value supplied</value>
+  </data>
+  <data name="First" xml:space="preserve">
+    <value>First</value>
+  </data>
+  <data name="Last" xml:space="preserve">
+    <value>Last</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
   </data>
   <data name="NoFilesFound" xml:space="preserve">
     <value>No files found</value>
@@ -135,8 +150,14 @@
   <data name="Page" xml:space="preserve">
     <value>Page</value>
   </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
   <data name="QueryLimited" xml:space="preserve">
     <value>Query limited to {0} rows</value>
+  </data>
+  <data name="Record" xml:space="preserve">
+    <value>Record</value>
   </data>
   <data name="Rows" xml:space="preserve">
     <value>Rows</value>

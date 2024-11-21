@@ -5,6 +5,7 @@
       "Resources/JS/componentControl.js",
       "Resources/JS/gridControl.js",
       "Resources/JS/selectControl.js",
+      "Resources/JS/formControl.js",
       "Resources/JS/draggableDialog.js",
       "Resources/JS/viewDialog.js"
     ]

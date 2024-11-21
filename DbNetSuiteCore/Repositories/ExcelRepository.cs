@@ -35,11 +35,11 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task GetRecord(GridModel gridModel)
+        public async Task GetRecord(ComponentModel componentModel)
         {
-            QueryCommandConfig query = gridModel.BuildRecordQuery();
-            gridModel.Data = await BuildDataTable(gridModel, query);
-            gridModel.ConvertEnumLookups();
+            QueryCommandConfig query = componentModel.BuildRecordQuery();
+            componentModel.Data = await BuildDataTable(componentModel, query);
+            componentModel.ConvertEnumLookups();
         }
 
         public async Task<DataTable> GetColumns(ComponentModel componentModel)
