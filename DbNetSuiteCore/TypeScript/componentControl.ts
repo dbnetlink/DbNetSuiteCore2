@@ -1,4 +1,4 @@
-interface Dictionary<T> {
+﻿interface Dictionary<T> {
     [Key: string]: T;
 }
 
@@ -36,16 +36,15 @@ class ComponentControl {
     childControls: Dictionary<ComponentControl> = {};
     controlContainer: HTMLElement;
     eventHandlers = {};
-
     constructor(controlId) {
         this.controlId = controlId;
-        this.formControl = document.querySelector(this.formSelector())
+        this.formControl = document.querySelector(this.formSelector());
         this.formControl.style.display = '';
-        this.controlContainer = this.formControl.parentElement
+        this.controlContainer = this.formControl.parentElement;
     }
 
     public setCaption(text) {
-        var caption = this.controlElement("div.caption")
+        var caption = this.controlElement("div.caption");
         if (caption) {
             caption.innerText = text;
         }
@@ -57,30 +56,30 @@ class ComponentControl {
             return;
         }
         if (typeof this.eventHandlers[eventName] === 'function') {
-            this.eventHandlers[eventName](this, args)
+            this.eventHandlers[eventName](this, args);
         }
         else {
-            this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3)
+            this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
     }
 
     protected toast(text, style = 'info', delay = 1) {
-        var toast = this.controlContainer.querySelector("#toastMessage") as HTMLElement
+        var toast = this.controlContainer.querySelector("#toastMessage") as HTMLElement;
         //toast.classList.add(`alert-${style}`)
         toast.querySelector("span").innerText = text;
         if (text == "") {
-            toast.parentElement.style.marginLeft = `-${toast.parentElement.clientWidth / 2}px`
-            toast.parentElement.style.marginTop = `-${toast.parentElement.clientHeight / 2}px`
-            toast.parentElement.style.display = 'none'
-            return
+            toast.parentElement.style.marginLeft = `-${toast.parentElement.clientWidth / 2}px`;
+            toast.parentElement.style.marginTop = `-${toast.parentElement.clientHeight / 2}px`;
+            toast.parentElement.style.display = 'none';
+            return;
         }
-        toast.parentElement.style.display = 'block'
-        let self = this
-        window.setTimeout(() => { self.toast("") }, delay * 1000)
+        toast.parentElement.style.display = 'block';
+        let self = this;
+        window.setTimeout(() => { self.toast(""); }, delay * 1000);
     }
 
     protected formSelector() {
-        return `#${this.controlId}`
+        return `#${this.controlId}`;
     }
 
     protected controlElements(selector) {
@@ -92,7 +91,7 @@ class ComponentControl {
     }
 
     protected triggerName(evt: any) {
-        return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase()
+        return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase();
     }
 
     protected updateLinkedControls(linkedIds: string, primaryKey: string, url: string = null) {
@@ -100,26 +99,26 @@ class ComponentControl {
 
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
-                var linkedControl = DbNetSuiteCore.controlArray[linkedId]
+                var linkedControl = DbNetSuiteCore.controlArray[linkedId];
                 linkedControl.parentControl = this;
                 this.childControls[linkedId] = linkedControl;
                 if (url != null && linkedControl.dataSourceIsFileSystem()) {
                     primaryKey = url;
                 }
                 linkedControl.loadFromParent(primaryKey);
-            })
-        })
+            });
+        });
     }
 
     public dataSourceIsFileSystem() {
-        return this.formControl.dataset.datasourcetype == "FileSystem"
+        return this.formControl.dataset.datasourcetype == "FileSystem";
     }
 
     protected loadFromParent(primaryKey: string) {
-        let selector = `#${this.controlId} input[name="primaryKey"]`
-        let pk = htmx.find(selector) as HTMLInputElement
+        let selector = `#${this.controlId} input[name="primaryKey"]`;
+        let pk = htmx.find(selector) as HTMLInputElement;
 
-        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }))
+        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
 
         if (pk) {
             htmx.trigger(selector, "changed");
@@ -133,9 +132,9 @@ class ComponentControl {
         return this.controlElement('#navigation');
     }
 
-    protected isElementLoaded = async selector => {
+    protected isElementLoaded = async (selector) => {
         while (document.querySelector(selector) === null) {
-            await new Promise(resolve => requestAnimationFrame(resolve))
+            await new Promise(resolve => requestAnimationFrame(resolve));
         }
         return document.querySelector(selector);
     };
@@ -149,18 +148,18 @@ class ComponentControl {
     }
 
     public getButton(name): HTMLButtonElement {
-        return this.controlElement(this.buttonSelector(name))
+        return this.controlElement(this.buttonSelector(name));
     }
 
     public buttonSelector(buttonType) {
-        return `button[button-type="${buttonType}"]`
+        return `button[button-type="${buttonType}"]`;
     }
 
     protected setPageNumber(pageNumber: number, totalPages: number, name: string) {
         var select = this.controlElement(`[name="${name}"]`) as HTMLSelectElement;
 
         if (select.childElementCount != totalPages) {
-            select.querySelectorAll('option').forEach(option => option.remove())
+            select.querySelectorAll('option').forEach(option => option.remove());
             for (var i = 1; i <= totalPages; i++) {
                 var opt = document.createElement('option') as HTMLOptionElement;
                 opt.value = i.toString();
@@ -174,6 +173,6 @@ class ComponentControl {
 
     public isControlEvent(evt) {
         let formId = evt.target.closest("form").id;
-        return formId.startsWith(this.controlId)
+        return formId.startsWith(this.controlId);
     }
 }

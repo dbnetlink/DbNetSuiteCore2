@@ -4,6 +4,18 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products");
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products");
+    productForm.Columns = new List<FormColumn>() {
+        new FormColumn("ProductID","ID"),
+        new FormColumn("ProductName", "Name"),
+        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName") },
+        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName") },
+        new FormColumn("QuantityPerUnit", "Qty"),
+        new FormColumn("UnitPrice", "Price"),
+        new FormColumn("UnitsInStock", "Stock"),
+        new FormColumn("UnitsOnOrder", "On order"),
+        new FormColumn("ReorderLevel", "Re-order Level"),
+        new FormColumn("Discontinued") {DataType = typeof(bool)}
+    };
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
 }

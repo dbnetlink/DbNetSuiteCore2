@@ -21,7 +21,10 @@ namespace DbNetSuiteCore.Helpers
         First,
         Last,
         Apply,
-        Cancel
+        Cancel,
+        Required,
+        Updated,
+        UnappliedChanges 
     }
     public static class ResourceHelper
     {

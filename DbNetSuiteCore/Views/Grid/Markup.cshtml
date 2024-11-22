@@ -135,8 +135,6 @@
 
     void RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, string key)
     {
-        var length = Model.SelectWidth(options) + 1;
-
         <select class="column-filter" name="columnFilter" hx-post="@Model.SubmitUrl" hx-trigger="change" hx-target="next tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" data-key="@key">
             <option value=""></option>
             @foreach (var option in options)

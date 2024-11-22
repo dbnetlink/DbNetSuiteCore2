@@ -97,6 +97,7 @@ namespace DbNetSuiteCore.Services
             if (ValidateRecord(formModel))
             {
                 await UpdateRecord(formModel);
+                formModel.ErrorMessage = ResourceHelper.GetResourceString(ResourceNames.Updated);
             }
 
             return await View("Form/Form", await GetFormViewModel(formModel));
@@ -117,7 +118,7 @@ namespace DbNetSuiteCore.Services
 
             if (formModel.Columns.Any(c => c.InError))
             {
-                formModel.ErrorMessage = "Highlighted fields are required";
+                formModel.ErrorMessage = ResourceHelper.GetResourceString(ResourceNames.Required);
                 return false;
             }
 

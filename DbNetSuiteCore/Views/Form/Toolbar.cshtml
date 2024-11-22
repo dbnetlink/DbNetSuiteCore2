@@ -9,7 +9,7 @@
 <div class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 justify-between">
     <input class="" style="width:10rem" autofocus type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
 
-    <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2" @(Model.RecordCount > 0 ? "hidden" : "")>
+    <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2 @(Model.RecordCount > 0 ? "hidden" : "")">
         @IconHelper.Info()
         <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
     </div>
@@ -28,17 +28,17 @@
     </div>
     <div class="flex flex-row gap-1">
     @{
-        RenderButton(TriggerNames.Apply, IconHelper.Apply(), NavButtonText(ResourceNames.Apply));
-        RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), NavButtonText(ResourceNames.Cancel));
+            RenderButton(TriggerNames.Apply, IconHelper.Apply(), NavButtonText(ResourceNames.Apply), "background-color: rgb(209 250 229)");
+            RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), NavButtonText(ResourceNames.Cancel), "background-color: rgb(255 228 230)");
     }
     </div>
 
 </div>
 
 @functions {
-    void RenderButton(string name, HtmlString icon, string title, string classname = "")
+    void RenderButton(string name, HtmlString icon, string title, string style = "")
     {
-        <button type="button" class="@classname" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
+        <button type="button" style="@style" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
     }
 
     void RenderRecordCount(int recordCount)

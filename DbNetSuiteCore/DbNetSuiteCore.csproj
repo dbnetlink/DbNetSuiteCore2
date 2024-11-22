@@ -70,6 +70,8 @@
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\bundle.js" />
+    <None Remove="Resources\JS\bundle.min.js" />
+    <None Remove="Resources\JS\componentControl.js" />
     <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridControl.js" />
     <None Remove="Resources\JS\htmx.js" />
@@ -79,7 +81,6 @@
     <None Remove="Resources\JS\tailwindcss.js" />
     <None Remove="Resources\JS\viewDialog.js" />
     <None Remove="Resources\SVG\spinner.svg" />
-    <None Remove="TypeScript\componentControl.ts" />
     <None Remove="TypeScript\draggableDialog.ts" />
     <None Remove="TypeScript\formControl.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
@@ -101,12 +102,13 @@
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
     <EmbeddedResource Include="Resources\JS\bundle.js" />
+    <EmbeddedResource Include="Resources\JS\bundle.min.js" />
+    <EmbeddedResource Include="Resources\JS\componentControl.js" />
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridControl.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
-    <EmbeddedResource Include="TypeScript\componentControl.ts" />
     <EmbeddedResource Include="TypeScript\formControl.ts" />
     <EmbeddedResource Include="TypeScript\selectControl.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />

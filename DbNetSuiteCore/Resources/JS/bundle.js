@@ -581,8 +581,14 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('FormLoaded');
     }
     initialise() {
-        document.body.addEventListener('htmx:configRequest', (ev) => { this.filterRequest(ev); });
+        document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev); });
+        document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         this.invokeEventHandler('Initialised');
+    }
+    setMessage(message) {
+        this.formMessage.innerText = message;
+        let self = this;
+        window.setTimeout(() => { self.clearErrorMessage(); }, 3000);
     }
     configureNavigation() {
         let formBody = this.controlElement("div.form-body");
@@ -590,9 +596,7 @@ class FormControl extends ComponentControl {
         let recordCount = parseInt(formBody.dataset.recordcount);
         let message = formBody.dataset.message;
         if (message != '') {
-            this.formMessage.innerText = message;
-            let self = this;
-            window.setTimeout(() => { self.clearErrorMessage(); }, 3000);
+            this.setMessage(message);
         }
         if (this.toolbarExists()) {
             if (recordCount == 0) {
@@ -603,15 +607,14 @@ class FormControl extends ComponentControl {
                 this.addClass('#no-records', "hidden");
                 this.removeClass('#navigation', "hidden");
             }
+            ["apply", "cancel"].forEach(n => this.getButton(n).style.display = recordCount == 0 ? "none" : "");
+            ["first", "previous"].forEach(n => this.getButton(n).disabled = currentRecord == 1);
+            ["next", "last"].forEach(n => this.getButton(n).disabled = currentRecord == recordCount);
             this.setPageNumber(currentRecord, recordCount, "record");
             this.controlElement('[data-type="record-count"]').value = recordCount.toString();
-            this.getButton("first").disabled = currentRecord == 1;
-            this.getButton("previous").disabled = currentRecord == 1;
-            this.getButton("next").disabled = currentRecord == recordCount;
-            this.getButton("last").disabled = currentRecord == recordCount;
         }
     }
-    filterRequest(evt) {
+    configRequest(evt) {
         if (this.isControlEvent(evt) == false || evt.detail.headers["HX-Trigger-Name"] == "apply") {
             return;
         }
@@ -622,9 +625,28 @@ class FormControl extends ComponentControl {
             ;
         }
     }
+    beforeRequest(evt) {
+        if (this.isControlEvent(evt) == false)
+            return;
+        switch (evt.detail.requestConfig.headers["HX-Trigger-Name"]) {
+            case "apply":
+            case "cancel":
+                return;
+        }
+        var modified = false;
+        this.controlElements(".form-control").forEach((el) => {
+            if (el.dataset.value != el.value) {
+                modified = true;
+            }
+        });
+        if (modified) {
+            evt.preventDefault();
+            this.setMessage("You have unapplied changes. Please apply or cancel.");
+        }
+    }
     clearErrorMessage() {
         this.formMessage.innerHTML = "&nbsp";
-        this.controlElements(".bg-red-400").forEach((el) => { el.classList.remove("bg-red-400"); });
+        this.controlElements(`.bg-red-400`).forEach((el) => { el.classList.remove("bg-red-400"); });
     }
 }
 

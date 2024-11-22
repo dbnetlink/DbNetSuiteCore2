@@ -37,16 +37,24 @@ namespace DbNetSuiteCore.Extensions
 
             List<string> set = new List<string>();
 
-            foreach (string columnName in formModel.FormValues.Keys)
+            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.PrimaryKey == false))
             {
-                FormColumn? formColumn = formModel.Columns.First(c => c.ColumnName == columnName);
-
-                if (formColumn == null)
-                {
-                    continue;
-                }
+                var columnName = formColumn.ColumnName;
                 var paramName = DbHelper.ParameterName(columnName);
-                var value  = formModel.FormValues[columnName];
+
+                string value = string.Empty;
+                if (formModel.FormValues.Keys.Contains(columnName))
+                {
+                    value = formModel.FormValues[columnName];
+                }
+                else if (formColumn.DataType != typeof(bool)) 
+                {
+                    throw new Exception($"Form data missing for column => <b>{columnName}</b>");
+                }
+                else
+                {
+                    value = "false";
+                }
 
                 set.Add($"{columnName} = {paramName}");
                 update.Params[paramName] = string.IsNullOrEmpty(value) ? DBNull.Value : (ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType) ?? DBNull.Value);

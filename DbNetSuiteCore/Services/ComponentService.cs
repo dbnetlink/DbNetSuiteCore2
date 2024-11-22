@@ -145,9 +145,9 @@ namespace DbNetSuiteCore.Services
 
                 if (componentModel.DataSourceType == DataSourceType.FileSystem)
                 {
-                    foreach (ColumnModel gridColumn in componentModel.GetColumns())
+                    foreach (ColumnModel column in componentModel.GetColumns())
                     {
-                        gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression), componentModel.DataSourceType);
+                        column.Update(dataColumns.First(dc => dc.ColumnName == column.Expression), componentModel.DataSourceType);
                     }
                 }
                 else

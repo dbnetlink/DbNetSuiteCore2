@@ -64,9 +64,9 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = componentModel.BuildRecordQuery();
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias);
 
-            foreach (var gridColumn in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
+            foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
             {
-                await GetLookupOptions(componentModel, gridColumn);
+                await GetLookupOptions(componentModel, column);
             }
 
             componentModel.ConvertEnumLookups();
@@ -81,50 +81,59 @@ namespace DbNetSuiteCore.Repositories
             connection.Close();
         }
 
-        private async Task GetLookupOptions(ComponentModel gridModel, ColumnModel gridColumn)
+        private async Task GetLookupOptions(ComponentModel componentModel, ColumnModel column)
         {
-            DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+            DataColumn? dataColumn = componentModel.GetDataColumn(column);
 
-            gridColumn.DbLookupOptions = new List<KeyValuePair<string, string>>();
-
-            if (dataColumn == null || gridModel.Data.Rows.Count == 0)
+            if (dataColumn == null || componentModel.Data.Rows.Count == 0)
             {
                 return;
             }
-
-            var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0].ToString()).ToList();
-
-            var lookup = gridColumn.Lookup!;
-
-            if (string.IsNullOrEmpty(lookup.TableName))
-            {
-                gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
-                return;
-            }
-
+            column.DbLookupOptions = new List<KeyValuePair<string, string>>();
             QueryCommandConfig query = new QueryCommandConfig();
-            var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbHelper.ParameterName($"param{i}")).ToList();
+            var lookup = column.Lookup!;
 
-            int i = 0;
-            paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
+            if (componentModel is GridModel)
+            {
+                var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0].ToString()).ToList();
+              
+                if (string.IsNullOrEmpty(lookup.TableName))
+                {
+                    column.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+                    return;
+                }
 
-            var keyColumn = $"{lookup.KeyColumn}{(gridModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
+                var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbHelper.ParameterName($"param{i}")).ToList();
 
-            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
+                int i = 0;
+                paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
+
+                var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
+
+                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
+            }
+            else
+            {
+                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+            }
 
             DataTable lookupData;
 
             try
             {
-                lookupData = await GetDataTable(query, gridModel.ConnectionAlias);
+                lookupData = await GetDataTable(query, componentModel.ConnectionAlias);
             }
             catch (Exception ex)
             {
                 throw new Exception("Error in column lookup configuration", ex);
             }
 
-            gridColumn.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
-            gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
+            column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+
+            if (componentModel is GridModel)
+            {
+                componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
+            }
         }
 
         public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumn gridColumn)

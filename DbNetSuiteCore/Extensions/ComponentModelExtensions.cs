@@ -333,6 +333,7 @@ namespace DbNetSuiteCore.Extensions
         {
             switch (boolString.ToLower())
             {
+                case "on":
                 case "yes":
                 case "true":
                 case "1":

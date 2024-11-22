@@ -118,6 +118,7 @@ namespace DbNetSuiteCore.Models
             DataType = dataColumn.DataType;
             Initialised = true;
             Name = (dataSourceType == DataSourceType.Excel ||dataSourceType ==  DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
+            PrimaryKey = dataColumn.Unique;
         }
 
         public void Update(DataRow dataRow)

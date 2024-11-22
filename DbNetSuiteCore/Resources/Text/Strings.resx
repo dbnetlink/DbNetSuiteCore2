@@ -159,10 +159,19 @@
   <data name="Record" xml:space="preserve">
     <value>Record</value>
   </data>
+  <data name="Required" xml:space="preserve">
+    <value>Highlighted fields are required</value>
+  </data>
   <data name="Rows" xml:space="preserve">
     <value>Rows</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>Search</value>
+  </data>
+  <data name="UnappliedChanges" xml:space="preserve">
+    <value>You have unapplied changes. Please apply or cancel.</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Record has been updated</value>
   </data>
 </root>

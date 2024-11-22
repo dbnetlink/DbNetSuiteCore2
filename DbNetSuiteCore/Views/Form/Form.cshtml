@@ -5,20 +5,25 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Extensions
 @using DbNetSuiteCore.Enums
 
 <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-message="@Model.FormModel.ErrorMessage">
     <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
         @foreach (FormColumn formColumn in Model.Columns)
         {
-
-            DataColumn? dataColumn = Model.GetDataColumn(formColumn);
-            var value = dataColumn == null ? string.Empty : Model.Record[dataColumn];
-
-            if (Model.FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
+            object value = null;
+            if (Model.RecordCount > 0)
             {
-                value = Model.FormModel.FormValues[formColumn.ColumnName];
+                DataColumn? dataColumn = Model.GetDataColumn(formColumn);
+                value = dataColumn == null ? string.Empty : Model.Record[dataColumn];
+
+                if (Model.FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
+                {
+                    value = Model.FormModel.FormValues[formColumn.ColumnName];
+                }
             }
+
             <div style="display:grid;grid-template-columns: repeat(1, auto)">
                 @{
                     FormControl(formColumn, value);
@@ -32,19 +37,39 @@
 @functions {
     public void FormControl(FormColumn formColumn, object value)
     {
-        List<string> attributes = new List<string>();
-        List<string> classes = new List<string>() { "w-full" };
+        value = value?.ToString() ?? string.Empty;
+        <label for="@(formColumn.ColumnName)" class="font-bold text-slate-800">@formColumn.Label</label>
 
-        if (formColumn.PrimaryKey)
+        if (formColumn.LookupOptions != null)
         {
-            attributes.Add("disabled");
+            RenderSelect(formColumn, value.ToString());
         }
-        if (formColumn.Required)
+        else if (formColumn.DataType == typeof(Boolean))
         {
-            attributes.Add("required");
+            bool boolValue = ComponentModelExtensions.ParseBoolean(value.ToString());
+            <input type="checkbox" name="_@(formColumn.ColumnName)" data-value="@value" @(boolValue ? "checked" : "") style="transform: scale(1.5);margin-left:5px" />
         }
+        else
+        {
+            <input type="text" name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-isnumeric="@formColumn.IsNumeric.ToString().ToLower()" data-value="@value" value="@value" @(Attributes(formColumn)) />
+        }
+    }
 
-        if (formColumn.IsNumeric)
+     void RenderSelect(FormColumn formColumn, string value)
+    {
+        <select name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-value="@value" value="@value" @(Attributes(formColumn))>
+            <option value=""></option>
+            @foreach (var option in formColumn.LookupOptions)
+            {
+                <option value="@option.Key" @(option.Key == value ? "selected" : "")>@option.Value</option>
+            }
+        </select>
+    }
+
+    string Classes(FormColumn formColumn)
+    {
+        List<string> classes = new List<string>() { "form-control w-full" };
+        if (formColumn.IsNumeric && formColumn.LookupOptions == null)
         {
             classes.Add("text-right");
         }
@@ -53,8 +78,20 @@
         {
             classes.Add("bg-red-400");
         }
+        return string.Join(" ", classes);
+    }
 
-        <label for="@(formColumn.ColumnName)" class="font-bold">@formColumn.Label</label>
-        <input type="text" name="_@(formColumn.ColumnName)" class="@(string.Join(" ", classes))" value="@(value?.ToString() ?? string.Empty)" @(string.Join(" ", attributes)) />
+    string Attributes(FormColumn formColumn)
+    {
+        List<string> attributes = new List<string>();
+        if (formColumn.PrimaryKey || Model.RecordCount == 0)
+        {
+            attributes.Add("disabled");
+        }
+        if (formColumn.Required)
+        {
+            attributes.Add("required");
+        }
+        return string.Join(" ", attributes);
     }
 }
