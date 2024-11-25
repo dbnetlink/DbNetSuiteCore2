@@ -118,19 +118,10 @@ namespace DbNetSuiteCore.Extensions
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
                     object? paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType);
-
-                    if (paramValue is DateTime && gridModel.DataSourceType == DataSourceType.MSSQL)
-                    {
-                        int year = ((DateTime)paramValue).Year;
-                        if (year < 1753 || year > 9999)
-                        {
-                            column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
-                            continue;
-                        }
-                    }
+                   
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
-                        column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
+                        column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.DataFormatError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
                         continue;
                     }
 
@@ -145,7 +136,7 @@ namespace DbNetSuiteCore.Extensions
                 }
                 else
                 {
-                    column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
+                    column.FilterError = ResourceHelper.GetResourceString(ResourceNames.DataFormatError);
                 }
             }
 

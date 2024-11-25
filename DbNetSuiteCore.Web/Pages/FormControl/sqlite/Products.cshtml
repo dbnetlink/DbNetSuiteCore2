@@ -4,17 +4,17 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products");
+    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Insert = true, Delete = true };
     productForm.Columns = new List<FormColumn>() {
         new FormColumn("ProductID","ID"),
         new FormColumn("ProductName", "Name"),
-        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName") },
-        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName") },
+        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true },
         new FormColumn("QuantityPerUnit", "Qty"),
-        new FormColumn("UnitPrice", "Price"),
-        new FormColumn("UnitsInStock", "Stock"),
-        new FormColumn("UnitsOnOrder", "On order"),
-        new FormColumn("ReorderLevel", "Re-order Level"),
+        new FormColumn("UnitPrice", "Price") {Required = true },
+        new FormColumn("UnitsInStock", "Stock") {Required = true },
+        new FormColumn("UnitsOnOrder", "On Order") {Required = true },
+        new FormColumn("ReorderLevel", "Re-order Level") {Required = true },
         new FormColumn("Discontinued") {DataType = typeof(bool)}
     };
     @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))

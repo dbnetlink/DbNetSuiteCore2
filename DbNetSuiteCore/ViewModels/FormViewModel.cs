@@ -13,9 +13,10 @@ namespace DbNetSuiteCore.ViewModels
         public int CurrentRecord => FormModel.CurrentRecord;
         public string SelectId => _formModel.Id;
         public string LinkedFormIds => string.Join(",", FormModel.LinkedFormIds);
-        public string HxTarget => $"{(FormModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} div.form-body";
+        public string HxTarget => $"{(FormModel.ToolbarPosition == ToolbarPosition.Bottom ? "closest" : "closest")} div.form-and-toolbar";
         public DataRow Record => FormModel.Data.Rows[0];
         public string SearchInput => FormModel.SearchInput;
+        public FormMode Mode => FormModel.Mode;
         public FormViewModel(FormModel formModel) : base(formModel)
         {
             _formModel = formModel;

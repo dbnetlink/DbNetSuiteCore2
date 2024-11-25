@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.Helpers
 {
     public enum ResourceNames
     {
-        ColumnFilterDataError,
+        DataFormatError,
         ColumnFilterNoData,
         SearchPlaceholder,
         Page,
@@ -24,7 +24,10 @@ namespace DbNetSuiteCore.Helpers
         Cancel,
         Required,
         Updated,
-        UnappliedChanges 
+        UnappliedChanges,
+        Insert,
+        Delete,
+        Deleted
     }
     public static class ResourceHelper
     {

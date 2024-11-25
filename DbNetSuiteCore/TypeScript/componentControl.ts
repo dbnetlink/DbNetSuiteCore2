@@ -86,12 +86,13 @@ class ComponentControl {
         return this.formControl.querySelectorAll(selector);
     }
 
-    protected controlElement(selector) {
+    public controlElement(selector) {
         return this.formControl.querySelector(selector);
     }
 
-    protected triggerName(evt: any) {
-        return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase();
+    protected triggerName(evt:any) {
+        let headers = evt.detail.headers ? evt.detail.headers : evt.detail.requestConfig.headers;
+        return headers["HX-Trigger-Name"] ? headers["HX-Trigger-Name"].toLowerCase() : "";
     }
 
     protected updateLinkedControls(linkedIds: string, primaryKey: string, url: string = null) {
@@ -140,11 +141,17 @@ class ComponentControl {
     };
 
     protected removeClass(selector: string, className: string) {
-        this.controlElement(selector).classList.remove(className);
+        let e = this.controlElement(selector);
+        if (e) {
+            e.classList.remove(className);
+        }
     }
 
     protected addClass(selector: string, className: string) {
-        this.controlElement(selector).classList.add(className);
+        let e = this.controlElement(selector);
+        if (e) {
+            e.classList.add(className);
+        }
     }
 
     public getButton(name): HTMLButtonElement {

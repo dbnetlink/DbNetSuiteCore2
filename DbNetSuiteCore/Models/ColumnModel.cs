@@ -19,7 +19,7 @@ namespace DbNetSuiteCore.Models
         public string Key { get; set; }
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
         public List<KeyValuePair<string, string>>? LookupOptions => (DbLookupOptions ?? EnumOptions);
-        [JsonIgnore]
+       // [JsonIgnore]
         public List<KeyValuePair<string, string>>? DbLookupOptions { get; set; } = null;
         [JsonIgnore]
         public Type? LookupEnum { get; set; }
@@ -119,6 +119,15 @@ namespace DbNetSuiteCore.Models
             Initialised = true;
             Name = (dataSourceType == DataSourceType.Excel ||dataSourceType ==  DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
             PrimaryKey = dataColumn.Unique;
+
+            if (this is FormColumn)
+            {
+                var formColumn = (FormColumn)this;
+                if (formColumn.Required == false)
+                {
+                    formColumn.Required = dataColumn.AllowDBNull == false;
+                }
+            }
         }
 
         public void Update(DataRow dataRow)

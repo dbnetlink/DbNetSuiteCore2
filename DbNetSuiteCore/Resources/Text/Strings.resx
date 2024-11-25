@@ -123,14 +123,23 @@
   <data name="Cancel" xml:space="preserve">
     <value>Cancel your changes</value>
   </data>
-  <data name="ColumnFilterDataError" xml:space="preserve">
-    <value>Invalid filter value for column data type</value>
-  </data>
   <data name="ColumnFilterNoData" xml:space="preserve">
     <value>No filter value supplied</value>
   </data>
+  <data name="DataFormatError" xml:space="preserve">
+    <value>Forrmat of entered data is not valid</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Record has been deleted</value>
+  </data>
   <data name="First" xml:space="preserve">
     <value>First</value>
+  </data>
+  <data name="Insert" xml:space="preserve">
+    <value>Add</value>
   </data>
   <data name="Last" xml:space="preserve">
     <value>Last</value>

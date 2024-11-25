@@ -18,7 +18,7 @@
     @if (Model.SelectModel.Searchable)
     {
         <div class="flex">
-            <input type="search" class="w-full" aria-label="Search" name="searchInput" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" autocomplete="off" />
+            <input type="search" class="w-full" aria-label="Search" name="@TriggerNames.Search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" autocomplete="off" />
         </div>
     }
     <div class="flex">

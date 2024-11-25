@@ -8,83 +8,108 @@
 @using DbNetSuiteCore.Extensions
 @using DbNetSuiteCore.Enums
 
-<div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-message="@Model.FormModel.ErrorMessage">
-    <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
-        @foreach (FormColumn formColumn in Model.Columns)
-        {
-            object value = null;
-            if (Model.RecordCount > 0)
+<div class="form-and-toolbar">
+    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-messagetype="@Model.FormModel.MessageType" data-message="@Model.FormModel.Message" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode">
+        <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
+            @foreach (FormColumn formColumn in Model.Columns)
             {
-                DataColumn? dataColumn = Model.GetDataColumn(formColumn);
-                value = dataColumn == null ? string.Empty : Model.Record[dataColumn];
+                object value = null;
+                object dbValue = null;
+
+                if (Model.FormModel.Mode == FormMode.Update)
+                {
+                    DataColumn? dataColumn = Model.GetDataColumn(formColumn);
+                    dbValue = dataColumn == null ? string.Empty : Model.Record[dataColumn];
+                }
+
+                if (Model.FormModel.Mode == FormMode.Insert)
+                {
+                    dbValue = formColumn.InitialValue;
+                }
+
+                value = dbValue;
 
                 if (Model.FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
                     value = Model.FormModel.FormValues[formColumn.ColumnName];
                 }
-            }
 
-            <div style="display:grid;grid-template-columns: repeat(1, auto)">
-                @{
-                    FormControl(formColumn, value);
-                }
-            </div>
-        }
+                <div style="display:grid;grid-template-columns: repeat(1, auto)">
+                    @{
+                        FormControl(formColumn, value, dbValue);
+                    }
+                </div>
+            }
+        </div>
+        @await Html.PartialAsync("Form/Hidden", Model.FormModel)
     </div>
-    @await Html.PartialAsync("Form/Hidden", Model.FormModel)
+    @await Html.PartialAsync("Form/Toolbar")
 </div>
 
+
 @functions {
-    public void FormControl(FormColumn formColumn, object value)
+    public void FormControl(FormColumn formColumn, object value, object dbValue)
     {
-        value = value?.ToString() ?? string.Empty;
         <label for="@(formColumn.ColumnName)" class="font-bold text-slate-800">@formColumn.Label</label>
 
         if (formColumn.LookupOptions != null)
         {
-            RenderSelect(formColumn, value.ToString());
+            RenderSelect(formColumn, value, dbValue);
         }
         else if (formColumn.DataType == typeof(Boolean))
         {
-            bool boolValue = ComponentModelExtensions.ParseBoolean(value.ToString());
-            <input type="checkbox" name="_@(formColumn.ColumnName)" data-value="@value" @(boolValue ? "checked" : "") style="transform: scale(1.5);margin-left:5px" />
+            bool boolValue = ComponentModelExtensions.ParseBoolean(value);
+            <input type="checkbox" class="@(CheckboxClasses(formColumn))" name="_@(formColumn.ColumnName)" data-value="@dbValue" @(CheckboxAttributes(formColumn, boolValue)) style="transform: scale(1.5);margin-left:5px" />
         }
         else
         {
-            <input type="text" name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-isnumeric="@formColumn.IsNumeric.ToString().ToLower()" data-value="@value" value="@value" @(Attributes(formColumn)) />
+            <input type="text" name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-error="@formColumn.InError.ToString().ToLower()" data-isnumeric="@formColumn.IsNumeric.ToString().ToLower()" data-value="@dbValue" value="@value" @(Attributes(formColumn)) data-datatype="@formColumn.DataTypeName" />
         }
     }
 
-     void RenderSelect(FormColumn formColumn, string value)
+    void RenderSelect(FormColumn formColumn, object value, object dbValue)
     {
-        <select name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-value="@value" value="@value" @(Attributes(formColumn))>
+        <select name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-value="@dbValue" value="@value" @(Attributes(formColumn)) data-error="@formColumn.InError.ToString().ToLower()">
             <option value=""></option>
             @foreach (var option in formColumn.LookupOptions)
             {
-                <option value="@option.Key" @(option.Key == value ? "selected" : "")>@option.Value</option>
+                <option value="@option.Key" @(option.Key == (value?.ToString() ?? string.Empty) ? "selected" : "")>@option.Value</option>
             }
         </select>
     }
 
+    string CheckboxClasses(FormColumn formColumn)
+    {
+        List<string> classes = new List<string>() { "fc-control" };
+
+        if (formColumn.ReadOnly)
+        {
+            classes.Add("readonly");
+        }
+
+        return string.Join(" ", classes);
+    }
+
     string Classes(FormColumn formColumn)
     {
-        List<string> classes = new List<string>() { "form-control w-full" };
+        List<string> classes = new List<string>() { "fc-control w-full" };
         if (formColumn.IsNumeric && formColumn.LookupOptions == null)
         {
             classes.Add("text-right");
         }
 
-        if (formColumn.InError)
+        if (formColumn.ReadOnly)
         {
-            classes.Add("bg-red-400");
+            classes.Add("readonly");
         }
+
         return string.Join(" ", classes);
     }
 
     string Attributes(FormColumn formColumn)
     {
         List<string> attributes = new List<string>();
-        if (formColumn.PrimaryKey || Model.RecordCount == 0)
+        if (formColumn.PrimaryKey || formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty)
         {
             attributes.Add("disabled");
         }
@@ -92,6 +117,26 @@
         {
             attributes.Add("required");
         }
+        if (formColumn.ReadOnly && formColumn.LookupOptions == null)
+        {
+            attributes.Add("readonly");
+        }
+        return string.Join(" ", attributes);
+    }
+
+    string CheckboxAttributes(FormColumn formColumn, bool boolValue)
+    {
+        List<string> attributes = new List<string>();
+        if (formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty)
+        {
+            attributes.Add("disabled");
+        }
+
+        if (boolValue)
+        {
+            attributes.Add("checked");
+        }
+
         return string.Join(" ", attributes);
     }
 }

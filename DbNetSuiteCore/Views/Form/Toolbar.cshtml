@@ -1,44 +1,73 @@
 ﻿@model FormViewModel
 @using System.Data
 @using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.ViewModels
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
 
-<div class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 justify-between">
-    <input class="" style="width:10rem" autofocus type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="searchInput" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
-
-    <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2 @(Model.RecordCount > 0 ? "hidden" : "")">
-        @IconHelper.Info()
-        <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
-    </div>
-
-    <div id="navigation" class="flex flex-row gap-1 items-center @(Model.RecordCount == 0 ? "hidden" : "")">
-    @{
-        RenderButton(TriggerNames.First, IconHelper.First(), NavButtonText(ResourceNames.First));
-        RenderButton(TriggerNames.Previous, IconHelper.Previous(), NavButtonText(ResourceNames.Previous));
-        <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Record)</span>
-        RenderRecordNumber(Model.CurrentRecord, Model.RecordCount);
-        <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
-        RenderRecordCount(Model.RecordCount);
-        RenderButton(TriggerNames.Next, IconHelper.Next(), NavButtonText(ResourceNames.Next));
-        RenderButton(TriggerNames.Last, IconHelper.Last(), NavButtonText(ResourceNames.Last));
+<div id="toolbar" class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 @Justify()">
+    @if (Model.Mode != FormMode.Insert)
+    {
+        <input style="width:10rem" type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="@TriggerNames.Search" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
     }
-    </div>
-    <div class="flex flex-row gap-1">
-    @{
-            RenderButton(TriggerNames.Apply, IconHelper.Apply(), NavButtonText(ResourceNames.Apply), "background-color: rgb(209 250 229)");
-            RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), NavButtonText(ResourceNames.Cancel), "background-color: rgb(255 228 230)");
-    }
-    </div>
 
+    @if (Model.Mode == FormMode.Empty)
+    {
+        <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2">
+            @IconHelper.Info()
+            <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
+        </div>
+    }
+
+    @if (Model.Mode == FormMode.Update)
+    {
+        <div id="navigation" class="flex flex-row gap-1 items-center">
+        @{
+                RenderButton(TriggerNames.First, IconHelper.First(), NavButtonText(ResourceNames.First), Model.CurrentRecord == 1);
+                RenderButton(TriggerNames.Previous, IconHelper.Previous(), NavButtonText(ResourceNames.Previous), Model.CurrentRecord == 1);
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Record)</span>
+            RenderRecordNumber(Model.CurrentRecord, Model.RecordCount);
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
+            RenderRecordCount(Model.RecordCount);
+                RenderButton(TriggerNames.Next, IconHelper.Next(), NavButtonText(ResourceNames.Next), Model.CurrentRecord == Model.RecordCount);
+                RenderButton(TriggerNames.Last, IconHelper.Last(), NavButtonText(ResourceNames.Last), Model.CurrentRecord == Model.RecordCount);
+        }
+        </div>
+    }
+
+    @if (RenderInsert() || RenderDelete())
+    {
+        <div class="flex flex-row gap-1" id="insertUpdate">
+            @{
+                if (RenderInsert())
+                {
+                    RenderButton("insert", IconHelper.Insert(), NavButtonText(ResourceNames.Insert));
+                }
+                if (RenderDelete())
+                {
+                    RenderButton(TriggerNames.Delete, IconHelper.Delete(), NavButtonText(ResourceNames.Delete), false, "background-color: rgb(255 228 230)");
+                }
+            }
+        </div>
+    }
+
+    @if (Model.Mode != FormMode.Empty)
+    {
+        <div class="flex flex-row gap-1 " id="applyCancel">
+            @{
+                RenderButton(TriggerNames.Apply, IconHelper.Apply(), NavButtonText(ResourceNames.Apply), false, "background-color: rgb(209 250 229)");
+                RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), NavButtonText(ResourceNames.Cancel));
+            }
+        </div>
+    }
 </div>
 
 @functions {
-    void RenderButton(string name, HtmlString icon, string title, string style = "")
+    void RenderButton(string name, HtmlString icon, string title, bool disabled = false, string style = "")
     {
-        <button type="button" style="@style" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@icon</button>
+        <button type="button" style="@style" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" @(disabled ? "disabled" : "") @(name == TriggerNames.Delete ? "hx-confirm-dialog=\"Please confirm deletion of current record\"" : "")>@icon</button>
     }
 
     void RenderRecordCount(int recordCount)
@@ -61,5 +90,20 @@
     string NavButtonText(ResourceNames resourceName)
     {
         return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
+    }
+
+    bool RenderInsert()
+    {
+        return Model.FormModel.Insert && Model.Mode != FormMode.Insert;
+    }
+
+    bool RenderDelete()
+    {
+        return Model.FormModel.Delete && Model.Mode == FormMode.Update;
+    }
+
+    string Justify() 
+    {
+        return Model.Mode == FormMode.Insert ? "justify-end" : "justify-between";
     }
 }

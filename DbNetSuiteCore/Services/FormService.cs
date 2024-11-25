@@ -8,7 +8,9 @@ using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
 using NUglify.Helpers;
+
 
 namespace DbNetSuiteCore.Services
 {
@@ -48,9 +50,13 @@ namespace DbNetSuiteCore.Services
             switch (formModel.TriggerName)
             {
                 case TriggerNames.Apply:
-
                     return await ApplyUpdate(formModel);
-
+                case TriggerNames.Toolbar:
+                    return await Toolbar(formModel);
+                case TriggerNames.Delete:
+                    return await ApplyDelete(formModel);
+                case TriggerNames.Insert:
+                    return await InitialiseInsert(formModel);
                 default:
                     string viewName = formModel.Uninitialised ? "Form/Markup" : "Form/Form";
                     return await View(viewName, await GetFormViewModel(formModel));
@@ -69,19 +75,25 @@ namespace DbNetSuiteCore.Services
                 throw new Exception("At least one form column must be designated a primary key");
             }
 
-            if (IsNavigationRequest() == false || formModel.PrimaryKeyValues.Any() == false)
+            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search)
             {
                 await GetRecords(formModel);
                 formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => r.ItemArray[0]!).ToList();
+                if (formModel.CurrentRecord > formModel.PrimaryKeyValues.Count)
+                {
+                    formModel.CurrentRecord = formModel.PrimaryKeyValues.Count;
+                }
             }
 
             if (formModel.PrimaryKeyValues.Any())
             {
                 var idx = Enumerable.Range(1, formModel.PrimaryKeyValues.Count()).Contains(formModel.CurrentRecord) ? formModel.CurrentRecord - 1 : 0;
-                formModel.ParentKey = formModel.PrimaryKeyValues[idx]?.ToString();
+                formModel.ParentKey = formModel.PrimaryKeyValues[idx]?.ToString() ?? string.Empty;
+                formModel.FormValues.Clear();
                 await GetRecord(formModel);
             }
 
+            formModel.Mode = formModel.PrimaryKeyValues.Any() ? FormMode.Update : FormMode.Empty;
             var formViewModel = new FormViewModel(formModel);
 
             if (formModel.DiagnosticsMode)
@@ -94,36 +106,116 @@ namespace DbNetSuiteCore.Services
 
         private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {
+            FormViewModel formViewModel = new FormViewModel(formModel);
             if (ValidateRecord(formModel))
             {
-                await UpdateRecord(formModel);
-                formModel.ErrorMessage = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                try
+                {
+                    if (formModel.Mode == FormMode.Update)
+                    {
+                        await UpdateRecord(formModel);
+                        formModel.FormValues = new Dictionary<string, string>();
+                    }
+                    else
+                    {
+                        await InsertRecord(formModel);
+                        formModel.PrimaryKeyValues = new List<object>();
+                    }
+                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                    formModel.MessageType = MessageType.Success;
+                    
+                }
+                catch (Exception ex)
+                {
+                    formModel.Message = ex.Message;
+                    formModel.MessageType = MessageType.Error;
+                }
+                formViewModel = await GetFormViewModel(formModel);
             }
+            
+            return await View("Form/Form", formViewModel);
+        }
 
+        private async Task<Byte[]> ApplyDelete(FormModel formModel)
+        {
+            try
+            {
+                await DeleteRecord(formModel);
+                formModel.PrimaryKeyValues = new List<object>();
+                formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Deleted);
+                formModel.MessageType = MessageType.Success;
+            }
+            catch (Exception ex)
+            {
+                formModel.Message = ex.Message;
+                formModel.MessageType = MessageType.Error;
+            }
             return await View("Form/Form", await GetFormViewModel(formModel));
         }
 
+        private async Task<Byte[]> Toolbar(FormModel formModel)
+        {
+            return await View("Form/Toolbar", new FormViewModel(formModel));
+        }
+
+        private async Task<Byte[]> InitialiseInsert(FormModel formModel)
+        {
+            formModel.Mode = FormMode.Insert;
+            await GetLookupOptions(formModel);
+            return await View("Form/Form", new FormViewModel(formModel));
+        }
+
         private bool ValidateRecord(FormModel formModel)
+        {
+
+            if (ValidateErrorType(formModel, ResourceNames.Required))
+            {
+                if (ValidateErrorType(formModel, ResourceNames.DataFormatError))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ValidateErrorType(FormModel formModel, ResourceNames resourceName)
         {
             foreach (string columnName in formModel.FormValues.Keys)
             {
                 FormColumn? formColumn = formModel.Columns.First(c => c.ColumnName == columnName);
 
-                if (formColumn == null) {
-                    continue; 
+                if (formColumn == null)
+                {
+                    continue;
                 }
 
-                formColumn.InError = string.IsNullOrEmpty(formModel.FormValues[columnName]) && formColumn.Required;
+                switch(resourceName)
+                {
+                    case ResourceNames.Required:
+                        formColumn.InError = string.IsNullOrEmpty(formModel.FormValues[columnName]) && formColumn.Required;
+                        break;  
+                    case ResourceNames.DataFormatError:
+                        object? paramValue = ComponentModelExtensions.ParamValue(formModel.FormValues[columnName], formColumn, formModel.DataSourceType);
+
+                        if (paramValue == null)
+                        {
+                            formColumn.InError = true;
+                        }
+                        break;
+                }
             }
 
             if (formModel.Columns.Any(c => c.InError))
             {
-                formModel.ErrorMessage = ResourceHelper.GetResourceString(ResourceNames.Required);
+                formModel.Message = ResourceHelper.GetResourceString(resourceName);
+                formModel.MessageType = MessageType.Error;
                 return false;
             }
 
             return true;
         }
+
 
         private FormModel GetFormModel()
         {
@@ -137,7 +229,7 @@ namespace DbNetSuiteCore.Services
                 formModel.FormValues = RequestHelper.FormColumnValues(_context);
                 AssignParentKey(formModel);
                 formModel.Columns.ForEach(column => column.InError = false);
-                formModel.ErrorMessage = string.Empty;
+                formModel.Message = string.Empty;
                 return formModel;
             }
             catch
@@ -164,6 +256,50 @@ namespace DbNetSuiteCore.Services
                     break;
                 default:
                     await _msSqlRepository.UpdateRecord(formModel);
+                    break;
+            }
+        }
+
+        protected async Task InsertRecord(FormModel formModel)
+        {
+            switch (formModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.InsertRecord(formModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.InsertRecord(formModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.InsertRecord(formModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    //     await _mongoDbRepository.InsertRecord(formModel);
+                    break;
+                default:
+                    await _msSqlRepository.InsertRecord(formModel);
+                    break;
+            }
+        }
+
+        protected async Task DeleteRecord(FormModel formModel)
+        {
+            switch (formModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.DeleteRecord(formModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.DeleteRecord(formModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.DeleteRecord(formModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    //     await _mongoDbRepository.DeleteRecord(formModel);
+                    break;
+                default:
+                    await _msSqlRepository.DeleteRecord(formModel);
                     break;
             }
         }

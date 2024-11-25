@@ -80,8 +80,8 @@ class ComponentControl {
         return this.formControl.querySelector(selector);
     }
     triggerName(evt) {
-        var _a;
-        return ((_a = evt.detail.requestConfig.headers['HX-Trigger-Name']) !== null && _a !== void 0 ? _a : '').toLowerCase();
+        let headers = evt.detail.headers ? evt.detail.headers : evt.detail.requestConfig.headers;
+        return headers["HX-Trigger-Name"] ? headers["HX-Trigger-Name"].toLowerCase() : "";
     }
     updateLinkedControls(linkedIds, primaryKey, url = null) {
         var linkedIdArray = linkedIds.split(",");
@@ -115,10 +115,16 @@ class ComponentControl {
         return this.controlElement('#navigation');
     }
     removeClass(selector, className) {
-        this.controlElement(selector).classList.remove(className);
+        let e = this.controlElement(selector);
+        if (e) {
+            e.classList.remove(className);
+        }
     }
     addClass(selector, className) {
-        this.controlElement(selector).classList.add(className);
+        let e = this.controlElement(selector);
+        if (e) {
+            e.classList.add(className);
+        }
     }
     getButton(name) {
         return this.controlElement(this.buttonSelector(name));

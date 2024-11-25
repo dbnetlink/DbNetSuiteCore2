@@ -16,7 +16,12 @@ namespace DbNetSuiteCore.Models
         public List<object> PrimaryKeyValues { get; set; } = new List<object>();
         [JsonIgnore]
         public Dictionary<string, string> FormValues = new Dictionary<string, string>();
-        public string ErrorMessage = string.Empty;
+        public string Message = string.Empty;
+        public MessageType MessageType = MessageType.None;
+        public bool Insert { get; set; } = false;
+        public bool Delete { get; set; } = false;
+        public FormMode Mode { get; set; } = FormMode.Empty;
+
 
         public FormModel() : base()
         {

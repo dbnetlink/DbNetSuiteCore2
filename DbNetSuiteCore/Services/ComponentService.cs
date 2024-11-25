@@ -282,5 +282,27 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        protected async Task GetLookupOptions(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                 //   await _mongoDbRepository.GetLookupOptions(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetLookupOptions(componentModel);
+                    break;
+            }
+        }
+
     }
 }

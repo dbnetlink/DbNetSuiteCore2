@@ -30,11 +30,6 @@ class ViewDialog {
         input.value = this.gridControl.selectedRow.dataset.id;
         htmx.trigger(input, "changed");
     }
-    close() {
-        if (this.dialog && this.dialog.open) {
-            this.close();
-        }
-    }
     configureNavigation(tr) {
         this.configureButton(tr.previousElementSibling, "previous");
         this.configureButton(tr.nextElementSibling, "next");

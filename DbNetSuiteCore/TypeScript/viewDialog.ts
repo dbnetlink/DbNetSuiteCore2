@@ -39,12 +39,6 @@ class ViewDialog {
         htmx.trigger(input, "changed");
     }
 
-    close() {
-        if (this.dialog && this.dialog.open) {
-            this.close();
-        }
-    }
-
     configureNavigation(tr: HTMLTableRowElement) {
         this.configureButton(tr.previousElementSibling as HTMLTableRowElement, "previous");
         this.configureButton(tr.nextElementSibling as HTMLTableRowElement, "next");

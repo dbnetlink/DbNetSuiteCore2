@@ -3,7 +3,8 @@
     public class TriggerNames
     {
         public const string InitialLoad = "initialLoad";
-        public const string Search = "search";
+        public const string Toolbar = "toolbar";
+        public const string Search = "searchInput";
         public const string Sort = "sort";
         public const string Download = "download";
         public const string Page = "page";
@@ -18,5 +19,7 @@
         public const string Record = "record";
         public const string Apply = "apply";
         public const string Cancel = "cancel";
+        public const string Delete = "delete";
+        public const string Insert = "insert";
     }
 }

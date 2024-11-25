@@ -278,6 +278,14 @@ namespace DbNetSuiteCore.Extensions
                                 paramValue = DateTime.Parse(value.ToString(), CultureInfo.CurrentCulture);
                             }
                         }
+                        if (paramValue is DateTime && dataSourceType == DataSourceType.MSSQL)
+                        {
+                            int year = ((DateTime)paramValue).Year;
+                            if (year < 1753 || year > 9999)
+                            {
+                                return null;
+                            }
+                        }
                         break;
                     case nameof(Byte):
                         paramValue = value;
@@ -311,7 +319,6 @@ namespace DbNetSuiteCore.Extensions
             catch (Exception e)
             {
                 return null;
-                //throw new Exception($"{e.Message} => : Value: {value.ToString()} DataType:{dataType}");
             }
 
             switch (dataType)
@@ -329,9 +336,9 @@ namespace DbNetSuiteCore.Extensions
             return paramValue;
         }
 
-        public static bool ParseBoolean(string boolString)
+        public static bool ParseBoolean(object boolString)
         {
-            switch (boolString.ToLower())
+            switch ((boolString?.ToString() ?? string.Empty).ToLower())
             {
                 case "on":
                 case "yes":

@@ -66,7 +66,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 new ColumnFilterTest("active","0",17, FilterType.Select),
                 new ColumnFilterTest("postal_code","00",1),
                 new ColumnFilterTest("active","1",14, FilterType.Select),
-                new ColumnFilterTest("last_update","xxx",Helpers.ResourceNames.ColumnFilterDataError),
+                new ColumnFilterTest("last_update","xxx",Helpers.ResourceNames.DataFormatError),
                 new ColumnFilterTest("last_update","",14),
                 new ColumnFilterTest("last_update",">=",Helpers.ResourceNames.ColumnFilterNoData)
             };

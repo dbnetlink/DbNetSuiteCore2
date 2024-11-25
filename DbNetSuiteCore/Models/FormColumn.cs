@@ -9,6 +9,10 @@ namespace DbNetSuiteCore.Models
         public FormControlType FormControlType { get; set; } = FormControlType.Auto;
         public bool Required { get; set; } = false;
         public bool InError { get; set; } = false;
+        public bool ReadOnly { get; set; } = false;
+        public bool Disabled { get; set; } = false;
+        public object InitialValue { get; set; } = string.Empty;
+
         public FormColumn()
         {
         }

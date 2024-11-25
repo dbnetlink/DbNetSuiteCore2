@@ -340,7 +340,7 @@ namespace DbNetSuiteCore.Repositories
                     }
                     else
                     {
-                        column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
+                        column.FilterError = ResourceHelper.GetResourceString(ResourceNames.DataFormatError);
                     }
                 }
 

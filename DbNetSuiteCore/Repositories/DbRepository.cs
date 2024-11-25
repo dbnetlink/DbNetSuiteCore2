@@ -63,12 +63,15 @@ namespace DbNetSuiteCore.Repositories
         {
             QueryCommandConfig query = componentModel.BuildRecordQuery();
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias);
+            await GetLookupOptions(componentModel);
+        }
 
+        public async Task GetLookupOptions(ComponentModel componentModel)
+        {
             foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
             {
                 await GetLookupOptions(componentModel, column);
             }
-
             componentModel.ConvertEnumLookups();
         }
 
@@ -81,20 +84,38 @@ namespace DbNetSuiteCore.Repositories
             connection.Close();
         }
 
+        public async Task InsertRecord(FormModel formModel)
+        {
+            CommandConfig update = formModel.BuildInsert();
+            var connection = GetConnection(formModel.ConnectionAlias);
+            connection.Open();
+            await ExecuteUpdate(update, connection);
+            connection.Close();
+        }
+
+        public async Task DeleteRecord(FormModel formModel)
+        {
+            CommandConfig update = formModel.BuildDelete();
+            var connection = GetConnection(formModel.ConnectionAlias);
+            connection.Open();
+            await ExecuteUpdate(update, connection);
+            connection.Close();
+        }
+
         private async Task GetLookupOptions(ComponentModel componentModel, ColumnModel column)
         {
-            DataColumn? dataColumn = componentModel.GetDataColumn(column);
-
-            if (dataColumn == null || componentModel.Data.Rows.Count == 0)
-            {
-                return;
-            }
             column.DbLookupOptions = new List<KeyValuePair<string, string>>();
             QueryCommandConfig query = new QueryCommandConfig();
             var lookup = column.Lookup!;
 
             if (componentModel is GridModel)
             {
+                DataColumn? dataColumn = componentModel.GetDataColumn(column);
+
+                if (dataColumn == null || componentModel.Data.Rows.Count == 0)
+                {
+                    return;
+                }
                 var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0].ToString()).ToList();
               
                 if (string.IsNullOrEmpty(lookup.TableName))
@@ -132,6 +153,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (componentModel is GridModel)
             {
+                DataColumn? dataColumn = componentModel.GetDataColumn(column);
                 componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
             }
         }
