@@ -27,7 +27,11 @@ namespace DbNetSuiteCore.Helpers
         UnappliedChanges,
         Insert,
         Delete,
-        Deleted
+        Deleted,
+        ConfirmDelete,
+        MinValueError,
+        MaxValueError,
+        RangeValueError
     }
     public static class ResourceHelper
     {

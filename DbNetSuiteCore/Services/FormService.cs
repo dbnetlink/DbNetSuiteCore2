@@ -10,6 +10,7 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using NUglify.Helpers;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 
 namespace DbNetSuiteCore.Services
@@ -20,7 +21,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-    public async Task<Byte[]> Process(HttpContext context, string page)
+        public async Task<Byte[]> Process(HttpContext context, string page)
         {
             try
             {
@@ -123,7 +124,7 @@ namespace DbNetSuiteCore.Services
                     }
                     formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
                     formModel.MessageType = MessageType.Success;
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -132,7 +133,7 @@ namespace DbNetSuiteCore.Services
                 }
                 formViewModel = await GetFormViewModel(formModel);
             }
-            
+
             return await View("Form/Form", formViewModel);
         }
 
@@ -172,7 +173,10 @@ namespace DbNetSuiteCore.Services
             {
                 if (ValidateErrorType(formModel, ResourceNames.DataFormatError))
                 {
-                    return true;
+                    if (ValidateErrorType(formModel, ResourceNames.MinValueError))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -190,17 +194,54 @@ namespace DbNetSuiteCore.Services
                     continue;
                 }
 
-                switch(resourceName)
+                object? paramValue;
+
+                switch (resourceName)
                 {
                     case ResourceNames.Required:
                         formColumn.InError = string.IsNullOrEmpty(formModel.FormValues[columnName]) && formColumn.Required;
-                        break;  
+                        break;
                     case ResourceNames.DataFormatError:
-                        object? paramValue = ComponentModelExtensions.ParamValue(formModel.FormValues[columnName], formColumn, formModel.DataSourceType);
-
+                        paramValue = ComponentModelExtensions.ParamValue(formModel.FormValues[columnName], formColumn, formModel.DataSourceType);
                         if (paramValue == null)
                         {
                             formColumn.InError = true;
+                        }
+                        break;
+                    case ResourceNames.MinValueError:
+                        if (formColumn.MinValue == null && formColumn.MaxValue == null)
+                        {
+                            continue;
+                        }
+                        paramValue = ComponentModelExtensions.ParamValue(formModel.FormValues[columnName], formColumn, formModel.DataSourceType);
+
+                        bool lessThanMinimum = false;
+                        bool greaterThanMaximum = false;
+
+                        if (formColumn.MinValue != null)
+                        {
+                            lessThanMinimum = Compare(paramValue!,formColumn.MinValue) < 0;
+                        }
+
+                        if (formColumn.MaxValue != null)
+                        {
+                            greaterThanMaximum = Compare(paramValue!, formColumn.MaxValue) > 0;
+                        }
+
+                        if (lessThanMinimum)
+                        {
+                            formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>", formColumn.MinValue);
+                        };
+
+                        if (greaterThanMaximum)
+                        {
+                            formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
+                        };
+
+                        if (string.IsNullOrEmpty(formModel.Message) == false)
+                        {
+                            formModel.MessageType = MessageType.Error;
+                            return false;
                         }
                         break;
                 }
@@ -216,12 +257,40 @@ namespace DbNetSuiteCore.Services
             return true;
         }
 
+        private int Compare(object value1, object value2)
+        {
+            try
+            {
+                string typeName = value2.GetType().Name;
+                switch (typeName)
+                {
+                    case nameof(Int16):
+                    case nameof(Int32):
+                    case nameof(Int64):
+                        return Comparer<Int64>.Default.Compare(Convert.ToInt64(value1), Convert.ToInt64(value2));
+                    case nameof(Decimal):
+                        return Comparer<Decimal>.Default.Compare(Convert.ToDecimal(value1), Convert.ToDecimal(value2));
+                    case nameof(Single):
+                    case nameof(Double):
+                        return Comparer<Double>.Default.Compare(Convert.ToDouble(value1), Convert.ToDouble(value2));
+                    case nameof(DateTime):
+                        return Comparer<DateTime>.Default.Compare(Convert.ToDateTime(value1), Convert.ToDateTime(value2));
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+
+            return 0;
+        }
+
 
         private FormModel GetFormModel()
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context),_configuration);
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration);
                 FormModel formModel = JsonConvert.DeserializeObject<FormModel>(model) ?? new FormModel();
                 formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
@@ -251,8 +320,8 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.PostgreSql:
                     await _postgreSqlRepository.UpdateRecord(formModel);
                     break;
-                 case DataSourceType.MongoDB:
-               //     await _mongoDbRepository.UpdateRecord(formModel);
+                case DataSourceType.MongoDB:
+                    //     await _mongoDbRepository.UpdateRecord(formModel);
                     break;
                 default:
                     await _msSqlRepository.UpdateRecord(formModel);
@@ -312,7 +381,7 @@ namespace DbNetSuiteCore.Services
                     return Convert.ToInt32(RequestHelper.FormValue(TriggerNames.Record, "1", _context));
                 case TriggerNames.Search:
                 case TriggerNames.First:
-                     return 1;
+                    return 1;
                 case TriggerNames.Next:
                     return formModel.CurrentRecord + 1;
                 case TriggerNames.Previous:

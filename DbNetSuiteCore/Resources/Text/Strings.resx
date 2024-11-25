@@ -126,6 +126,9 @@
   <data name="ColumnFilterNoData" xml:space="preserve">
     <value>No filter value supplied</value>
   </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Please confirm deletion of selected record.</value>
+  </data>
   <data name="DataFormatError" xml:space="preserve">
     <value>Forrmat of entered data is not valid</value>
   </data>
@@ -143,6 +146,12 @@
   </data>
   <data name="Last" xml:space="preserve">
     <value>Last</value>
+  </data>
+  <data name="MaxValueError" xml:space="preserve">
+    <value>Entered {0} must be less than {1}</value>
+  </data>
+  <data name="MinValueError" xml:space="preserve">
+    <value>Entered {0} must be greater than {1}</value>
   </data>
   <data name="Next" xml:space="preserve">
     <value>Next</value>
@@ -164,6 +173,9 @@
   </data>
   <data name="QueryLimited" xml:space="preserve">
     <value>Query limited to {0} rows</value>
+  </data>
+  <data name="RangeValueError" xml:space="preserve">
+    <value>Entered {0} must be between {1} and {2}</value>
   </data>
   <data name="Record" xml:space="preserve">
     <value>Record</value>

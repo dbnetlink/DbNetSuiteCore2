@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Models;
-using DbNetSuiteCore.ViewModels;
 using Microsoft.AspNetCore.Html;
 using System.Data;
 using System.Text.Encodings.Web;
@@ -64,7 +63,7 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
         }
 
-        public static HtmlString DataAttribute(string name, object value)
+        public static HtmlString Attribute(string name, object value)
         {
             return new HtmlString($"{name}=\"{HtmlEncoder.Default.Encode(value?.ToString() ?? string.Empty)}\"");
         }

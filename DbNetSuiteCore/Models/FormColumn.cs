@@ -12,6 +12,9 @@ namespace DbNetSuiteCore.Models
         public bool ReadOnly { get; set; } = false;
         public bool Disabled { get; set; } = false;
         public object InitialValue { get; set; } = string.Empty;
+        public object? MinValue { get; set; } = null;
+        public object? MaxValue { get; set; } = null;
+
 
         public FormColumn()
         {

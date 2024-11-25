@@ -1,8 +1,6 @@
 class FormControl extends ComponentControl {
     constructor(formId) {
         super(formId);
-        this.formMessage = this.controlElement("#form-message");
-        this.toolbar = this.controlElement("#toolbar");
         this.confirmDialog = new ConfirmDialog(this);
     }
     afterRequest(evt) {
@@ -17,11 +15,11 @@ class FormControl extends ComponentControl {
             return;
         }
         this.form = this.controlElement("form");
+        this.formMessage = this.controlElement("#form-message");
         if (this.triggerName(evt) == "initialload") {
             this.initialise();
         }
-        let formBody = this.controlElement("div.form-body");
-        this.setMessage(formBody.dataset.message, formBody.dataset.messagetype);
+        window.setTimeout(() => { this.clearErrorMessage(); }, 3000);
         this.invokeEventHandler('FormLoaded');
     }
     initialise() {
@@ -103,13 +101,9 @@ class FormControl extends ComponentControl {
         }
     }
     setMessage(message, type = 'success') {
-        if (!message) {
-            return;
-        }
         this.formMessage.innerText = message;
         this.formMessage.dataset.highlight = type.toLowerCase();
-        let self = this;
-        window.setTimeout(() => { self.clearErrorMessage(); }, 3000);
+        window.setTimeout(() => { this.clearErrorMessage(); }, 3000);
     }
     clearErrorMessage() {
         this.formMessage.innerHTML = "&nbsp";

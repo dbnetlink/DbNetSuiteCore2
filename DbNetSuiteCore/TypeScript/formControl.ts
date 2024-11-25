@@ -2,12 +2,9 @@ class FormControl extends ComponentControl {
     form: HTMLFormElement;
     formMessage: HTMLDivElement;
     formBody: HTMLElement;
-    toolbar: HTMLElement;
     confirmDialog: ConfirmDialog;
     constructor(formId) {
         super(formId)
-        this.formMessage = this.controlElement("#form-message");
-        this.toolbar = this.controlElement("#toolbar");
         this.confirmDialog = new ConfirmDialog(this);
     }
 
@@ -26,17 +23,16 @@ class FormControl extends ComponentControl {
         }
        
         this.form = this.controlElement("form");
+        this.formMessage = this.controlElement("#form-message");
 
         if (this.triggerName(evt) == "initialload") {
             this.initialise()
         }
 
-        let formBody = this.controlElement("div.form-body") as HTMLElement;
-        this.setMessage(formBody.dataset.message, formBody.dataset.messagetype);
+        window.setTimeout(() => { this.clearErrorMessage() }, 3000)
 
         this.invokeEventHandler('FormLoaded');
     }
-
 
     private initialise() {
         document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev) });
@@ -66,7 +62,6 @@ class FormControl extends ComponentControl {
             });
         });
     }
-
  
     public confirmRequest(evt) {
         if (this.isControlEvent(evt) == false || evt.target.hasAttribute('hx-confirm-dialog') == false) {
@@ -134,13 +129,9 @@ class FormControl extends ComponentControl {
     }
 
     private setMessage(message: string, type: string = 'success') {
-        if (!message) {
-            return
-        }
         this.formMessage.innerText = message;
         this.formMessage.dataset.highlight = type.toLowerCase();
-        let self = this
-        window.setTimeout(() => { self.clearErrorMessage() }, 3000)
+        window.setTimeout(() => { this.clearErrorMessage() }, 3000)
     }
 
     private clearErrorMessage() {

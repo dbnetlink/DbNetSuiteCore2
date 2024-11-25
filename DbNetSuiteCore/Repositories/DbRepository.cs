@@ -3,7 +3,6 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Extensions;
 using System.Data;
 using System.Data.Common;
-using System.Text.RegularExpressions;
 using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Repositories
@@ -30,13 +29,21 @@ namespace DbNetSuiteCore.Repositories
         {
             QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel.IsStoredProcedure);
-
             
             if (componentModel.Data.Rows.Count > 0)
             {
                 foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
                 {
                     await GetLookupOptions(componentModel, column);
+                }
+
+                if (componentModel is GridModel)
+                {
+                    foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null))
+                    {
+                        DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                        componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
+                    }
                 }
             }
 
@@ -150,12 +157,6 @@ namespace DbNetSuiteCore.Repositories
             }
 
             column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
-
-            if (componentModel is GridModel)
-            {
-                DataColumn? dataColumn = componentModel.GetDataColumn(column);
-                componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
-            }
         }
 
         public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumn gridColumn)

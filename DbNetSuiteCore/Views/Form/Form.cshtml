@@ -9,7 +9,11 @@
 @using DbNetSuiteCore.Enums
 
 <div class="form-and-toolbar">
-    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-messagetype="@Model.FormModel.MessageType" data-message="@Model.FormModel.Message" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode">
+    @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom)
+    {
+        @await Html.PartialAsync("Form/Toolbar")
+    }
+    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode">
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
             @foreach (FormColumn formColumn in Model.Columns)
             {
@@ -43,7 +47,23 @@
         </div>
         @await Html.PartialAsync("Form/Hidden", Model.FormModel)
     </div>
-    @await Html.PartialAsync("Form/Toolbar")
+    @if(Model.FormModel.ToolbarPosition == ToolbarPosition.Bottom)
+    {
+        @await Html.PartialAsync("Form/Toolbar")
+    }
+    @{
+        HtmlString highlightAttr = new HtmlString("");
+        if (string.IsNullOrEmpty(Model.FormModel.Message))
+        {
+            Model.FormModel.Message = "&nbsp;";
+        }
+        else
+        {
+            highlightAttr = RazorHelper.Attribute("data-highlight", Model.FormModel.MessageType.ToString().ToLower());
+        }
+
+        <div id="form-message" class="border rounded border-slate-300 p-1 my-1" @highlightAttr>@Html.Raw(Model.FormModel.Message)</div>
+    }
 </div>
 
 
