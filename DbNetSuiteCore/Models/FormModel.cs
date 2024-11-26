@@ -21,6 +21,8 @@ namespace DbNetSuiteCore.Models
         public bool Insert { get; set; } = false;
         public bool Delete { get; set; } = false;
         public FormMode Mode { get; set; } = FormMode.Empty;
+        public bool ValidationPassed { get; set; } = false;
+
 
 
         public FormModel() : base()

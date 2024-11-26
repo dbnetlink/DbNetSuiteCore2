@@ -5,6 +5,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
 <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model),Configuration)" />
+<input type="hidden" name="validationPassed" value="@Model.ValidationPassed" />
 @if (string.IsNullOrEmpty(Model.JSON) == false)
 {
     <input type="hidden" name="json" value="@TextHelper.Compress(Model.JSON)" />

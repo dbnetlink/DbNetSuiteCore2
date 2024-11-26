@@ -2,6 +2,8 @@
 {
     public enum FormClientEvent
     {
-        Initialised
+        Initialised,
+        RecordLoaded,
+        ValidateUpdate
     };
 }

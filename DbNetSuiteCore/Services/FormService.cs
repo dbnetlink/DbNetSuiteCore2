@@ -102,39 +102,59 @@ namespace DbNetSuiteCore.Services
                 formViewModel.Diagnostics = RequestHelper.Diagnostics(_context);
             }
 
+            formModel.ValidationPassed = false;
+
             return formViewModel;
         }
 
         private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {
             FormViewModel formViewModel = new FormViewModel(formModel);
-            if (ValidateRecord(formModel))
-            {
-                try
-                {
-                    if (formModel.Mode == FormMode.Update)
-                    {
-                        await UpdateRecord(formModel);
-                        formModel.FormValues = new Dictionary<string, string>();
-                    }
-                    else
-                    {
-                        await InsertRecord(formModel);
-                        formModel.PrimaryKeyValues = new List<object>();
-                    }
-                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
-                    formModel.MessageType = MessageType.Success;
 
-                }
-                catch (Exception ex)
+            if (formModel.ClientEvents.Keys.Contains(FormClientEvent.ValidateUpdate) == false)
+            {
+                if (ValidateRecord(formModel))
                 {
-                    formModel.Message = ex.Message;
-                    formModel.MessageType = MessageType.Error;
+                    await CommitUpdate(formModel);
+                    formViewModel = await GetFormViewModel(formModel);
                 }
+            }
+            else if (formModel.ValidationPassed == false)
+            {
+                formModel.ValidationPassed = ValidateRecord(formModel);
+            }
+            else
+            {
+                await CommitUpdate(formModel);
                 formViewModel = await GetFormViewModel(formModel);
             }
 
             return await View("Form/Form", formViewModel);
+        }
+
+        private async Task CommitUpdate(FormModel formModel)
+        {
+            try
+            {
+                if (formModel.Mode == FormMode.Update)
+                {
+                    await UpdateRecord(formModel);
+                    formModel.FormValues = new Dictionary<string, string>();
+                }
+                else
+                {
+                    await InsertRecord(formModel);
+                    formModel.PrimaryKeyValues = new List<object>();
+                }
+                formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                formModel.MessageType = MessageType.Success;
+
+            }
+            catch (Exception ex)
+            {
+                formModel.Message = ex.Message;
+                formModel.MessageType = MessageType.Error;
+            }
         }
 
         private async Task<Byte[]> ApplyDelete(FormModel formModel)
@@ -220,7 +240,7 @@ namespace DbNetSuiteCore.Services
 
                         if (formColumn.MinValue != null)
                         {
-                            lessThanMinimum = Compare(paramValue!,formColumn.MinValue) < 0;
+                            lessThanMinimum = Compare(paramValue!, formColumn.MinValue) < 0;
                         }
 
                         if (formColumn.MaxValue != null)
@@ -257,24 +277,28 @@ namespace DbNetSuiteCore.Services
             return true;
         }
 
-        private int Compare(object value1, object value2)
+        private int Compare(object paramValue, object compareValue)
         {
             try
             {
-                string typeName = value2.GetType().Name;
+                if (paramValue.GetType() != compareValue.GetType())
+                {
+                    compareValue = Convert.ChangeType(compareValue, paramValue.GetType());
+                }
+                string typeName = paramValue.GetType().Name;
                 switch (typeName)
                 {
                     case nameof(Int16):
                     case nameof(Int32):
                     case nameof(Int64):
-                        return Comparer<Int64>.Default.Compare(Convert.ToInt64(value1), Convert.ToInt64(value2));
+                        return Comparer<Int64>.Default.Compare(Convert.ToInt64(paramValue), Convert.ToInt64(compareValue));
                     case nameof(Decimal):
-                        return Comparer<Decimal>.Default.Compare(Convert.ToDecimal(value1), Convert.ToDecimal(value2));
+                        return Comparer<Decimal>.Default.Compare(Convert.ToDecimal(paramValue), Convert.ToDecimal(compareValue));
                     case nameof(Single):
                     case nameof(Double):
-                        return Comparer<Double>.Default.Compare(Convert.ToDouble(value1), Convert.ToDouble(value2));
+                        return Comparer<Double>.Default.Compare(Convert.ToDouble(paramValue), Convert.ToDouble(compareValue));
                     case nameof(DateTime):
-                        return Comparer<DateTime>.Default.Compare(Convert.ToDateTime(value1), Convert.ToDateTime(value2));
+                        return Comparer<DateTime>.Default.Compare(Convert.ToDateTime(paramValue), Convert.ToDateTime(compareValue));
                 }
             }
             catch (Exception)
@@ -299,6 +323,8 @@ namespace DbNetSuiteCore.Services
                 AssignParentKey(formModel);
                 formModel.Columns.ForEach(column => column.InError = false);
                 formModel.Message = string.Empty;
+                formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
+
                 return formModel;
             }
             catch

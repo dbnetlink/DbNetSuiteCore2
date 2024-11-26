@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using System.Data;
+using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 
 namespace DbNetSuiteCore.Helpers
@@ -49,23 +50,40 @@ namespace DbNetSuiteCore.Helpers
 
         public static HtmlString DataAttributes(DataRow row, SelectModel selectModel)
         {
-            List<string> dataAttributes = new List<string>();
+            List<HtmlString> dataAttributes = new List<HtmlString>();
 
             foreach (SelectColumn selectColumn in selectModel.Columns)
             {
                 DataColumn? dataColumn = selectModel.GetDataColumn(selectColumn);
                 if (dataColumn != null)
                 {
-                    dataAttributes.Add($"data-{dataColumn.ColumnName.ToLower()}=\"{HtmlEncoder.Default.Encode(selectColumn.FormatValue(row[dataColumn])?.ToString() ?? string.Empty)}\"");
+                    dataAttributes.Add(Attribute($"data-{dataColumn.ColumnName.ToLower()}", selectColumn.FormatValue(row[dataColumn])?.ToString() ?? string.Empty));
                 }
             }
 
-            return new HtmlString(string.Join(" ", dataAttributes.ToArray()));
+            return new HtmlString(string.Join(" ", dataAttributes));
+        }
+
+        public static HtmlString Attributes(Dictionary<string, string> attributes )
+        {
+            attributes.Keys.ToList().ForEach(k => { attributes[k] = attributes[k]; });
+            return new HtmlString(string.Join(" ", attributes.Keys.ToList().Select(key => Attribute(key, attributes[key])).ToList()));
         }
 
         public static HtmlString Attribute(string name, object value)
         {
             return new HtmlString($"{name}=\"{HtmlEncoder.Default.Encode(value?.ToString() ?? string.Empty)}\"");
+        }
+
+
+        public static double? JavaScriptDateTime(DateTime? dateTime)
+        {
+            if (dateTime.HasValue)
+            {
+                return dateTime.Value.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+            }
+
+            return null;
         }
     }
 }

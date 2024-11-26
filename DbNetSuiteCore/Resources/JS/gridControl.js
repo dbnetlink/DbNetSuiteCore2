@@ -264,7 +264,7 @@ class GridControl extends ComponentControl {
     download() {
         this.showIndicator();
         const data = new URLSearchParams();
-        for (let [key, val] of new FormData(this.formControl)) {
+        for (let [key, val] of new FormData(this.form)) {
             data.append(key, val);
         }
         var exportOption = this.controlElement('[name="exportformat"]').value;

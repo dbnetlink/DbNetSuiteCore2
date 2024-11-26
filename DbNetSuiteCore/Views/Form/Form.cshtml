@@ -13,7 +13,7 @@
     {
         @await Html.PartialAsync("Form/Toolbar")
     }
-    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode">
+    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode" data-validationpassed="@Model.FormModel.ValidationPassed">
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
             @foreach (FormColumn formColumn in Model.Columns)
             {
@@ -72,24 +72,42 @@
     {
         <label for="@(formColumn.ColumnName)" class="font-bold text-slate-800">@formColumn.Label</label>
 
+        var attributes = new Dictionary<string, string>();
+        attributes["name"] = $"_{formColumn.ColumnName}";
+        attributes["data-value"] = $"{dbValue}";
+        attributes["data-datatype"] = formColumn.DataTypeName;
+        attributes["class"] = Classes(formColumn);
+        attributes["value"] = $"{value}";
+        attributes["data-error"] = formColumn.InError.ToString().ToLower();
+
+        if (formColumn.DataTypeName == nameof(DateTime))
+        {
+            attributes["data-jsdate"] = $"{RazorHelper.JavaScriptDateTime((DateTime?)value)}";
+        }
+
         if (formColumn.LookupOptions != null)
         {
-            RenderSelect(formColumn, value, dbValue);
+            RenderSelect(formColumn, value, dbValue, attributes);
         }
         else if (formColumn.DataType == typeof(Boolean))
         {
+            attributes.Remove("value");
+            attributes.Remove("data-error");
+            attributes["class"] = CheckboxClasses(formColumn);
+            attributes["style"] = "transform: scale(1.5);margin-left:5px";
+
             bool boolValue = ComponentModelExtensions.ParseBoolean(value);
-            <input type="checkbox" class="@(CheckboxClasses(formColumn))" name="_@(formColumn.ColumnName)" data-value="@dbValue" @(CheckboxAttributes(formColumn, boolValue)) style="transform: scale(1.5);margin-left:5px" />
+            <input type="checkbox" @RazorHelper.Attributes(attributes) @(CheckboxAttributes(formColumn, boolValue)) />
         }
         else
         {
-            <input type="text" name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-error="@formColumn.InError.ToString().ToLower()" data-isnumeric="@formColumn.IsNumeric.ToString().ToLower()" data-value="@dbValue" value="@value" @(Attributes(formColumn)) data-datatype="@formColumn.DataTypeName" />
+            <input type="text" @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
         }
     }
 
-    void RenderSelect(FormColumn formColumn, object value, object dbValue)
+    void RenderSelect(FormColumn formColumn, object value, object dbValue, Dictionary<string, string>  attributes)
     {
-        <select name="_@(formColumn.ColumnName)" class="@(Classes(formColumn))" data-value="@dbValue" value="@value" @(Attributes(formColumn)) data-error="@formColumn.InError.ToString().ToLower()">
+        <select @RazorHelper.Attributes(attributes) @(Attributes(formColumn))>
             <option value=""></option>
             @foreach (var option in formColumn.LookupOptions)
             {

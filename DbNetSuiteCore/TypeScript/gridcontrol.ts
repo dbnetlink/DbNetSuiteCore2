@@ -326,7 +326,7 @@ class GridControl extends ComponentControl{
     private download() {
         this.showIndicator()
         const data = new URLSearchParams();
-        for (let [key, val] of new FormData(this.formControl)) {
+        for (let [key, val] of new FormData(this.form)) {
             data.append(key, val as any);
         }
 

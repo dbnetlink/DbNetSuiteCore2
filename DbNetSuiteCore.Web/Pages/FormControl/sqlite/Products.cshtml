@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Insert = true, Delete = true, ToolbarPosition = ToolbarPosition.Top };
+    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Insert = true, Delete = true, ToolbarPosition = ToolbarPosition.Bottom };
     productForm.Columns = new List<FormColumn>() {
         new FormColumn("ProductID","ID"),
         new FormColumn("ProductName", "Name"),
@@ -17,5 +17,17 @@
         new FormColumn("ReorderLevel", "Re-order Level") {Required = true,InitialValue = 0, MaxValue = 50 },
         new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true}
     };
+
+    productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateUpdate";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
 }
+
+<script>
+    function validateUpdate(formControl, args) {
+        if (formControl.formControlValue("discontinued") && formControl.formControlValue("ReorderLevel") > 0) {
+            formControl.highlightError("discontinued");
+            formControl.highlightError("ReorderLevel");
+          //  args.message = `Re-order level must be zero for discontinued products`;
+        }
+    }
+</script>

@@ -67,7 +67,7 @@
 @functions {
     void RenderButton(string name, HtmlString icon, string title, bool disabled = false, string style = "")
     {
-        <button type="button" style="@style" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" @(disabled ? "disabled" : "") @(name == TriggerNames.Delete ? "hx-confirm-dialog=\"Please confirm deletion of current record\"" : "")>@icon</button>
+        <button type="button" style="@style" button-type="@name" title="@title" hx-post="@Model.SubmitUrl" name="@name" hx-trigger="click" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" @(disabled ? "disabled" : "") @(name == TriggerNames.Delete ? "hx-confirm-dialog=\"Please confirm deletion of current record\"" : "")>@icon</button>
     }
 
     void RenderRecordCount(int recordCount)

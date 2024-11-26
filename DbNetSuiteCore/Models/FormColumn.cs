@@ -14,7 +14,7 @@ namespace DbNetSuiteCore.Models
         public object InitialValue { get; set; } = string.Empty;
         public object? MinValue { get; set; } = null;
         public object? MaxValue { get; set; } = null;
-
+        public long ? JSDateTime { get; set; } = null;
 
         public FormColumn()
         {

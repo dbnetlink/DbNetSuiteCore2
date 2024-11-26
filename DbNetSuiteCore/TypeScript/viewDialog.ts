@@ -20,6 +20,12 @@ class ViewDialog {
         this.getRecord();
     }
 
+    close() {
+        if (this.dialog && this.dialog.open) {
+            this.close();
+        }
+    }
+
     show() {
         this.dialog.show();
         if (!this.draggableDialog) {

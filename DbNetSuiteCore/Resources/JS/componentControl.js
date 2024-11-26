@@ -34,9 +34,9 @@ class ComponentControl {
             return document.querySelector(selector);
         };
         this.controlId = controlId;
-        this.formControl = document.querySelector(this.formSelector());
-        this.formControl.style.display = '';
-        this.controlContainer = this.formControl.parentElement;
+        this.form = document.querySelector(this.formSelector());
+        this.form.style.display = '';
+        this.controlContainer = this.form.parentElement;
     }
     setCaption(text) {
         var caption = this.controlElement("div.caption");
@@ -45,7 +45,7 @@ class ComponentControl {
         }
     }
     invokeEventHandler(eventName, args = {}) {
-        window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
+        //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return;
         }
@@ -55,6 +55,9 @@ class ComponentControl {
         else {
             this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
+    }
+    eventHandlerAttached(eventName, args = {}) {
+        return (typeof this.eventHandlers[eventName] === 'function');
     }
     toast(text, style = 'info', delay = 1) {
         var toast = this.controlContainer.querySelector("#toastMessage");
@@ -74,10 +77,10 @@ class ComponentControl {
         return `#${this.controlId}`;
     }
     controlElements(selector) {
-        return this.formControl.querySelectorAll(selector);
+        return this.form.querySelectorAll(selector);
     }
     controlElement(selector) {
-        return this.formControl.querySelector(selector);
+        return this.form.querySelector(selector);
     }
     triggerName(evt) {
         let headers = evt.detail.headers ? evt.detail.headers : evt.detail.requestConfig.headers;
@@ -98,12 +101,12 @@ class ComponentControl {
         });
     }
     dataSourceIsFileSystem() {
-        return this.formControl.dataset.datasourcetype == "FileSystem";
+        return this.form.dataset.datasourcetype == "FileSystem";
     }
     loadFromParent(primaryKey) {
         let selector = `#${this.controlId} input[name="primaryKey"]`;
         let pk = htmx.find(selector);
-        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
+        this.form.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
         if (pk) {
             htmx.trigger(selector, "changed");
         }

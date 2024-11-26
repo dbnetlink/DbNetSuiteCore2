@@ -31,16 +31,16 @@ DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents) 
 
 class ComponentControl {
     controlId: string = "";
-    formControl: HTMLFormElement;
+    form: HTMLFormElement;
     parentControl: ComponentControl;
     childControls: Dictionary<ComponentControl> = {};
     controlContainer: HTMLElement;
     eventHandlers = {};
     constructor(controlId) {
         this.controlId = controlId;
-        this.formControl = document.querySelector(this.formSelector());
-        this.formControl.style.display = '';
-        this.controlContainer = this.formControl.parentElement;
+        this.form = document.querySelector(this.formSelector());
+        this.form.style.display = '';
+        this.controlContainer = this.form.parentElement;
     }
 
     public setCaption(text) {
@@ -51,7 +51,7 @@ class ComponentControl {
     }
 
     protected invokeEventHandler(eventName, args = {}) {
-        window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
+      //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return;
         }
@@ -61,6 +61,10 @@ class ComponentControl {
         else {
             this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
+    }
+
+    protected eventHandlerAttached(eventName, args = {}) {
+        return (typeof this.eventHandlers[eventName] === 'function')
     }
 
     protected toast(text, style = 'info', delay = 1) {
@@ -83,11 +87,11 @@ class ComponentControl {
     }
 
     protected controlElements(selector) {
-        return this.formControl.querySelectorAll(selector);
+        return this.form.querySelectorAll(selector);
     }
 
     public controlElement(selector) {
-        return this.formControl.querySelector(selector);
+        return this.form.querySelector(selector);
     }
 
     protected triggerName(evt:any) {
@@ -112,14 +116,14 @@ class ComponentControl {
     }
 
     public dataSourceIsFileSystem() {
-        return this.formControl.dataset.datasourcetype == "FileSystem";
+        return this.form.dataset.datasourcetype == "FileSystem";
     }
 
     protected loadFromParent(primaryKey: string) {
         let selector = `#${this.controlId} input[name="primaryKey"]`;
         let pk = htmx.find(selector) as HTMLInputElement;
 
-        this.formControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
+        this.form.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
 
         if (pk) {
             htmx.trigger(selector, "changed");

@@ -11,21 +11,54 @@ class FormControl extends ComponentControl {
             return;
         }
         this.formBody = this.controlElement("div.form-body");
+        this.formMessage = this.controlElement("#form-message");
         if (!this.formBody) {
             return;
         }
-        this.form = this.controlElement("form");
-        this.formMessage = this.controlElement("#form-message");
-        if (this.triggerName(evt) == "initialload") {
-            this.initialise();
+        switch (this.triggerName(evt)) {
+            case "initialload":
+                this.initialise();
+                break;
         }
         window.setTimeout(() => { this.clearErrorMessage(); }, 3000);
-        this.invokeEventHandler('FormLoaded');
+        this.invokeEventHandler('RecordLoaded');
+    }
+    afterSettle(evt) {
+        if (this.isControlEvent(evt) == false) {
+            return false;
+        }
+        if (!this.formBody) {
+            return;
+        }
+        switch (this.triggerName(evt)) {
+            case "apply":
+                if (this.formBody.dataset.validationpassed == "True") {
+                    this.clientSideValidation();
+                }
+                break;
+        }
+    }
+    triggerCommit() {
+        let applyBtn = this.getButton("apply");
+        htmx.trigger(applyBtn, "click");
+    }
+    clientSideValidation() {
+        let args = { mode: this.formBody.dataset.mode, message: '' };
+        this.invokeEventHandler("ValidateUpdate", args);
+        var inError = Boolean(args.message != '' || this.errorHighlighted());
+        this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
+        if (inError) {
+            this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error', 'error');
+        }
+        else {
+            this.triggerCommit();
+        }
     }
     initialise() {
         document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev); });
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         document.body.addEventListener('htmx:confirm', (ev) => { this.confirmRequest(ev); });
+        document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev); });
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el); });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el); });
         this.invokeEventHandler('Initialised');
@@ -61,7 +94,6 @@ class FormControl extends ComponentControl {
             if (typeof (evt.detail.parameters[p]) == 'string' && p.startsWith("_")) {
                 delete evt.detail.parameters[p];
             }
-            ;
         }
     }
     beforeRequest(evt) {
@@ -82,6 +114,42 @@ class FormControl extends ComponentControl {
             evt.preventDefault();
             this.setMessage(this.formBody.dataset.unappliedmessage, 'warning');
         }
+    }
+    formControlValue(columnName) {
+        var element = this.formControl(columnName);
+        if (!element) {
+            console.error(`Form control for column name ${columnName} not found`);
+        }
+        else {
+            if (element.tagName == 'INPUT' && element.type == 'checkbox') {
+                return element.checked;
+            }
+            switch (element.dataset.datatype.toLowerCase()) {
+                case 'datetime':
+                    return element.dataset.jsdate ? new Date(Number(element.dataset.jsdate)) : null;
+                case 'string':
+                    return element.value;
+                default:
+                    return element.value ? Number(element.value) : null;
+            }
+        }
+    }
+    highlightError(columnName) {
+        var element = this.formControl(columnName);
+        element.dataset.error = "true";
+    }
+    errorHighlighted() {
+        let controlsInError = Array.from(this.controlElements(".fc-control")).filter((e) => { return (e.dataset.error == 'true'); }).length;
+        return (controlsInError > 0);
+    }
+    formControl(columnName) {
+        var element;
+        this.controlElements(".fc-control").forEach((el) => {
+            if (el.name.toLowerCase() == `_${columnName.toLowerCase()}`) {
+                element = el;
+            }
+        });
+        return element;
     }
     formModified() {
         let modified = [];
