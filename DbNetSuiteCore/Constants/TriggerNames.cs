@@ -14,12 +14,13 @@
         public const string Last = "last";
         public const string ColumnFilter = "columnFilter";
         public const string NestedGrid = "nestedGrid";
-        public const string LinkedGrid = "primaryKey";
+        public const string ParentKey = "primaryKey";
         public const string ViewDialogContent = "viewDialogContent";
         public const string Record = "record";
         public const string Apply = "apply";
         public const string Cancel = "cancel";
         public const string Delete = "delete";
         public const string Insert = "insert";
+        public const string Refresh = "refresh";
     }
 }

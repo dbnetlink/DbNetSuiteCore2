@@ -27,7 +27,8 @@
                         }
                         else
                         {
-                            @IconHelper.Document();
+                            @IconHelper.Document()
+                            ;
                         }
                     </td>
                 }
@@ -104,23 +105,33 @@
                 <div>
                     @await Html.PartialAsync("Grid/Hidden", Model.GridModel)
                     <span style="display:none" id="sortIcon">@Model.SortIcon</span>
+                    @{
+                        var attributes = new Dictionary<string, string>();
+                        attributes["type"] = "hidden";
+                        attributes["hx-trigger"] = "changed";
+                        attributes["hx-post"] = Model.SubmitUrl;
+                        attributes["hx-target"] = "closest tbody";
+                        attributes["hx-swap"] = "outerHTML";
+                        attributes["hx-indicator"] = "next .htmx-indicator";
+                    }
                     @if (Model.GridModel.IsLinked)
                     {
-                        <input type="hidden" name="@TriggerNames.LinkedGrid" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest tbody" hx-swap="outerHTML" hx-indicator="next .htmx-indicator" value="@Model.GridModel.ParentKey" />
+                        <input name="@TriggerNames.ParentKey" value="@Model.GridModel.ParentKey" @RazorHelper.Attributes(attributes) />
                     }
+                    <input name="@TriggerNames.Refresh" @RazorHelper.Attributes(attributes) />
                 </div>
             </td>
 
         </tr>
     }
 
-    @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.LinkedGrid)
+    @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey)
     {
         <tr style="display:none" class="column-filter-refresh">
             <td>
                 @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
                 {
-                    RenderColumnSelectFilter(gridColumn.LookupOptions ?? new List<KeyValuePair<string,string>>(), gridColumn.Key);
+                    RenderColumnSelectFilter(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key);
                 }
             </td>
         </tr>

@@ -17,6 +17,11 @@ namespace DbNetSuiteCore.Extensions
                 filterParts.Add(filter);
             }
 
+            if (formModel.IsLinked)
+            {
+                ComponentModelExtensions.AddParentKeyFilterPart(formModel, query, filterParts);
+            }
+
             if (!string.IsNullOrEmpty(formModel.FixedFilter))
             {
                 filterParts.Add($"({formModel.FixedFilter})");
@@ -42,11 +47,14 @@ namespace DbNetSuiteCore.Extensions
                 {
                     continue;
                 };
-                var columnName = formColumn.ColumnName;
-                var paramName = DbHelper.ParameterName(columnName);
-
-                set.Add($"{columnName} = {paramName}");
-                update.Params[paramName] = GetParamValue(formModel, formColumn); 
+               
+                if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
+                {
+                    var columnName = formColumn.ColumnName;
+                    var paramName = DbHelper.ParameterName(columnName);
+                    set.Add($"{columnName} = {paramName}");
+                    update.Params[paramName] = GetParamValue(formModel, formColumn);
+                }
             }
 
             if (set.Any())
@@ -73,11 +81,14 @@ namespace DbNetSuiteCore.Extensions
                 {
                     continue;
                 };
-                var paramName = DbHelper.ParameterName(formColumn.ColumnName);
-                columnNames.Add(formColumn.ColumnName);
-                paramNames.Add(paramName);
-
-                insert.Params[paramName] = GetParamValue(formModel, formColumn);
+  
+                if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
+                {
+                    var paramName = DbHelper.ParameterName(formColumn.ColumnName);
+                    columnNames.Add(formColumn.ColumnName);
+                    paramNames.Add(paramName);
+                    insert.Params[paramName] = GetParamValue(formModel, formColumn);
+                }
             }
 
             insert.Sql = $"insert into {formModel.TableName} ({string.Join(",",columnNames)}) values ({string.Join(",", paramNames)})";

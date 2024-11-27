@@ -10,8 +10,6 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using NUglify.Helpers;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 
 namespace DbNetSuiteCore.Services
 {
@@ -73,10 +71,10 @@ namespace DbNetSuiteCore.Services
 
             if (formModel.Columns.Any(c => c.PrimaryKey) == false)
             {
-                throw new Exception("At least one form column must be designated a primary key");
+                throw new Exception("At least one form column must be designated as a primary key");
             }
 
-            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search)
+            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search || formModel.TriggerName == TriggerNames.ParentKey)
             {
                 await GetRecords(formModel);
                 formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => r.ItemArray[0]!).ToList();
@@ -140,14 +138,17 @@ namespace DbNetSuiteCore.Services
                 {
                     await UpdateRecord(formModel);
                     formModel.FormValues = new Dictionary<string, string>();
+                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
                 }
                 else
                 {
                     await InsertRecord(formModel);
                     formModel.PrimaryKeyValues = new List<object>();
+                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Added);
                 }
-                formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                
                 formModel.MessageType = MessageType.Success;
+                formModel.CommitType = formModel.Mode;
 
             }
             catch (Exception ex)
@@ -205,13 +206,19 @@ namespace DbNetSuiteCore.Services
 
         private bool ValidateErrorType(FormModel formModel, ResourceNames resourceName)
         {
-            foreach (string columnName in formModel.FormValues.Keys)
+            foreach (FormColumn? formColumn in formModel.Columns)
             {
-                FormColumn? formColumn = formModel.Columns.First(c => c.ColumnName == columnName);
+                var columnName = formColumn.ColumnName;
 
-                if (formColumn == null)
+                var value = string.Empty;
+
+                if (formModel.FormValues.ContainsKey(columnName))
                 {
-                    continue;
+                    value = formModel.FormValues[columnName];
+                }
+                else if (formModel.Mode == FormMode.Update || formColumn.Required == false || formColumn.PrimaryKey)
+                {
+                    continue;           
                 }
 
                 object? paramValue;
@@ -219,10 +226,10 @@ namespace DbNetSuiteCore.Services
                 switch (resourceName)
                 {
                     case ResourceNames.Required:
-                        formColumn.InError = string.IsNullOrEmpty(formModel.FormValues[columnName]) && formColumn.Required;
+                        formColumn.InError = string.IsNullOrEmpty(value) && formColumn.Required;
                         break;
                     case ResourceNames.DataFormatError:
-                        paramValue = ComponentModelExtensions.ParamValue(formModel.FormValues[columnName], formColumn, formModel.DataSourceType);
+                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
                         if (paramValue == null)
                         {
                             formColumn.InError = true;
@@ -233,7 +240,7 @@ namespace DbNetSuiteCore.Services
                         {
                             continue;
                         }
-                        paramValue = ComponentModelExtensions.ParamValue(formModel.FormValues[columnName], formColumn, formModel.DataSourceType);
+                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
 
                         bool lessThanMinimum = false;
                         bool greaterThanMaximum = false;
@@ -309,7 +316,6 @@ namespace DbNetSuiteCore.Services
             return 0;
         }
 
-
         private FormModel GetFormModel()
         {
             try
@@ -320,10 +326,12 @@ namespace DbNetSuiteCore.Services
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
                 formModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 formModel.FormValues = RequestHelper.FormColumnValues(_context);
-                AssignParentKey(formModel);
                 formModel.Columns.ForEach(column => column.InError = false);
                 formModel.Message = string.Empty;
                 formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
+                formModel.CommitType = null;
+
+                AssignParentKey(formModel);
 
                 return formModel;
             }
@@ -407,6 +415,7 @@ namespace DbNetSuiteCore.Services
                     return Convert.ToInt32(RequestHelper.FormValue(TriggerNames.Record, "1", _context));
                 case TriggerNames.Search:
                 case TriggerNames.First:
+                case TriggerNames.ParentKey:
                     return 1;
                 case TriggerNames.Next:
                     return formModel.CurrentRecord + 1;

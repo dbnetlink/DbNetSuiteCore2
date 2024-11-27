@@ -17,7 +17,7 @@
         @await Html.PartialAsync("Grid/Toolbar", Model)
     }
     <div class="flex mt-2">
-        <table class="table-auto border-collapse" data-linkedgridids="@Model.LinkedGridIds">
+        <table class="table-auto border-collapse" data-linkedgridids="@Model.LinkedGridIds" data-linkedcontrolids="@Model.LinkedControlIds">
             <colgroup>
                 @if (Model.GridModel._NestedGrids.Any())
                 {

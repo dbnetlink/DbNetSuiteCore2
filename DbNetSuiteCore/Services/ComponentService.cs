@@ -6,7 +6,6 @@ using System.Data;
 using System.Text;
 using DbNetSuiteCore.Constants;
 
-
 namespace DbNetSuiteCore.Services
 {
     public class ComponentService
@@ -62,6 +61,15 @@ namespace DbNetSuiteCore.Services
                         throw new Exception("A parent control must have a column designated as a <b>PrimaryKey</b>");
                     }
                 }
+
+                if (gridModel.GetLinkedControlIds().Any())
+                {
+                    if (gridModel.RowSelection != RowSelection.Single)
+                    {
+                        throw new Exception("A parent grid control must have <b>RowSelection</b> set to <b>Single</b>");
+                    }
+                }
+
             }
 
             switch (componentModel.DataSourceType)
@@ -111,6 +119,15 @@ namespace DbNetSuiteCore.Services
             else
             {
                 componentModel.ParentKey = primaryKey;
+            }
+
+            if (componentModel.IsLinked && componentModel is FormModel)
+            {
+                var foreignKeyColumn = (componentModel as FormModel).Columns.FirstOrDefault(c => c.ForeignKey);
+                if (foreignKeyColumn != null)
+                {
+                    foreignKeyColumn.InitialValue = primaryKey;
+                }
             }
         }
 

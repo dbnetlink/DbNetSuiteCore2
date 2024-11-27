@@ -9,11 +9,16 @@
 @using DbNetSuiteCore.Enums
 
 <div class="form-and-toolbar">
-    @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom)
+    @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom && Model.HideToolbar == false)
     {
         @await Html.PartialAsync("Form/Toolbar")
     }
-    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode" data-validationpassed="@Model.FormModel.ValidationPassed">
+
+    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.FormModel.CommitType">
+        @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
+        {
+            <div class="flex text-lg caption">@Model.FormModel.Caption</div>
+        }
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
             @foreach (FormColumn formColumn in Model.Columns)
             {
@@ -24,14 +29,17 @@
                 {
                     DataColumn? dataColumn = Model.GetDataColumn(formColumn);
                     dbValue = dataColumn == null ? string.Empty : Model.Record[dataColumn];
+                    value = dbValue;
                 }
 
                 if (Model.FormModel.Mode == FormMode.Insert)
                 {
-                    dbValue = formColumn.InitialValue;
+                    if (formColumn.PrimaryKey == false)
+                    {
+                        value = formColumn.InitialValue;
+                    }
+                    dbValue = "";
                 }
-
-                value = dbValue;
 
                 if (Model.FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
@@ -46,8 +54,12 @@
             }
         </div>
         @await Html.PartialAsync("Form/Hidden", Model.FormModel)
+        @if (Model.FormModel.IsLinked)
+        {
+            <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.FormModel.ParentKey" />
+        }
     </div>
-    @if(Model.FormModel.ToolbarPosition == ToolbarPosition.Bottom)
+    @if (Model.FormModel.ToolbarPosition == ToolbarPosition.Bottom && Model.HideToolbar == false)
     {
         @await Html.PartialAsync("Form/Toolbar")
     }
@@ -87,7 +99,7 @@
 
         if (formColumn.LookupOptions != null)
         {
-            RenderSelect(formColumn, value, dbValue, attributes);
+            RenderSelect(formColumn, value, attributes);
         }
         else if (formColumn.DataType == typeof(Boolean))
         {
@@ -105,8 +117,12 @@
         }
     }
 
-    void RenderSelect(FormColumn formColumn, object value, object dbValue, Dictionary<string, string>  attributes)
+    void RenderSelect(FormColumn formColumn, object value, Dictionary<string, string>  attributes)
     {
+        if (formColumn.DataType == typeof(Boolean))
+        {
+            value = ComponentModelExtensions.ParseBoolean(value) ? 1 : 0;
+        }
         <select @RazorHelper.Attributes(attributes) @(Attributes(formColumn))>
             <option value=""></option>
             @foreach (var option in formColumn.LookupOptions)
@@ -147,7 +163,7 @@
     string Attributes(FormColumn formColumn)
     {
         List<string> attributes = new List<string>();
-        if (formColumn.PrimaryKey || formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty)
+        if (formColumn.PrimaryKey || formColumn.ForeignKey || formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty)
         {
             attributes.Add("disabled");
         }

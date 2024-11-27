@@ -121,6 +121,23 @@ namespace DbNetSuiteCore.Extensions
             query.Params[$"@{primaryKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn, componentModel.ParentKey) ?? string.Empty;
         }
 
+        public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)
+        {
+            if (!string.IsNullOrEmpty(componentModel.ParentKey))
+            {
+                var foreignKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.ForeignKey);
+                if (foreignKeyColumn != null)
+                {
+                    filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
+                    query.Params[$"@{foreignKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn, componentModel.ParentKey) ?? string.Empty;
+                }
+            }
+            else
+            {
+                filterParts.Add($"(1=2)");
+            }
+        }
+
         public static QueryCommandConfig BuildProcedureCall(this ComponentModel componentModel)
         {
             QueryCommandConfig query = new QueryCommandConfig($"{componentModel.ProcedureName}");

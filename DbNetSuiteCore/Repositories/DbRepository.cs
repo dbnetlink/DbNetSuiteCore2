@@ -79,7 +79,10 @@ namespace DbNetSuiteCore.Repositories
             {
                 await GetLookupOptions(componentModel, column);
             }
-            componentModel.ConvertEnumLookups();
+            if (componentModel is not FormModel)
+            {
+                componentModel.ConvertEnumLookups();
+            }
         }
 
         public async Task UpdateRecord(FormModel formModel)

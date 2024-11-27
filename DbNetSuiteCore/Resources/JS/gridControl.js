@@ -9,10 +9,15 @@ class GridControl extends ComponentControl {
         if (gridId.startsWith(this.controlId) == false || evt.detail.elt.name == "nestedGrid") {
             return;
         }
-        if (this.triggerName(evt) == "viewdialogcontent") {
-            this.viewDialog.show();
-            this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
-            return;
+        let rowIndex = null;
+        switch (this.triggerName(evt)) {
+            case "viewdialogcontent":
+                this.viewDialog.show();
+                this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
+                return;
+            case "refresh":
+                let hxVals = JSON.parse(this.triggerElement(evt).getAttribute("hx-vals"));
+                rowIndex = hxVals.rowIndex;
         }
         if (!this.controlElement("tbody")) {
             return;
@@ -46,7 +51,7 @@ class GridControl extends ComponentControl {
                 htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target)); });
             }
         }
-        let row = document.querySelector(this.rowSelector());
+        let row = document.querySelector(this.rowSelector(rowIndex));
         if (row) {
             row.click();
         }
@@ -83,6 +88,13 @@ class GridControl extends ComponentControl {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
         this.invokeEventHandler('Initialised');
+    }
+    refreshPage() {
+        let selector = `#${this.controlId} input[name="refresh"]`;
+        let pk = htmx.find(selector);
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        htmx.trigger(selector, "changed");
     }
     invokeCellTransform(cell) {
         var columnName = this.controlElement("thead").children[0].children[cell.cellIndex].dataset.columnname;
@@ -208,8 +220,8 @@ class GridControl extends ComponentControl {
     }
     updateLinkedGrids(primaryKey) {
         let table = this.controlElement("table");
-        if (table.dataset.linkedgridids) {
-            this.updateLinkedControls(table.dataset.linkedgridids, primaryKey);
+        if (table.dataset.linkedcontrolids) {
+            this.updateLinkedControls(table.dataset.linkedcontrolids, primaryKey);
         }
     }
     clearHighlighting(row) {
@@ -317,8 +329,9 @@ class GridControl extends ComponentControl {
     indicator() {
         return this.controlContainer.children[1];
     }
-    rowSelector() {
-        return `#tbody${this.controlId} > tr.grid-row`;
+    rowSelector(rowIndex = null) {
+        var tr = (rowIndex) ? `tr:nth-child(${rowIndex - 1})` : 'tr.grid-row';
+        return `#tbody${this.controlId} > ${tr}`;
     }
     multiRowSelectAllSelector() {
         return `th > input.multi-select`;

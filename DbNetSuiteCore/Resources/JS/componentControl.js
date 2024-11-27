@@ -86,6 +86,9 @@ class ComponentControl {
         let headers = evt.detail.headers ? evt.detail.headers : evt.detail.requestConfig.headers;
         return headers["HX-Trigger-Name"] ? headers["HX-Trigger-Name"].toLowerCase() : "";
     }
+    triggerElement(evt) {
+        return evt.detail.requestConfig.elt;
+    }
     updateLinkedControls(linkedIds, primaryKey, url = null) {
         var linkedIdArray = linkedIds.split(",");
         linkedIdArray.forEach(linkedId => {

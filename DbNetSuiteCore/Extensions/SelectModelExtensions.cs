@@ -27,19 +27,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (selectModel.IsLinked)
             {
-                if (!string.IsNullOrEmpty(selectModel.ParentKey))
-                {
-                    var foreignKeyColumn = selectModel.Columns.FirstOrDefault(c => c.ForeignKey);
-                    if (foreignKeyColumn != null)
-                    {
-                        filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
-                        query.Params[$"@{foreignKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn,selectModel.ParentKey) ?? string.Empty;
-                    }
-                }
-                else
-                {
-                    filterParts.Add($"(1=2)");
-                }
+                ComponentModelExtensions.AddParentKeyFilterPart(selectModel, query, filterParts);
             }
 
             if (!string.IsNullOrEmpty(selectModel.FixedFilter))

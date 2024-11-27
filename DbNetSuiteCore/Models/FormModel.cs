@@ -22,7 +22,8 @@ namespace DbNetSuiteCore.Models
         public bool Delete { get; set; } = false;
         public FormMode Mode { get; set; } = FormMode.Empty;
         public bool ValidationPassed { get; set; } = false;
-
+        public bool OneToOne => IsLinked && Columns.Any(c => c.PrimaryKey && c.ForeignKey);
+        public FormMode? CommitType { get; set; }
 
 
         public FormModel() : base()

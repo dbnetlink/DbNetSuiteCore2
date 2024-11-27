@@ -16,6 +16,7 @@ namespace DbNetSuiteCore.ViewModels
         public string HxTarget => "closest div.form-and-toolbar";
         public DataRow Record => FormModel.Data.Rows[0];
         public string SearchInput => FormModel.SearchInput;
+        public bool HideToolbar => FormModel.IsLinked && string.IsNullOrEmpty(FormModel.ParentKey);
         public FormMode Mode => FormModel.Mode;
         public FormViewModel(FormModel formModel) : base(formModel)
         {

@@ -44,7 +44,7 @@
 @await Html.PartialAsync("Select/Hidden", Model.SelectModel)
 @if (Model.SelectModel.IsLinked)
 {
-    <input type="hidden" name="@TriggerNames.LinkedGrid" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest div.target" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.SelectModel.ParentKey" />
+    <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest div.target" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.SelectModel.ParentKey" />
 }
 @functions {
     public HtmlString OpenOptionGroup(DataRow row)

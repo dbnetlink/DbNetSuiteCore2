@@ -39,19 +39,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (gridModel.IsNested || gridModel.IsLinked)
             {
-                if (!string.IsNullOrEmpty(gridModel.ParentKey))
-                {
-                    var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
-                    if (foreignKeyColumn != null)
-                    {
-                        filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
-                        query.Params[$"@{foreignKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn,gridModel.ParentKey) ?? string.Empty;
-                    }
-                }
-                else
-                {
-                    filterParts.Add($"(1=2)");
-                }
+                ComponentModelExtensions.AddParentKeyFilterPart(gridModel, query, filterParts);
             }
 
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))

@@ -125,7 +125,7 @@ namespace DbNetSuiteCore.Services
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
-            if (gridModel.TriggerName == TriggerNames.LinkedGrid)
+            if (gridModel.TriggerName == TriggerNames.ParentKey)
             {
                 gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
             }
@@ -347,6 +347,7 @@ namespace DbNetSuiteCore.Services
             switch (RequestHelper.TriggerName(_context))
             {
                 case TriggerNames.Page:
+                case TriggerNames.Refresh:
                     return Convert.ToInt32(RequestHelper.FormValue("page", "1", _context));
                 case TriggerNames.Search:
                 case TriggerNames.First:

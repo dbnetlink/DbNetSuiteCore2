@@ -31,7 +31,8 @@ namespace DbNetSuiteCore.Helpers
         ConfirmDelete,
         MinValueError,
         MaxValueError,
-        RangeValueError
+        RangeValueError,
+        Added
     }
     public static class ResourceHelper
     {

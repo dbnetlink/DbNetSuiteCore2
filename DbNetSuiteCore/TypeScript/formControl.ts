@@ -2,10 +2,10 @@ class FormControl extends ComponentControl {
     form: HTMLFormElement;
     formMessage: HTMLDivElement;
     formBody: HTMLElement;
-    confirmDialog: ConfirmDialog;
+    confirmDialog: ConfirmDialog | null;
+    cachedMessage: string|null;
     constructor(formId) {
         super(formId)
-        this.confirmDialog = new ConfirmDialog(this);
     }
 
     public afterRequest(evt) {
@@ -29,8 +29,11 @@ class FormControl extends ComponentControl {
                 break;
         }
 
-        window.setTimeout(() => { this.clearErrorMessage() }, 3000)
+        if (this.cachedMessage) {
+            this.setMessage(this.cachedMessage);
+        }
 
+        window.setTimeout(() => { this.clearErrorMessage() }, 3000)
         this.invokeEventHandler('RecordLoaded');
     }
 
@@ -43,10 +46,21 @@ class FormControl extends ComponentControl {
             return
         }
 
+        this.cachedMessage = null;
+
         switch (this.triggerName(evt)) {
             case "apply":
                 if (this.formBody.dataset.validationpassed == "True") {
                     this.clientSideValidation()
+                }
+
+                if (this.formBody.dataset.committype) {
+                    if (this.parentControl) {
+                        if (this.parentControl instanceof GridControl) {
+                            this.cachedMessage = this.formMessage.innerText;
+                            this.parentControl.refreshPage()
+                        }
+                    }
                 }
                 break;
         }
@@ -106,19 +120,29 @@ class FormControl extends ComponentControl {
             return;
         }
         evt.preventDefault();
+        if (!this.confirmDialog) {
+            this.confirmDialog = new ConfirmDialog(this);
+        }
         this.confirmDialog.show(evt, this.formBody);
     }
 
     public configRequest(evt) {
-        if (this.isControlEvent(evt) == false || this.triggerName(evt) == "apply") {
+        if (this.isControlEvent(evt) == false /* || this.triggerName(evt) == "apply" */) {
             return;
         }
 
+        this.controlElements(".fc-control").forEach((el) => {
+            if (this.elementModified(el) == false) {
+                delete evt.detail.parameters[el.name];
+            }
+        });
+        /*
         for (var p in evt.detail.parameters) {
             if (typeof (evt.detail.parameters[p]) == 'string' && p.startsWith("_")) {
                 delete evt.detail.parameters[p];
             }
         }
+        */
     }
 
     public beforeRequest(evt) {
@@ -134,6 +158,7 @@ class FormControl extends ComponentControl {
                     return;
                 }
             case "cancel":
+            case "primarykey":
                 return;
         }
 

@@ -1,8 +1,9 @@
-class GridControl extends ComponentControl{
+class GridControl extends ComponentControl {
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
     viewDialog: ViewDialog;
     selectedRow: HTMLTableRowElement;
+
 
     constructor(gridId) {
         super(gridId)
@@ -14,10 +15,15 @@ class GridControl extends ComponentControl{
             return
         }
 
-        if (this.triggerName(evt) == "viewdialogcontent") {
-            this.viewDialog.show();
-            this.invokeEventHandler('ViewDialogUpdated', {viewDialog:this.viewDialog});
-            return
+        let rowIndex = null;
+        switch (this.triggerName(evt)) {
+            case "viewdialogcontent":
+                this.viewDialog.show();
+                this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
+                return;
+            case "refresh":
+                let hxVals = JSON.parse(this.triggerElement(evt).getAttribute("hx-vals"));
+                rowIndex = hxVals.rowIndex
         }
 
         if (!this.controlElement("tbody")) {
@@ -46,8 +52,7 @@ class GridControl extends ComponentControl{
             e.classList.add("underline")
         });
 
-        if (this.rowSelection() != "none")
-        {
+        if (this.rowSelection() != "none") {
             if (this.controlElement(this.multiRowSelectAllSelector())) {
                 this.controlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
                 this.controlElements(this.multiRowSelectSelector()).forEach((e) => {
@@ -61,7 +66,7 @@ class GridControl extends ComponentControl{
             }
         }
 
-        let row: HTMLElement = document.querySelector(this.rowSelector());
+        let row: HTMLElement = document.querySelector(this.rowSelector(rowIndex));
         if (row) {
             row.click();
         }
@@ -108,6 +113,14 @@ class GridControl extends ComponentControl{
         this.invokeEventHandler('Initialised');
     }
 
+    public refreshPage() {
+        let selector = `#${this.controlId} input[name="refresh"]`;
+        let pk = htmx.find(selector) as HTMLInputElement;
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        htmx.trigger(selector, "changed",);
+    }
+
     private invokeCellTransform(cell: HTMLTableCellElement) {
         var columnName = (this.controlElement("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
         var args = { cell: cell, columnName: columnName }
@@ -123,7 +136,7 @@ class GridControl extends ComponentControl{
 
         if (totalPages == 0) {
             this.updateLinkedGrids('');
-        } 
+        }
 
         if (this.viewDialog) {
             this.getButton("view").disabled = (rowCount == 0);
@@ -211,7 +224,7 @@ class GridControl extends ComponentControl{
         pageSelect.value = "1";
         htmx.trigger(pageSelect, "changed");
     }
- 
+
     private updateMultiRowSelect(ev: Event) {
         let checked = (ev.target as HTMLInputElement).checked
         this.controlElements(this.multiRowSelectSelector()).forEach((e: HTMLInputElement) => {
@@ -222,7 +235,7 @@ class GridControl extends ComponentControl{
         this.selectedValuesChanged();;
     }
 
-    private selectRow(target: HTMLElement, multiSelect:boolean = false) {
+    private selectRow(target: HTMLElement, multiSelect: boolean = false) {
         let tr = target.closest('tr')
 
         if (target.classList.contains("multi-select") == false) {
@@ -264,8 +277,8 @@ class GridControl extends ComponentControl{
     private updateLinkedGrids(primaryKey: string) {
         let table = this.controlElement("table") as HTMLElement;
 
-        if (table.dataset.linkedgridids) {
-            this.updateLinkedControls(table.dataset.linkedgridids, primaryKey)
+        if (table.dataset.linkedcontrolids) {
+            this.updateLinkedControls(table.dataset.linkedcontrolids, primaryKey)
         }
     }
 
@@ -371,10 +384,9 @@ class GridControl extends ComponentControl{
         link.href = window.URL.createObjectURL(response);
         extension = (extension == "excel") ? "xlsx" : extension;
         link.download = `report_${new Date().getTime()}.${extension}`;
-        this.invokeEventHandler('FileDownload', { link: link, extension : extension });
+        this.invokeEventHandler('FileDownload', { link: link, extension: extension });
         link.click();
     }
-
 
     private showIndicator() {
         this.indicator().classList.add("htmx-request");
@@ -388,8 +400,9 @@ class GridControl extends ComponentControl{
         return this.controlContainer.children[1];
     }
 
-    private rowSelector() {
-        return `#tbody${this.controlId} > tr.grid-row`
+    private rowSelector(rowIndex: number|null = null) {
+        var tr = (rowIndex) ? `tr:nth-child(${rowIndex-1})` : 'tr.grid-row';
+        return `#tbody${this.controlId} > ${tr}`
     }
 
     private multiRowSelectAllSelector() {

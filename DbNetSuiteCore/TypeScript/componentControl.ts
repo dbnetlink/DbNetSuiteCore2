@@ -99,6 +99,10 @@ class ComponentControl {
         return headers["HX-Trigger-Name"] ? headers["HX-Trigger-Name"].toLowerCase() : "";
     }
 
+    protected triggerElement(evt: any):HTMLElement {
+        return evt.detail.requestConfig.elt;
+    }
+
     protected updateLinkedControls(linkedIds: string, primaryKey: string, url: string = null) {
         var linkedIdArray = linkedIds.split(",");
 

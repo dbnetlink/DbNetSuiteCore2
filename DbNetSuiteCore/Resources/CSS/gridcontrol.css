@@ -3,7 +3,8 @@
     border-radius: 5px;
 }
 
-    .dbnetsuite-grid div.caption {
+    .dbnetsuite-grid div.caption,
+    .dbnetsuite-form div.caption {
         background-color: whitesmoke;
         border: 1px solid gainsboro;
         border-radius: 5px;
