@@ -47,12 +47,11 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
-        public static QueryCommandConfig BuildRecordQuery(this ComponentModel componentModel)
+        public static QueryCommandConfig BuildRecordQuery(this ComponentModel componentModel, object? primaryKeyValue = null)
         {
             string sql = $"select {AddSelectPart(componentModel, true)} from {componentModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(sql);
-
-            componentModel.AddPrimaryKeyFilterPart(query);
+            AddPrimaryKeyFilterPart(componentModel, query, primaryKeyValue == null ? componentModel.ParentKey : primaryKeyValue);
             return query;
         }
 
@@ -114,11 +113,11 @@ namespace DbNetSuiteCore.Extensions
             return columnExpression;
         }
 
-        private static void AddPrimaryKeyFilterPart(this ComponentModel componentModel, CommandConfig query)
+        private static void AddPrimaryKeyFilterPart(ComponentModel componentModel, CommandConfig query, object primaryKeyValue)
         {
             var primaryKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.PrimaryKey);
             query.Sql += $" where {primaryKeyColumn.Expression} = @{primaryKeyColumn.ParamName}";
-            query.Params[$"@{primaryKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn, componentModel.ParentKey) ?? string.Empty;
+            query.Params[$"@{primaryKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn, primaryKeyValue) ?? string.Empty;
         }
 
         public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)

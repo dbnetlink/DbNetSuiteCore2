@@ -299,6 +299,29 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        protected async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.Excel:
+                   // await _excelRepository.RecordExists(componentModel, primaryKeyValue);
+                    break;
+                case DataSourceType.MongoDB:
+                    // await _mongoDbRepository.RecordExists(componentModel, primaryKeyValue);
+                    break;
+                default:
+                    return await _msSqlRepository.RecordExists(componentModel, primaryKeyValue);
+            }
+
+            return false;
+        }
+
         protected async Task GetLookupOptions(ComponentModel componentModel)
         {
             switch (componentModel.DataSourceType)

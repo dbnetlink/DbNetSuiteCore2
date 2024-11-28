@@ -73,6 +73,17 @@ namespace DbNetSuiteCore.Repositories
             await GetLookupOptions(componentModel);
         }
 
+        public async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
+        {
+            QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
+            var connection = GetConnection(componentModel.ConnectionAlias);
+            connection.Open();
+            var reader = await ExecuteQuery(query, connection);
+            var recordExists = reader.HasRows;
+            connection.Close();
+            return recordExists;
+        }
+
         public async Task GetLookupOptions(ComponentModel componentModel)
         {
             foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))

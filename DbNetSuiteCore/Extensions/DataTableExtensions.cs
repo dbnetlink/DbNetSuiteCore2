@@ -14,6 +14,7 @@ namespace DbNetSuiteCore.Extensions
             }
 
             dataTable.PrimaryKey = null;
+            currentColumn.ReadOnly = false;
 
             if (currentColumn.DataType != typeof(string))
             {

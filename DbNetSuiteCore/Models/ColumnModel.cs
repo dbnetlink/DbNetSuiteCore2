@@ -76,12 +76,9 @@ namespace DbNetSuiteCore.Models
         }
         public ColumnModel(DataColumn dataColumn, DataSourceType dataSourceType) : this()
         {
-            Expression = dataColumn.ColumnName;
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName);
-            Name = (dataSourceType == DataSourceType.Excel || dataSourceType == DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
-            DataType = dataColumn.DataType;
-            Initialised = true;
-            PrimaryKey = dataColumn.Unique;
+            Expression = dataColumn.ColumnName;
+            this.Update(dataColumn,dataSourceType);
         }
 
         public ColumnModel(DataRow dataRow) : this()
@@ -127,6 +124,7 @@ namespace DbNetSuiteCore.Models
                 {
                     formColumn.Required = dataColumn.AllowDBNull == false;
                 }
+                formColumn.Autoincrement = dataColumn.AutoIncrement;
             }
         }
 

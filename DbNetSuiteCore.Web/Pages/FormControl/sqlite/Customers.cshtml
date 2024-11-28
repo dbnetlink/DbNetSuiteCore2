@@ -4,6 +4,6 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers");
+    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers") { Insert = true, Delete = true };
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
 }

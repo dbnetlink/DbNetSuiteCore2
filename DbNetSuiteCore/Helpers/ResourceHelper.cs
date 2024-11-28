@@ -32,7 +32,8 @@ namespace DbNetSuiteCore.Helpers
         MinValueError,
         MaxValueError,
         RangeValueError,
-        Added
+        Added,
+        PrimaryKeyExists
     }
     public static class ResourceHelper
     {

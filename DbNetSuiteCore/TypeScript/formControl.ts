@@ -34,6 +34,11 @@ class FormControl extends ComponentControl {
         }
 
         window.setTimeout(() => { this.clearErrorMessage() }, 3000)
+        this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
+        this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el) });
+        this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el) });
+
+        this.setFocus();
         this.invokeEventHandler('RecordLoaded');
     }
 
@@ -90,11 +95,16 @@ class FormControl extends ComponentControl {
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
         document.body.addEventListener('htmx:confirm', (ev) => { this.confirmRequest(ev) });
         document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev) });
-
-        this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
-        this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el) });
  
         this.invokeEventHandler('Initialised');
+    }
+
+    private transformText(input) {
+        input.addEventListener("input", (e) => {
+            e.preventDefault();
+            let el = e.target;
+            el.value = el.dataset.texttransform == "Uppercase" ? el.value.toUpperCase() : el.value.toLowerCase();
+        });
     }
 
     private makeSelectReadonly(selectElement) {
@@ -200,6 +210,15 @@ class FormControl extends ComponentControl {
     private errorHighlighted() {
         let controlsInError = Array.from(this.controlElements(".fc-control")).filter((e) => { return (e.dataset.error == 'true'); }).length;
         return (controlsInError > 0);
+    }
+
+    private setFocus() {
+        for (const el of this.controlElements(".fc-control")) {
+            if (el.readOnly == false && el.disabled == false) {
+                el.focus();
+                break;
+            }
+        }
     }
     
     private formControl(columnName: string) {

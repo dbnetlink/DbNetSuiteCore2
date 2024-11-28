@@ -111,7 +111,7 @@ namespace DbNetSuiteCore.Services
 
             if (formModel.ClientEvents.Keys.Contains(FormClientEvent.ValidateUpdate) == false)
             {
-                if (ValidateRecord(formModel))
+                if (await ValidateRecord(formModel))
                 {
                     await CommitUpdate(formModel);
                     formViewModel = await GetFormViewModel(formModel);
@@ -119,7 +119,7 @@ namespace DbNetSuiteCore.Services
             }
             else if (formModel.ValidationPassed == false)
             {
-                formModel.ValidationPassed = ValidateRecord(formModel);
+                formModel.ValidationPassed = await ValidateRecord(formModel);
             }
             else
             {
@@ -146,7 +146,7 @@ namespace DbNetSuiteCore.Services
                     formModel.PrimaryKeyValues = new List<object>();
                     formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Added);
                 }
-                
+
                 formModel.MessageType = MessageType.Success;
                 formModel.CommitType = formModel.Mode;
 
@@ -187,7 +187,7 @@ namespace DbNetSuiteCore.Services
             return await View("Form/Form", new FormViewModel(formModel));
         }
 
-        private bool ValidateRecord(FormModel formModel)
+        private async Task<bool> ValidateRecord(FormModel formModel)
         {
 
             if (ValidateErrorType(formModel, ResourceNames.Required))
@@ -196,12 +196,39 @@ namespace DbNetSuiteCore.Services
                 {
                     if (ValidateErrorType(formModel, ResourceNames.MinValueError))
                     {
-                        return true;
+                        if (await ValidatePrimaryKey(formModel))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
 
             return false;
+        }
+
+        private async Task<bool> ValidatePrimaryKey(FormModel formModel)
+        {
+            if (formModel.Mode == FormMode.Update)
+            {
+                return true;
+            }
+
+            FormColumn? primaryKeyColumn = formModel.Columns.FirstOrDefault(c => c.PrimaryKeyRequired);
+            if (primaryKeyColumn == null)
+            {
+                return true;
+            }
+
+            if (await RecordExists(formModel, formModel.FormValues[primaryKeyColumn.ColumnName]))
+            {
+                primaryKeyColumn.InError = true;
+                formModel.Message = ResourceHelper.GetResourceString(ResourceNames.PrimaryKeyExists);
+                formModel.MessageType = MessageType.Error;
+                return false;
+            }
+
+            return true;
         }
 
         private bool ValidateErrorType(FormModel formModel, ResourceNames resourceName)
@@ -216,9 +243,13 @@ namespace DbNetSuiteCore.Services
                 {
                     value = formModel.FormValues[columnName];
                 }
+                else if (formModel.Mode == FormMode.Insert && formColumn.PrimaryKeyRequired)
+                {
+                    value = string.Empty;
+                }
                 else if (formModel.Mode == FormMode.Update || formColumn.Required == false || formColumn.PrimaryKey)
                 {
-                    continue;           
+                    continue;
                 }
 
                 object? paramValue;
@@ -226,7 +257,7 @@ namespace DbNetSuiteCore.Services
                 switch (resourceName)
                 {
                     case ResourceNames.Required:
-                        formColumn.InError = string.IsNullOrEmpty(value) && formColumn.Required;
+                        formColumn.InError = string.IsNullOrEmpty(value) && (formColumn.Required || formColumn.PrimaryKeyRequired);
                         break;
                     case ResourceNames.DataFormatError:
                         paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);

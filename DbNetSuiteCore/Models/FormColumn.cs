@@ -15,7 +15,9 @@ namespace DbNetSuiteCore.Models
         public object? MinValue { get; set; } = null;
         public object? MaxValue { get; set; } = null;
         public long ? JSDateTime { get; set; } = null;
-
+        public bool Autoincrement { get; set ; } = false;
+        public TextTransform? TextTransform { get; set; } = null;
+        public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
         public FormColumn()
         {
         }

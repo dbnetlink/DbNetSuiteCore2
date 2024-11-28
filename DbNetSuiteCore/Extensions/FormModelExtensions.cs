@@ -75,7 +75,7 @@ namespace DbNetSuiteCore.Extensions
             List<string> columnNames = new List<string>();
             List<string> paramNames = new List<string>();
 
-            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.PrimaryKey == false))
+            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.Autoincrement == false))
             {
                 if (formColumn.ReadOnly || formColumn.Disabled)
                 {

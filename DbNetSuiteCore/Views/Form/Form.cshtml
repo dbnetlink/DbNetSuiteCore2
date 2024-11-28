@@ -113,6 +113,10 @@
         }
         else
         {
+            if (formColumn.TextTransform.HasValue)
+            {
+                attributes["data-texttransform"] = formColumn.TextTransform.ToString();
+            }
             <input type="text" @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
         }
     }
@@ -163,7 +167,7 @@
     string Attributes(FormColumn formColumn)
     {
         List<string> attributes = new List<string>();
-        if (formColumn.PrimaryKey || formColumn.ForeignKey || formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty)
+        if (Disable(formColumn))
         {
             attributes.Add("disabled");
         }
@@ -192,5 +196,14 @@
         }
 
         return string.Join(" ", attributes);
+    }
+
+    bool Disable(FormColumn formColumn)
+    {
+        if (Model.FormModel.Mode == FormMode.Insert && formColumn.PrimaryKeyRequired)
+        {
+            return false;
+        }
+        return (formColumn.PrimaryKey || formColumn.ForeignKey || formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty);
     }
 }
