@@ -2,7 +2,6 @@
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using System.Data;
-using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 
 namespace DbNetSuiteCore.Helpers
@@ -76,14 +75,13 @@ namespace DbNetSuiteCore.Helpers
         }
 
 
-        public static double? JavaScriptDateTime(DateTime? dateTime)
+        public static double? JavaScriptDateTime(object? dateTime)
         {
-            if (dateTime.HasValue)
-            {
-                return dateTime.Value.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
-            }
+            if (string.IsNullOrEmpty(dateTime?.ToString()))
+                return null;
 
-            return null;
+            dateTime = Convert.ToDateTime(dateTime);
+            return (dateTime as DateTime?).Value.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
         }
     }
 }

@@ -68,7 +68,12 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecord(ComponentModel componentModel)
         {
-            QueryCommandConfig query = componentModel.BuildRecordQuery();
+            object? primaryKeyValue = null;
+            if (componentModel is FormModel)
+            {
+                primaryKeyValue = ((FormModel)componentModel).RecordId;
+            }
+            QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias);
             await GetLookupOptions(componentModel);
         }

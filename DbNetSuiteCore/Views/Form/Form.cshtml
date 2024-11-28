@@ -14,7 +14,7 @@
         @await Html.PartialAsync("Form/Toolbar")
     }
 
-    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.FormModel.CommitType">
+    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.FormModel.CommitType" data-id="@Model.RecordId">
         @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
         {
             <div class="flex text-lg caption">@Model.FormModel.Caption</div>
@@ -85,16 +85,19 @@
         <label for="@(formColumn.ColumnName)" class="font-bold text-slate-800">@formColumn.Label</label>
 
         var attributes = new Dictionary<string, string>();
+
+        attributes["type"] = "text";
         attributes["name"] = $"_{formColumn.ColumnName}";
         attributes["data-value"] = $"{dbValue}";
+        attributes["value"] = $"{value}";
         attributes["data-datatype"] = formColumn.DataTypeName;
         attributes["class"] = Classes(formColumn);
-        attributes["value"] = $"{value}";
         attributes["data-error"] = formColumn.InError.ToString().ToLower();
 
         if (formColumn.DataTypeName == nameof(DateTime))
         {
-            attributes["data-jsdate"] = $"{RazorHelper.JavaScriptDateTime((DateTime?)value)}";
+            attributes["type"] = "date";
+            attributes["data-jsdate"] = $"{RazorHelper.JavaScriptDateTime(value)}";
         }
 
         if (formColumn.LookupOptions != null)
@@ -117,7 +120,7 @@
             {
                 attributes["data-texttransform"] = formColumn.TextTransform.ToString();
             }
-            <input type="text" @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
+            <input @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
         }
     }
 

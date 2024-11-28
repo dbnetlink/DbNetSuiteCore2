@@ -2,6 +2,7 @@ using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Web.ViewModels
 {
@@ -19,6 +20,8 @@ namespace DbNetSuiteCore.Web.ViewModels
         public string DatabaseName { get; set; } = string.Empty;
         [BindProperty]
         public string ConnectionAlias { get; set; } = string.Empty;
+
+        public Type ControlType = typeof(GridModel);
 
         private IConfiguration configuration;
         private IWebHostEnvironment? env;

@@ -9,11 +9,13 @@ class FormControl extends ComponentControl {
         if (this.triggerName(evt) == "toolbar") {
             return;
         }
+        this.formContainer = this.controlElement("div.form-container");
         this.formBody = this.controlElement("div.form-body");
         this.formMessage = this.controlElement("#form-message");
         if (!this.formBody) {
             return;
         }
+        this.notifyParent(this.formBody.dataset.mode.toLowerCase() == "update");
         switch (this.triggerName(evt)) {
             case "initialload":
                 this.initialise();
@@ -22,6 +24,7 @@ class FormControl extends ComponentControl {
         if (this.cachedMessage) {
             this.setMessage(this.cachedMessage);
         }
+        this.updateLinkedChildControls(this.formBody.dataset.id);
         window.setTimeout(() => { this.clearErrorMessage(); }, 3000);
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el); });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el); });
@@ -82,6 +85,11 @@ class FormControl extends ComponentControl {
             let el = e.target;
             el.value = el.dataset.texttransform == "Uppercase" ? el.value.toUpperCase() : el.value.toLowerCase();
         });
+    }
+    updateLinkedChildControls(primaryKey) {
+        if (this.formContainer.dataset.linkedcontrolids) {
+            this.updateLinkedControls(this.formContainer.dataset.linkedcontrolids, primaryKey);
+        }
     }
     makeSelectReadonly(selectElement) {
         "change".split(" ").forEach(function (e) {
@@ -174,7 +182,8 @@ class FormControl extends ComponentControl {
         return (controlsInError > 0);
     }
     setFocus() {
-        for (const el of this.controlElements(".fc-control")) {
+        var selector = this.errorHighlighted() ? ".fc-control[data-error='true']" : ".fc-control";
+        for (const el of this.controlElements(selector)) {
             if (el.readOnly == false && el.disabled == false) {
                 el.focus();
                 break;

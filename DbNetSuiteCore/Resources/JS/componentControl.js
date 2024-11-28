@@ -103,6 +103,19 @@ class ComponentControl {
             });
         });
     }
+    notifyParent(records) {
+        if (this.parentControl) {
+            this.parentControl.childLoaded(records);
+        }
+    }
+    childLoaded(records) {
+        if (this instanceof FormControl) {
+            let deleteButton = this.getButton("delete");
+            if (deleteButton) {
+                deleteButton.disabled = records;
+            }
+        }
+    }
     dataSourceIsFileSystem() {
         return this.form.dataset.datasourcetype == "FileSystem";
     }

@@ -11,6 +11,7 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
+using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {
@@ -128,6 +129,7 @@ namespace DbNetSuiteCore.Services
             if (gridModel.TriggerName == TriggerNames.ParentKey)
             {
                 gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
+                gridModel.Columns.ForEach(c => c.DbLookupOptions = null);
             }
 
             await GetRecords(gridModel);

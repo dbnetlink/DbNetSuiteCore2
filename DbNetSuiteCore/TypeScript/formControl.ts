@@ -2,6 +2,7 @@ class FormControl extends ComponentControl {
     form: HTMLFormElement;
     formMessage: HTMLDivElement;
     formBody: HTMLElement;
+    formContainer: HTMLElement;
     confirmDialog: ConfirmDialog | null;
     cachedMessage: string|null;
     constructor(formId) {
@@ -16,12 +17,15 @@ class FormControl extends ComponentControl {
             return;
         }
 
+        this.formContainer = this.controlElement("div.form-container") as HTMLElement;
         this.formBody = this.controlElement("div.form-body") as HTMLElement;
         this.formMessage = this.controlElement("#form-message");
 
         if (!this.formBody) {
             return
         }
+
+        this.notifyParent(this.formBody.dataset.mode.toLowerCase() == "update")
  
         switch (this.triggerName(evt)) {
             case "initialload":
@@ -32,6 +36,8 @@ class FormControl extends ComponentControl {
         if (this.cachedMessage) {
             this.setMessage(this.cachedMessage);
         }
+
+        this.updateLinkedChildControls(this.formBody.dataset.id)
 
         window.setTimeout(() => { this.clearErrorMessage() }, 3000)
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
@@ -105,6 +111,12 @@ class FormControl extends ComponentControl {
             let el = e.target;
             el.value = el.dataset.texttransform == "Uppercase" ? el.value.toUpperCase() : el.value.toLowerCase();
         });
+    }
+
+    private updateLinkedChildControls(primaryKey: string) {
+        if (this.formContainer.dataset.linkedcontrolids) {
+            this.updateLinkedControls(this.formContainer.dataset.linkedcontrolids, primaryKey)
+        }
     }
 
     private makeSelectReadonly(selectElement) {
@@ -213,7 +225,8 @@ class FormControl extends ComponentControl {
     }
 
     private setFocus() {
-        for (const el of this.controlElements(".fc-control")) {
+        var selector = this.errorHighlighted() ? ".fc-control[data-error='true']" : ".fc-control"
+        for (const el of this.controlElements(selector)) {
             if (el.readOnly == false && el.disabled == false) {
                 el.focus();
                 break;

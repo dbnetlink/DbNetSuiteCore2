@@ -103,6 +103,19 @@ class ComponentControl {
             });
         });
     }
+    notifyParent(records) {
+        if (this.parentControl) {
+            this.parentControl.childLoaded(records);
+        }
+    }
+    childLoaded(records) {
+        if (this instanceof FormControl) {
+            let deleteButton = this.getButton("delete");
+            if (deleteButton) {
+                deleteButton.disabled = records;
+            }
+        }
+    }
     dataSourceIsFileSystem() {
         return this.form.dataset.datasourcetype == "FileSystem";
     }
@@ -268,6 +281,7 @@ class GridControl extends ComponentControl {
         if (totalPages == 0) {
             this.updateLinkedGrids('');
         }
+        this.notifyParent(rowCount > 0);
         if (this.viewDialog) {
             this.getButton("view").disabled = (rowCount == 0);
             if (rowCount == 0) {
@@ -569,10 +583,10 @@ class SelectControl extends ComponentControl {
             var dataset = target.selectedOptions[0].dataset;
             url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : '';
         }
-        this.updateLinkedSelects(target.value, url);
+        this.updateLinkedChildControls(target.value, url);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
-    updateLinkedSelects(primaryKey, url) {
+    updateLinkedChildControls(primaryKey, url) {
         if (this.select.dataset.linkedcontrolids) {
             this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey, url);
         }
@@ -597,11 +611,13 @@ class FormControl extends ComponentControl {
         if (this.triggerName(evt) == "toolbar") {
             return;
         }
+        this.formContainer = this.controlElement("div.form-container");
         this.formBody = this.controlElement("div.form-body");
         this.formMessage = this.controlElement("#form-message");
         if (!this.formBody) {
             return;
         }
+        this.notifyParent(this.formBody.dataset.mode.toLowerCase() == "update");
         switch (this.triggerName(evt)) {
             case "initialload":
                 this.initialise();
@@ -610,6 +626,7 @@ class FormControl extends ComponentControl {
         if (this.cachedMessage) {
             this.setMessage(this.cachedMessage);
         }
+        this.updateLinkedChildControls(this.formBody.dataset.id);
         window.setTimeout(() => { this.clearErrorMessage(); }, 3000);
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el); });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el); });
@@ -670,6 +687,11 @@ class FormControl extends ComponentControl {
             let el = e.target;
             el.value = el.dataset.texttransform == "Uppercase" ? el.value.toUpperCase() : el.value.toLowerCase();
         });
+    }
+    updateLinkedChildControls(primaryKey) {
+        if (this.formContainer.dataset.linkedcontrolids) {
+            this.updateLinkedControls(this.formContainer.dataset.linkedcontrolids, primaryKey);
+        }
     }
     makeSelectReadonly(selectElement) {
         "change".split(" ").forEach(function (e) {
@@ -762,7 +784,8 @@ class FormControl extends ComponentControl {
         return (controlsInError > 0);
     }
     setFocus() {
-        for (const el of this.controlElements(".fc-control")) {
+        var selector = this.errorHighlighted() ? ".fc-control[data-error='true']" : ".fc-control";
+        for (const el of this.controlElements(selector)) {
             if (el.readOnly == false && el.disabled == false) {
                 el.focus();
                 break;

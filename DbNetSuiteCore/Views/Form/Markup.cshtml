@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div>
+<div class="form-container" data-linkedcontrolids="@Model.LinkedControlIds">
     @await Html.PartialAsync("Form/Form")
     @await Html.PartialAsync("ToastMessage")
     @await Html.PartialAsync("Form/ConfirmDialog")

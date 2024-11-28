@@ -84,15 +84,16 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
+            formModel.Mode = FormMode.Empty;
+
             if (formModel.PrimaryKeyValues.Any())
             {
+                formModel.Mode = FormMode.Update;
                 var idx = Enumerable.Range(1, formModel.PrimaryKeyValues.Count()).Contains(formModel.CurrentRecord) ? formModel.CurrentRecord - 1 : 0;
-                formModel.ParentKey = formModel.PrimaryKeyValues[idx]?.ToString() ?? string.Empty;
                 formModel.FormValues.Clear();
                 await GetRecord(formModel);
             }
 
-            formModel.Mode = formModel.PrimaryKeyValues.Any() ? FormMode.Update : FormMode.Empty;
             var formViewModel = new FormViewModel(formModel);
 
             if (formModel.DiagnosticsMode)
@@ -108,6 +109,7 @@ namespace DbNetSuiteCore.Services
         private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {
             FormViewModel formViewModel = new FormViewModel(formModel);
+            var committed = false;
 
             if (formModel.ClientEvents.Keys.Contains(FormClientEvent.ValidateUpdate) == false)
             {
@@ -115,7 +117,9 @@ namespace DbNetSuiteCore.Services
                 {
                     await CommitUpdate(formModel);
                     formViewModel = await GetFormViewModel(formModel);
+                    committed = true;
                 }
+               
             }
             else if (formModel.ValidationPassed == false)
             {
@@ -125,6 +129,12 @@ namespace DbNetSuiteCore.Services
             {
                 await CommitUpdate(formModel);
                 formViewModel = await GetFormViewModel(formModel);
+                committed = true;
+            }
+
+            if (!committed)
+            {
+                await GetRecord(formModel);
             }
 
             return await View("Form/Form", formViewModel);

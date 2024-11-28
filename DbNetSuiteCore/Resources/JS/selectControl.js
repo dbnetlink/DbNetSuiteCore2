@@ -30,10 +30,10 @@ class SelectControl extends ComponentControl {
             var dataset = target.selectedOptions[0].dataset;
             url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : '';
         }
-        this.updateLinkedSelects(target.value, url);
+        this.updateLinkedChildControls(target.value, url);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
-    updateLinkedSelects(primaryKey, url) {
+    updateLinkedChildControls(primaryKey, url) {
         if (this.select.dataset.linkedcontrolids) {
             this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey, url);
         }

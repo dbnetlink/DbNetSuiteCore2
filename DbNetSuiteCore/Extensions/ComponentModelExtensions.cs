@@ -279,27 +279,34 @@ namespace DbNetSuiteCore.Extensions
                         paramValue = TimeSpan.Parse(DateTime.Parse(value.ToString()).ToString(column.Format));
                         break;
                     case nameof(DateTime):
-                        if (string.IsNullOrEmpty(column.Format))
+                        if (column is FormColumn)
                         {
-                            paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTime)}"));
+                            paramValue = DateTime.ParseExact(value.ToString(), "yyyy-MM-dd", null, DateTimeStyles.None);
                         }
                         else
                         {
-                            try
+                            if (string.IsNullOrEmpty(column.Format))
                             {
-                                paramValue = DateTime.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
+                                paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTime)}"));
                             }
-                            catch
+                            else
                             {
-                                paramValue = DateTime.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                                try
+                                {
+                                    paramValue = DateTime.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
+                                }
+                                catch
+                                {
+                                    paramValue = DateTime.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                                }
                             }
-                        }
-                        if (paramValue is DateTime && dataSourceType == DataSourceType.MSSQL)
-                        {
-                            int year = ((DateTime)paramValue).Year;
-                            if (year < 1753 || year > 9999)
+                            if (paramValue is DateTime && dataSourceType == DataSourceType.MSSQL)
                             {
-                                return null;
+                                int year = ((DateTime)paramValue).Year;
+                                if (year < 1753 || year > 9999)
+                                {
+                                    return null;
+                                }
                             }
                         }
                         break;

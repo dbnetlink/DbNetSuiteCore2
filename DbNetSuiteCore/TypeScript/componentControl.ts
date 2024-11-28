@@ -119,6 +119,22 @@ class ComponentControl {
         });
     }
 
+    public notifyParent(records: boolean) {
+        if (this.parentControl) {
+            this.parentControl.childLoaded(records)
+        }
+    }
+
+    public childLoaded(records: boolean) {
+        if (this instanceof FormControl)
+        {
+            let deleteButton = this.getButton("delete")
+            if (deleteButton) {
+                deleteButton.disabled = records;
+            }
+        }
+    }
+
     public dataSourceIsFileSystem() {
         return this.form.dataset.datasourcetype == "FileSystem";
     }

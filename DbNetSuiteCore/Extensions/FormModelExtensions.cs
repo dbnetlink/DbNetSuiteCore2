@@ -63,7 +63,7 @@ namespace DbNetSuiteCore.Extensions
             }
             var primaryKeyColumn = formModel.Columns.First(c => c.PrimaryKey);
             update.Sql += $" where {primaryKeyColumn.ColumnName} = {DbHelper.ParameterName(primaryKeyColumn.ColumnName)}";
-            update.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.ParentKey, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
+            update.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
 
             return update;
         }
@@ -120,7 +120,7 @@ namespace DbNetSuiteCore.Extensions
             CommandConfig delete = new CommandConfig();
             var primaryKeyColumn = formModel.Columns.First(c => c.PrimaryKey);
             delete.Sql = $"delete from {formModel.TableName} where { primaryKeyColumn.ColumnName} = { DbHelper.ParameterName(primaryKeyColumn.ColumnName)}";
-            delete.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.ParentKey, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
+            delete.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
             return delete;
         }
     }

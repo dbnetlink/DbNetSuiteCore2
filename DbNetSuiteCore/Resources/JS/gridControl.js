@@ -109,6 +109,7 @@ class GridControl extends ComponentControl {
         if (totalPages == 0) {
             this.updateLinkedGrids('');
         }
+        this.notifyParent(rowCount > 0);
         if (this.viewDialog) {
             this.getButton("view").disabled = (rowCount == 0);
             if (rowCount == 0) {

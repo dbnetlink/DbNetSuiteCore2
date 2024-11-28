@@ -77,7 +77,16 @@
                                 </h2>
                                 <div id="@(tab)" class="accordion-collapse collapse@(first ? " show" : "")" aria-labelledby="heading@(tab)" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
-                                        @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { QueryLimit = 1000}))
+                                        @{
+                                            if (Model.ControlType == typeof(GridModel))
+                                            {
+                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { QueryLimit = 1000 }))
+                                            }
+                                            if (Model.ControlType == typeof(FormModel))
+                                            {
+                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new FormModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { QueryLimit = 1000 }))
+                                            }
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -87,9 +96,17 @@
                 }
                 else
                 {
-                    GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName };
-                    gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
-                    @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(gridModel))
+                    if (Model.ControlType == typeof(GridModel))
+                    {
+                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName };
+                        gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
+                        @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(gridModel))
+                    }
+                    if (Model.ControlType == typeof(FormModel))
+                    {
+                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName };
+                        @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(formModel))
+                    }
                 }
             }
 
