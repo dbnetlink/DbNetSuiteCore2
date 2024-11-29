@@ -53,7 +53,7 @@
         </div>
     }
 
-    @if (Model.Mode != FormMode.Empty)
+    @if (Model.Mode != FormMode.Empty && Model.ReadOnly == false)
     {
         <div class="flex flex-row gap-1 " id="applyCancel">
             @{
@@ -94,12 +94,12 @@
 
     bool RenderInsert()
     {
-        return Model.FormModel.Insert && Model.Mode != FormMode.Insert;
+        return Model.FormModel.Insert && Model.Mode != FormMode.Insert && Model.ReadOnly == false;
     }
 
     bool RenderDelete()
     {
-        return Model.FormModel.Delete && Model.Mode == FormMode.Update;
+        return Model.FormModel.Delete && Model.Mode == FormMode.Update && Model.ReadOnly == false;
     }
 
     string Justify() 

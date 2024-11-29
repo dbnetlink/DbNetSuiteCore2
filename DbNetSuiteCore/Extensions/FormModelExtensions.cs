@@ -34,6 +34,22 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
+        public static void AddOrderPart(this FormModel formModel, QueryCommandConfig query)
+        {
+            string columnName = "1";
+            var sequence = "asc";
+
+            var initialSortColumn = formModel.Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue);
+
+            if (initialSortColumn != null) 
+            {
+                columnName = initialSortColumn.ColumnName;
+                sequence = initialSortColumn.InitialSortOrder.ToString()?.ToLower();
+            }
+
+            query.Sql += $" order by {columnName} {sequence}";
+        }
+
         public static CommandConfig BuildUpdate(this FormModel formModel)
         {
             CommandConfig update = new CommandConfig();

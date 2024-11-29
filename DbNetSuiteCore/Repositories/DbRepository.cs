@@ -197,7 +197,7 @@ namespace DbNetSuiteCore.Repositories
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
-                    if (componentModel.GetColumns().Any())
+                    if (componentModel.GetColumns().Any() && componentModel is not FormModel)
                     {
                         return await GetDataTable(query, componentModel.ConnectionAlias);
                     }

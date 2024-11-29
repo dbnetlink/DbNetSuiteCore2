@@ -62,7 +62,7 @@ namespace DbNetSuiteCore.Models
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
         internal bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
-
+        public SortOrder? InitialSortOrder { get; set; } = null;
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
@@ -84,18 +84,7 @@ namespace DbNetSuiteCore.Models
         public ColumnModel(DataRow dataRow) : this()
         {
             Expression = (string)dataRow["ColumnName"];
-            Label = TextHelper.GenerateLabel((string)dataRow["ColumnName"]);
-            Name = CleanColumnName((string)dataRow["ColumnName"]);
-            try
-            {
-                DataType = (Type)dataRow["DataType"];
-                DbDataType = ((Type)dataRow["ProviderSpecificDataType"]).Name;
-            }
-            catch (Exception)
-            {
-                Valid = false;
-            }
-            Initialised = true;
+            Update(dataRow);
         }
 
         public ColumnModel(string expression, string label) : this()
@@ -130,12 +119,34 @@ namespace DbNetSuiteCore.Models
 
         public void Update(DataRow dataRow)
         {
-            DataType = (Type)dataRow["DataType"];
+            try
+            {
+                DataType = (Type)dataRow["DataType"];
+                DbDataType = ((Type)dataRow["ProviderSpecificDataType"]).Name;
+            }
+            catch (Exception)
+            {
+                Valid = false;
+            }
             Initialised = true;
             Name = CleanColumnName(string.IsNullOrEmpty((string)dataRow["ColumnName"]) ? Expression : (string)dataRow["ColumnName"]);
             if (string.IsNullOrEmpty(Label))
             {
                 Label = TextHelper.GenerateLabel(Name);
+            }
+            PrimaryKey = (bool)dataRow["IsKey"];
+            if (this is FormColumn)
+            {
+                var formColumn = (FormColumn)this;
+                if (formColumn.Required == false)
+                {
+                    formColumn.Required = (bool)dataRow["AllowDBNull"] == false;
+                }
+                formColumn.Autoincrement = (bool)dataRow["IsIdentity"];
+                if (formColumn.MaxLength.HasValue == false)
+                {
+                    formColumn.MaxLength = (int)dataRow["ColumnSize"];
+                }
             }
         }
 

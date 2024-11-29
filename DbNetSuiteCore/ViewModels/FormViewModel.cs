@@ -19,6 +19,7 @@ namespace DbNetSuiteCore.ViewModels
         public string SearchInput => FormModel.SearchInput;
         public bool HideToolbar => FormModel.IsLinked && string.IsNullOrEmpty(FormModel.ParentKey);
         public FormMode Mode => FormModel.Mode;
+        public bool ReadOnly => FormModel.ReadOnly;
         public FormViewModel(FormModel formModel) : base(formModel)
         {
             _formModel = formModel;

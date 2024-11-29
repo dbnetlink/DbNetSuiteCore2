@@ -1,20 +1,13 @@
-﻿using System.ComponentModel;
-
-namespace DbNetSuiteCore.Enums
+﻿namespace DbNetSuiteCore.Enums
 {
     public enum FormControlType
     {
         Auto,
         TextBox,
-        TextBoxLookup,
-        TextBoxSearchLookup,
         CheckBox,
-        DropDownList,
-        RadioButtonList,
         TextArea,
         Password,
         Upload,
-        SuggestLookup,
         Color,
         Date,
         Email,
@@ -24,9 +17,9 @@ namespace DbNetSuiteCore.Enums
         Range,
         Tel,
         Time,
+        TimeWithSeconds,
         Url,
         Week,
-        [Description("datetime-local")]
         DateTime
     };
 }

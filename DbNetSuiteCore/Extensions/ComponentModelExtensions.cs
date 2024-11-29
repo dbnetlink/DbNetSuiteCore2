@@ -41,6 +41,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 var formModel = (FormModel)componentModel;
                 formModel.AddFilterPart(query);
+                formModel.AddOrderPart(query);
             }
 
             query.Sql = $"{query.Sql}{Limit(componentModel)}";
@@ -276,12 +277,19 @@ namespace DbNetSuiteCore.Extensions
                         paramValue = ParseBoolean(value.ToString());
                         break;
                     case nameof(TimeSpan):
-                        paramValue = TimeSpan.Parse(DateTime.Parse(value.ToString()).ToString(column.Format));
+                        if (column is FormColumn)
+                        {
+                            paramValue = TimeSpan.ParseExact(value.ToString(), "g", CultureInfo.CurrentCulture, TimeSpanStyles.None);
+                        }
+                        else
+                        {
+                            paramValue = TimeSpan.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                        }
                         break;
                     case nameof(DateTime):
                         if (column is FormColumn)
                         {
-                            paramValue = DateTime.ParseExact(value.ToString(), "yyyy-MM-dd", null, DateTimeStyles.None);
+                            paramValue = DateTime.ParseExact(value.ToString(), "yyyy-MM-dd", CultureInfo.CurrentCulture, DateTimeStyles.None);
                         }
                         else
                         {
@@ -303,6 +311,38 @@ namespace DbNetSuiteCore.Extensions
                             if (paramValue is DateTime && dataSourceType == DataSourceType.MSSQL)
                             {
                                 int year = ((DateTime)paramValue).Year;
+                                if (year < 1753 || year > 9999)
+                                {
+                                    return null;
+                                }
+                            }
+                        }
+                        break;
+                    case nameof(DateTimeOffset):
+                        if (column is FormColumn)
+                        {
+                            paramValue = DateTimeOffset.ParseExact(value.ToString(), "yyyy-MM-dd", CultureInfo.CurrentCulture, DateTimeStyles.None);
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(column.Format))
+                            {
+                                paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTimeOffset)}"));
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    paramValue = DateTimeOffset.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
+                                }
+                                catch
+                                {
+                                    paramValue = DateTimeOffset.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                                }
+                            }
+                            if (paramValue is DateTimeOffset && dataSourceType == DataSourceType.MSSQL)
+                            {
+                                int year = ((DateTimeOffset)paramValue).Year;
                                 if (year < 1753 || year > 9999)
                                 {
                                     return null;

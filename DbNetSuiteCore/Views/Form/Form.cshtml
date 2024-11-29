@@ -28,7 +28,7 @@
                 if (Model.FormModel.Mode == FormMode.Update)
                 {
                     DataColumn? dataColumn = Model.GetDataColumn(formColumn);
-                    dbValue = dataColumn == null ? string.Empty : Model.Record[dataColumn];
+                    dbValue = dataColumn == null ? string.Empty : formColumn.FormatValue(Model.Record[dataColumn]);
                     value = dbValue;
                 }
 
@@ -94,10 +94,14 @@
         attributes["class"] = Classes(formColumn);
         attributes["data-error"] = formColumn.InError.ToString().ToLower();
 
-        if (formColumn.DataTypeName == nameof(DateTime))
+        if (formColumn.DataTypeName == nameof(DateTime) || formColumn.DataTypeName == nameof(DateTimeOffset))
         {
             attributes["type"] = "date";
-            attributes["data-jsdate"] = $"{RazorHelper.JavaScriptDateTime(value)}";
+        }
+        
+        if (formColumn.DataTypeName == nameof(TimeSpan))
+        {
+            attributes["type"] = "time";
         }
 
         if (formColumn.LookupOptions != null)
@@ -120,11 +124,17 @@
             {
                 attributes["data-texttransform"] = formColumn.TextTransform.ToString();
             }
+            switch (attributes["type"])
+            {
+                case "text":
+                    attributes["maxlength"] = formColumn.MaxLength?.ToString();
+                    break;
+            }
             <input @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
         }
     }
 
-    void RenderSelect(FormColumn formColumn, object value, Dictionary<string, string>  attributes)
+    void RenderSelect(FormColumn formColumn, object value, Dictionary<string, string> attributes)
     {
         if (formColumn.DataType == typeof(Boolean))
         {
@@ -143,7 +153,7 @@
     {
         List<string> classes = new List<string>() { "fc-control" };
 
-        if (formColumn.ReadOnly)
+        if (formColumn.ReadOnly || Model.FormModel.ReadOnly)
         {
             classes.Add("readonly");
         }
@@ -159,7 +169,7 @@
             classes.Add("text-right");
         }
 
-        if (formColumn.ReadOnly)
+        if (formColumn.ReadOnly || formColumn.DataType == typeof(Guid) || Model.FormModel.ReadOnly)
         {
             classes.Add("readonly");
         }
@@ -178,7 +188,7 @@
         {
             attributes.Add("required");
         }
-        if (formColumn.ReadOnly && formColumn.LookupOptions == null)
+        if ((formColumn.ReadOnly && formColumn.LookupOptions == null) || Model.FormModel.ReadOnly)
         {
             attributes.Add("readonly");
         }

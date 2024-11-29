@@ -12,7 +12,6 @@ namespace DbNetSuiteCore.Models
         public bool Editable { get; set; } = false;
         public bool Viewable { get; set; } = true;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
-        public SortOrder? InitialSortOrder { get; set; } = null;
         public FilterType Filter
         {
             get { return _Filter; }

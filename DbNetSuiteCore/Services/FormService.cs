@@ -89,10 +89,10 @@ namespace DbNetSuiteCore.Services
             if (formModel.PrimaryKeyValues.Any())
             {
                 formModel.Mode = FormMode.Update;
-                var idx = Enumerable.Range(1, formModel.PrimaryKeyValues.Count()).Contains(formModel.CurrentRecord) ? formModel.CurrentRecord - 1 : 0;
-                formModel.FormValues.Clear();
+                formModel.CurrentRecord = Enumerable.Range(1, formModel.PrimaryKeyValues.Count()).Contains(formModel.CurrentRecord) ? formModel.CurrentRecord : 1;
                 await GetRecord(formModel);
             }
+            formModel.FormValues.Clear();
 
             var formViewModel = new FormViewModel(formModel);
 
@@ -132,7 +132,7 @@ namespace DbNetSuiteCore.Services
                 committed = true;
             }
 
-            if (!committed)
+            if (committed == false && formModel.Mode == FormMode.Update)
             {
                 await GetRecord(formModel);
             }

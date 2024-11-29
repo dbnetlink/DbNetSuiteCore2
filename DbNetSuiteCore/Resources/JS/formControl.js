@@ -125,6 +125,9 @@ class FormControl extends ComponentControl {
             if (this.elementModified(el) == false) {
                 delete evt.detail.parameters[el.name];
             }
+            else if (evt.detail.parameters[el.name] == undefined) {
+                evt.detail.parameters[el.name] = '';
+            }
         });
         /*
         for (var p in evt.detail.parameters) {
@@ -210,11 +213,14 @@ class FormControl extends ComponentControl {
     }
     elementModified(el) {
         if (el.tagName == 'INPUT' && el.type == 'checkbox') {
-            return Number(el.dataset.value) != el.checked;
+            return this.isBoolean(el.dataset.value) != el.checked;
         }
         else {
             return el.dataset.value != el.value;
         }
+    }
+    isBoolean(value) {
+        return value == "1" || value.toLowerCase() == "true";
     }
     setMessage(message, type = 'success') {
         this.formMessage.innerText = message;

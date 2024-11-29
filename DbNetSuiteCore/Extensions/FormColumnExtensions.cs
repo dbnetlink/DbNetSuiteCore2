@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -12,19 +11,19 @@ namespace DbNetSuiteCore.Extensions
                 return value;
             }
 
-            if (formColumn?.DataType == typeof(DateTime) && string.IsNullOrEmpty(formColumn.Format))
+            if (formColumn?.DataType == typeof(DateTime))
             {
-                formColumn.Format = "yyyy-MM-dd";
+                return ((DateTime)value).ToString("yyyy-MM-dd");
             }
-
-            if (string.IsNullOrEmpty(formColumn.Format))
+            if (formColumn?.DataType == typeof(DateTimeOffset))
             {
-                return value;
+                return ((DateTimeOffset)value).ToString("yyyy-MM-dd");
             }
-
-            string format = formColumn.Format;
-
-            return ColumnModelHelper.FormatedValue(formColumn, value);
+            if (formColumn?.DataType == typeof(TimeSpan))
+            {
+                return ((TimeSpan)value).ToString("g");
+            }
+            return value;
         }
     }
 }
