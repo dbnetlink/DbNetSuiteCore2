@@ -175,7 +175,7 @@ namespace DbNetSuiteCore.Models
 
         public abstract IEnumerable<ColumnModel> GetColumns();
         public abstract void SetColumns(IEnumerable<ColumnModel> columns);
-        public abstract ColumnModel NewColumn(DataRow dataRow);
+        public abstract ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType);
         public abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
         internal abstract ColumnModel? SortColumn { get; }
         internal abstract SortOrder? SortSequence { get; set; }

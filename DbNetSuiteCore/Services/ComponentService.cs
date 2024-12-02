@@ -148,7 +148,9 @@ namespace DbNetSuiteCore.Services
                 switch (componentModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        componentModel.SetColumns(schema.Rows.Cast<DataRow>().Where(r => (bool)r["IsHidden"] == false).Select(r => componentModel.NewColumn(r)).Where(c => c.Valid).ToList());
+                    case DataSourceType.MySql:
+                    case DataSourceType.PostgreSql:
+                        componentModel.SetColumns(schema.Rows.Cast<DataRow>().Where(r => IsRowHidden(r) == false).Select(r => componentModel.NewColumn(r, componentModel.DataSourceType)).Where(c => c.Valid).ToList());
                         break;
                     default:
                         componentModel.SetColumns(schema.Columns.Cast<DataColumn>().Select(c => componentModel.NewColumn(c, componentModel.DataSourceType)).ToList());
@@ -170,33 +172,36 @@ namespace DbNetSuiteCore.Services
                 }
                 else
                 {
-                    if (componentModel.DataSourceType == DataSourceType.MSSQL/* && componentModel is FormModel*/)
+                    switch (componentModel.DataSourceType)
                     {
-                        foreach (ColumnModel column in componentModel.GetColumns())
-                        {
-                            DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString() == column.Expression);
-                            if (dataRow != null)
+                        case DataSourceType.MSSQL:
+                        case DataSourceType.MySql:
+                        case DataSourceType.PostgreSql:
+                            foreach (ColumnModel column in componentModel.GetColumns())
                             {
-                                column.Update(dataRow);
+                                DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString() == column.Expression);
+                                if (dataRow != null)
+                                {
+                                    column.Update(dataRow, componentModel.DataSourceType);
+                                }
                             }
-                        }
-                        if (componentModel.GetColumns().Any(c => string.IsNullOrEmpty(c.Name)))
-                        {
-                            componentModel.IgnoreSchemaTable = true;
-                            schema = await GetColumns(componentModel);
-                            dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+                            if (componentModel.GetColumns().Any(c => string.IsNullOrEmpty(c.Name)))
+                            {
+                                componentModel.IgnoreSchemaTable = true;
+                                schema = await GetColumns(componentModel);
+                                dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+                                for (var i = 0; i < dataColumns.Count; i++)
+                                {
+                                    componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
+                                }
+                            }
+                            break;
+                        default:
                             for (var i = 0; i < dataColumns.Count; i++)
                             {
                                 componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
                             }
-                        }
-                    }
-                    else
-                    {
-                        for (var i = 0; i < dataColumns.Count; i++)
-                        {
-                            componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
-                        }
+                            break;
                     }
                 }
             }
@@ -204,177 +209,190 @@ namespace DbNetSuiteCore.Services
             if (componentModel is FormModel)
             {
                 var formModel = (FormModel)componentModel;
-                formModel.Columns = formModel.Columns.Where(c =>c.DataType != typeof(Byte[]));
+                formModel.Columns = formModel.Columns.Where(c => c.DataType != typeof(Byte[]));
             }
 
-            for (var i = 0; i<componentModel.GetColumns().ToList().Count; i++)
+            for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
             {
                 componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
             }
-}
+        }
 
-protected void ConfigureColumnsForStoredProcedure(ComponentModel componentModel)
-{
-    DataTable schema = componentModel.Data;
-
-    if (componentModel.GetColumns().Any() == false)
-    {
-        componentModel.SetColumns(schema.Columns.Cast<DataColumn>().Select(dc => componentModel.NewColumn(dc, componentModel.DataSourceType)).ToList());
-        ColumnsHelper.QualifyColumnExpressions(componentModel.GetColumns(), componentModel.DataSourceType);
-    }
-    else
-    {
-        var columns = componentModel.GetColumns();
-        var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-
-        for (var i = 0; i < dataColumns.Count; i++)
+        private bool IsRowHidden(DataRow dataRow)
         {
-            var dataColumn = dataColumns[i];
-            var column = columns.FirstOrDefault(c => c.Expression.ToLower() == dataColumn.ColumnName.ToLower());
-
-            if (column == null)
+            DataColumn? dataColumn = dataRow.Table.Columns["IsHidden"];
+            if (dataColumn != null)
             {
-                column = componentModel.NewColumn(dataColumn, componentModel.DataSourceType);
+                if (dataRow[dataColumn] != DBNull.Value)
+                {
+                    return (bool)dataRow["IsHidden"];
+                }
+            }
+            return false;
+        }
+
+        protected void ConfigureColumnsForStoredProcedure(ComponentModel componentModel)
+        {
+            DataTable schema = componentModel.Data;
+
+            if (componentModel.GetColumns().Any() == false)
+            {
+                componentModel.SetColumns(schema.Columns.Cast<DataColumn>().Select(dc => componentModel.NewColumn(dc, componentModel.DataSourceType)).ToList());
+                ColumnsHelper.QualifyColumnExpressions(componentModel.GetColumns(), componentModel.DataSourceType);
             }
             else
             {
-                column.Update(dataColumn, componentModel.DataSourceType);
+                var columns = componentModel.GetColumns();
+                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+
+                for (var i = 0; i < dataColumns.Count; i++)
+                {
+                    var dataColumn = dataColumns[i];
+                    var column = columns.FirstOrDefault(c => c.Expression.ToLower() == dataColumn.ColumnName.ToLower());
+
+                    if (column == null)
+                    {
+                        column = componentModel.NewColumn(dataColumn, componentModel.DataSourceType);
+                    }
+                    else
+                    {
+                        column.Update(dataColumn, componentModel.DataSourceType);
+                    }
+                    componentModel.SetColumns(componentModel.GetColumns().Append(column));
+                }
             }
-            componentModel.SetColumns(componentModel.GetColumns().Append(column));
+            for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
+            {
+                componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
+            }
         }
-    }
-    for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
-    {
-        componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
-    }
-}
 
-private async Task<DataTable> GetColumns(ComponentModel componentModel)
-{
-    switch (componentModel.DataSourceType)
-    {
-        case DataSourceType.SQLite:
-            return await _sqliteRepository.GetColumns(componentModel);
-        case DataSourceType.MySql:
-            return await _mySqlRepository.GetColumns(componentModel);
-        case DataSourceType.PostgreSql:
-            return await _postgreSqlRepository.GetColumns(componentModel);
-        case DataSourceType.JSON:
-            return await _jsonRepository.GetColumns(componentModel, _context);
-        case DataSourceType.Excel:
-            return await _excelRepository.GetColumns(componentModel);
-        case DataSourceType.FileSystem:
-            return await _fileSystemRepository.GetColumns(componentModel, _context);
-        case DataSourceType.MongoDB:
-            return await _mongoDbRepository.GetColumns(componentModel);
-        default:
-            return await _msSqlRepository.GetColumns(componentModel);
-    }
-}
+        private async Task<DataTable> GetColumns(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.GetColumns(componentModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.GetColumns(componentModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.GetColumns(componentModel);
+                case DataSourceType.JSON:
+                    return await _jsonRepository.GetColumns(componentModel, _context);
+                case DataSourceType.Excel:
+                    return await _excelRepository.GetColumns(componentModel);
+                case DataSourceType.FileSystem:
+                    return await _fileSystemRepository.GetColumns(componentModel, _context);
+                case DataSourceType.MongoDB:
+                    return await _mongoDbRepository.GetColumns(componentModel);
+                default:
+                    return await _msSqlRepository.GetColumns(componentModel);
+            }
+        }
 
-protected async Task GetRecords(ComponentModel componentModel)
-{
-    switch (componentModel.DataSourceType)
-    {
-        case DataSourceType.SQLite:
-            await _sqliteRepository.GetRecords(componentModel);
-            break;
-        case DataSourceType.MySql:
-            await _mySqlRepository.GetRecords(componentModel);
-            break;
-        case DataSourceType.PostgreSql:
-            await _postgreSqlRepository.GetRecords(componentModel);
-            break;
-        case DataSourceType.JSON:
-            await _jsonRepository.GetRecords(componentModel, _context);
-            break;
-        case DataSourceType.Excel:
-            await _excelRepository.GetRecords(componentModel);
-            break;
-        case DataSourceType.FileSystem:
-            await _fileSystemRepository.GetRecords(componentModel, _context);
-            break;
-        case DataSourceType.MongoDB:
-            await _mongoDbRepository.GetRecords(componentModel);
-            break;
-        default:
-            await _msSqlRepository.GetRecords(componentModel);
-            break;
-    }
-}
+        protected async Task GetRecords(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.JSON:
+                    await _jsonRepository.GetRecords(componentModel, _context);
+                    break;
+                case DataSourceType.Excel:
+                    await _excelRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.FileSystem:
+                    await _fileSystemRepository.GetRecords(componentModel, _context);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecords(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetRecords(componentModel);
+                    break;
+            }
+        }
 
-protected async Task GetRecord(ComponentModel componentModel)
-{
-    switch (componentModel.DataSourceType)
-    {
-        case DataSourceType.SQLite:
-            await _sqliteRepository.GetRecord(componentModel);
-            break;
-        case DataSourceType.MySql:
-            await _mySqlRepository.GetRecord(componentModel);
-            break;
-        case DataSourceType.PostgreSql:
-            await _postgreSqlRepository.GetRecord(componentModel);
-            break;
-        case DataSourceType.JSON:
-            await _jsonRepository.GetRecord(componentModel, _context);
-            break;
-        case DataSourceType.Excel:
-            await _excelRepository.GetRecord(componentModel);
-            break;
-        case DataSourceType.MongoDB:
-            await _mongoDbRepository.GetRecord(componentModel);
-            break;
-        default:
-            await _msSqlRepository.GetRecord(componentModel);
-            break;
-    }
-}
+        protected async Task GetRecord(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.JSON:
+                    await _jsonRepository.GetRecord(componentModel, _context);
+                    break;
+                case DataSourceType.Excel:
+                    await _excelRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecord(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetRecord(componentModel);
+                    break;
+            }
+        }
 
-protected async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
-{
-    switch (componentModel.DataSourceType)
-    {
-        case DataSourceType.SQLite:
-            return await _sqliteRepository.RecordExists(componentModel, primaryKeyValue);
-        case DataSourceType.MySql:
-            return await _mySqlRepository.RecordExists(componentModel, primaryKeyValue);
-        case DataSourceType.PostgreSql:
-            return await _postgreSqlRepository.RecordExists(componentModel, primaryKeyValue);
-        case DataSourceType.Excel:
-            // await _excelRepository.RecordExists(componentModel, primaryKeyValue);
-            break;
-        case DataSourceType.MongoDB:
-            // await _mongoDbRepository.RecordExists(componentModel, primaryKeyValue);
-            break;
-        default:
-            return await _msSqlRepository.RecordExists(componentModel, primaryKeyValue);
-    }
+        protected async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.Excel:
+                    // await _excelRepository.RecordExists(componentModel, primaryKeyValue);
+                    break;
+                case DataSourceType.MongoDB:
+                    // await _mongoDbRepository.RecordExists(componentModel, primaryKeyValue);
+                    break;
+                default:
+                    return await _msSqlRepository.RecordExists(componentModel, primaryKeyValue);
+            }
 
-    return false;
-}
+            return false;
+        }
 
-protected async Task GetLookupOptions(ComponentModel componentModel)
-{
-    switch (componentModel.DataSourceType)
-    {
-        case DataSourceType.SQLite:
-            await _sqliteRepository.GetLookupOptions(componentModel);
-            break;
-        case DataSourceType.MySql:
-            await _mySqlRepository.GetLookupOptions(componentModel);
-            break;
-        case DataSourceType.PostgreSql:
-            await _postgreSqlRepository.GetLookupOptions(componentModel);
-            break;
-        case DataSourceType.MongoDB:
-            //   await _mongoDbRepository.GetLookupOptions(componentModel);
-            break;
-        default:
-            await _msSqlRepository.GetLookupOptions(componentModel);
-            break;
-    }
-}
+        protected async Task GetLookupOptions(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    //   await _mongoDbRepository.GetLookupOptions(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetLookupOptions(componentModel);
+                    break;
+            }
+        }
 
     }
 }

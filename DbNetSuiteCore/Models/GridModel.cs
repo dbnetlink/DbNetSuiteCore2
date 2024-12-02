@@ -112,9 +112,9 @@ namespace DbNetSuiteCore.Models
             Columns = columns.Cast<GridColumn>();
         }
 
-        public override ColumnModel NewColumn(DataRow dataRow)
+        public override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
         { 
-            return new GridColumn(dataRow); 
+            return new GridColumn(dataRow, dataSourceType); 
         }
         public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {

@@ -185,11 +185,19 @@
         {
             value = ComponentModelExtensions.ParseBoolean(value) ? 1 : 0;
         }
+
+        List<string> values = new List<string>() {(value?.ToString() ?? string.Empty)};
+
+         if (formColumn.DbDataType == MySqlDataTypes.Set.ToString())
+         {
+             values = (value?.ToString() ?? string.Empty).Split(",").ToList();
+         }
+       
         <select @RazorHelper.Attributes(attributes) @(Attributes(formColumn))>
             <option value=""></option>
             @foreach (var option in formColumn.LookupOptions)
             {
-                <option value="@option.Key" @(option.Key == (value?.ToString() ?? string.Empty) ? "selected" : "")>@option.Value</option>
+                <option value="@option.Key" @(values.Contains(option.Key) ? "selected" : "")>@option.Value</option>
             }
         </select>
     }
@@ -236,6 +244,12 @@
         if ((formColumn.ReadOnly && formColumn.LookupOptions == null) || Model.FormModel.ReadOnly)
         {
             attributes.Add("readonly");
+        }
+
+        if (formColumn.DbDataType == MySqlDataTypes.Set.ToString())
+        {
+            attributes.Add("multiple");
+            attributes.Add(RazorHelper.Attribute("size",4).ToString());
         }
         return string.Join(" ", attributes);
     }

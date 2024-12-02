@@ -73,7 +73,7 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        internal FormColumn(DataRow dataRow) : base(dataRow)
+        internal FormColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
         {
         }
 

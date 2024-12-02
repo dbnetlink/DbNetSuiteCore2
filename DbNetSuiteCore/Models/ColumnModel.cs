@@ -1,5 +1,8 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Data;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -17,6 +20,7 @@ namespace DbNetSuiteCore.Models
         public string ColumnName => Name.Split(".").Last();
         public string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".","_") : Expression;
         public string Key { get; set; }
+        public string BaseTableName { get; set; }
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
         public List<KeyValuePair<string, string>>? LookupOptions => (DbLookupOptions ?? EnumOptions);
        // [JsonIgnore]
@@ -63,6 +67,8 @@ namespace DbNetSuiteCore.Models
         public bool ForeignKey { get; set; } = false;
         internal bool Searchable => (DataType == typeof(string) && DbDataType != "xml");
         public SortOrder? InitialSortOrder { get; set; } = null;
+        public bool LookupNotPopulated => (Lookup != null && LookupOptions == null);
+        public string EnumName { get; set; } = string.Empty;
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
@@ -81,10 +87,10 @@ namespace DbNetSuiteCore.Models
             this.Update(dataColumn,dataSourceType);
         }
 
-        public ColumnModel(DataRow dataRow) : this()
+        public ColumnModel(DataRow dataRow, DataSourceType dataSourceType) : this()
         {
             Expression = (string)dataRow["ColumnName"];
-            Update(dataRow);
+            Update(dataRow, dataSourceType);
         }
 
         public ColumnModel(string expression, string label) : this()
@@ -103,7 +109,7 @@ namespace DbNetSuiteCore.Models
         {
             DataType = dataColumn.DataType;
             Initialised = true;
-            Name = (dataSourceType == DataSourceType.Excel ||dataSourceType ==  DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
+            Name = (dataSourceType == DataSourceType.Excel || dataSourceType ==  DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
             PrimaryKey = dataColumn.Unique;
 
             if (this is FormColumn)
@@ -117,12 +123,30 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public void Update(DataRow dataRow)
+        public void Update(DataRow dataRow, DataSourceType dataSourceType)
         {
             try
             {
                 DataType = (Type)dataRow["DataType"];
-                DbDataType = dataRow["DataTypeName"].ToString();
+
+                switch(dataSourceType)
+                {
+                    case DataSourceType.MySql:
+                        IsSupportedType<MySqlDataTypes>(dataRow["ProviderType"]);
+                        break;
+                    case DataSourceType.PostgreSql:
+                        IsSupportedType<PostgreSqlDataTypes>(dataRow["ProviderType"]);
+                        if (DbDataType == PostgreSqlDataTypes.Enum.ToString())
+                        {
+                            EnumName = dataRow["DataTypeName"].ToString();
+                        }
+                        break;
+                    default:
+                        DbDataType = dataRow["DataTypeName"].ToString();
+                        break;
+                }
+               
+                BaseTableName = dataRow["BaseTableName"].ToString();
             }
             catch (Exception)
             {
@@ -134,7 +158,7 @@ namespace DbNetSuiteCore.Models
             {
                 Label = TextHelper.GenerateLabel(Name);
             }
-            PrimaryKey = (bool)dataRow["IsKey"];
+            PrimaryKey = (bool)dataRow["IsKey"] || (bool)dataRow["IsAutoincrement"];
             if (this is FormColumn)
             {
                 var formColumn = (FormColumn)this;
@@ -142,11 +166,24 @@ namespace DbNetSuiteCore.Models
                 {
                     formColumn.Required = (bool)dataRow["AllowDBNull"] == false;
                 }
-                formColumn.Autoincrement = (bool)dataRow["IsIdentity"];
+                formColumn.Autoincrement = (bool)dataRow["IsAutoincrement"];
                 if (formColumn.MaxLength.HasValue == false)
                 {
                     formColumn.MaxLength = (int)dataRow["ColumnSize"];
                 }
+            }
+        }
+
+        private void IsSupportedType<T>(object value) where T : Enum
+        {
+            T enumValue = (T)Enum.Parse(typeof(T), value.ToString());
+            if (Enum.IsDefined(typeof(T), enumValue))
+            {
+                DbDataType = enumValue.ToString();
+            }
+            else
+            {
+                Valid = false;
             }
         }
 

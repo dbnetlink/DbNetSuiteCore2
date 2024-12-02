@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Models
         {
         }
         
-        internal GridColumn(DataRow dataRow) : base(dataRow)
+        internal GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
         {
         }
 

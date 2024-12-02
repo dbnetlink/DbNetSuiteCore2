@@ -4,11 +4,8 @@ using DbNetSuiteCore.Extensions;
 using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Office.Word;
-using Microsoft.Data.SqlClient;
-using System.Dynamic;
-using CsvHelper.Configuration.Attributes;
-using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
+using System.Text.RegularExpressions;
+
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -37,7 +34,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (componentModel.Data.Rows.Count > 0)
             {
-                foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
+                foreach (var column in componentModel.GetColumns().Where(c => c.LookupNotPopulated))
                 {
                     await GetLookupOptions(componentModel, column);
                 }
@@ -51,6 +48,8 @@ namespace DbNetSuiteCore.Repositories
                     }
                 }
             }
+
+            await GetDbEnumOptions(componentModel);
 
             ComponentModelExtensions.ConvertEnumLookups(componentModel);
 
@@ -96,13 +95,49 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetLookupOptions(ComponentModel componentModel)
         {
-            foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
+            foreach (var column in componentModel.GetColumns().Where(c => c.LookupNotPopulated))
             {
                 await GetLookupOptions(componentModel, column);
             }
+
+            await GetDbEnumOptions(componentModel);
+
             if (componentModel is not FormModel)
             {
                 componentModel.ConvertEnumLookups();
+            }
+        }
+
+        public async Task GetDbEnumOptions(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.MySql:
+                    foreach (var column in componentModel.GetColumns().Where(c => (c.DbDataType == MySqlDataTypes.Enum.ToString() || c.DbDataType == MySqlDataTypes.Set.ToString()) && c.LookupOptions == null))
+                    {
+                        List<string> options = await GetMySqlEnumOptions(componentModel.ConnectionAlias, column.BaseTableName, column.ColumnName);
+
+                        column.DbLookupOptions = new List<KeyValuePair<string, string>>();
+
+                        foreach (var option in options.OrderBy(o => o))
+                        {
+                            column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
+                        }
+                    }
+                    break;
+                case DataSourceType.PostgreSql:
+                    foreach (var column in componentModel.GetColumns().Where(c => c.DbDataType == PostgreSqlDataTypes.Enum.ToString() && c.LookupOptions == null))
+                    {
+                        List<string> options = await GetPostgreSqlEnumOptions(componentModel.ConnectionAlias, column.EnumName);
+
+                        column.DbLookupOptions = new List<KeyValuePair<string, string>>();
+
+                        foreach (var option in options.OrderBy(o => o))
+                        {
+                            column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
+                        }
+                    }
+                    break;
             }
         }
 
@@ -204,6 +239,8 @@ namespace DbNetSuiteCore.Repositories
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
+                case DataSourceType.MySql:
+                case DataSourceType.PostgreSql:
                     if (componentModel.IgnoreSchemaTable)
                     {
                         return await GetDataTable(query, componentModel.ConnectionAlias, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
@@ -255,6 +292,43 @@ namespace DbNetSuiteCore.Repositories
         {
             IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text);
             await ((DbCommand)command).ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<string>> GetMySqlEnumOptions(string database, string tableName, string columnName)
+        {
+            var enumOptions = new List<string>();
+            QueryCommandConfig query = new QueryCommandConfig() { Sql = $"SHOW COLUMNS FROM {tableName} WHERE Field = '{columnName}'" };
+            IDbConnection connection = GetConnection(database);
+            connection.Open();
+            using (var reader = await ExecuteQuery(query, connection))
+            {
+                if (reader.Read())
+                {
+                    string columnType = reader["Type"].ToString();
+                    // Extract options from column type definition
+                    var matches = Regex.Matches(columnType, "'([^']*)'");
+
+                    foreach (Match match in matches)
+                    {
+                        enumOptions.Add(match.Groups[1].Value);
+                    }
+                }
+            }
+            connection.Close();
+            return enumOptions;
+        }
+
+        public async Task<List<string>> GetPostgreSqlEnumOptions(string database, string enumName)
+        {
+            QueryCommandConfig query = new QueryCommandConfig() { Sql = $"SELECT unnest(enum_range(NULL::{enumName}))" };
+            var dataTable = await GetDataTable(query, database);
+            var enumOptions = new List<string>();
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                enumOptions.Add(row[0]?.ToString() ?? string.Empty);
+            }
+            return enumOptions;
         }
 
         public async Task<DataTable> GetColumnMetaData(QueryCommandConfig queryCommandConfig, string database)

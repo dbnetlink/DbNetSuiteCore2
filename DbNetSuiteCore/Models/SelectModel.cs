@@ -80,9 +80,9 @@ namespace DbNetSuiteCore.Models
             Columns = columns.Cast<SelectColumn>();
         }
 
-        public override ColumnModel NewColumn(DataRow dataRow)
+        public override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
         {
-            return new SelectColumn(dataRow);
+            return new SelectColumn(dataRow, dataSourceType);
         }
         public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {

@@ -822,6 +822,9 @@ class FormControl extends ComponentControl {
         if (el.tagName == 'INPUT' && el.type == 'checkbox') {
             return this.isBoolean(el.dataset.value) != el.checked;
         }
+        else if (el.type == 'select-multiple') {
+            return el.dataset.value != Array.from(el.selectedOptions).map(({ value }) => value).join(',');
+        }
         else {
             return el.dataset.value != el.value;
         }

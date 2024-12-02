@@ -1,0 +1,11 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customerForm = new FormModel(DataSourceType.MySql, "Northwind2(mysql)", "comprehensive_data_types") {Insert = true, Delete = true};
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+}

@@ -1,0 +1,16 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customerGrid = new GridModel(DataSourceType.MySql, "Northwind2(mysql)", "comprehensive_data_types") {};
+
+    customerGrid.Columns = new List<GridColumn>() {
+        new GridColumn("enum_column") {Filter = FilterType.Default},
+        new GridColumn("set_column")
+    };
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerGrid))
+}

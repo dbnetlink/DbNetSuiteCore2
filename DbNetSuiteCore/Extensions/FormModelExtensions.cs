@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Helpers;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 
@@ -68,8 +69,17 @@ namespace DbNetSuiteCore.Extensions
                 {
                     var columnName = formColumn.ColumnName;
                     var paramName = DbHelper.ParameterName(columnName);
-                    set.Add($"{columnName} = {paramName}");
                     update.Params[paramName] = GetParamValue(formModel, formColumn);
+
+                    if (formModel.DataSourceType == DataSourceType.PostgreSql)
+                    {
+                        if (formColumn.DbDataType == PostgreSqlDataTypes.Enum.ToString())
+                        {
+                            paramName = $"CAST({paramName} as \"{formColumn.EnumName.Split(".").Last()}\")";
+                        }
+                    }
+                   
+                    set.Add($"{columnName} = {paramName}");
                 }
             }
 

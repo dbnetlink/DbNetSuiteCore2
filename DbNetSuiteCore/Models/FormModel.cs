@@ -51,9 +51,9 @@ namespace DbNetSuiteCore.Models
             Columns = columns.Cast<FormColumn>();
         }
 
-        public override ColumnModel NewColumn(DataRow dataRow)
+        public override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
         {
-            return new FormColumn(dataRow);
+            return new FormColumn(dataRow, dataSourceType);
         }
         public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {

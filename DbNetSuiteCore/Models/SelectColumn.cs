@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        internal SelectColumn(DataRow dataRow) : base(dataRow)
+        internal SelectColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
         {
         }
     }
