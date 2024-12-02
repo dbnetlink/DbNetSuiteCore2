@@ -177,11 +177,17 @@ class FormControl extends ComponentControl {
         switch (this.triggerName(evt))
         {
             case "apply":
-                if (this.formModified() == false)
-                {
+                if (this.formModified() == false) {
                     evt.preventDefault();
                     return;
                 }
+
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity()
+                    evt.preventDefault();
+                    return;
+                }
+                
             case "cancel":
             case "primarykey":
                 return;

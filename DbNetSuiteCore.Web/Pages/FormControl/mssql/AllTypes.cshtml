@@ -6,5 +6,37 @@
 @using Microsoft.Extensions.Primitives
 @{
     var customersForm = new FormModel(DataSourceType.MSSQL, "DemoDashboard(mssql)", "AllTypes") { Insert = true, Delete = true};
+
+    customersForm.Columns = new List<FormColumn>() {
+        new FormColumn("Id"),
+        new FormColumn("BigInt"),
+        new FormColumn("Bit"),
+        new FormColumn("Char"),
+        new FormColumn("Date"),
+        new FormColumn("DateTime"),
+        new FormColumn("DateTime2") {ControlType = FormControlType.DateTime} ,
+        new FormColumn("DateTimeOffset"),
+        new FormColumn("Decimal"),
+        new FormColumn("Float"),
+        new FormColumn("Int"),
+        new FormColumn("Money"),
+        new FormColumn("NChar"),
+        new FormColumn("NText"),
+        new FormColumn("Numeric"),
+        new FormColumn("NVarchar"),
+        new FormColumn("NVarcharMax"),
+        new FormColumn("Real"),
+        new FormColumn("SmallDateTime"),
+        new FormColumn("SmallInt"),
+        new FormColumn("SmallMoney"),
+        new FormColumn("SQLVariant"),
+        new FormColumn("Text"),
+        new FormColumn("Time") {ControlType = FormControlType.TimeWithSeconds},
+        new FormColumn("TinyInt") {ControlType = FormControlType.Number},
+        new FormColumn("UniqueIdentifier"),
+        new FormColumn("Varchar", "Colour")  {ControlType = FormControlType.Color},
+        new FormColumn("VarcharMax"),
+        new FormColumn("Xml")
+    };
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customersForm))
 }

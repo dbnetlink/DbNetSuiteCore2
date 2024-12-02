@@ -8,7 +8,7 @@ namespace DbNetSuiteCore.Models
     public class GridColumn : ColumnModel
     {
         private FilterType _Filter = FilterType.None;
-        public bool Sortable => DbDataType != nameof(System.Data.SqlTypes.SqlXml) && DataOnly == false;
+        public bool Sortable => IsSortable();
         public bool Editable { get; set; } = false;
         public bool Viewable { get; set; } = true;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
@@ -49,6 +49,20 @@ namespace DbNetSuiteCore.Models
         
         internal GridColumn(DataRow dataRow) : base(dataRow)
         {
+        }
+
+        private bool IsSortable()
+        {
+            switch(DbDataType)
+            {
+                case "xml":
+                case "text":
+                case "ntext":
+                case "image":
+                    return false;
+            }
+
+           return (DataOnly == false);
         }
     }
 }

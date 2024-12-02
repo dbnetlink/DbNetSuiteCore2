@@ -1,0 +1,42 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var customersForm = new GridModel(DataSourceType.MSSQL, "DemoDashboard(mssql)", "AllTypes") {};
+
+    customersForm.Columns = new List<GridColumn>() {
+        new GridColumn("Id"),
+        new GridColumn("BigInt"),
+        new GridColumn("Bit"),
+        new GridColumn("Char"),
+        new GridColumn("Date"),
+        new GridColumn("DateTime"),
+        new GridColumn("DateTime2"),
+        new GridColumn("DateTimeOffset"),
+        new GridColumn("Decimal"),
+        new GridColumn("Float"),
+        new GridColumn("Int"),
+        new GridColumn("Money"),
+        new GridColumn("NChar"),
+        new GridColumn("NText"),
+        new GridColumn("Numeric"),
+        new GridColumn("NVarchar"),
+        new GridColumn("NVarcharMax"),
+        new GridColumn("Real"),
+        new GridColumn("SmallDateTime"),
+        new GridColumn("SmallInt"),
+        new GridColumn("SmallMoney"),
+        new GridColumn("SQLVariant"),
+        new GridColumn("Text"),
+        new GridColumn("Time"),
+        new GridColumn("TinyInt"),
+        new GridColumn("UniqueIdentifier"),
+        new GridColumn("Varchar", "Colour"),
+        new GridColumn("VarcharMax"),
+        new GridColumn("Xml")
+    };
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersForm))
+}

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Data;
 using System.Globalization;
+using Microsoft.AspNetCore.Http;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -289,7 +290,7 @@ namespace DbNetSuiteCore.Extensions
                     case nameof(DateTime):
                         if (column is FormColumn)
                         {
-                            paramValue = DateTime.ParseExact(value.ToString(), "yyyy-MM-dd", CultureInfo.CurrentCulture, DateTimeStyles.None);
+                            paramValue = DateTime.ParseExact(value.ToString(), (column as FormColumn).DateTimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None);
                         }
                         else
                         {
@@ -321,7 +322,7 @@ namespace DbNetSuiteCore.Extensions
                     case nameof(DateTimeOffset):
                         if (column is FormColumn)
                         {
-                            paramValue = DateTimeOffset.ParseExact(value.ToString(), "yyyy-MM-dd", CultureInfo.CurrentCulture, DateTimeStyles.None);
+                            paramValue = DateTimeOffset.ParseExact(value.ToString(), (column as FormColumn).DateTimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None);
                         }
                         else
                         {
@@ -349,9 +350,6 @@ namespace DbNetSuiteCore.Extensions
                                 }
                             }
                         }
-                        break;
-                    case nameof(Byte):
-                        paramValue = value;
                         break;
                     case nameof(Guid):
                         paramValue = new Guid(value.ToString());

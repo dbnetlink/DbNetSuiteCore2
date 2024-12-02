@@ -748,6 +748,11 @@ class FormControl extends ComponentControl {
                     evt.preventDefault();
                     return;
                 }
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity();
+                    evt.preventDefault();
+                    return;
+                }
             case "cancel":
             case "primarykey":
                 return;

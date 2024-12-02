@@ -5,6 +5,7 @@ using DbNetSuiteCore.Repositories;
 using System.Data;
 using System.Text;
 using DbNetSuiteCore.Constants;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Services
 {
@@ -169,30 +170,25 @@ namespace DbNetSuiteCore.Services
                 }
                 else
                 {
-                    /*
-                    foreach (ColumnModel column in componentModel.GetColumns())
+                    if (componentModel.DataSourceType == DataSourceType.MSSQL/* && componentModel is FormModel*/)
                     {
-                        switch (componentModel.DataSourceType)
+                        foreach (ColumnModel column in componentModel.GetColumns())
                         {
-                            case DataSourceType.MSSQL:
-                                DataRow? row = schema.Rows.Cast<DataRow>().FirstOrDefault(dr => (string)dr["ColumnName"] == column.Expression);
-                                if (row != null)
-                                {
-                                    column.Update(row);
-                                }
-                                break;
-                            default:
-                                column.Update(schema.Columns.Cast<DataColumn>().First(dc => dc.ColumnName == column.Expression), componentModel.DataSourceType);
-                                break;
+                            DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString() == column.Expression);
+                            if (dataRow != null)
+                            {
+                                column.Update(dataRow);
+                            }
                         }
-                    }
-                    */
-
-                    if (componentModel.DataSourceType == DataSourceType.MSSQL && componentModel is FormModel)
-                    {
-                        for (var i = 0; i < schema.Rows.Count; i++)
+                        if (componentModel.GetColumns().Any(c => string.IsNullOrEmpty(c.Name)))
                         {
-                            componentModel.GetColumns().ToList()[i].Update(schema.Rows[i]);
+                            componentModel.IgnoreSchemaTable = true;
+                            schema = await GetColumns(componentModel);
+                            dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+                            for (var i = 0; i < dataColumns.Count; i++)
+                            {
+                                componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
+                            }
                         }
                     }
                     else
@@ -203,6 +199,12 @@ namespace DbNetSuiteCore.Services
                         }
                     }
                 }
+            }
+
+            if (componentModel is FormModel)
+            {
+                var formModel = (FormModel)componentModel;
+                formModel.Columns = formModel.Columns.Where(c =>c.DataType != typeof(Byte[]));
             }
 
             for (var i = 0; i<componentModel.GetColumns().ToList().Count; i++)

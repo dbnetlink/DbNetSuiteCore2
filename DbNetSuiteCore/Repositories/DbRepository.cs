@@ -4,6 +4,11 @@ using DbNetSuiteCore.Extensions;
 using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.Office.Word;
+using Microsoft.Data.SqlClient;
+using System.Dynamic;
+using CsvHelper.Configuration.Attributes;
+using DocumentFormat.OpenXml.Office.Y2022.FeaturePropertyBag;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -28,8 +33,8 @@ namespace DbNetSuiteCore.Repositories
         public async Task GetRecords(ComponentModel componentModel)
         {
             QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel.IsStoredProcedure);
-            
+            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel.IsStoredProcedure ? CommandType.StoredProcedure : CommandType.Text);
+
             if (componentModel.Data.Rows.Count > 0)
             {
                 foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && c.LookupOptions == null))
@@ -143,7 +148,7 @@ namespace DbNetSuiteCore.Repositories
                     return;
                 }
                 var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0].ToString()).ToList();
-              
+
                 if (string.IsNullOrEmpty(lookup.TableName))
                 {
                     column.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
@@ -194,28 +199,30 @@ namespace DbNetSuiteCore.Repositories
         {
             QueryCommandConfig query = componentModel.BuildEmptyQuery();
 
+            var metaData = await GetColumnMetaData(query, componentModel.ConnectionAlias);
+
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
-                    if (componentModel.GetColumns().Any() && componentModel is not FormModel)
+                    if (componentModel.IgnoreSchemaTable)
                     {
-                        return await GetDataTable(query, componentModel.ConnectionAlias);
+                        return await GetDataTable(query, componentModel.ConnectionAlias, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
                     }
                     else
                     {
                         return await GetSchemaTable(query, componentModel.ConnectionAlias);
                     }
                 default:
-                    return await GetDataTable(query, componentModel.ConnectionAlias);
+                    return await GetDataTable(query, componentModel.ConnectionAlias, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
             }
         }
 
-        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, bool isStoredProcedure = false)
+        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
         {
             var connection = GetConnection(database);
             connection.Open();
             DataTable dataTable = new DataTable();
-            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, isStoredProcedure ? CommandType.StoredProcedure : CommandType.Text));
+            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
             connection.Close();
             return dataTable;
         }
@@ -248,6 +255,34 @@ namespace DbNetSuiteCore.Repositories
         {
             IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text);
             await ((DbCommand)command).ExecuteNonQueryAsync();
+        }
+
+        public async Task<DataTable> GetColumnMetaData(QueryCommandConfig queryCommandConfig, string database)
+        {
+            var connection = GetConnection(database);
+            connection.Open();
+
+            DataTable datatable = new DataTable();
+            datatable.Columns.Add("ColumnName", typeof(string));
+            datatable.Columns.Add("FieldType", typeof(Type));
+            datatable.Columns.Add("DataTypeName", typeof(string));
+            datatable.Columns.Add("ProviderType", typeof(Type));
+
+            using (DbDataReader reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo))
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var row = datatable.NewRow();
+                    row["ColumnName"] = reader.GetName(i);
+                    row["FieldType"] = reader.GetFieldType(i);
+                    row["DataTypeName"] = reader.GetDataTypeName(i);
+                    row["ProviderType"] = reader.GetProviderSpecificFieldType(i);
+
+                    datatable.Rows.Add(row);
+                }
+            }
+
+            return datatable;
         }
     }
 }

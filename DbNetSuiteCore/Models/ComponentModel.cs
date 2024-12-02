@@ -28,6 +28,7 @@ namespace DbNetSuiteCore.Models
         internal string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
         public bool Distinct { get; set; } = false;
         public string Caption { get; set; } = string.Empty;
+        internal bool IgnoreSchemaTable { get; set; } = false;
 
         public string Url
         {

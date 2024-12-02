@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -11,18 +12,16 @@ namespace DbNetSuiteCore.Extensions
                 return value;
             }
 
-            if (formColumn?.DataType == typeof(DateTime))
+            switch (formColumn?.DataType.Name)
             {
-                return ((DateTime)value).ToString("yyyy-MM-dd");
+                case nameof(DateTime):
+                    return ((DateTime)value).ToString(formColumn.DateTimeFormat);
+                case nameof(DateTimeOffset):
+                    return ((DateTimeOffset)value).ToString(formColumn.DateTimeFormat);
+                case nameof(TimeSpan):
+                    return ((TimeSpan)value).ToString(formColumn.DateTimeFormat);
             }
-            if (formColumn?.DataType == typeof(DateTimeOffset))
-            {
-                return ((DateTimeOffset)value).ToString("yyyy-MM-dd");
-            }
-            if (formColumn?.DataType == typeof(TimeSpan))
-            {
-                return ((TimeSpan)value).ToString("g");
-            }
+
             return value;
         }
     }

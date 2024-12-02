@@ -113,6 +113,7 @@
 
   <ItemGroup>
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
+    <PackageReference Include="Net.IBM.Data.Db2" Version="7.0.0.400" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.5" />
   </ItemGroup>

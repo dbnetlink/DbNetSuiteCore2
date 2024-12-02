@@ -61,7 +61,7 @@ namespace DbNetSuiteCore.Models
         public bool DataOnly { get; set; } = false;
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
-        internal bool Searchable => (DataType == typeof(string) && DbDataType != nameof(System.Data.SqlTypes.SqlXml));
+        internal bool Searchable => (DataType == typeof(string) && DbDataType != "xml");
         public SortOrder? InitialSortOrder { get; set; } = null;
 
         [JsonIgnore]
@@ -122,7 +122,7 @@ namespace DbNetSuiteCore.Models
             try
             {
                 DataType = (Type)dataRow["DataType"];
-                DbDataType = ((Type)dataRow["ProviderSpecificDataType"]).Name;
+                DbDataType = dataRow["DataTypeName"].ToString();
             }
             catch (Exception)
             {

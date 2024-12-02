@@ -86,22 +86,64 @@
 
         var attributes = new Dictionary<string, string>();
 
-        attributes["type"] = "text";
+        switch (formColumn.ControlType)
+        {
+            case FormControlType.Number:
+            case FormControlType.Email:
+            case FormControlType.Url:
+            case FormControlType.Color:
+            case FormControlType.Password:
+            case FormControlType.Range:
+            case FormControlType.Tel:
+            case FormControlType.Week:
+            case FormControlType.Month:
+                attributes["type"] = formColumn.ControlType.ToString().ToLower();
+                break;
+            case FormControlType.DateTime:
+                attributes["type"] = "datetime-local";
+                break;
+            default:
+                switch (formColumn.DataTypeName)
+                {
+                    case nameof(DateTime):
+                    case nameof(DateTimeOffset):
+                        attributes["type"] = "date";
+                        break;
+                    case nameof(TimeSpan):
+                        attributes["type"] = "time";
+                        break;
+                    default:
+                        attributes["type"] = "text";
+                        break;
+                }
+                break;
+        }
+
+       
         attributes["name"] = $"_{formColumn.ColumnName}";
         attributes["data-value"] = $"{dbValue}";
         attributes["value"] = $"{value}";
         attributes["data-datatype"] = formColumn.DataTypeName;
+        attributes["data-dbdatatype"] = formColumn.DbDataType;
         attributes["class"] = Classes(formColumn);
         attributes["data-error"] = formColumn.InError.ToString().ToLower();
-
-        if (formColumn.DataTypeName == nameof(DateTime) || formColumn.DataTypeName == nameof(DateTimeOffset))
-        {
-            attributes["type"] = "date";
-        }
         
-        if (formColumn.DataTypeName == nameof(TimeSpan))
+         switch (formColumn.ControlType)
         {
-            attributes["type"] = "time";
+            case FormControlType.Time:
+            case FormControlType.TimeWithSeconds:
+                attributes["type"] = "time";
+                if (formColumn.ControlType == FormControlType.TimeWithSeconds)
+                {
+                    attributes["step"] = "1";
+                }
+                break;
+        }
+
+        if (formColumn.DbDataType == "tinyint")
+        {
+            attributes["min"] = formColumn.MinValue.ToString();
+            attributes["max"] = formColumn.MaxValue.ToString();
         }
 
         if (formColumn.LookupOptions != null)
@@ -127,8 +169,11 @@
             switch (attributes["type"])
             {
                 case "text":
+                if (formColumn.DataType == typeof(string))
+                {
                     attributes["maxlength"] = formColumn.MaxLength?.ToString();
-                    break;
+                }
+                break;
             }
             <input @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
         }
