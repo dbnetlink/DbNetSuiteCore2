@@ -29,6 +29,7 @@ namespace DbNetSuiteCore.Models
         public bool Distinct { get; set; } = false;
         public string Caption { get; set; } = string.Empty;
         internal bool IgnoreSchemaTable { get; set; } = false;
+        internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
 
         public string Url
         {
@@ -177,6 +178,7 @@ namespace DbNetSuiteCore.Models
         public abstract void SetColumns(IEnumerable<ColumnModel> columns);
         public abstract ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType);
         public abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
+        public abstract ColumnModel NewColumn(BsonElement element);
         internal abstract ColumnModel? SortColumn { get; }
         internal abstract SortOrder? SortSequence { get; set; }
     }

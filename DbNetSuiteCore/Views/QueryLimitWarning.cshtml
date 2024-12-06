@@ -1,0 +1,9 @@
+﻿@model ComponentModel
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+
+<div id="query-limited" data-querylimit="@Model.QueryLimit" class="p-1 rounded-md border border-solid border-orange-400 bg-orange-100 text-orange-700 flex flex-row gap-2">
+    @IconHelper.Info("#ea580c")
+    <span>@String.Format(ResourceHelper.GetResourceString(ResourceNames.QueryLimited), Model.QueryLimit.ToString())</span>
+</div>

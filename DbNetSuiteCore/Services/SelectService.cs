@@ -41,8 +41,6 @@ namespace DbNetSuiteCore.Services
             SelectModel selectModel = GetSelectModel() ?? new SelectModel();
             selectModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            ValidateModel(selectModel);
-
             switch (selectModel.TriggerName)
             {
                 default:

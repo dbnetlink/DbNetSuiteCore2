@@ -11,7 +11,7 @@
         new GridColumn("CustId") {Lookup = new Lookup("Customer", "CustID", "CompanyName")},
         new GridColumn("EmployeeId") {Lookup = new Lookup("Employee", "EmployeeId", "CONCAT(LastName,', ',FirstName)")},
         new GridColumn("OrderDate"),
-        new GridColumn("RequiredDate"),
+        new GridColumn("RequiredDate") { InitialSortOrder = SortOrder.Desc },
         new GridColumn("ShippedDate"),
         new GridColumn("Shipperid") { Lookup = new Lookup("Shipper", "ShipperID", "CompanyName")},
         new GridColumn("Freight"),

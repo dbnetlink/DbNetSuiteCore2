@@ -2,11 +2,13 @@
 @using System.Data
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
+@using MongoDB.Bson
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Extensions
 @using DbNetSuiteCore.Enums
+@using System.Text.Encodings.Web
 
 <div class="form-and-toolbar">
     @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom && Model.HideToolbar == false)
@@ -28,7 +30,7 @@
                 if (Model.FormModel.Mode == FormMode.Update)
                 {
                     DataColumn? dataColumn = Model.GetDataColumn(formColumn);
-                    dbValue = dataColumn == null ? string.Empty : formColumn.FormatValue(Model.Record[dataColumn]);
+                    dbValue = (dataColumn == null) ? string.Empty : formColumn.FormatValue(Model.Record[dataColumn]);
                     value = dbValue;
                 }
 
@@ -48,8 +50,9 @@
 
                 <div style="display:grid;grid-template-columns: repeat(1, auto)">
                     @{
-                        FormControl(formColumn, value, dbValue);
-                    }
+                        @formColumn.RenderLabel()
+                        @formColumn.RenderControl(value?.ToString() ?? string.Empty, value?.ToString() ?? string.Empty, Model.FormModel)
+                   }
                 </div>
             }
         </div>
@@ -77,205 +80,3 @@
         <div id="form-message" class="border rounded border-slate-300 p-1 my-1" @highlightAttr>@Html.Raw(Model.FormModel.Message)</div>
     }
 </div>
-
-
-@functions {
-    public void FormControl(FormColumn formColumn, object value, object dbValue)
-    {
-        <label for="@(formColumn.ColumnName)" class="font-bold text-slate-800">@formColumn.Label</label>
-
-        var attributes = new Dictionary<string, string>();
-
-        switch (formColumn.ControlType)
-        {
-            case FormControlType.Number:
-            case FormControlType.Email:
-            case FormControlType.Url:
-            case FormControlType.Color:
-            case FormControlType.Password:
-            case FormControlType.Range:
-            case FormControlType.Tel:
-            case FormControlType.Week:
-            case FormControlType.Month:
-                attributes["type"] = formColumn.ControlType.ToString().ToLower();
-                break;
-            case FormControlType.DateTime:
-                attributes["type"] = "datetime-local";
-                break;
-            default:
-                switch (formColumn.DataTypeName)
-                {
-                    case nameof(DateTime):
-                    case nameof(DateTimeOffset):
-                        attributes["type"] = "date";
-                        break;
-                    case nameof(TimeSpan):
-                        attributes["type"] = "time";
-                        break;
-                    default:
-                        attributes["type"] = "text";
-                        break;
-                }
-                break;
-        }
-
-       
-        attributes["name"] = $"_{formColumn.ColumnName}";
-        attributes["data-value"] = $"{dbValue}";
-        attributes["value"] = $"{value}";
-        attributes["data-datatype"] = formColumn.DataTypeName;
-        attributes["data-dbdatatype"] = formColumn.DbDataType;
-        attributes["class"] = Classes(formColumn);
-        attributes["data-error"] = formColumn.InError.ToString().ToLower();
-        
-         switch (formColumn.ControlType)
-        {
-            case FormControlType.Time:
-            case FormControlType.TimeWithSeconds:
-                attributes["type"] = "time";
-                if (formColumn.ControlType == FormControlType.TimeWithSeconds)
-                {
-                    attributes["step"] = "1";
-                }
-                break;
-        }
-
-        if (formColumn.DbDataType == "tinyint")
-        {
-            attributes["min"] = formColumn.MinValue.ToString();
-            attributes["max"] = formColumn.MaxValue.ToString();
-        }
-
-        if (formColumn.LookupOptions != null)
-        {
-            RenderSelect(formColumn, value, attributes);
-        }
-        else if (formColumn.DataType == typeof(Boolean))
-        {
-            attributes.Remove("value");
-            attributes.Remove("data-error");
-            attributes["class"] = CheckboxClasses(formColumn);
-            attributes["style"] = "transform: scale(1.5);margin-left:5px";
-
-            bool boolValue = ComponentModelExtensions.ParseBoolean(value);
-            <input type="checkbox" @RazorHelper.Attributes(attributes) @(CheckboxAttributes(formColumn, boolValue)) />
-        }
-        else
-        {
-            if (formColumn.TextTransform.HasValue)
-            {
-                attributes["data-texttransform"] = formColumn.TextTransform.ToString();
-            }
-            switch (attributes["type"])
-            {
-                case "text":
-                if (formColumn.DataType == typeof(string))
-                {
-                    attributes["maxlength"] = formColumn.MaxLength?.ToString();
-                }
-                break;
-            }
-            <input @RazorHelper.Attributes(attributes) @(Attributes(formColumn)) />
-        }
-    }
-
-    void RenderSelect(FormColumn formColumn, object value, Dictionary<string, string> attributes)
-    {
-        if (formColumn.DataType == typeof(Boolean))
-        {
-            value = ComponentModelExtensions.ParseBoolean(value) ? 1 : 0;
-        }
-
-        List<string> values = new List<string>() {(value?.ToString() ?? string.Empty)};
-
-         if (formColumn.DbDataType == MySqlDataTypes.Set.ToString())
-         {
-             values = (value?.ToString() ?? string.Empty).Split(",").ToList();
-         }
-       
-        <select @RazorHelper.Attributes(attributes) @(Attributes(formColumn))>
-            <option value=""></option>
-            @foreach (var option in formColumn.LookupOptions)
-            {
-                <option value="@option.Key" @(values.Contains(option.Key) ? "selected" : "")>@option.Value</option>
-            }
-        </select>
-    }
-
-    string CheckboxClasses(FormColumn formColumn)
-    {
-        List<string> classes = new List<string>() { "fc-control" };
-
-        if (formColumn.ReadOnly || Model.FormModel.ReadOnly)
-        {
-            classes.Add("readonly");
-        }
-
-        return string.Join(" ", classes);
-    }
-
-    string Classes(FormColumn formColumn)
-    {
-        List<string> classes = new List<string>() { "fc-control w-full" };
-        if (formColumn.IsNumeric && formColumn.LookupOptions == null)
-        {
-            classes.Add("text-right");
-        }
-
-        if (formColumn.ReadOnly || formColumn.DataType == typeof(Guid) || Model.FormModel.ReadOnly)
-        {
-            classes.Add("readonly");
-        }
-
-        return string.Join(" ", classes);
-    }
-
-    string Attributes(FormColumn formColumn)
-    {
-        List<string> attributes = new List<string>();
-        if (Disable(formColumn))
-        {
-            attributes.Add("disabled");
-        }
-        if (formColumn.Required)
-        {
-            attributes.Add("required");
-        }
-        if ((formColumn.ReadOnly && formColumn.LookupOptions == null) || Model.FormModel.ReadOnly)
-        {
-            attributes.Add("readonly");
-        }
-
-        if (formColumn.DbDataType == MySqlDataTypes.Set.ToString())
-        {
-            attributes.Add("multiple");
-            attributes.Add(RazorHelper.Attribute("size",4).ToString());
-        }
-        return string.Join(" ", attributes);
-    }
-
-    string CheckboxAttributes(FormColumn formColumn, bool boolValue)
-    {
-        List<string> attributes = new List<string>();
-        if (formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty)
-        {
-            attributes.Add("disabled");
-        }
-
-        if (boolValue)
-        {
-            attributes.Add("checked");
-        }
-
-        return string.Join(" ", attributes);
-    }
-
-    bool Disable(FormColumn formColumn)
-    {
-        if (Model.FormModel.Mode == FormMode.Insert && formColumn.PrimaryKeyRequired)
-        {
-            return false;
-        }
-        return (formColumn.PrimaryKey || formColumn.ForeignKey || formColumn.Disabled || Model.FormModel.Mode == FormMode.Empty);
-    }
-}

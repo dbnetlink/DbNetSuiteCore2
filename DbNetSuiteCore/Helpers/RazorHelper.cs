@@ -71,7 +71,16 @@ namespace DbNetSuiteCore.Helpers
 
         public static HtmlString Attribute(string name, object value)
         {
-            return new HtmlString($"{name}=\"{HtmlEncoder.Default.Encode(value?.ToString() ?? string.Empty)}\"");
+            var attrValue = value?.ToString() ?? string.Empty;
+            switch (name)
+            {
+              //  case "data-value":
+               //     break;
+                default:
+                    attrValue = HtmlEncoder.Default.Encode(attrValue);
+                    break;
+            }
+            return new HtmlString($"{name}=\"{attrValue}\"");
         }
 
 

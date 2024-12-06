@@ -28,7 +28,6 @@
                         else
                         {
                             @IconHelper.Document()
-                            ;
                         }
                     </td>
                 }
@@ -49,7 +48,7 @@
                 {
                     continue;
                 }
-                var classes = new List<string>() { "text-base" };
+                var classes = new List<string>() { "text-base", "align-top" };
 
                 if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
                 {
@@ -68,7 +67,7 @@
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
                     <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
-                        @row[dataColumn]
+                        @Html.Raw(row[dataColumn])
                     </td>
                 }
                 else if (column.Image != null)

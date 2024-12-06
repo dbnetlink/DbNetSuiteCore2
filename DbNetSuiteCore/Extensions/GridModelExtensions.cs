@@ -118,9 +118,11 @@ namespace DbNetSuiteCore.Extensions
                         paramValue = paramValue.ToString().ToLower();
                         expression = ComponentModelExtensions.CaseInsensitiveExpression(gridModel, expression);
                     }
+                    string paramName = $"@columnfilter{i}";
+                    query.Params[paramName] = paramValue;
 
-                    columnFilterParts.Add($"{expression} {columnFilter.Value.Key} @columnfilter{i}");
-                    query.Params[$"@columnfilter{i}"] = paramValue;
+                    paramName = ComponentModelExtensions.UpdateParamName(paramName, column, gridModel.DataSourceType);
+                    columnFilterParts.Add($"{expression} {columnFilter.Value.Key} {paramName}");
                 }
                 else
                 {
@@ -192,7 +194,7 @@ namespace DbNetSuiteCore.Extensions
                 return new KeyValuePair<string, object>(comparisionOperator, string.Empty);
             }
 
-            if (gridColumn.IsNumeric)
+            if (gridColumn.IsNumeric || gridColumn.LookupOptions != null)
             {
                 return new KeyValuePair<string, object>(comparisionOperator, filterColumnValue);
             }

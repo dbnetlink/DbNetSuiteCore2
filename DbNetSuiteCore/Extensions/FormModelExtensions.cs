@@ -70,15 +70,8 @@ namespace DbNetSuiteCore.Extensions
                     var columnName = formColumn.ColumnName;
                     var paramName = DbHelper.ParameterName(columnName);
                     update.Params[paramName] = GetParamValue(formModel, formColumn);
-
-                    if (formModel.DataSourceType == DataSourceType.PostgreSql)
-                    {
-                        if (formColumn.DbDataType == PostgreSqlDataTypes.Enum.ToString())
-                        {
-                            paramName = $"CAST({paramName} as \"{formColumn.EnumName.Split(".").Last()}\")";
-                        }
-                    }
-                   
+                    paramName = ComponentModelExtensions.UpdateParamName(paramName, formColumn, formModel.DataSourceType);
+                 
                     set.Add($"{columnName} = {paramName}");
                 }
             }
@@ -111,9 +104,11 @@ namespace DbNetSuiteCore.Extensions
                 if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
                     var paramName = DbHelper.ParameterName(formColumn.ColumnName);
-                    columnNames.Add(formColumn.ColumnName);
-                    paramNames.Add(paramName);
                     insert.Params[paramName] = GetParamValue(formModel, formColumn);
+                    columnNames.Add(formColumn.ColumnName);
+                    paramName = ComponentModelExtensions.UpdateParamName(paramName, formColumn, formModel.DataSourceType);
+                    paramNames.Add(paramName);
+                  
                 }
             }
 
@@ -121,8 +116,7 @@ namespace DbNetSuiteCore.Extensions
             return insert;
         }
 
-
-        private static object GetParamValue(FormModel formModel, FormColumn formColumn)
+        public static object GetParamValue(FormModel formModel, FormColumn formColumn)
         {
             string columnName = formColumn.ColumnName;
             string value = string.Empty;

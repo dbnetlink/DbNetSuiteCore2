@@ -46,8 +46,6 @@ namespace DbNetSuiteCore.Services
             GridModel gridModel = GetGridModel() ?? new GridModel();
             gridModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            ValidateModel(gridModel);
-
             switch (gridModel.TriggerName)
             {
                 case TriggerNames.Download:

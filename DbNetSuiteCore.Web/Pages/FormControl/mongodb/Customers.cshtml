@@ -1,0 +1,28 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var customersForm = new FormModel(DataSourceType.MongoDB, "MongoDb(local)", "Customers") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB), Insert = true, Delete = true };
+    /*
+    customersForm.Columns = new List<FormColumn>() {
+        new FormColumn("_id", "ID") { DataOnly = true, PrimaryKey = true},
+        new FormColumn("CustomerID", "Customer ID"),
+        new FormColumn("CompanyName"),
+        new FormColumn("ContactName"),
+        new FormColumn("ContactTitle") { },
+        new FormColumn("Address"),
+        new FormColumn("City") { },
+        new FormColumn("Region") { },
+        new FormColumn("PostalCode"),
+        new FormColumn("Country") { },
+        new FormColumn("Phone"),
+        new FormColumn("Fax")
+    };
+    */
+
+  //  customersForm.FixedFilter = "{\"Country\": {\"$eq\": \"USA\"}}";
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersForm))
+}

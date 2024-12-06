@@ -10,6 +10,7 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using NUglify.Helpers;
+using MongoDB.Bson;
 
 namespace DbNetSuiteCore.Services
 {
@@ -44,8 +45,6 @@ namespace DbNetSuiteCore.Services
             FormModel formModel = GetFormModel();
             formModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            ValidateModel(formModel);
-
             switch (formModel.TriggerName)
             {
                 case TriggerNames.Apply:
@@ -77,7 +76,7 @@ namespace DbNetSuiteCore.Services
             if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search || formModel.TriggerName == TriggerNames.ParentKey)
             {
                 await GetRecords(formModel);
-                formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => r.ItemArray[0]!).ToList();
+                formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => PrimaryKeyValue(r.ItemArray[0])).ToList();
                 if (formModel.CurrentRecord > formModel.PrimaryKeyValues.Count)
                 {
                     formModel.CurrentRecord = formModel.PrimaryKeyValues.Count;
@@ -106,6 +105,14 @@ namespace DbNetSuiteCore.Services
             return formViewModel;
         }
 
+        private object PrimaryKeyValue(object value)
+        {
+            if (value is ObjectId)
+            {
+                value = ((ObjectId)value).ToString();
+            }
+            return value;
+        }
         private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {
             FormViewModel formViewModel = new FormViewModel(formModel);
@@ -396,7 +403,7 @@ namespace DbNetSuiteCore.Services
                     await _postgreSqlRepository.UpdateRecord(formModel);
                     break;
                 case DataSourceType.MongoDB:
-                    //     await _mongoDbRepository.UpdateRecord(formModel);
+                    await _mongoDbRepository.UpdateRecord(formModel);
                     break;
                 default:
                     await _msSqlRepository.UpdateRecord(formModel);
@@ -418,7 +425,7 @@ namespace DbNetSuiteCore.Services
                     await _postgreSqlRepository.InsertRecord(formModel);
                     break;
                 case DataSourceType.MongoDB:
-                    //     await _mongoDbRepository.InsertRecord(formModel);
+                    await _mongoDbRepository.InsertRecord(formModel);
                     break;
                 default:
                     await _msSqlRepository.InsertRecord(formModel);
@@ -440,7 +447,7 @@ namespace DbNetSuiteCore.Services
                     await _postgreSqlRepository.DeleteRecord(formModel);
                     break;
                 case DataSourceType.MongoDB:
-                    //     await _mongoDbRepository.DeleteRecord(formModel);
+                    await _mongoDbRepository.DeleteRecord(formModel);
                     break;
                 default:
                     await _msSqlRepository.DeleteRecord(formModel);

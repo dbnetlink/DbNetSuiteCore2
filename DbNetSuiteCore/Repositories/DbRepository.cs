@@ -241,6 +241,7 @@ namespace DbNetSuiteCore.Repositories
                 case DataSourceType.MSSQL:
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
+                case DataSourceType.SQLite:
                     if (componentModel.IgnoreSchemaTable)
                     {
                         return await GetDataTable(query, componentModel.ConnectionAlias, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);

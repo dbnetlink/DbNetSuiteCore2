@@ -98,13 +98,13 @@
                 {
                     if (Model.ControlType == typeof(GridModel))
                     {
-                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName };
+                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 2000 };
                         gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
                         @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(gridModel))
                     }
                     if (Model.ControlType == typeof(FormModel))
                     {
-                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName };
+                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 2000 };
                         @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(formModel))
                     }
                 }

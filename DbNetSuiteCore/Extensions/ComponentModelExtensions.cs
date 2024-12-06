@@ -448,5 +448,18 @@ namespace DbNetSuiteCore.Extensions
 
             return limit;
         }
+
+        public static string UpdateParamName(string paramName, ColumnModel column, DataSourceType dataSourceType)
+        {
+            if (dataSourceType == DataSourceType.PostgreSql)
+            {
+                if (column.DbDataType == PostgreSqlDataTypes.Enum.ToString())
+                {
+                    paramName = $"CAST({paramName} as \"{column.EnumName.Split(".").Last()}\")";
+                }
+            }
+
+            return paramName;
+        }
     }
 }

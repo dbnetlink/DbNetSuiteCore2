@@ -1,0 +1,10 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@{
+    var companiesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "companies") { DatabaseName = "sample_training", QueryLimit = 200 };
+
+    
+    @(await new DbNetSuiteCore.FormControl(HttpContext).Render(companiesForm))
+}

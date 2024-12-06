@@ -133,7 +133,7 @@
     <value>Please confirm deletion of selected record.</value>
   </data>
   <data name="DataFormatError" xml:space="preserve">
-    <value>Forrmat of entered data is not valid</value>
+    <value>Format of entered data is not valid</value>
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Delete</value>

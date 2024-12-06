@@ -1,0 +1,28 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var employeeForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Employees") { };
+    employeeForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("EmployeeID") { PrimaryKey = true},
+        new FormColumn("LastName"),
+        new FormColumn("FirstName"),
+        new FormColumn("Title"),
+        new FormColumn("TitleOfCourtesy"),
+        new FormColumn("BirthDate"),
+        new FormColumn("HireDate"),
+        new FormColumn("Address"),
+        new FormColumn("City") { },
+        new FormColumn("Region") { },
+        new FormColumn("PostalCode"),
+        new FormColumn("Country") { },
+        new FormColumn("HomePhone"),
+        new FormColumn("Extension"),
+        new FormColumn("Photo") { },
+        new FormColumn("Notes") {ControlType = FormControlType.TextArea},
+        new FormColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName")}
+    };
+    @(await new DbNetSuiteCore.FormControl(HttpContext).Render(employeeForm))
+}

@@ -118,7 +118,7 @@ class FormControl extends ComponentControl {
         this.confirmDialog.show(evt, this.formBody);
     }
     configRequest(evt) {
-        if (this.isControlEvent(evt) == false /* || this.triggerName(evt) == "apply" */) {
+        if (this.isControlEvent(evt) == false) {
             return;
         }
         this.controlElements(".fc-control").forEach((el) => {
@@ -129,13 +129,6 @@ class FormControl extends ComponentControl {
                 evt.detail.parameters[el.name] = '';
             }
         });
-        /*
-        for (var p in evt.detail.parameters) {
-            if (typeof (evt.detail.parameters[p]) == 'string' && p.startsWith("_")) {
-                delete evt.detail.parameters[p];
-            }
-        }
-        */
     }
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
@@ -221,11 +214,25 @@ class FormControl extends ComponentControl {
             return this.isBoolean(el.dataset.value) != el.checked;
         }
         else if (el.type == 'select-multiple') {
-            return el.dataset.value != Array.from(el.selectedOptions).map(({ value }) => value).join(',');
+            var selectedValues = Array.from(el.selectedOptions).map(({ value }) => value);
+            if (el.dataset.dbdatatype = 'Array') {
+                console.log(this.cleanString(el.dataset.value));
+                console.log(this.cleanString(selectedValues.join('')));
+                return this.cleanString(el.dataset.value) != this.cleanString(selectedValues.join(''));
+            }
+            else {
+                return el.dataset.value != selectedValues.join(',');
+            }
+        }
+        else if (el.tagName == 'TEXTAREA') {
+            return this.cleanString(el.dataset.value) != this.cleanString(el.value);
         }
         else {
             return el.dataset.value != el.value;
         }
+    }
+    cleanString(value) {
+        return value.replace("&amp;#xA;", "").replace(/[^a-z0-9\.]+/gi, "").trim();
     }
     isBoolean(value) {
         return value == "1" || value.toLowerCase() == "true";

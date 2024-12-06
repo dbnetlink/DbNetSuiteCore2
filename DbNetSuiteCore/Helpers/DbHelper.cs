@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Extensions;
-using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MongoDB.Driver;
@@ -17,19 +16,26 @@ namespace DbNetSuiteCore.Helpers
             string connectionString = GetConnectionString(connectionAlias, configuration);
             IDbConnection connection;
 
-            switch (dataSourceType)
+            try
             {
-                case DataSourceType.SQLite:
-                    connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
-                    connection = new SqliteConnection(connectionString);
-                    break;
-                case DataSourceType.PostgreSql:
-                case DataSourceType.MySql:
-                    connection = GetCustomDbConnection(dataSourceType, connectionString);
-                    break;
-                default:
-                    connection = new SqlConnection(connectionString);
-                    break;
+                switch (dataSourceType)
+                {
+                    case DataSourceType.SQLite:
+                        connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
+                        connection = new SqliteConnection(connectionString);
+                        break;
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.MySql:
+                        connection = GetCustomDbConnection(dataSourceType, connectionString);
+                        break;
+                    default:
+                        connection = new SqlConnection(connectionString);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error connecting to data source => {ex.Message}");
             }
 
             return connection;
@@ -37,7 +43,21 @@ namespace DbNetSuiteCore.Helpers
 
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
         {
-            return configuration.GetConnectionString(connectionAlias) ?? connectionAlias;
+            var connectionString = configuration.GetConnectionString(connectionAlias);
+
+            if (connectionString == null)
+            {
+                if ((configuration["DbNetSuiteCore:AllowConnectionString"] ?? string.Empty) == "true")
+                {
+                    return connectionAlias;
+                }
+                else
+                {
+                    throw new Exception($"Connection alias <b>{connectionAlias}</b> not found. To allow direct connection string use set appSetting <b>AllowConnectionString</b> to <b>true</b>");
+                }
+            }
+            
+            return connectionString;
         }
 
         public static string MapDatabasePath(string? connectionString, IWebHostEnvironment env)

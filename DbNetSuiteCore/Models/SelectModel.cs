@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using MongoDB.Bson;
 using System.Data;
 using System.Text.Json.Serialization;
 
@@ -87,6 +88,11 @@ namespace DbNetSuiteCore.Models
         public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new SelectColumn(dataColumn, dataSourceType);
+        }
+
+        public override ColumnModel NewColumn(BsonElement element)
+        {
+            return new SelectColumn(element);
         }
 
         public void Bind(SelectClientEvent clientEvent, string functionName)

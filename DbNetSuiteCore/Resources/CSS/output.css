@@ -1014,10 +1014,6 @@ form.dbnetsuite {
   border-collapse: collapse;
 }
 
-.transform {
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -1206,6 +1202,10 @@ form.dbnetsuite {
   text-align: right;
 }
 
+.align-top {
+  vertical-align: top;
+}
+
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
@@ -1243,11 +1243,6 @@ form.dbnetsuite {
 .text-slate-400 {
   --tw-text-opacity: 1;
   color: rgb(148 163 184 / var(--tw-text-opacity));
-}
-
-.text-slate-800 {
-  --tw-text-opacity: 1;
-  color: rgb(30 41 59 / var(--tw-text-opacity));
 }
 
 .text-white {

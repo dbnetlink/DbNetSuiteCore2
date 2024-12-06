@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using System.Text.Json.Serialization;
 using System.Data;
+using MongoDB.Bson;
 
 namespace DbNetSuiteCore.Models
 {
@@ -25,7 +26,7 @@ namespace DbNetSuiteCore.Models
         public string CurrentSortKey { get; set; } = string.Empty;
         public SortOrder? CurrentSortSequence { get; set; }
         public bool CurrentSortAscending => SortSequence == SortOrder.Asc;
-        internal override GridColumn? SortColumn => (Columns.FirstOrDefault(c => c.Key == SortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
+        internal override GridColumn? SortColumn => (Columns.FirstOrDefault(c => c.Key == CurrentSortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
         internal GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
         internal GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
         internal override SortOrder? SortSequence 
@@ -121,6 +122,11 @@ namespace DbNetSuiteCore.Models
             return new GridColumn(dataColumn, dataSourceType);
         }
 
+        public override ColumnModel NewColumn(BsonElement element)
+        {
+            return new GridColumn(element);
+        }
+
         public void AddNestedGrid(GridModel gridModel)
         {
             _NestedGrids.Add(gridModel);
@@ -147,6 +153,7 @@ namespace DbNetSuiteCore.Models
                 {
                     SortSequence = (CurrentSortSequence ?? SortOrder.Asc) == SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
                 }
+                CurrentSortSequence = SortSequence;
             }
             else
             {
@@ -155,8 +162,6 @@ namespace DbNetSuiteCore.Models
                     CurrentSortKey = InitalSortColumn?.Key ?? string.Empty;
                 }
             }
-
-            CurrentSortSequence = SortSequence;
         }
 
         public string? PrimaryKeyValue(DataRow dataRow)

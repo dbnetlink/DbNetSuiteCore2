@@ -1,0 +1,25 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@{
+    var moviesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix", QueryLimit = 200 };
+
+    moviesForm.QueryLimit = 200;
+
+    moviesForm.Columns = new List<FormColumn>() {
+        new FormColumn("title"),
+        new FormColumn("year"){DataType = typeof(Int32), Lookup = new Lookup()},
+        new FormColumn("directors"),
+        new FormColumn("cast"),
+        new FormColumn("countries"),
+        new FormColumn("genres") { LookupList = new List<string> { "Western","Comedy","Action","Adventure","Romance","Crime","Thriller","Biography","Drama","Documentary","Family","Short","History","Horror","Sci-Fi","Animation","Fantasy","Mystery","War","Musical","Sport"} },
+        new FormColumn("released") {Format = "d"},
+        new FormColumn("poster") {},
+        new FormColumn("imdb.rating", "Rating") {DataType = typeof(Double)},
+        new FormColumn("tomatoes.viewer.rating", "Rotten Tomatoes") {DataType = typeof(Double)},
+        new FormColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime), Format = "d"}
+    };
+
+    @(await new DbNetSuiteCore.FormControl(HttpContext).Render(moviesForm))
+}

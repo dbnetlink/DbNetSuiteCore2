@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
+using MongoDB.Bson;
 using System.ComponentModel;
 using System.Data;
 
@@ -50,15 +51,18 @@ namespace DbNetSuiteCore.Models
         internal GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
         {
         }
+        internal GridColumn(BsonElement element) : base(element)
+        {
+        }
 
         private bool IsSortable()
         {
             switch(DbDataType)
             {
-                case "xml":
-                case "text":
-                case "ntext":
-                case "image":
+                case nameof(MSSQLDataTypes.Xml):
+                case nameof(MSSQLDataTypes.Text):
+                case nameof(MSSQLDataTypes.Ntext):
+                case nameof(PostgreSqlDataTypes.Json):
                     return false;
             }
 

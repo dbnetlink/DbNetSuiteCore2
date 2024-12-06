@@ -1,0 +1,31 @@
+﻿namespace DbNetSuiteCore.Enums
+{
+    public enum MSSQLDataTypes
+    {
+        Int,
+        BigInt,
+        Bit,
+        Char,
+        Date,
+        DateTime,
+        DateTime2,
+        DateTimeOffset,
+        Decimal,
+        Float,
+        Money,
+        Nchar,
+        Ntext,
+        Nvarchar,
+        Real,
+        SmallDateTime,
+        SmallInt,
+        SmallMoney,
+        Sql_Variant,
+        Text,
+        Time,
+        TinyInt,
+        UniqueIdentifier,
+        Varchar,
+        Xml
+    };
+}

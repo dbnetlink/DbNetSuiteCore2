@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using MongoDB.Bson;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -19,6 +20,9 @@ namespace DbNetSuiteCore.Models
         }
 
         internal SelectColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
+        {
+        }
+        internal SelectColumn(BsonElement element) : base(element)
         {
         }
     }

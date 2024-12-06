@@ -1,4 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Repositories;
+using MongoDB.Bson;
 using System.Data;
 using System.Text.Json.Serialization;
 
@@ -58,6 +60,10 @@ namespace DbNetSuiteCore.Models
         public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new FormColumn(dataColumn, dataSourceType) { Required = dataColumn.AllowDBNull == false};
+        }
+        public override ColumnModel NewColumn(BsonElement element)
+        {
+            return new FormColumn(element) { Autoincrement = element.Name == MongoDbRepository.PrimaryKeyName };
         }
 
         public void Bind(FormClientEvent clientEvent, string functionName)

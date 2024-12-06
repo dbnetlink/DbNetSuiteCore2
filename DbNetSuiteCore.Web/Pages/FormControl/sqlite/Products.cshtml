@@ -27,7 +27,7 @@
         if (formControl.formControlValue("discontinued") && formControl.formControlValue("ReorderLevel") > 0) {
             formControl.highlightError("discontinued");
             formControl.highlightError("ReorderLevel");
-          //  args.message = `Re-order level must be zero for discontinued products`;
+            args.message = `Re-order level must be zero for discontinued products`;
         }
     }
 </script>

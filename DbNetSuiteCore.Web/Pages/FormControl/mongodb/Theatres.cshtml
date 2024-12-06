@@ -1,0 +1,18 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@{
+    var theatresForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "theaters") { DatabaseName = "sample_mflix" };
+
+    theatresForm.Columns = new List<FormColumn>() {
+        new FormColumn("_id"),
+        new FormColumn("theaterId"),
+        new FormColumn("location.address.street1"),
+        new FormColumn("location.address.city"),
+        new FormColumn("location.address.state") { Lookup = new Lookup()},
+        new FormColumn("location.address.zipcode")
+    };
+
+    @(await new DbNetSuiteCore.FormControl(HttpContext).Render(theatresForm))
+}

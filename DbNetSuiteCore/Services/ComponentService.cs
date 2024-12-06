@@ -49,7 +49,7 @@ namespace DbNetSuiteCore.Services
             {
                 var gridModel = (GridModel)componentModel;
 
-                var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey && x.Initialised);
+                var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
                 if (primaryKeyAssigned == false)
                 {
                     if (gridModel.ViewDialog != null)
@@ -150,6 +150,7 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.MSSQL:
                     case DataSourceType.MySql:
                     case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
                         componentModel.SetColumns(schema.Rows.Cast<DataRow>().Where(r => IsRowHidden(r) == false).Select(r => componentModel.NewColumn(r, componentModel.DataSourceType)).Where(c => c.Valid).ToList());
                         break;
                     default:
@@ -177,9 +178,10 @@ namespace DbNetSuiteCore.Services
                         case DataSourceType.MSSQL:
                         case DataSourceType.MySql:
                         case DataSourceType.PostgreSql:
+                        case DataSourceType.SQLite:
                             foreach (ColumnModel column in componentModel.GetColumns())
                             {
-                                DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString() == column.Expression);
+                                DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString().ToLower() == column.Expression.ToLower());
                                 if (dataRow != null)
                                 {
                                     column.Update(dataRow, componentModel.DataSourceType);
@@ -206,16 +208,14 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
-            if (componentModel is FormModel)
-            {
-                var formModel = (FormModel)componentModel;
-                formModel.Columns = formModel.Columns.Where(c => c.DataType != typeof(Byte[]));
-            }
+            componentModel.SetColumns(componentModel.GetColumns().Where(c => c.Valid));
 
             for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
             {
                 componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
             }
+
+            ValidateModel(componentModel);
         }
 
         private bool IsRowHidden(DataRow dataRow)
@@ -363,7 +363,7 @@ namespace DbNetSuiteCore.Services
                     // await _excelRepository.RecordExists(componentModel, primaryKeyValue);
                     break;
                 case DataSourceType.MongoDB:
-                    // await _mongoDbRepository.RecordExists(componentModel, primaryKeyValue);
+                    //await _mongoDbRepository.RecordExists(componentModel, primaryKeyValue);
                     break;
                 default:
                     return await _msSqlRepository.RecordExists(componentModel, primaryKeyValue);

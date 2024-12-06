@@ -12,7 +12,6 @@
         new SelectColumn("CompanyName")
     };
 
-  //  customersSelect.FixedFilter = "{\"CompanyName\": {\"$regex\": \"^b\", \"$options\": \"i\"}}"; 
-
+ 
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customersSelect))
 }

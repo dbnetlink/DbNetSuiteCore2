@@ -24,17 +24,21 @@
     @if (Model.Mode == FormMode.Update && Model.FormModel.OneToOne == false)
     {
         <div id="navigation" class="flex flex-row gap-1 items-center">
-        @{
+            @{
                 RenderButton(TriggerNames.First, IconHelper.First(), NavButtonText(ResourceNames.First), Model.CurrentRecord == 1);
                 RenderButton(TriggerNames.Previous, IconHelper.Previous(), NavButtonText(ResourceNames.Previous), Model.CurrentRecord == 1);
-            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Record)</span>
-            RenderRecordNumber(Model.CurrentRecord, Model.RecordCount);
-            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
-            RenderRecordCount(Model.RecordCount);
+                <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Record)</span>
+                RenderRecordNumber(Model.CurrentRecord, Model.RecordCount);
+                <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
+                RenderRecordCount(Model.RecordCount);
                 RenderButton(TriggerNames.Next, IconHelper.Next(), NavButtonText(ResourceNames.Next), Model.CurrentRecord == Model.RecordCount);
                 RenderButton(TriggerNames.Last, IconHelper.Last(), NavButtonText(ResourceNames.Last), Model.CurrentRecord == Model.RecordCount);
-        }
+            }
         </div>
+    }
+    @if (Model.RecordCount == Model.FormModel.QueryLimit)
+    {
+        @await Html.PartialAsync("QueryLimitWarning", Model.FormModel)
     }
 
     @if (RenderInsert() || RenderDelete())
@@ -102,7 +106,7 @@
         return Model.FormModel.Delete && Model.Mode == FormMode.Update && Model.ReadOnly == false;
     }
 
-    string Justify() 
+    string Justify()
     {
         if (Model.FormModel.OneToOne)
         {
