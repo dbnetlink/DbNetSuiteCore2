@@ -1032,6 +1032,10 @@ form.dbnetsuite {
   flex-direction: column;
 }
 
+.content-start {
+  align-content: flex-start;
+}
+
 .items-start {
   align-items: flex-start;
 }

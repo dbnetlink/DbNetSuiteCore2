@@ -28,6 +28,7 @@ namespace DbNetSuiteCore.Models
         public bool ReadOnly { get; set; } = false;
         public FormMode? CommitType { get; set; }
         public object RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : string.Empty;
+        public int LayoutColumns { get; set; } = 4;
         public FormModel() : base()
         {
         }

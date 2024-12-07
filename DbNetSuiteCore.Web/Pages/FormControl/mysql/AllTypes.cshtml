@@ -7,5 +7,34 @@
 @using DbNetSuiteCore.Web.Helpers
 @{
     var customerForm = new FormModel(DataSourceType.MySql, "Northwind2(mysql)", "comprehensive_data_types") {Insert = true, Delete = true};
+
+    customerForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("Int_Column"),
+        new FormColumn("Tinyint_Column"),
+        new FormColumn("Smallint_Column"),
+        new FormColumn("Mediumint_Column"),
+        new FormColumn("Bigint_Column"),
+        new FormColumn("Decimal_Column"),
+        new FormColumn("Float_Column"),
+        new FormColumn("Double_Column"),
+        new FormColumn("Bit_Column"),
+        new FormColumn("Char_Column"),
+        new FormColumn("Varchar_Column"),
+        new FormColumn("Tinytext_Column"),
+        new FormColumn("Text_Column"),
+        new FormColumn("Mediumtext_Column"),
+        new FormColumn("Longtext_Column"),
+        new FormColumn("Date_Column"),
+        new FormColumn("Datetime_Column"),
+        new FormColumn("Timestamp_Column"),
+        new FormColumn("Time_Column"),
+        new FormColumn("Year_Column"),
+        new FormColumn("Enum_Column"),
+        new FormColumn("Set_Column") { Required = true},
+        new FormColumn("Json_Column"),
+        new FormColumn("Id")
+    };
+    
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
 }

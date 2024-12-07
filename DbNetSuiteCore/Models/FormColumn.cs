@@ -62,9 +62,8 @@ namespace DbNetSuiteCore.Models
         public TextTransform? TextTransform { get; set; } = null;
         public int? MaxLength { get; set; } = null;
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
-
         public string DateTimeFormat => GetDateTimeFormat();
-
+        public int Span { get; set; } = 1;
         public FormColumn()
         {
         }
@@ -110,7 +109,6 @@ namespace DbNetSuiteCore.Models
 
         public HtmlString RenderControl(string value, string dbValue, FormModel formModel)
         {
-
             var attributes = new Dictionary<string, string>();
 
             switch (ControlType)
@@ -165,11 +163,9 @@ namespace DbNetSuiteCore.Models
                     }
                     break;
                 case FormControlType.Auto:
-                    string val = HtmlEncoder.Default.Encode(dbValue);
-                    if (val.Contains("&#xA;"))
+                    if (dbValue.Contains(Environment.NewLine))
                     {
                         ControlType = FormControlType.TextArea;
-                        attributes["data-value"] = HtmlEncoder.Default.Encode(val);
                     }
                     break;
             }
@@ -239,9 +235,13 @@ namespace DbNetSuiteCore.Models
             List<string> select = new List<string>();
 
             select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>");
-            select.Add("<option value=\"\"></option >");
 
-            foreach(var option in LookupOptions)
+            if (Required == false)
+            {
+                select.Add("<option value=\"\"></option >");
+            }
+
+            foreach (var option in LookupOptions)
             {
                 select.Add($"<option value=\"{option.Key}\" {(values.Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
             }

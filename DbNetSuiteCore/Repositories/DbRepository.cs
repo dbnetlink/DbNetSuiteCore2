@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
+using System.Configuration;
 
 
 namespace DbNetSuiteCore.Repositories
@@ -291,6 +292,10 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task ExecuteUpdate(CommandConfig update, IDbConnection connection)
         {
+            if (_configuration.ConfigValue(ConfigurationHelper.AppSetting.UpdateDisabled).ToLower() == "true")
+            {
+                throw new Exception("Update has been disabled by configuration");
+            }
             IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text);
             await ((DbCommand)command).ExecuteNonQueryAsync();
         }

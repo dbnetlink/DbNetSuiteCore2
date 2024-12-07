@@ -88,8 +88,8 @@ namespace DbNetSuiteCore.Helpers
         {
             return new EncryptionConfig()
             {
-                Key = configuration["DbNetSuiteCore:EncryptionKey"] ?? string.Empty,
-                Salt = configuration["DbNetSuiteCore:EncryptionSalt"] ?? string.Empty
+                Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
+                Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt)
             };
         }
 

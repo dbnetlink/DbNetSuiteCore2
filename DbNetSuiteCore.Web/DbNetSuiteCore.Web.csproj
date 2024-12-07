@@ -28,6 +28,7 @@
   <ItemGroup>
     <None Include="appsettings.json" />
     <None Include="Pages\FormControl\mssql\BrowseDb.cshtml" />
+    <None Include="Pages\form_layout.cshtml" />
     <None Include="Pages\GridControl\mongodb\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\mssql\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\mysql\BrowseDb.cshtml" />

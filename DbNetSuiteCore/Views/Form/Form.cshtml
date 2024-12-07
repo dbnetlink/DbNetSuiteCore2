@@ -21,7 +21,7 @@
         {
             <div class="flex text-lg caption">@Model.FormModel.Caption</div>
         }
-        <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto)">
+        <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
             @foreach (FormColumn formColumn in Model.Columns)
             {
                 object value = null;
@@ -48,7 +48,7 @@
                     value = Model.FormModel.FormValues[formColumn.ColumnName];
                 }
 
-                <div style="display:grid;grid-template-columns: repeat(1, auto)">
+                <div style="display:grid;grid-column:span @(formColumn.Span);" class="content-start">
                     @{
                         @formColumn.RenderLabel()
                         @formColumn.RenderControl(value?.ToString() ?? string.Empty, value?.ToString() ?? string.Empty, Model.FormModel)

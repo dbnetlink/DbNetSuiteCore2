@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Enums;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MongoDB.Driver;
@@ -47,7 +46,7 @@ namespace DbNetSuiteCore.Helpers
 
             if (connectionString == null)
             {
-                if ((configuration["DbNetSuiteCore:AllowConnectionString"] ?? string.Empty) == "true")
+                if (configuration.ConfigValue(ConfigurationHelper.AppSetting.AllowConnectionString).ToLower() == "true")
                 {
                     return connectionAlias;
                 }
