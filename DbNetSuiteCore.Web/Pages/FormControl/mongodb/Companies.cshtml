@@ -5,6 +5,33 @@
 @{
     var companiesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "companies") { DatabaseName = "sample_training", QueryLimit = 200 };
 
-    
+    companiesForm.Columns = new List<FormColumn>() {
+        new FormColumn("_id"),
+        new FormColumn("name"),
+        new FormColumn("permalink"),
+        new FormColumn("crunchbase_url"),
+        new FormColumn("homepage_url"),
+        new FormColumn("blog_url"),
+        new FormColumn("blog_feed_url"),
+        new FormColumn("twitter_username"),
+        new FormColumn("category_code"),
+        new FormColumn("number_of_employees"),
+        new FormColumn("founded_year"),
+        new FormColumn("founded_month"),
+        new FormColumn("founded_day"),
+        new FormColumn("deadpooled_year"),
+        new FormColumn("tag_list"),
+        new FormColumn("alias_list"),
+        new FormColumn("email_address"),
+        new FormColumn("phone_number"),
+        new FormColumn("description"),
+        new FormColumn("created_at"),
+        new FormColumn("updated_at"),
+        new FormColumn("overview") {Span = 4, TinyMCE = true }
+    };
+
+
     @(await new DbNetSuiteCore.FormControl(HttpContext).Render(companiesForm))
 }
+
+<script src="~/js/tinymce/tinymce.min.js"></script>

@@ -64,6 +64,8 @@ namespace DbNetSuiteCore.Models
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
         public string DateTimeFormat => GetDateTimeFormat();
         public int Span { get; set; } = 1;
+        public int TextAreaRows { get; set; } = 4;
+        public bool TinyMCE { get; set; } = false;
         public FormColumn()
         {
         }
@@ -144,6 +146,7 @@ namespace DbNetSuiteCore.Models
                     break;
             }
 
+            attributes["id"] = $"{formModel.Id}_{ColumnName}";
             attributes["name"] = $"_{ColumnName}";
             attributes["data-value"] = $"{dbValue}";
             attributes["value"] = $"{value}";
@@ -180,7 +183,7 @@ namespace DbNetSuiteCore.Models
             {
                 return RenderSelect(value, attributes, formModel);
             }
-            else if (ControlType == FormControlType.TextArea)
+            else if (ControlType == FormControlType.TextArea || TinyMCE)
             {
                 return RenderTextArea(value, attributes, formModel);
             }
@@ -197,7 +200,7 @@ namespace DbNetSuiteCore.Models
                 switch (attributes["type"])
                 {
                     case "text":
-                        if (DataType == typeof(string))
+                        if (DataType == typeof(string) && MaxLength.HasValue && MaxLength.Value > 0)
                         {
                             attributes["maxlength"] = ToStringOrEmpty(MaxLength);
                         }
@@ -241,7 +244,7 @@ namespace DbNetSuiteCore.Models
                 select.Add("<option value=\"\"></option >");
             }
 
-            foreach (var option in LookupOptions)
+            foreach (var option in LookupOptions ?? new List<KeyValuePair<string, string>>())
             {
                 select.Add($"<option value=\"{option.Key}\" {(values.Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
             }
@@ -253,10 +256,16 @@ namespace DbNetSuiteCore.Models
         private HtmlString RenderTextArea(string value, Dictionary<string, string> attributes, FormModel formModel)
         {
             attributes.Remove("value");
-            string text = value;//.ToString().Replace(EncodedAscii.LineFeed, Environment.NewLine).Replace("&#xA;", Environment.NewLine);
-            string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>{text}</textarea>";
+            attributes["rows"] = TextAreaRows.ToString();
+            string text = value;
 
-            return new HtmlString(String.Join(string.Empty, textArea));
+            if (TinyMCE)
+            {
+                attributes["data-tinymce"] = "true";
+            }
+
+            string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>{text}</textarea>";
+            return new HtmlString(textArea);
         }
 
         private HtmlString RenderCheckbox(string value, Dictionary<string, string> attributes, FormModel formModel)

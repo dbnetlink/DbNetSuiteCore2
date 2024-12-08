@@ -33,10 +33,11 @@ namespace DbNetSuiteCore.Repositories
                 componentModel.Data = await CreateDataTableFromPipeline(database, componentModel);
             }
 
-            foreach (var column in componentModel.GetColumns().Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false && c.LookupOptions == null))
+            foreach (var column in componentModel.GetColumns().Where(c => string.IsNullOrEmpty(c.Lookup?.TableName) == false))
             {
                 await GetLookupOptions(componentModel, column, database);
             }
+
             componentModel.ConvertEnumLookups();
 
             if (componentModel is GridModel)
@@ -295,25 +296,28 @@ namespace DbNetSuiteCore.Repositories
         {
             DataColumn? dataColumn = componentModel.GetDataColumn(column);
 
-            column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-
             if (dataColumn == null || componentModel.Data.Rows.Count == 0)
             {
                 return;
             }
 
-            List<object>? lookupValues = null;
-
-            if (componentModel is GridModel)
+            if (column.LookupOptions == null)
             {
-                componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => dr[0]).ToList();
+                column.DbLookupOptions = new List<KeyValuePair<string, string>>();
+                List<object>? lookupValues = null;
+
+                if (componentModel is GridModel)
+                {
+                    componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => dr[0]).ToList();
+                }
+
+                var lookup = column.Lookup!;
+
+                DataTable lookupData = await CreateLookupOptionsFromPipeline(database, column, lookupValues);
+
+                column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
             }
 
-            var lookup = column.Lookup!;
-
-            DataTable lookupData = await CreateLookupOptionsFromPipeline(database, column, lookupValues);
-
-            column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
             componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
         }
 

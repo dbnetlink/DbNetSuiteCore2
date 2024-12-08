@@ -271,15 +271,15 @@ namespace DbNetSuiteCore.Services
                             continue;
                         }
 
-                        object value = row[dataColumn];
+                        string value = row[dataColumn]?.ToString() ?? string.Empty;
                         var cell = worksheet.Cell(rowIdx, colIdx);
                         cell.Value = column.FormatValue(value)?.ToString() ?? string.Empty;
 
                         if (columnWidths.ContainsKey(column.ColumnName))
                         {
-                            if (value.ToString().Length > columnWidths[column.ColumnName])
+                            if (value.Length > columnWidths[column.ColumnName])
                             {
-                                columnWidths[column.ColumnName] = value.ToString().Length;
+                                columnWidths[column.ColumnName] = value.Length;
                             }
                         }
 

@@ -161,6 +161,7 @@ namespace DbNetSuiteCore.Models
                 {
                     CurrentSortKey = InitalSortColumn?.Key ?? string.Empty;
                 }
+                SortSequence = CurrentSortSequence ?? SortOrder.Asc;
             }
         }
 

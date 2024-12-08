@@ -603,6 +603,7 @@ class SelectControl extends ComponentControl {
 class FormControl extends ComponentControl {
     constructor(formId) {
         super(formId);
+        this.initialLoad = true;
     }
     afterRequest(evt) {
         if (this.isControlEvent(evt) == false) {
@@ -622,6 +623,8 @@ class FormControl extends ComponentControl {
             case "initialload":
                 this.initialise();
                 break;
+            default:
+                this.initialLoad = false;
         }
         if (this.cachedMessage) {
             this.setMessage(this.cachedMessage);
@@ -631,6 +634,8 @@ class FormControl extends ComponentControl {
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el); });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el); });
         this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el); });
+        this.tinymceElements().forEach((el) => { this.tinymce().remove(`#${el.id}`); });
+        this.configureTinyMCE();
         this.setFocus();
         this.invokeEventHandler('RecordLoaded');
     }
@@ -723,6 +728,7 @@ class FormControl extends ComponentControl {
         if (this.isControlEvent(evt) == false) {
             return;
         }
+        this.tinymceElements().forEach((el) => { el.value = this.tinymce().get(el.id).getContent(); evt.detail.parameters[el.name] = el.value; });
         this.controlElements(".fc-control").forEach((el) => {
             if (this.elementModified(el) == false) {
                 delete evt.detail.parameters[el.name];
@@ -818,8 +824,6 @@ class FormControl extends ComponentControl {
         else if (el.type == 'select-multiple') {
             var selectedValues = Array.from(el.selectedOptions).map(({ value }) => value);
             if (el.dataset.dbdatatype = 'Array') {
-                console.log(this.cleanString(el.dataset.value));
-                console.log(this.cleanString(selectedValues.join('')));
                 return this.cleanString(el.dataset.value) != this.cleanString(selectedValues.join(''));
             }
             else {
@@ -848,6 +852,34 @@ class FormControl extends ComponentControl {
         this.formMessage.innerHTML = "&nbsp";
         delete this.formMessage.dataset.highlight;
         this.controlElements(`.fc-control`).forEach((el) => { el.dataset.modified = false; el.dataset.error = false; });
+    }
+    tinymceElements() {
+        return this.controlElements("textarea[data-tinymce='true']");
+    }
+    configureTinyMCE() {
+        if (!this.tinymce()) {
+            this.setMessage("TinyMCE library not available.", "error");
+            return;
+        }
+        window.setTimeout(() => { this.initTinymce(); }, 1);
+    }
+    initTinymce() {
+        this.tinymceElements().forEach((el) => {
+            var config = {
+                selector: `#${el.id}`,
+                license_key: 'gpl',
+                setup: (editor) => {
+                    editor.on('init', (e) => {
+                        console.log(e.target.id);
+                        window.setTimeout(() => { this.controlElement(`#${e.target.id}`).style.display = 'none'; }, 1);
+                    });
+                }
+            };
+            this.tinymce().init(config);
+        });
+    }
+    tinymce() {
+        return window['tinymce'];
     }
 }
 

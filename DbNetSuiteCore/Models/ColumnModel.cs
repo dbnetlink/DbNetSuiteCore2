@@ -95,7 +95,7 @@ namespace DbNetSuiteCore.Models
 
         public ColumnModel(DataRow dataRow, DataSourceType dataSourceType) : this()
         {
-            Expression = (string)dataRow["ColumnName"];
+            Expression = (string)RowValue(dataRow, "ColumnName", string.Empty);
             Update(dataRow, dataSourceType);
         }
 
@@ -163,23 +163,26 @@ namespace DbNetSuiteCore.Models
             {
                 DataType = (Type)dataRow["DataType"];
 
+                string dataTypeName = (string)RowValue(dataRow, "DataTypeName", string.Empty);
+                int providerType = (int)RowValue(dataRow, "ProviderType", 0);
+
                 switch (dataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        IsSupportedType<MSSQLDataTypes>(dataRow["DataTypeName"]);
+                        IsSupportedType<MSSQLDataTypes>(dataTypeName);
                         break;
                     case DataSourceType.MySql:
-                        IsSupportedType<MySqlDataTypes>(dataRow["ProviderType"]);
+                        IsSupportedType<MySqlDataTypes>(providerType);
                         break;
                     case DataSourceType.PostgreSql:
-                        IsSupportedType<PostgreSqlDataTypes>(dataRow["ProviderType"]);
+                        IsSupportedType<PostgreSqlDataTypes>(providerType);
                         if (DbDataType == PostgreSqlDataTypes.Enum.ToString())
                         {
-                            EnumName = dataRow["DataTypeName"].ToString();
+                            EnumName = dataTypeName;
                         }
                         break;
                     case DataSourceType.SQLite:
-                        DbDataType = dataRow["DataTypeName"].ToString();
+                        DbDataType = dataTypeName;
                         switch (DbDataType)
                         {
                             case "DATETIME":
@@ -189,36 +192,52 @@ namespace DbNetSuiteCore.Models
                         }
                         break;
                     default:
-                        DbDataType = dataRow["DataTypeName"].ToString();
+                        DbDataType = dataTypeName; 
                         break;
                 }
 
-                BaseTableName = dataRow["BaseTableName"].ToString();
+                BaseTableName = (string)RowValue(dataRow,"BaseTableName",string.Empty);
             }
             catch (Exception)
             {
                 Valid = false;
             }
             Initialised = true;
-            Name = CleanColumnName(string.IsNullOrEmpty((string)dataRow["ColumnName"]) ? Expression : (string)dataRow["ColumnName"]);
+
+            string columnName = (string)RowValue(dataRow, "ColumnName", string.Empty);
+
+            Name = CleanColumnName(string.IsNullOrEmpty(columnName) ? Expression : columnName);
             if (string.IsNullOrEmpty(Label))
             {
                 Label = TextHelper.GenerateLabel(Name);
             }
-            PrimaryKey = (bool)dataRow["IsKey"] || (bool)dataRow["IsAutoincrement"];
+
+            bool isAutoincrement = (bool)RowValue(dataRow, "IsAutoincrement", false);
+
+            PrimaryKey = (bool)RowValue(dataRow,"IsKey", false) || isAutoincrement;
             if (this is FormColumn)
             {
                 var formColumn = (FormColumn)this;
                 if (formColumn.Required == false)
                 {
-                    formColumn.Required = (bool)dataRow["AllowDBNull"] == false;
+                    formColumn.Required = (bool)RowValue(dataRow, "AllowDBNull", false);
                 }
-                formColumn.Autoincrement = (bool)dataRow["IsAutoincrement"];
+                formColumn.Autoincrement = isAutoincrement;
                 if (formColumn.MaxLength.HasValue == false)
                 {
-                    formColumn.MaxLength = (int)dataRow["ColumnSize"];
+                    formColumn.MaxLength = (int)RowValue(dataRow, "ColumnSize", -1);
                 }
             }
+        }
+
+        private object RowValue(DataRow dataRow, string name, object defaultValue)
+        {
+            if (dataRow.Table.Columns.Contains(name) == false || dataRow[name] == null || dataRow[name] == DBNull.Value)
+            {
+                return defaultValue;
+            }
+
+            return dataRow[name];
         }
 
         public void Update(BsonValue bsonValue)
