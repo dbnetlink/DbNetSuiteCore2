@@ -1,7 +1,8 @@
 class FormControl extends ComponentControl {
     constructor(formId) {
         super(formId);
-        this.initialLoad = true;
+        this.htmlEditorArray = {};
+        this.htmlEditorMissing = false;
     }
     afterRequest(evt) {
         if (this.isControlEvent(evt) == false) {
@@ -22,7 +23,10 @@ class FormControl extends ComponentControl {
                 this.initialise();
                 break;
             default:
-                this.initialLoad = false;
+                if (this.htmlEditorMissing == false) {
+                    this.htmlEditorElements().forEach((el) => { HtmlEditor.reset(el); });
+                }
+                break;
         }
         if (this.cachedMessage) {
             this.setMessage(this.cachedMessage);
@@ -32,8 +36,7 @@ class FormControl extends ComponentControl {
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el); });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el); });
         this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el); });
-        this.tinymceElements().forEach((el) => { this.tinymce().remove(`#${el.id}`); });
-        this.configureTinyMCE();
+        this.configureHtmlEditors();
         this.setFocus();
         this.invokeEventHandler('RecordLoaded');
     }
@@ -126,7 +129,7 @@ class FormControl extends ComponentControl {
         if (this.isControlEvent(evt) == false) {
             return;
         }
-        this.tinymceElements().forEach((el) => { el.value = this.tinymce().get(el.id).getContent(); evt.detail.parameters[el.name] = el.value; });
+        this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].assignContent(evt); });
         this.controlElements(".fc-control").forEach((el) => {
             if (this.elementModified(el) == false) {
                 delete evt.detail.parameters[el.name];
@@ -251,32 +254,25 @@ class FormControl extends ComponentControl {
         delete this.formMessage.dataset.highlight;
         this.controlElements(`.fc-control`).forEach((el) => { el.dataset.modified = false; el.dataset.error = false; });
     }
-    tinymceElements() {
-        return this.controlElements("textarea[data-tinymce='true']");
+    htmlEditorElements() {
+        return this.controlElements("textarea[data-htmleditor]");
     }
-    configureTinyMCE() {
-        if (!this.tinymce()) {
-            this.setMessage("TinyMCE library not available.", "error");
+    configureHtmlEditors() {
+        var editor = this.htmlEditorElements()[0].dataset.htmleditor;
+        if (!HtmlEditor.editor(editor)) {
+            this.setMessage(`${editor} library not available.`, "error");
+            this.htmlEditorElements().forEach((el) => {
+                el.classList.remove("hidden");
+                el.removeAttribute('data-htmleditor');
+            });
+            this.htmlEditorMissing = true;
             return;
         }
-        window.setTimeout(() => { this.initTinymce(); }, 1);
+        window.setTimeout(() => { this.initHtmlEditor(); }, 1);
     }
-    initTinymce() {
-        this.tinymceElements().forEach((el) => {
-            var config = {
-                selector: `#${el.id}`,
-                license_key: 'gpl',
-                setup: (editor) => {
-                    editor.on('init', (e) => {
-                        console.log(e.target.id);
-                        window.setTimeout(() => { this.controlElement(`#${e.target.id}`).style.display = 'none'; }, 1);
-                    });
-                }
-            };
-            this.tinymce().init(config);
+    initHtmlEditor() {
+        this.htmlEditorElements().forEach((el) => {
+            this.htmlEditorArray[el.id] = new HtmlEditor(el);
         });
-    }
-    tinymce() {
-        return window['tinymce'];
     }
 }

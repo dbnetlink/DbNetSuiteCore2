@@ -5,7 +5,8 @@ class FormControl extends ComponentControl {
     formContainer: HTMLElement;
     confirmDialog: ConfirmDialog | null;
     cachedMessage: string | null;
-    initialLoad = true;
+    htmlEditorArray: Dictionary<HtmlEditor> = {}
+    htmlEditorMissing = false;
     constructor(formId) {
         super(formId)
     }
@@ -34,7 +35,10 @@ class FormControl extends ComponentControl {
                 this.initialise();
                 break;
             default:
-                this.initialLoad = false;
+                if (this.htmlEditorMissing == false) {
+                    this.htmlEditorElements().forEach((el) => { HtmlEditor.reset(el) });
+                }
+                break;
         }
 
         if (this.cachedMessage) {
@@ -48,9 +52,7 @@ class FormControl extends ComponentControl {
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el) });
         this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el) });
 
-        this.tinymceElements().forEach((el) => { this.tinymce().remove(`#${el.id}`); });
-
-        this.configureTinyMCE();
+        this.configureHtmlEditors();
 
         this.setFocus();
         this.invokeEventHandler('RecordLoaded');
@@ -97,7 +99,7 @@ class FormControl extends ComponentControl {
         var inError = Boolean(args.message != '' || this.errorHighlighted());
         this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
         if (inError) {
-            this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error' ,'error')
+            this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error', 'error')
         }
         else {
             this.triggerCommit()
@@ -109,7 +111,7 @@ class FormControl extends ComponentControl {
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
         document.body.addEventListener('htmx:confirm', (ev) => { this.confirmRequest(ev) });
         document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev) });
- 
+
         this.invokeEventHandler('Initialised');
     }
 
@@ -144,7 +146,7 @@ class FormControl extends ComponentControl {
             });
         });
     }
- 
+
     public confirmRequest(evt) {
         if (this.isControlEvent(evt) == false || evt.target.hasAttribute('hx-confirm-dialog') == false) {
             return;
@@ -160,13 +162,13 @@ class FormControl extends ComponentControl {
         if (this.isControlEvent(evt) == false) {
             return;
         }
-        this.tinymceElements().forEach((el) => { el.value = this.tinymce().get(el.id).getContent(); evt.detail.parameters[el.name] = el.value; });
- 
+        this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].assignContent(evt) });
+
         this.controlElements(".fc-control").forEach((el) => {
             if (this.elementModified(el) == false) {
                 delete evt.detail.parameters[el.name];
             }
-            else if (evt.detail.parameters[el.name] == undefined){
+            else if (evt.detail.parameters[el.name] == undefined) {
                 evt.detail.parameters[el.name] = ''
             }
         });
@@ -176,8 +178,7 @@ class FormControl extends ComponentControl {
         if (this.isControlEvent(evt) == false)
             return;
 
-        switch (this.triggerName(evt))
-        {
+        switch (this.triggerName(evt)) {
             case "apply":
                 if (this.formModified() == false) {
                     evt.preventDefault();
@@ -189,22 +190,22 @@ class FormControl extends ComponentControl {
                     evt.preventDefault();
                     return;
                 }
-                
+
             case "cancel":
             case "primarykey":
                 return;
         }
 
-        this.controlElements(".fc-control").forEach((el) => {el.dataset.modified = this.elementModified(el)});
+        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el) });
         let modified = this.controlElements(".fc-control[data-modified='true']");
 
         if (modified.length) {
             evt.preventDefault();
-            this.setMessage(this.formBody.dataset.unappliedmessage,'warning')
+            this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
         }
     }
 
-    private formControlValue(columnName:string) {
+    private formControlValue(columnName: string) {
         var element: HTMLInputElement = this.formControl(columnName);
 
         if (!element) {
@@ -244,7 +245,7 @@ class FormControl extends ComponentControl {
             }
         }
     }
-    
+
     private formControl(columnName: string) {
         var element: HTMLInputElement;
         this.controlElements(".fc-control").forEach((el) => {
@@ -286,9 +287,9 @@ class FormControl extends ComponentControl {
     }
 
     private cleanString(value) {
-        return value.replace("&amp;#xA;","").replace(/[^a-z0-9\.]+/gi, "").trim()
+        return value.replace("&amp;#xA;", "").replace(/[^a-z0-9\.]+/gi, "").trim()
     }
-    
+
     private isBoolean(value: string) {
         return value == "1" || value.toLowerCase() == "true"
     }
@@ -305,37 +306,28 @@ class FormControl extends ComponentControl {
         this.controlElements(`.fc-control`).forEach((el) => { el.dataset.modified = false; el.dataset.error = false });
     }
 
-    private tinymceElements(): NodeListOf<any> {
-        return this.controlElements("textarea[data-tinymce='true']")
+    private htmlEditorElements(): NodeListOf<HTMLTextAreaElement> {
+        return this.controlElements("textarea[data-htmleditor]")
     }
 
-    private configureTinyMCE() {
-        if (!this.tinymce()) {
-            this.setMessage("TinyMCE library not available.", "error");
+    private configureHtmlEditors() {
+        var editor = this.htmlEditorElements()[0].dataset.htmleditor
+        if (!HtmlEditor.editor(editor)) {
+            this.setMessage(`${editor} library not available.`, "error");
+            this.htmlEditorElements().forEach((el) => {
+                el.classList.remove("hidden");
+                el.removeAttribute('data-htmleditor');
+            });
+            this.htmlEditorMissing = true;
             return;
         }
-       
-        window.setTimeout(() => { this.initTinymce() }, 1)
-      }
 
-    private initTinymce() {
-        this.tinymceElements().forEach((el) => {
-            var config = {
-                selector: `#${el.id}`,
-                license_key: 'gpl',
-                setup: (editor) => {
-                    editor.on('init', (e) => {
-                        console.log(e.target.id)
-                        window.setTimeout(() => { this.controlElement(`#${e.target.id}`).style.display = 'none'; }, 1)
-                    });
-                }
-            };
-            this.tinymce().init(config);
+        window.setTimeout(() => { this.initHtmlEditor() }, 1)
+    }
+
+    private initHtmlEditor() {
+        this.htmlEditorElements().forEach((el) => {
+            this.htmlEditorArray[el.id] = new HtmlEditor(el);
         });
     }
-
-    private tinymce() {
-        return window['tinymce'];
-    }
 }
-

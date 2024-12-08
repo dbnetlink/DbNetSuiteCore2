@@ -65,7 +65,7 @@ namespace DbNetSuiteCore.Models
         public string DateTimeFormat => GetDateTimeFormat();
         public int Span { get; set; } = 1;
         public int TextAreaRows { get; set; } = 4;
-        public bool TinyMCE { get; set; } = false;
+        public HtmlEditor? HtmlEditor { get; set; } = null;
         public FormColumn()
         {
         }
@@ -183,7 +183,7 @@ namespace DbNetSuiteCore.Models
             {
                 return RenderSelect(value, attributes, formModel);
             }
-            else if (ControlType == FormControlType.TextArea || TinyMCE)
+            else if (ControlType == FormControlType.TextArea || HtmlEditor.HasValue)
             {
                 return RenderTextArea(value, attributes, formModel);
             }
@@ -259,9 +259,9 @@ namespace DbNetSuiteCore.Models
             attributes["rows"] = TextAreaRows.ToString();
             string text = value;
 
-            if (TinyMCE)
+            if (HtmlEditor.HasValue)
             {
-                attributes["data-tinymce"] = "true";
+                attributes["data-htmleditor"] = HtmlEditor.Value.ToString();
             }
 
             string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>{text}</textarea>";
@@ -293,6 +293,11 @@ namespace DbNetSuiteCore.Models
             if (ReadOnly || DataType == typeof(Guid) || formModel.ReadOnly)
             {
                 classes.Add("readonly");
+            }
+
+            if (HtmlEditor.HasValue)
+            {
+                classes.Add("hidden");
             }
 
             return string.Join(" ", classes);

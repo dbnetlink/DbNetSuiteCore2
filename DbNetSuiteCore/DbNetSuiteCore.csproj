@@ -75,6 +75,7 @@
     <None Remove="Resources\JS\componentControl.js" />
     <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridControl.js" />
+    <None Remove="Resources\JS\htmlEditor.js" />
     <None Remove="Resources\JS\htmx.js" />
     <None Remove="Resources\JS\htmx.min.js" />
     <None Remove="Resources\JS\jquery.min.js" />
@@ -86,6 +87,7 @@
     <None Remove="TypeScript\draggableDialog.ts" />
     <None Remove="TypeScript\formControl.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
+    <None Remove="TypeScript\HtmlEditor.ts" />
     <None Remove="TypeScript\selectControl.ts" />
     <None Remove="TypeScript\viewDialog.ts" />
   </ItemGroup>
@@ -108,12 +110,14 @@
     <EmbeddedResource Include="Resources\JS\componentControl.js" />
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridControl.js" />
+    <EmbeddedResource Include="Resources\JS\htmlEditor.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
     <EmbeddedResource Include="TypeScript\formControl.ts" />
     <EmbeddedResource Include="TypeScript\selectControl.ts" />
     <EmbeddedResource Include="TypeScript\confirmDialog.ts" />
+    <EmbeddedResource Include="TypeScript\htmlEditor.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\QueryLimitWarning.cshtml">

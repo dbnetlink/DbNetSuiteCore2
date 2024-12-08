@@ -8,7 +8,8 @@
       "Resources/JS/formControl.js",
       "Resources/JS/draggableDialog.js",
       "Resources/JS/viewDialog.js",
-      "Resources/JS/confirmDialog.js"
+      "Resources/JS/confirmDialog.js",
+      "Resources/JS/htmlEditor.js"
     ]
   },
   {
