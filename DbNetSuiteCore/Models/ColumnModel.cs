@@ -31,7 +31,8 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public Type? LookupEnum { get; set; }
         public List<string>? LookupList { get; set; }
-        public Dictionary<string,string>? LookupDictionary { get; set; }
+        public IEnumerable<Int32>? LookupRange { get; set; }
+        public Dictionary<string, string>? LookupDictionary { get; set; }
         public string ParamName => $"Param{Ordinal}";
         public int Ordinal { get; set; }
         public List<KeyValuePair<string, string>>? EnumOptions
@@ -121,7 +122,7 @@ namespace DbNetSuiteCore.Models
 
         private List<KeyValuePair<string, string>>? GetLookupOptions()
         {
-            return ((DbLookupOptions ?? EnumOptions) ?? GetListOptions()) ?? GetDictionaryOptions();
+            return ((DbLookupOptions ?? EnumOptions) ?? GetListOptions()) ?? GetDictionaryOptions() ?? GetRangeOptions();
         }
 
         private List<KeyValuePair<string, string>>? GetListOptions()
@@ -130,7 +131,16 @@ namespace DbNetSuiteCore.Models
             {
                 return null;
             }
-            return LookupList.OrderBy(o => o).Select(o =>  new KeyValuePair<string, string>(o, o)).ToList();
+            return LookupList.OrderBy(o => o).Select(o => new KeyValuePair<string, string>(o, o)).ToList();
+        }
+
+        private List<KeyValuePair<string, string>>? GetRangeOptions()
+        {
+            if (LookupRange == null)
+            {
+                return null;
+            }
+            return LookupRange.Select(o => new KeyValuePair<string, string>(o.ToString(), o.ToString())).ToList();
         }
 
         private List<KeyValuePair<string, string>>? GetDictionaryOptions()
@@ -185,18 +195,27 @@ namespace DbNetSuiteCore.Models
                         DbDataType = dataTypeName;
                         switch (DbDataType)
                         {
-                            case "DATETIME":
-                            case "DATE":
+                            case nameof(SQLiteDataTypes.DATETIME):
+                            case nameof(SQLiteDataTypes.DATE):
                                 UserDataType = nameof(DateTime);
+                                break;
+                            case nameof(SQLiteDataTypes.NUMERIC):
+                                UserDataType = nameof(Decimal);
+                                break;
+                            case nameof(SQLiteDataTypes.REAL):
+                                UserDataType = nameof(Double);
+                                break;
+                            case nameof(SQLiteDataTypes.TIMESTAMP):
+                                UserDataType = nameof(TimeSpan);
                                 break;
                         }
                         break;
                     default:
-                        DbDataType = dataTypeName; 
+                        DbDataType = dataTypeName;
                         break;
                 }
 
-                BaseTableName = (string)RowValue(dataRow,"BaseTableName",string.Empty);
+                BaseTableName = (string)RowValue(dataRow, "BaseTableName", string.Empty);
             }
             catch (Exception)
             {
@@ -214,7 +233,7 @@ namespace DbNetSuiteCore.Models
 
             bool isAutoincrement = (bool)RowValue(dataRow, "IsAutoincrement", false);
 
-            PrimaryKey = (bool)RowValue(dataRow,"IsKey", false) || isAutoincrement;
+            PrimaryKey = (bool)RowValue(dataRow, "IsKey", false) || isAutoincrement;
             if (this is FormColumn)
             {
                 var formColumn = (FormColumn)this;
@@ -228,6 +247,20 @@ namespace DbNetSuiteCore.Models
                     formColumn.MaxLength = (int)RowValue(dataRow, "ColumnSize", -1);
                 }
             }
+        }
+
+        public bool AffinityDataType()
+        {
+            switch (DbDataType)
+            {
+                case nameof(SQLiteDataTypes.DATETIME):
+                case nameof(SQLiteDataTypes.DATE):
+                case nameof(SQLiteDataTypes.NUMERIC):
+                case nameof(SQLiteDataTypes.REAL):
+                case nameof(SQLiteDataTypes.TIMESTAMP):
+                    return true;
+            }
+            return false;
         }
 
         private object RowValue(DataRow dataRow, string name, object defaultValue)

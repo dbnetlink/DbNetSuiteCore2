@@ -4,6 +4,7 @@
     {
         Initialised,
         RecordLoaded,
-        ValidateUpdate
+        ValidateUpdate,
+        ConfigureHtmlEditor
     };
 }

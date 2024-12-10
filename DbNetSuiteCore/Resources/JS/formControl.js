@@ -24,7 +24,7 @@ class FormControl extends ComponentControl {
                 break;
             default:
                 if (this.htmlEditorMissing == false) {
-                    this.htmlEditorElements().forEach((el) => { HtmlEditor.reset(el); });
+                    this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].reset(el); });
                 }
                 break;
         }
@@ -164,6 +164,9 @@ class FormControl extends ComponentControl {
             this.setMessage(this.formBody.dataset.unappliedmessage, 'warning');
         }
     }
+    configureHtmlEditor(configuration, name) {
+        this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
+    }
     formControlValue(columnName) {
         var element = this.formControl(columnName);
         if (!element) {
@@ -258,10 +261,15 @@ class FormControl extends ComponentControl {
         return this.controlElements("textarea[data-htmleditor]");
     }
     configureHtmlEditors() {
-        var editor = this.htmlEditorElements()[0].dataset.htmleditor;
+        let elements = this.htmlEditorElements();
+        if (elements.length == 0) {
+            return;
+        }
+        let editor = elements[0].dataset.htmleditor;
         if (!HtmlEditor.editor(editor)) {
             this.setMessage(`${editor} library not available.`, "error");
             this.htmlEditorElements().forEach((el) => {
+                HtmlEditor.removeElement(el);
                 el.classList.remove("hidden");
                 el.removeAttribute('data-htmleditor');
             });
@@ -272,7 +280,7 @@ class FormControl extends ComponentControl {
     }
     initHtmlEditor() {
         this.htmlEditorElements().forEach((el) => {
-            this.htmlEditorArray[el.id] = new HtmlEditor(el);
+            this.htmlEditorArray[el.id] = new HtmlEditor(el, this);
         });
     }
 }

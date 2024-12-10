@@ -5,7 +5,7 @@ class FormControl extends ComponentControl {
     formContainer: HTMLElement;
     confirmDialog: ConfirmDialog | null;
     cachedMessage: string | null;
-    htmlEditorArray: Dictionary<HtmlEditor> = {}
+    htmlEditorArray: Dictionary<HtmlEditor> = {};
     htmlEditorMissing = false;
     constructor(formId) {
         super(formId)
@@ -36,7 +36,7 @@ class FormControl extends ComponentControl {
                 break;
             default:
                 if (this.htmlEditorMissing == false) {
-                    this.htmlEditorElements().forEach((el) => { HtmlEditor.reset(el) });
+                    this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].reset(el) });
                 }
                 break;
         }
@@ -205,6 +205,10 @@ class FormControl extends ComponentControl {
         }
     }
 
+    public configureHtmlEditor(configuration: any, name:string) {
+        this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
+    }
+
     private formControlValue(columnName: string) {
         var element: HTMLInputElement = this.formControl(columnName);
 
@@ -311,10 +315,15 @@ class FormControl extends ComponentControl {
     }
 
     private configureHtmlEditors() {
-        var editor = this.htmlEditorElements()[0].dataset.htmleditor
+        let elements = this.htmlEditorElements();
+        if (elements.length == 0) {
+            return;
+        }
+        let editor = elements[0].dataset.htmleditor
         if (!HtmlEditor.editor(editor)) {
             this.setMessage(`${editor} library not available.`, "error");
             this.htmlEditorElements().forEach((el) => {
+                HtmlEditor.removeElement(el);
                 el.classList.remove("hidden");
                 el.removeAttribute('data-htmleditor');
             });
@@ -327,7 +336,7 @@ class FormControl extends ComponentControl {
 
     private initHtmlEditor() {
         this.htmlEditorElements().forEach((el) => {
-            this.htmlEditorArray[el.id] = new HtmlEditor(el);
+            this.htmlEditorArray[el.id] = new HtmlEditor(el, this);
         });
     }
 }

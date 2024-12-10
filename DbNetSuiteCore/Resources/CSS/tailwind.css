@@ -28,7 +28,11 @@
 
     .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {
-        @apply border-gray-300 rounded text-cyan-700 focus:ring-cyan-700 py-1 px-1;
+        @apply border-gray-300 rounded text-cyan-700 focus:ring-cyan-700 py-1 px-1 mt-2 mb-2;
+    }
+
+    .dbnetsuite small {
+        @apply text-slate-500;
     }
 
     form.dbnetsuite {

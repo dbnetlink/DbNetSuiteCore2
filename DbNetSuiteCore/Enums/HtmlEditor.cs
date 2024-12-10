@@ -3,6 +3,7 @@
     public enum HtmlEditor
     {
         TinyMCE,
-        Quill
+        Froala,
+        CKEditor
     };
 }

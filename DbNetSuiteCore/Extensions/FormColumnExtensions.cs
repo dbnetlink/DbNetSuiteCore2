@@ -1,6 +1,5 @@
-﻿using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using Microsoft.AspNetCore.Http;
 using System.Globalization;
 
 namespace DbNetSuiteCore.Extensions
@@ -63,6 +62,12 @@ namespace DbNetSuiteCore.Extensions
                         value = timeSpan;
                     }
                     return ((TimeSpan)value).ToString(formColumn.DateTimeFormat);
+                default:
+                    if (string.IsNullOrEmpty(formColumn.Format) == false)
+                    {
+                        return ColumnModelHelper.FormatedValue(formColumn, value);
+                    }
+                    break;
             }
 
             return value;

@@ -1,13 +1,12 @@
-﻿using DbNetSuiteCore.Constants;
+﻿using Amazon.Runtime.Internal.Transform;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Html;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 using System.Data;
-using System.Text.Encodings.Web;
 
 namespace DbNetSuiteCore.Models
 {
@@ -63,8 +62,12 @@ namespace DbNetSuiteCore.Models
         public int? MaxLength { get; set; } = null;
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
         public string DateTimeFormat => GetDateTimeFormat();
-        public int Span { get; set; } = 1;
+        public int ColSpan { get; set; } = 1;
+        public int RowSpan { get; set; } = 1;
         public int TextAreaRows { get; set; } = 4;
+        public string HelpText { get; set; } = string.Empty;
+        public int Size { get; set; } = 4;
+
         public HtmlEditor? HtmlEditor { get; set; } = null;
         public FormColumn()
         {
@@ -179,7 +182,12 @@ namespace DbNetSuiteCore.Models
                 attributes["max"] = ToStringOrEmpty(MaxValue);
             }
 
-            if (LookupOptions != null)
+            if (DataOnly)
+            {
+                attributes["type"] = "hidden";
+                return RenderInput(attributes, formModel);
+            }
+            else if (LookupOptions != null)
             {
                 return RenderSelect(value, attributes, formModel);
             }
@@ -193,29 +201,37 @@ namespace DbNetSuiteCore.Models
             }
             else
             {
-                if (TextTransform.HasValue)
-                {
-                    attributes["data-texttransform"] = ToStringOrEmpty(TextTransform);
-                }
-                switch (attributes["type"])
-                {
-                    case "text":
-                        if (DataType == typeof(string) && MaxLength.HasValue && MaxLength.Value > 0)
-                        {
-                            attributes["maxlength"] = ToStringOrEmpty(MaxLength);
-                        }
-                        break;
-                }
-
-                return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />");
+                return RenderInput(attributes, formModel);
             }
         }
 
-        private string ToStringOrEmpty(object? value)
+        private string HelpTextElement()
+        {
+            return string.IsNullOrEmpty(HelpText) ? string.Empty : $"<small>{HelpText}</small>";
+        }
+
+        public string ToStringOrEmpty(object? value)
         {
             return value?.ToString() ?? string.Empty;   
         }
 
+        private HtmlString RenderInput(Dictionary<string, string> attributes, FormModel formModel)
+        {
+            if (TextTransform.HasValue)
+            {
+                attributes["data-texttransform"] = ToStringOrEmpty(TextTransform);
+            }
+            switch (attributes["type"])
+            {
+                case "text":
+                    if (DataType == typeof(string) && MaxLength.HasValue && MaxLength.Value > 0)
+                    {
+                        attributes["maxlength"] = ToStringOrEmpty(MaxLength);
+                    }
+                    break;
+            }
+            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}");
+        }
         private HtmlString RenderSelect(string value, Dictionary<string, string> attributes, FormModel formModel)
         {
             if (DataType == typeof(Boolean))
@@ -228,16 +244,26 @@ namespace DbNetSuiteCore.Models
             switch (DbDataType)
             {
                 case nameof(MySqlDataTypes.Set):
-                    values = value.Split(",").ToList();
-                    break;
                 case nameof(BsonType.Array):
-                    values = value.Split(Environment.NewLine).ToList();
+                    ControlType = FormControlType.SelectMultiple;
                     break;
+            }
+            
+            List<string> attr = new List<string>();
+            if (ControlType == FormControlType.SelectMultiple)
+            {
+                attr.Add("multiple");
+                values = value.Split(Environment.NewLine).ToList();
+                if (values.Count == 1)
+                {
+                    values = value.Split(",").ToList();
+                }
+                attributes.Add("size", Size.ToString());
             }
 
             List<string> select = new List<string>();
 
-            select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>");
+            select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(formModel, attr)}>");
 
             if (Required == false)
             {
@@ -248,7 +274,7 @@ namespace DbNetSuiteCore.Models
             {
                 select.Add($"<option value=\"{option.Key}\" {(values.Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
             }
-            select.Add("</select>");
+            select.Add($"</select>{HelpTextElement()}");
 
             return new HtmlString(String.Join(string.Empty,select));
         }
@@ -265,6 +291,21 @@ namespace DbNetSuiteCore.Models
             }
 
             string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>{text}</textarea>";
+
+            if (HtmlEditor.HasValue)
+            {
+                switch(HtmlEditor.Value)
+                {
+                    case Enums.HtmlEditor.Froala:
+                    case Enums.HtmlEditor.CKEditor:
+                        textArea = $"{textArea}<div class=\"hidden\" id=\"{attributes["id"]}_{HtmlEditor.Value.ToString().ToLower()}\">{text}</div>";
+                        break;
+                }
+            }
+            else
+            {
+                textArea = $"{textArea}{HelpTextElement()}";
+            }
             return new HtmlString(textArea);
         }
 
@@ -277,7 +318,7 @@ namespace DbNetSuiteCore.Models
 
             bool boolValue = ComponentModelExtensions.ParseBoolean(value);
 
-            string checkbox = $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(formModel, boolValue)}/>";
+            string checkbox = $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(formModel, boolValue)}/>{HelpTextElement()}";
 
             return new HtmlString(checkbox);
         }
@@ -315,7 +356,7 @@ namespace DbNetSuiteCore.Models
             return string.Join(" ", classes);
         }
 
-        string Attributes(FormModel formModel)
+        string Attributes(FormModel formModel, List<string>? attr = null)
         {
             List<string> attributes = new List<string>();
             if (Disable(formModel))
@@ -331,17 +372,11 @@ namespace DbNetSuiteCore.Models
                 attributes.Add("readonly");
             }
 
-            if (LookupOptions != null)
+            if (attr != null)
             {
-                switch (DbDataType)
-                {
-                    case nameof(MySqlDataTypes.Set):
-                    case nameof(BsonType.Array):
-                        attributes.Add("multiple");
-                        attributes.Add(RazorHelper.Attribute("size", 4).ToString());
-                        break;
-                }
+                attributes.AddRange(attr);
             }
+            
             return string.Join(" ", attributes);
         }
         string CheckboxAttributes(FormModel formModel, bool boolValue)

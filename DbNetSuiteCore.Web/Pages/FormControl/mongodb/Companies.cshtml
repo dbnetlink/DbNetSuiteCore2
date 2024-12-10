@@ -3,28 +3,71 @@
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
 @{
-    var companiesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "companies") { DatabaseName = "sample_training", QueryLimit = 200 };
+
+    var companiesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "companies") { DatabaseName = "sample_training", QueryLimit = 10, Insert = true, Delete = true };
 
     companiesForm.Columns = new List<FormColumn>() {
         new FormColumn("_id"),
         new FormColumn("name"),
         new FormColumn("permalink"),
-        new FormColumn("twitter_username"),
-        new FormColumn("crunchbase_url") {Span = 2},
-        new FormColumn("homepage_url"){Span = 2},
-        new FormColumn("blog_url"){Span = 2},
-        new FormColumn("blog_feed_url"){Span = 2},
+        new FormColumn("twitter_username") { HelpText = "This is some help text ..."},
+        new FormColumn("crunchbase_url") {ColSpan = 2},
+        new FormColumn("homepage_url"){ColSpan = 2},
+        new FormColumn("blog_url"){ColSpan = 2},
+        new FormColumn("blog_feed_url"){ColSpan = 2},
         new FormColumn("category_code"),
         new FormColumn("number_of_employees"),
-        new FormColumn("tag_list"){Span = 4},
+        new FormColumn("tag_list"){ColSpan = 4},
         new FormColumn("email_address"),
         new FormColumn("phone_number"),
-        new FormColumn("description"){Span = 2},
-        new FormColumn("overview") {Span = 4, HtmlEditor = HtmlEditor.TinyMCE }
+        new FormColumn("description"){ColSpan = 2},
+        new FormColumn("overview") {ColSpan = 4, HtmlEditor = HtmlEditor.CKEditor }
     };
 
+    companiesForm.ClientEvents[FormClientEvent.ConfigureHtmlEditor] = "configureHtmlEditor";
 
     @(await new DbNetSuiteCore.FormControl(HttpContext).Render(companiesForm))
 }
 
-<script src="~/js/tinymce/tinymce.min.js"></script>
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.0.0/ckeditor5.css" />
+    <link href="https://cdn.jsdelivr.net/npm/froala-editor@latest/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
+
+    <style>
+        .ck-editor {
+            max-width: initial;
+        }
+        .ck-editor__editable_inline {
+            max-height: 200px;
+            max-width: initial;
+        }
+    </style>
+}
+
+@section Libraries {
+    <script src="https://cdn.ckeditor.com/ckeditor5/44.0.0/ckeditor5.umd.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@latest/js/froala_editor.pkgd.min.js"></script>
+    <script src="~/js/tinymce/tinymce.min.js"></script>
+}
+
+@section Scripts {
+    <script>
+
+        function configureHtmlEditor(formControl, args) {
+            args.configuration.licenseKey = "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjUzMjQ3OTksImp0aSI6Ijg3Yzg2OWE5LTliOWUtNDU3OC04YWFkLWY1MzJjMGI2YWRiZiIsImxpY2Vuc2VkSG9zdHMiOlsiMTI3LjAuMC4xIiwibG9jYWxob3N0IiwiMTkyLjE2OC4qLioiLCIxMC4qLiouKiIsIjE3Mi4qLiouKiIsIioudGVzdCIsIioubG9jYWxob3N0IiwiKi5sb2NhbCJdLCJ1c2FnZUVuZHBvaW50IjoiaHR0cHM6Ly9wcm94eS1ldmVudC5ja2VkaXRvci5jb20iLCJkaXN0cmlidXRpb25DaGFubmVsIjpbImNsb3VkIiwiZHJ1cGFsIl0sImxpY2Vuc2VUeXBlIjoiZGV2ZWxvcG1lbnQiLCJmZWF0dXJlcyI6WyJEUlVQIiwiQk9YIl0sInZjIjoiMzQ2NDkyZmIifQ.b5ymnhuAe3HQ - WtoIZarPJ5mbsXBvLVnNIRCzDiS5Z44zD9PCGHx - i6NPxNMvrYUFCbk2dK7Qr9OykABnvFeSg";
+        }
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

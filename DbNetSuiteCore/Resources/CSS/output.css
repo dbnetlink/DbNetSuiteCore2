@@ -696,6 +696,8 @@ select {
 
 .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity));
@@ -711,6 +713,11 @@ select {
     .dbnetsuite [type="radio"]:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(14 116 144 / var(--tw-ring-opacity));
+}
+
+.dbnetsuite small {
+  --tw-text-opacity: 1;
+  color: rgb(100 116 139 / var(--tw-text-opacity));
 }
 
 form.dbnetsuite {

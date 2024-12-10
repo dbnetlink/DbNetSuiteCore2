@@ -13,12 +13,12 @@
         new FormColumn("directors"),
         new FormColumn("cast"),
         new FormColumn("countries"),
-        new FormColumn("genres") { LookupList = new List<string> { "Western","Comedy","Action","Adventure","Romance","Crime","Thriller","Biography","Drama","Documentary","Family","Short","History","Horror","Sci-Fi","Animation","Fantasy","Mystery","War","Musical","Sport"} },
-        new FormColumn("released") {Format = "d"},
+        new FormColumn("genres") { LookupList = new List<string> { "Western","Comedy","Action","Adventure","Romance","Crime","Thriller","Biography","Drama","Documentary","Family","Short","History","Horror","Sci-Fi","Animation","Fantasy","Mystery","War","Musical","Sport"}, RowSpan = 2, ColSpan = 2, Size = 15 },
+        new FormColumn("released") {},
         new FormColumn("poster") {},
         new FormColumn("imdb.rating", "Rating") {DataType = typeof(Double)},
         new FormColumn("tomatoes.viewer.rating", "Rotten Tomatoes") {DataType = typeof(Double)},
-        new FormColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime), Format = "d"}
+        new FormColumn("lastupdated", "Last Updated") {DataType = typeof(DateTime)}
     };
 
     @(await new DbNetSuiteCore.FormControl(HttpContext).Render(moviesForm))

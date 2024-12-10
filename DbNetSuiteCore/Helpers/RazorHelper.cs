@@ -72,17 +72,8 @@ namespace DbNetSuiteCore.Helpers
         public static HtmlString Attribute(string name, object value)
         {
             var attrValue = value?.ToString() ?? string.Empty;
-            switch (name)
-            {
-              //  case "data-value":
-               //     break;
-                default:
-                    attrValue = HtmlEncoder.Default.Encode(attrValue);
-                    break;
-            }
-            return new HtmlString($"{name}=\"{attrValue}\"");
+            return new HtmlString($"{name}=\"{HtmlEncoder.Default.Encode(attrValue)}\"");
         }
-
 
         public static double? JavaScriptDateTime(object? dateTime)
         {

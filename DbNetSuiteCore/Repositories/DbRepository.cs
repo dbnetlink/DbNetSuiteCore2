@@ -31,7 +31,12 @@ namespace DbNetSuiteCore.Repositories
         public async Task GetRecords(ComponentModel componentModel)
         {
             QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel.IsStoredProcedure ? CommandType.StoredProcedure : CommandType.Text);
+            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, (componentModel is FormModel ? null : componentModel) , componentModel.IsStoredProcedure ? CommandType.StoredProcedure : CommandType.Text);
+
+            if (componentModel is FormModel)
+            {
+                return;
+            }
 
             if (componentModel.Data.Rows.Count > 0)
             {
@@ -79,7 +84,7 @@ namespace DbNetSuiteCore.Repositories
                 primaryKeyValue = ((FormModel)componentModel).RecordId;
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias);
+            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
             await GetLookupOptions(componentModel);
         }
 
@@ -129,7 +134,7 @@ namespace DbNetSuiteCore.Repositories
                 case DataSourceType.PostgreSql:
                     foreach (var column in componentModel.GetColumns().Where(c => c.DbDataType == PostgreSqlDataTypes.Enum.ToString() && c.LookupOptions == null))
                     {
-                        List<string> options = await GetPostgreSqlEnumOptions(componentModel.ConnectionAlias, column.EnumName);
+                        List<string> options = await GetPostgreSqlEnumOptions(componentModel, column.EnumName);
 
                         column.DbLookupOptions = new List<KeyValuePair<string, string>>();
 
@@ -245,25 +250,53 @@ namespace DbNetSuiteCore.Repositories
                 case DataSourceType.SQLite:
                     if (componentModel.IgnoreSchemaTable)
                     {
-                        return await GetDataTable(query, componentModel.ConnectionAlias, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
+                        return await GetDataTable(query, componentModel.ConnectionAlias, null, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
                     }
                     else
                     {
                         return await GetSchemaTable(query, componentModel.ConnectionAlias);
                     }
                 default:
-                    return await GetDataTable(query, componentModel.ConnectionAlias, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
+                    return await GetDataTable(query, componentModel.ConnectionAlias, null, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
             }
         }
 
-        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
+
+        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, ComponentModel? componentModel = null, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
         {
             var connection = GetConnection(database);
             connection.Open();
             DataTable dataTable = new DataTable();
+
+            if (componentModel?.DataSourceType == DataSourceType.SQLite)
+            {
+                if (componentModel.GetColumns().Any(c => c.AffinityDataType()))
+                {
+                    ConfigureDataTableForSQLiteTypeAffinity(dataTable, componentModel);
+                }
+            }
+
             dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
             connection.Close();
             return dataTable;
+        }
+
+        public void ConfigureDataTableForSQLiteTypeAffinity(DataTable dataTable, ComponentModel componentModel)
+        {
+            foreach (var column in componentModel.GetColumns())
+            {
+                switch (column.DataTypeName)
+                {
+                    case nameof(Decimal):
+                    case nameof(Double):
+                    case nameof(DateTime):
+                        dataTable.Columns.Add(column.ColumnName, column.DataType);
+                        break;
+                    default:
+                        dataTable.Columns.Add(column.ColumnName);
+                        break;
+                }
+            }
         }
 
         public async Task<DataTable> GetSchemaTable(QueryCommandConfig queryCommandConfig, string database)
@@ -324,10 +357,10 @@ namespace DbNetSuiteCore.Repositories
             return enumOptions;
         }
 
-        public async Task<List<string>> GetPostgreSqlEnumOptions(string database, string enumName)
+        public async Task<List<string>> GetPostgreSqlEnumOptions(ComponentModel componentModel, string enumName)
         {
             QueryCommandConfig query = new QueryCommandConfig() { Sql = $"SELECT unnest(enum_range(NULL::{enumName}))" };
-            var dataTable = await GetDataTable(query, database);
+            var dataTable = await GetDataTable(query, componentModel.ConnectionAlias);
             var enumOptions = new List<string>();
 
             foreach (DataRow row in dataTable.Rows)

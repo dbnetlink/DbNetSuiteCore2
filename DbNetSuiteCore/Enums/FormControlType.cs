@@ -20,6 +20,7 @@
         TimeWithSeconds,
         Url,
         Week,
-        DateTime
+        DateTime,
+        SelectMultiple
     };
 }

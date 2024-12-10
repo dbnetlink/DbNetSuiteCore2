@@ -22,38 +22,23 @@
             <div class="flex text-lg caption">@Model.FormModel.Caption</div>
         }
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
-            @foreach (FormColumn formColumn in Model.Columns)
+            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == false))
             {
-                object value = null;
-                object dbValue = null;
+                var columnValues = Model.GetColumnValues(formColumn);
 
-                if (Model.FormModel.Mode == FormMode.Update)
-                {
-                    DataColumn? dataColumn = Model.GetDataColumn(formColumn);
-                    dbValue = (dataColumn == null) ? string.Empty : formColumn.FormatValue(Model.Record[dataColumn]);
-                    value = dbValue;
-                }
-
-                if (Model.FormModel.Mode == FormMode.Insert)
-                {
-                    if (formColumn.PrimaryKey == false)
-                    {
-                        value = formColumn.InitialValue;
-                    }
-                    dbValue = "";
-                }
-
-                if (Model.FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
-                {
-                    value = Model.FormModel.FormValues[formColumn.ColumnName];
-                }
-
-                <div style="display:grid;grid-column:span @(formColumn.Span);" class="content-start">
+                <div style="display:grid;grid-column:span @(formColumn.ColSpan);grid-row:span @(formColumn.RowSpan);" class="content-start">
                     @{
                         @formColumn.RenderLabel()
-                        @formColumn.RenderControl(value?.ToString() ?? string.Empty, value?.ToString() ?? string.Empty, Model.FormModel)
-                   }
+                        @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
+                    }
                 </div>
+            }
+        </div>
+        <div>
+            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == true))
+            {
+                var columnValues = Model.GetColumnValues(formColumn);
+                @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
             }
         </div>
         @await Html.PartialAsync("Form/Hidden", Model.FormModel)

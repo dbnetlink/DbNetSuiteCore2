@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -28,6 +29,35 @@ namespace DbNetSuiteCore.ViewModels
         public SelectColumn? GetColumnInfo(DataColumn column)
         {
             return _GetColumnInfo(column, _formModel.Columns.Cast<ColumnModel>()) as SelectColumn;
+        }
+
+        public KeyValuePair<string, string> GetColumnValues(FormColumn formColumn)
+        {
+            object? value = null;
+            object? dbValue = null;
+
+            if (FormModel.Mode == FormMode.Update)
+            {
+                DataColumn? dataColumn = GetDataColumn(formColumn);
+                dbValue = (dataColumn == null) ? string.Empty : formColumn.FormatValue(Record[dataColumn]);
+                value = dbValue;
+            }
+
+            if (FormModel.Mode == FormMode.Insert)
+            {
+                if (formColumn.PrimaryKey == false)
+                {
+                    value = formColumn.InitialValue;
+                }
+                dbValue = "";
+            }
+
+            if (FormModel.FormValues.Keys.Contains(formColumn.ColumnName))
+            {
+                value = FormModel.FormValues[formColumn.ColumnName];
+            }
+
+            return new KeyValuePair<string,string>(formColumn.ToStringOrEmpty(dbValue), formColumn.ToStringOrEmpty(value));
         }
     }
 }
