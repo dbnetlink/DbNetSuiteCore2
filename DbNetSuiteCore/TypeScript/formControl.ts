@@ -72,7 +72,7 @@ class FormControl extends ComponentControl {
         switch (this.triggerName(evt)) {
             case "apply":
                 if (this.formBody.dataset.validationpassed == "True") {
-                    this.clientSideValidation()
+                    this.validateUpdate()
                 }
 
                 if (this.formBody.dataset.committype) {
@@ -92,7 +92,7 @@ class FormControl extends ComponentControl {
         htmx.trigger(applyBtn, "click");
     }
 
-    private clientSideValidation() {
+    private validateUpdate() {
         let args = { mode: this.formBody.dataset.mode, message: '' }
         this.invokeEventHandler("ValidateUpdate", args);
 
@@ -104,6 +104,20 @@ class FormControl extends ComponentControl {
         else {
             this.triggerCommit()
         }
+    }
+
+    private validateDelete() {
+        let args = { message: '' }
+        if (this.invokeEventHandler("ValidateDelete", args) == false) {
+            return true;
+        }
+
+        var inError = Boolean(args.message != '' || this.errorHighlighted());
+        if (inError) {
+            this.setMessage(args.message != '' ? args.message : 'Deletion not allowed', 'error')
+            return false;
+        }
+        return true;
     }
 
     private initialise() {
@@ -153,7 +167,14 @@ class FormControl extends ComponentControl {
         }
         evt.preventDefault();
         if (!this.confirmDialog) {
-            this.confirmDialog = new ConfirmDialog(this);
+            let prompt = evt.target.getAttribute('hx-confirm-dialog')
+            this.confirmDialog = new ConfirmDialog(this, prompt);
+        }
+
+        if (evt.srcElement.name == "delete") {
+            if (!this.validateDelete()) {
+                return;
+            }
         }
         this.confirmDialog.show(evt, this.formBody);
     }
@@ -209,28 +230,29 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
     }
 
-    private formControlValue(columnName: string) {
-        var element: HTMLInputElement = this.formControl(columnName);
+    public formControlValue(columnName: string) {
+        return this.elementValue(columnName, false);
+    }
 
-        if (!element) {
+    public formControlDbValue(columnName: string) {
+        return this.elementValue(columnName, true);
+    }
+
+    private elementValue(columnName: string, db: boolean) {
+        var el: HTMLInputElement = this.formControl(columnName);
+
+        if (!el) {
             console.error(`Form control for column name ${columnName} not found`)
         }
         else {
-            if (element.tagName == 'INPUT' && element.type == 'checkbox') {
-                return element.checked
+            if (el.tagName == 'INPUT' && el.type == 'checkbox') {
+                return db ? this.isBoolean(el.dataset.value) : el.checked
             }
-            switch (element.dataset.datatype.toLowerCase()) {
-                case 'datetime':
-                    return element.dataset.jsdate ? new Date(Number(element.dataset.jsdate)) : null;
-                case 'string':
-                    return element.value;
-                default:
-                    return element.value ? Number(element.value) : null;
-            }
+            return db ? el.dataset.value : el.value;
         }
     }
 
-    private highlightError(columnName: string) {
+    public highlightError(columnName: string) {
         var element: HTMLInputElement = this.formControl(columnName);
         element.dataset.error = "true";
     }
@@ -250,7 +272,7 @@ class FormControl extends ComponentControl {
         }
     }
 
-    private formControl(columnName: string) {
+    public formControl(columnName: string) {
         var element: HTMLInputElement;
         this.controlElements(".fc-control").forEach((el) => {
             if (el.name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }

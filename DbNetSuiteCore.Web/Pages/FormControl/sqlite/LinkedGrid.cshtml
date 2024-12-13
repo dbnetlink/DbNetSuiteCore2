@@ -5,7 +5,7 @@
 @using DbNetSuiteCore.Web.Enums
 
 @{
-    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers") { Insert = true, Delete = true };
+    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers") { Insert = true, Delete = true, Caption = "Customer" };
     customerForm.Columns = new List<FormColumn>() {
         new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase},
         new FormColumn("CompanyName") {Required = true},
@@ -21,24 +21,29 @@
     };
 
 
-    var ordersGrid = new GridModel("Orders") { };
+    var ordersGrid = new GridModel("Orders") { Caption = "Orders" };
     ordersGrid.Columns = new List<GridColumn>() {
         new GridColumn("OrderID"),
-        new GridColumn("CustomerID") { ForeignKey = true},
-        new GridColumn("EmployeeID")  { Lookup = new Lookup("Employees", "EmployeeID", "LastName || ',' || FirstName") },
+        new GridColumn("CustomerID") { ForeignKey = true, DataOnly = true},
+        new GridColumn("EmployeeID","Employee")  { Lookup = new Lookup("Employees", "EmployeeID", "LastName || ',' || FirstName") },
         new GridColumn("OrderDate") { DataType = typeof(DateTime)},
         new GridColumn("RequiredDate") { DataType = typeof(DateTime) },
         new GridColumn("ShippedDate") { DataType = typeof(DateTime) },
         new GridColumn("ShipVia") { Lookup = new Lookup("Shippers", "ShipperId", "CompanyName")},
         new GridColumn("Freight") { Format = "c" },
-        new GridColumn("ShipAddress"),
-        new GridColumn("ShipCity"),
-        new GridColumn("ShipRegion"),
-        new GridColumn("ShipPostalCode"),
-        new GridColumn("ShipCountry")
+        new GridColumn("ShipAddress","Address"),
+        new GridColumn("ShipCity","City"),
+        new GridColumn("ShipRegion","Region"),
+        new GridColumn("ShipPostalCode","Post Code"),
+        new GridColumn("ShipCountry","Country")
     };
 
     customerForm.LinkedControl = ordersGrid;
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
+
+    <div style="display:flex; flex-direction: column; gap:5px">
+        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))</div>
+        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))</div>
+    </div>
+    
+    
 }

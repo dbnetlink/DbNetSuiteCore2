@@ -5,5 +5,17 @@
 
 @{
     var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers") { Insert = true, Delete = true };
+
+    customerForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
 }
+
+<script>
+    function validateDelete(formControl, args) {
+        if (formControl.formControlDbValue("companyname") != "YYYYY") {
+            formControl.highlightError("companyname");
+            
+            args.message = `Only customers with a name of YYYYY can be deleted`;
+        }
+    }
+</script>

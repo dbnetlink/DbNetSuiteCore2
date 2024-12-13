@@ -17,6 +17,10 @@
 		new GridColumn("ReorderLevel"),
 		new GridColumn("Discontinued") { DataType = typeof(Boolean), Filter = FilterType.Default, LookupEnum = typeof(DiscontinuedEnum)}
 	};
+
+	productsGrid.FixedFilter = "UnitPrice > @unitprice";
+	productsGrid.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
+
 	productsGrid.Bind(GridClientEvent.RowTransform, "highlightGridLowStock");
 	productsGrid.Bind(GridClientEvent.ViewDialogUpdated, "highlightViewLowStock");
 

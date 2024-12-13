@@ -193,10 +193,15 @@ namespace DbNetSuiteCore.Models
                         break;
                     case DataSourceType.SQLite:
                         DbDataType = dataTypeName;
+                        if (UserDataType == nameof(String))
+                        {
+                            break;
+                        }
                         switch (DbDataType)
                         {
                             case nameof(SQLiteDataTypes.DATETIME):
                             case nameof(SQLiteDataTypes.DATE):
+                            case nameof(SQLiteDataTypes.TIMESTAMP):
                                 UserDataType = nameof(DateTime);
                                 break;
                             case nameof(SQLiteDataTypes.NUMERIC):
@@ -204,9 +209,6 @@ namespace DbNetSuiteCore.Models
                                 break;
                             case nameof(SQLiteDataTypes.REAL):
                                 UserDataType = nameof(Double);
-                                break;
-                            case nameof(SQLiteDataTypes.TIMESTAMP):
-                                UserDataType = nameof(TimeSpan);
                                 break;
                         }
                         break;
@@ -239,12 +241,16 @@ namespace DbNetSuiteCore.Models
                 var formColumn = (FormColumn)this;
                 if (formColumn.Required == false)
                 {
-                    formColumn.Required = (bool)RowValue(dataRow, "AllowDBNull", false);
+                    formColumn.Required = (bool)RowValue(dataRow, "AllowDBNull", true) == false;
                 }
                 formColumn.Autoincrement = isAutoincrement;
                 if (formColumn.MaxLength.HasValue == false)
                 {
-                    formColumn.MaxLength = (int)RowValue(dataRow, "ColumnSize", -1);
+                    int columnSize = (int)RowValue(dataRow, "ColumnSize", -1);
+                    if (columnSize > 0)
+                    {
+                        formColumn.MaxLength = columnSize;
+                    }
                 }
             }
         }

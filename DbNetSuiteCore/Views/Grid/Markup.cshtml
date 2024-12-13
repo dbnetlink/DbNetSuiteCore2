@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="flex flex-col m-1 p-1 relative">
+<div class="grid-container flex flex-col">
     @if (string.IsNullOrEmpty(Model.GridModel.Caption) == false)
     {
         <div class="flex text-lg caption">@Model.GridModel.Caption</div>

@@ -653,6 +653,7 @@ select {
     .dbnetsuite [type="tel"],
     .dbnetsuite [type="time"],
     .dbnetsuite [type="week"],
+    .dbnetsuite [type="color"],
     .dbnetsuite [multiple],
     .dbnetsuite textarea,
     .dbnetsuite select {
@@ -681,6 +682,7 @@ select {
     .dbnetsuite [type="tel"]:focus,
     .dbnetsuite [type="time"]:focus,
     .dbnetsuite [type="week"]:focus,
+    .dbnetsuite [type="color"]:focus,
     .dbnetsuite [multiple]:focus,
     .dbnetsuite textarea:focus,
     .dbnetsuite select:focus {
@@ -744,6 +746,13 @@ form.dbnetsuite {
   padding-right: 0.75rem;
   --tw-text-opacity: 1;
   color: rgb(7 89 133 / var(--tw-text-opacity));
+}
+
+.dbnetsuite .form-container,
+    .dbnetsuite .grid-container {
+  position: relative;
+  margin: 0.25rem;
+  padding: 0.25rem;
 }
 
 .dbnetsuite a {

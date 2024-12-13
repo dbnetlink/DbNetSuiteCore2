@@ -102,7 +102,7 @@ class HtmlEditor {
         return textarea.dataset.htmleditor;
     }
 
-    private static removeElement(textarea: HTMLTextAreaElement) {
+    public static removeElement(textarea: HTMLTextAreaElement) {
         switch (HtmlEditor.editorName(textarea)) {
             case HtmlEditor.Froala:
             case HtmlEditor.CKEditor:

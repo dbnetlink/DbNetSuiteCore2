@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
 @{
-    var moviesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix", QueryLimit = 200 };
+    var moviesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix", QueryLimit = 200, Insert = true, Delete = true };
 
     moviesForm.QueryLimit = 200;
 
@@ -13,7 +13,7 @@
         new FormColumn("directors"),
         new FormColumn("cast"),
         new FormColumn("countries"),
-        new FormColumn("genres") { LookupList = new List<string> { "Western","Comedy","Action","Adventure","Romance","Crime","Thriller","Biography","Drama","Documentary","Family","Short","History","Horror","Sci-Fi","Animation","Fantasy","Mystery","War","Musical","Sport"}, RowSpan = 2, ColSpan = 2, Size = 15 },
+        new FormColumn("genres") { ControlType = FormControlType.SelectMultiple, LookupList = new List<string> { "Western","Comedy","Action","Adventure","Romance","Crime","Thriller","Biography","Drama","Documentary","Family","Short","History","Horror","Sci-Fi","Animation","Fantasy","Mystery","War","Musical","Sport"}, RowSpan = 3, Size = 10 },
         new FormColumn("released") {},
         new FormColumn("poster") {},
         new FormColumn("imdb.rating", "Rating") {DataType = typeof(Double)},

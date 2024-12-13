@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.ViewModels
             {
                 if (formColumn.PrimaryKey == false)
                 {
-                    value = formColumn.InitialValue;
+                    value = formColumn.GetInitialValue();
                 }
                 dbValue = "";
             }

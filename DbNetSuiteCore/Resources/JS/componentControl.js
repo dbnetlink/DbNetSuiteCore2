@@ -47,7 +47,7 @@ class ComponentControl {
     invokeEventHandler(eventName, args = {}) {
         //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
-            return;
+            return false;
         }
         if (typeof this.eventHandlers[eventName] === 'function') {
             this.eventHandlers[eventName](this, args);
@@ -55,6 +55,7 @@ class ComponentControl {
         else {
             this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
+        return true;
     }
     eventHandlerAttached(eventName, args = {}) {
         return (typeof this.eventHandlers[eventName] === 'function');

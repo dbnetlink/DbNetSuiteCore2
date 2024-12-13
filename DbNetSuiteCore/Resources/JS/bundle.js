@@ -47,7 +47,7 @@ class ComponentControl {
     invokeEventHandler(eventName, args = {}) {
         //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
-            return;
+            return false;
         }
         if (typeof this.eventHandlers[eventName] === 'function') {
             this.eventHandlers[eventName](this, args);
@@ -55,6 +55,7 @@ class ComponentControl {
         else {
             this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);
         }
+        return true;
     }
     eventHandlerAttached(eventName, args = {}) {
         return (typeof this.eventHandlers[eventName] === 'function');
@@ -653,7 +654,7 @@ class FormControl extends ComponentControl {
         switch (this.triggerName(evt)) {
             case "apply":
                 if (this.formBody.dataset.validationpassed == "True") {
-                    this.clientSideValidation();
+                    this.validateUpdate();
                 }
                 if (this.formBody.dataset.committype) {
                     if (this.parentControl) {
@@ -670,7 +671,7 @@ class FormControl extends ComponentControl {
         let applyBtn = this.getButton("apply");
         htmx.trigger(applyBtn, "click");
     }
-    clientSideValidation() {
+    validateUpdate() {
         let args = { mode: this.formBody.dataset.mode, message: '' };
         this.invokeEventHandler("ValidateUpdate", args);
         var inError = Boolean(args.message != '' || this.errorHighlighted());
@@ -681,6 +682,18 @@ class FormControl extends ComponentControl {
         else {
             this.triggerCommit();
         }
+    }
+    validateDelete() {
+        let args = { message: '' };
+        if (this.invokeEventHandler("ValidateDelete", args) == false) {
+            return true;
+        }
+        var inError = Boolean(args.message != '' || this.errorHighlighted());
+        if (inError) {
+            this.setMessage(args.message != '' ? args.message : 'Deletion not allowed', 'error');
+            return false;
+        }
+        return true;
     }
     initialise() {
         document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev); });
@@ -723,7 +736,13 @@ class FormControl extends ComponentControl {
         }
         evt.preventDefault();
         if (!this.confirmDialog) {
-            this.confirmDialog = new ConfirmDialog(this);
+            let prompt = evt.target.getAttribute('hx-confirm-dialog');
+            this.confirmDialog = new ConfirmDialog(this, prompt);
+        }
+        if (evt.srcElement.name == "delete") {
+            if (!this.validateDelete()) {
+                return;
+            }
         }
         this.confirmDialog.show(evt, this.formBody);
     }
@@ -770,22 +789,21 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
     }
     formControlValue(columnName) {
-        var element = this.formControl(columnName);
-        if (!element) {
+        return this.elementValue(columnName, false);
+    }
+    formControlDbValue(columnName) {
+        return this.elementValue(columnName, true);
+    }
+    elementValue(columnName, db) {
+        var el = this.formControl(columnName);
+        if (!el) {
             console.error(`Form control for column name ${columnName} not found`);
         }
         else {
-            if (element.tagName == 'INPUT' && element.type == 'checkbox') {
-                return element.checked;
+            if (el.tagName == 'INPUT' && el.type == 'checkbox') {
+                return db ? this.isBoolean(el.dataset.value) : el.checked;
             }
-            switch (element.dataset.datatype.toLowerCase()) {
-                case 'datetime':
-                    return element.dataset.jsdate ? new Date(Number(element.dataset.jsdate)) : null;
-                case 'string':
-                    return element.value;
-                default:
-                    return element.value ? Number(element.value) : null;
-            }
+            return db ? el.dataset.value : el.value;
         }
     }
     highlightError(columnName) {
@@ -998,9 +1016,10 @@ class ViewDialog {
 }
 
 class ConfirmDialog {
-    constructor(control) {
+    constructor(control, prompt) {
         this.control = control;
         this.dialog = this.control.controlElement(".confirm-dialog");
+        this.dialog.querySelector(".prompt").innerHTML = prompt;
         let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
         closeButtons.forEach((e) => {
             e.addEventListener("click", () => this.dialog.close());

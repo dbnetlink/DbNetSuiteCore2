@@ -290,6 +290,7 @@ namespace DbNetSuiteCore.Repositories
                     case nameof(Decimal):
                     case nameof(Double):
                     case nameof(DateTime):
+                    case "Byte[]":
                         dataTable.Columns.Add(column.ColumnName, column.DataType);
                         break;
                     default:

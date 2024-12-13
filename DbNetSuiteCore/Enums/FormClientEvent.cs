@@ -5,6 +5,7 @@
         Initialised,
         RecordLoaded,
         ValidateUpdate,
+        ValidateDelete,
         ConfigureHtmlEditor
     };
 }

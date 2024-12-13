@@ -130,7 +130,7 @@
     <value>No filter value supplied</value>
   </data>
   <data name="ConfirmDelete" xml:space="preserve">
-    <value>Please confirm deletion of selected record.</value>
+    <value>Please confirm deletion of current record</value>
   </data>
   <data name="DataFormatError" xml:space="preserve">
     <value>Format of entered data is not valid</value>
@@ -150,8 +150,14 @@
   <data name="Last" xml:space="preserve">
     <value>Last</value>
   </data>
+  <data name="MaxCharsError" xml:space="preserve">
+    <value>A maximum of {0} characters must be entered</value>
+  </data>
   <data name="MaxValueError" xml:space="preserve">
     <value>Entered {0} must be less than {1}</value>
+  </data>
+  <data name="MinCharsError" xml:space="preserve">
+    <value>A minmum of {0} characters must be entered</value>
   </data>
   <data name="MinValueError" xml:space="preserve">
     <value>Entered {0} must be greater than {1}</value>
@@ -170,6 +176,9 @@
   </data>
   <data name="Page" xml:space="preserve">
     <value>Page</value>
+  </data>
+  <data name="PatternError" xml:space="preserve">
+    <value>Entered value does not match the required pattern</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Previous</value>

@@ -11,6 +11,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using NUglify.Helpers;
 using MongoDB.Bson;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Services
 {
@@ -126,7 +127,7 @@ namespace DbNetSuiteCore.Services
                     formViewModel = await GetFormViewModel(formModel);
                     committed = true;
                 }
-               
+
             }
             else if (formModel.ValidationPassed == false)
             {
@@ -206,16 +207,21 @@ namespace DbNetSuiteCore.Services
 
         private async Task<bool> ValidateRecord(FormModel formModel)
         {
-
             if (ValidateErrorType(formModel, ResourceNames.Required))
             {
                 if (ValidateErrorType(formModel, ResourceNames.DataFormatError))
                 {
-                    if (ValidateErrorType(formModel, ResourceNames.MinValueError))
+                    if (ValidateErrorType(formModel, ResourceNames.MinCharsError))
                     {
-                        if (await ValidatePrimaryKey(formModel))
+                        if (ValidateErrorType(formModel, ResourceNames.MinValueError))
                         {
-                            return true;
+                            if (ValidateErrorType(formModel, ResourceNames.PatternError))
+                            {
+                                if (await ValidatePrimaryKey(formModel))
+                                {
+                                    return true;
+                                }
+                            }
                         }
                     }
                 }
@@ -283,6 +289,37 @@ namespace DbNetSuiteCore.Services
                             formColumn.InError = true;
                         }
                         break;
+                    case ResourceNames.PatternError:
+                        if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(formColumn.Pattern))
+                        {
+                            break;
+                        }
+                        if (new Regex(formColumn.Pattern).IsMatch(value) == false)
+                        {
+                            formColumn.InError = true;
+                        }
+                        break;
+                    case ResourceNames.MinCharsError:
+                        if (formColumn.MinLength == null && formColumn.MaxLength == null)
+                        {
+                            continue;
+                        }
+                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+                        if (paramValue == null)
+                        {
+                            continue;
+                        }
+
+                        if (LengthError(ResourceNames.MinCharsError, formColumn.MinLength, paramValue, formColumn,formModel))
+                        {
+                            return false;
+                        }
+                        if (LengthError(ResourceNames.MaxCharsError, formColumn.MaxLength, paramValue, formColumn, formModel))
+                        {
+                            return false;
+                        }
+
+                        break;
                     case ResourceNames.MinValueError:
                         if (formColumn.MinValue == null && formColumn.MaxValue == null)
                         {
@@ -330,6 +367,23 @@ namespace DbNetSuiteCore.Services
             }
 
             return true;
+        }
+
+        private bool LengthError(ResourceNames resourceName, int? length, object? paramValue, FormColumn formColumn, FormModel formModel)
+        {
+            if (length.HasValue == false)
+            { 
+                return false;
+            }
+            if ((resourceName == ResourceNames.MinCharsError && length.Value > formColumn.ToStringOrEmpty(paramValue).Length) || 
+                (resourceName == ResourceNames.MaxCharsError && length.Value < formColumn.ToStringOrEmpty(paramValue).Length))
+            {
+                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", length.Value.ToString());
+                formColumn.InError = true;
+                formModel.MessageType = MessageType.Error;
+                return true;
+            }
+            return false;
         }
 
         private int Compare(object paramValue, object compareValue)

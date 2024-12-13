@@ -21,10 +21,10 @@
         new FormColumn("email_address"),
         new FormColumn("phone_number"),
         new FormColumn("description"){ColSpan = 2},
-        new FormColumn("overview") {ColSpan = 4, HtmlEditor = HtmlEditor.CKEditor }
+        new FormColumn("overview") {ColSpan = 4, HtmlEditor = HtmlEditor.TinyMCE }
     };
 
-    companiesForm.ClientEvents[FormClientEvent.ConfigureHtmlEditor] = "configureHtmlEditor";
+    companiesForm.ClientEvents[FormClientEvent.ConfigureHtmlEditor] = "addLicenseKey";
 
     @(await new DbNetSuiteCore.FormControl(HttpContext).Render(companiesForm))
 }
@@ -53,8 +53,8 @@
 @section Scripts {
     <script>
 
-        function configureHtmlEditor(formControl, args) {
-            args.configuration.licenseKey = "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NjUzMjQ3OTksImp0aSI6Ijg3Yzg2OWE5LTliOWUtNDU3OC04YWFkLWY1MzJjMGI2YWRiZiIsImxpY2Vuc2VkSG9zdHMiOlsiMTI3LjAuMC4xIiwibG9jYWxob3N0IiwiMTkyLjE2OC4qLioiLCIxMC4qLiouKiIsIjE3Mi4qLiouKiIsIioudGVzdCIsIioubG9jYWxob3N0IiwiKi5sb2NhbCJdLCJ1c2FnZUVuZHBvaW50IjoiaHR0cHM6Ly9wcm94eS1ldmVudC5ja2VkaXRvci5jb20iLCJkaXN0cmlidXRpb25DaGFubmVsIjpbImNsb3VkIiwiZHJ1cGFsIl0sImxpY2Vuc2VUeXBlIjoiZGV2ZWxvcG1lbnQiLCJmZWF0dXJlcyI6WyJEUlVQIiwiQk9YIl0sInZjIjoiMzQ2NDkyZmIifQ.b5ymnhuAe3HQ - WtoIZarPJ5mbsXBvLVnNIRCzDiS5Z44zD9PCGHx - i6NPxNMvrYUFCbk2dK7Qr9OykABnvFeSg";
+        function addLicenseKey(formControl, args) {
+            args.configuration.licenseKey = "gpl";
         }
     </script>
 }

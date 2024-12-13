@@ -2,11 +2,12 @@
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Web.Helpers
 @using DbNetSuiteCore.Models
+@using System.Text.RegularExpressions
 
 @{
     var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers") { Insert = true, Delete = true };
     customerForm.Columns = new List<FormColumn>() {
-        new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase},
+        new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase,  MinLength = 5, MaxLength = 5},
         new FormColumn("CompanyName") {Required = true},
         new FormColumn("ContactName"),
         new FormColumn("ContactTitle"),
@@ -15,7 +16,7 @@
         new FormColumn("Region"),
         new FormColumn("PostalCode"),
         new FormColumn("Country"),
-        new FormColumn("Phone"),
+        new FormColumn("Phone") { Pattern = "^(?:\\+1)?\\s?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}$", HelpText = "Please enter a valid US phone number"},
         new FormColumn("Fax") };
 
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))

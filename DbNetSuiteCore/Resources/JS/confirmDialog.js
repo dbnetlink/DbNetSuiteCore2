@@ -1,7 +1,8 @@
 class ConfirmDialog {
-    constructor(control) {
+    constructor(control, prompt) {
         this.control = control;
         this.dialog = this.control.controlElement(".confirm-dialog");
+        this.dialog.querySelector(".prompt").innerHTML = prompt;
         let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
         closeButtons.forEach((e) => {
             e.addEventListener("click", () => this.dialog.close());

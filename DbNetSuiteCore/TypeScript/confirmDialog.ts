@@ -3,9 +3,11 @@ class ConfirmDialog {
     control: ComponentControl;
     event: any;
 
-    constructor(control: ComponentControl) {
+    constructor(control: ComponentControl, prompt:string) {
         this.control = control;
         this.dialog = this.control.controlElement(".confirm-dialog");
+
+        this.dialog.querySelector(".prompt").innerHTML = prompt;
 
         let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
         closeButtons.forEach((e) => {
@@ -21,7 +23,6 @@ class ConfirmDialog {
 
         this.dialog.style.left = this.coordinate(container.offsetLeft, container.clientWidth, this.dialog.clientWidth); 
         this.dialog.style.top = this.coordinate(container.offsetTop, container.clientHeight, this.dialog.clientHeight); 
-
     }
 
     private coordinate(offset, container, dialog) {

@@ -1,12 +1,12 @@
-﻿using Amazon.Runtime.Internal.Transform;
-using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.Drawing;
 using Microsoft.AspNetCore.Html;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 using System.Data;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Models
 {
@@ -19,7 +19,7 @@ namespace DbNetSuiteCore.Models
         public bool InError { get; set; } = false;
         public bool ReadOnly { get; set; } = false;
         public bool Disabled { get; set; } = false;
-        public object InitialValue { get; set; } = string.Empty;
+        public object? InitialValue { get; set; } = null;
         public object? MinValue
         {
             get
@@ -28,9 +28,9 @@ namespace DbNetSuiteCore.Models
                 {
                     return _minValue;
                 }
-                switch (DbDataType.ToLower())
+                switch (DbDataType)
                 {
-                    case "tinyint":
+                    case nameof(MSSQLDataTypes.TinyInt):
                         _minValue = 0;
                         break;
                 }
@@ -46,9 +46,9 @@ namespace DbNetSuiteCore.Models
                 {
                     return _maxValue;
                 }
-                switch (DbDataType.ToLower())
+                switch (DbDataType)
                 {
-                    case "tinyint":
+                    case nameof(MSSQLDataTypes.TinyInt):
                         _maxValue = 255;
                         break;
                 }
@@ -56,10 +56,10 @@ namespace DbNetSuiteCore.Models
             }
             set { _maxValue = value; }
         }
-        public long? JSDateTime { get; set; } = null;
         public bool Autoincrement { get; set; } = false;
         public TextTransform? TextTransform { get; set; } = null;
         public int? MaxLength { get; set; } = null;
+        public int? MinLength { get; set; } = null;
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
         public string DateTimeFormat => GetDateTimeFormat();
         public int ColSpan { get; set; } = 1;
@@ -67,6 +67,11 @@ namespace DbNetSuiteCore.Models
         public int TextAreaRows { get; set; } = 4;
         public string HelpText { get; set; } = string.Empty;
         public int Size { get; set; } = 4;
+        public string Style { get; set; } = string.Empty;
+        public string? Pattern { get; set; } = null;
+        public int? Step { get; set; } = null;
+
+        public bool SelectControlType => ControlType == FormControlType.Auto || ControlType == FormControlType.SelectMultiple;
 
         public HtmlEditor? HtmlEditor { get; set; } = null;
         public FormColumn()
@@ -118,15 +123,12 @@ namespace DbNetSuiteCore.Models
 
             switch (ControlType)
             {
+                case FormControlType.Text:
                 case FormControlType.Number:
                 case FormControlType.Email:
                 case FormControlType.Url:
                 case FormControlType.Color:
                 case FormControlType.Password:
-                case FormControlType.Range:
-                case FormControlType.Tel:
-                case FormControlType.Week:
-                case FormControlType.Month:
                     attributes["type"] = ControlType.ToString().ToLower();
                     break;
                 case FormControlType.DateTime:
@@ -158,6 +160,16 @@ namespace DbNetSuiteCore.Models
             attributes["class"] = Classes(formModel);
             attributes["data-error"] = InError.ToString().ToLower();
 
+            if (string.IsNullOrEmpty(Style) == false)
+            {
+                attributes["style"] = Style;
+            }
+
+            if (Step.HasValue)
+            {
+                attributes["step"] = Step.Value.ToString();
+            }
+
             switch (ControlType)
             {
                 case FormControlType.Time:
@@ -176,18 +188,15 @@ namespace DbNetSuiteCore.Models
                     break;
             }
 
-            if (DbDataType == "tinyint")
-            {
-                attributes["min"] = ToStringOrEmpty(MinValue);
-                attributes["max"] = ToStringOrEmpty(MaxValue);
-            }
+            SetMinMax(attributes, "min", MinValue);
+            SetMinMax(attributes, "max", MaxValue);
 
             if (DataOnly)
             {
                 attributes["type"] = "hidden";
                 return RenderInput(attributes, formModel);
             }
-            else if (LookupOptions != null)
+            else if (LookupOptions != null && SelectControlType)
             {
                 return RenderSelect(value, attributes, formModel);
             }
@@ -212,25 +221,32 @@ namespace DbNetSuiteCore.Models
 
         public string ToStringOrEmpty(object? value)
         {
-            return value?.ToString() ?? string.Empty;   
+            return value?.ToString() ?? string.Empty;
         }
 
         private HtmlString RenderInput(Dictionary<string, string> attributes, FormModel formModel)
         {
-            if (TextTransform.HasValue)
+            AddAttribute(attributes, TextTransform, "data-texttransform");
+            AddAttribute(attributes, MaxLength, "maxlength");
+            AddAttribute(attributes, MinLength, "minlength");
+
+            List<string> dataList = new List<string>();
+            if (LookupOptions != null)
             {
-                attributes["data-texttransform"] = ToStringOrEmpty(TextTransform);
+                attributes["list"] = $"{attributes["id"]}_datalist";
+                dataList.Add($"<datalist id=\"{attributes["list"]}\">");
+                dataList.AddRange(OptionsList());
+                dataList.Add($"</datalist>{HelpTextElement()}");
             }
-            switch (attributes["type"])
+            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}{string.Join(string.Empty,dataList)}");
+        }
+
+        private void AddAttribute(Dictionary<string, string> attributes, object? attrValue , string attrName)
+        {
+            if (DataType == typeof(string) && attrValue != null)
             {
-                case "text":
-                    if (DataType == typeof(string) && MaxLength.HasValue && MaxLength.Value > 0)
-                    {
-                        attributes["maxlength"] = ToStringOrEmpty(MaxLength);
-                    }
-                    break;
+                attributes[attrName] = ToStringOrEmpty(attrValue);
             }
-            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}");
         }
         private HtmlString RenderSelect(string value, Dictionary<string, string> attributes, FormModel formModel)
         {
@@ -248,7 +264,7 @@ namespace DbNetSuiteCore.Models
                     ControlType = FormControlType.SelectMultiple;
                     break;
             }
-            
+
             List<string> attr = new List<string>();
             if (ControlType == FormControlType.SelectMultiple)
             {
@@ -264,19 +280,25 @@ namespace DbNetSuiteCore.Models
             List<string> select = new List<string>();
 
             select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(formModel, attr)}>");
+            select.AddRange(OptionsList(values));
+            select.Add($"</select>{HelpTextElement()}");
 
+            return new HtmlString(String.Join(string.Empty, select));
+        }
+
+        private List<string> OptionsList(List<string>? values = null)
+        {
+            List<string> options = new List<string>();
             if (Required == false)
             {
-                select.Add("<option value=\"\"></option >");
+                options.Add("<option value=\"\"></option >");
             }
 
             foreach (var option in LookupOptions ?? new List<KeyValuePair<string, string>>())
             {
-                select.Add($"<option value=\"{option.Key}\" {(values.Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
+                options.Add($"<option value=\"{option.Key}\" {((values ?? new List<string>()).Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
             }
-            select.Add($"</select>{HelpTextElement()}");
-
-            return new HtmlString(String.Join(string.Empty,select));
+            return options;
         }
 
         private HtmlString RenderTextArea(string value, Dictionary<string, string> attributes, FormModel formModel)
@@ -294,7 +316,7 @@ namespace DbNetSuiteCore.Models
 
             if (HtmlEditor.HasValue)
             {
-                switch(HtmlEditor.Value)
+                switch (HtmlEditor.Value)
                 {
                     case Enums.HtmlEditor.Froala:
                     case Enums.HtmlEditor.CKEditor:
@@ -376,7 +398,7 @@ namespace DbNetSuiteCore.Models
             {
                 attributes.AddRange(attr);
             }
-            
+
             return string.Join(" ", attributes);
         }
         string CheckboxAttributes(FormModel formModel, bool boolValue)
@@ -402,6 +424,45 @@ namespace DbNetSuiteCore.Models
                 return false;
             }
             return (PrimaryKey || ForeignKey || Disabled || formModel.Mode == FormMode.Empty);
+        }
+
+        void SetMinMax(Dictionary<string, string> attributes, string attrName, object? attrValue)
+        {
+            if (attrValue == null)
+            {
+                return;
+            }
+
+            switch (attrValue.GetType().Name)
+            {
+                case nameof(Int64):
+                    attributes["type"] = nameof(FormControlType.Number).ToLower();
+                    attributes[attrName] = attrValue?.ToString() ?? String.Empty;
+                    break;
+                case nameof(DateTime):
+                    attributes["type"] = nameof(FormControlType.Date).ToLower();
+                    attributes[attrName] = ((DateTime)attrValue).ToString("yyyy-MM-dd");
+                    break;
+                default:
+                    attributes[attrName] = attrValue?.ToString() ?? String.Empty;
+                    break;
+            }
+        }
+
+        public string GetInitialValue()
+        {
+            if (InitialValue == null)
+            {
+                return string.Empty;
+            }
+
+            switch (InitialValue.GetType().Name)
+            {
+                 case nameof(DateTime):
+                    return ((DateTime)InitialValue).ToString("yyyy-MM-dd");
+                default:
+                    return this.FormatValue(InitialValue)?.ToString() ?? string.Empty;
+            }
         }
     }
 }

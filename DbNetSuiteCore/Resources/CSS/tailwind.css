@@ -16,6 +16,7 @@
     .dbnetsuite [type="tel"],
     .dbnetsuite [type="time"],
     .dbnetsuite [type="week"],
+    .dbnetsuite [type="color"],
     .dbnetsuite [multiple],
     .dbnetsuite textarea,
     .dbnetsuite select {
@@ -41,6 +42,11 @@
 
     .dbnetsuite .toast-message {
         @apply flex bg-sky-200 border border-solid border-sky-600 text-sky-800 rounded py-3 px-3;
+    }
+
+    .dbnetsuite .form-container,
+    .dbnetsuite .grid-container {
+        @apply m-1 p-1 relative;
     }
 
     .dbnetsuite a {
