@@ -5,7 +5,6 @@ using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using NUglify.Helpers;
 using System.Data;
 
 namespace DbNetSuiteCore.Repositories
@@ -151,7 +150,7 @@ namespace DbNetSuiteCore.Repositories
                     {
                         string splitToken = formColumn.LookupOptions != null ? "," : "\n";
                         BsonArray bsonArray = new BsonArray();
-                        formModel.FormValues[formColumn.ColumnName].Split(splitToken).ForEach(token => bsonArray.Add(token));
+                        formModel.FormValues[formColumn.ColumnName].Split(splitToken).ToList().ForEach(token => bsonArray.Add(token));
                         values[formColumn.Expression] = bsonArray;
                     }
                     else

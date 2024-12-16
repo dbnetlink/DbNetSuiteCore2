@@ -9,7 +9,6 @@ using DbNetSuiteCore.ViewModels;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using NUglify.Helpers;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
 
@@ -428,7 +427,7 @@ namespace DbNetSuiteCore.Services
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
                 formModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 formModel.FormValues = RequestHelper.FormColumnValues(_context);
-                formModel.Columns.ForEach(column => column.InError = false);
+                formModel.Columns.ToList().ForEach(column => column.InError = false);
                 formModel.Message = string.Empty;
                 formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
                 formModel.CommitType = null;
