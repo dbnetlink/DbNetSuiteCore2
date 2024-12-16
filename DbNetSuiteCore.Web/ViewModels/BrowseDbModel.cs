@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using MongoDB.Driver.Core.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 namespace DbNetSuiteCore.Web.ViewModels
 {
@@ -20,11 +22,12 @@ namespace DbNetSuiteCore.Web.ViewModels
         public string DatabaseName { get; set; } = string.Empty;
         [BindProperty]
         public string ConnectionAlias { get; set; } = string.Empty;
+        public string ConnectionString => string.IsNullOrEmpty(ConnectionAlias) || DataSourceType != DataSourceType.SQLite ? ConnectionAlias : $"Data Source=~/data/sqlite/{ConnectionAlias};Cache=Shared;";
 
         public Type ControlType = typeof(GridModel);
 
-        private IConfiguration configuration;
-        private IWebHostEnvironment? env;
+        protected IConfiguration configuration;
+        protected IWebHostEnvironment? env;
         public BrowseDbModel(IConfiguration configuration, IWebHostEnvironment? env = null)
         {
             this.configuration = configuration;
@@ -51,7 +54,7 @@ namespace DbNetSuiteCore.Web.ViewModels
 
             if (DataSourceType == DataSourceType.MongoDB)
             {
-                Databases = DbHelper.GetDatabases(ConnectionAlias, configuration);
+                Databases = DbHelper.GetDatabases(ConnectionString, configuration);
             }
         }
 
@@ -68,11 +71,11 @@ namespace DbNetSuiteCore.Web.ViewModels
                 {
                     return;
                 }
-                Tables = DbHelper.GetTables(ConnectionAlias, configuration, DatabaseName);
+                Tables = DbHelper.GetTables(ConnectionString, configuration, DatabaseName);
             }
             else
             {
-                Tables = DbHelper.GetTables(ConnectionAlias, DataSourceType, configuration, env);
+                Tables = DbHelper.GetTables(ConnectionString, DataSourceType, configuration, env);
             }
 
             if (string.IsNullOrEmpty(TableName) == false && TableName != "All")
@@ -82,6 +85,19 @@ namespace DbNetSuiteCore.Web.ViewModels
                     TableName = string.Empty;
                 }
             }
+        }
+
+        protected List<string> GetSQLiteDatabases()
+        {
+            var provider = new PhysicalFileProvider($"{env.WebRootPath}\\data\\sqlite");
+            var contents = provider.GetDirectoryContents(string.Empty);
+
+            var databases = new List<string>();
+            foreach (IFileInfo file in contents)
+            {
+                databases.Add(file.Name);
+            };
+            return databases;
         }
     }
 }

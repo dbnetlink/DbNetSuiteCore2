@@ -1,7 +1,6 @@
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Mvc;
 using DbNetSuiteCore.Web.ViewModels;
-using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Web.Pages.sqlite
@@ -13,7 +12,7 @@ namespace DbNetSuiteCore.Web.Pages.sqlite
         {
             DataSourceType = DataSourceType.SQLite;
             ControlType = typeof(FormModel);
-            Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("cache=shared")).Select(c => c.Key).ToList();
+            Connections = GetSQLiteDatabases();
         }
     }
 }

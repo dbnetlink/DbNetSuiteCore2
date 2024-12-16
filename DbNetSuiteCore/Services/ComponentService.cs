@@ -6,6 +6,7 @@ using System.Data;
 using System.Text;
 using DbNetSuiteCore.Constants;
 using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetSuiteCore.Services
 {
@@ -220,6 +221,10 @@ namespace DbNetSuiteCore.Services
 
         private bool IsRowHidden(DataRow dataRow)
         {
+            if (string.IsNullOrEmpty((string)dataRow["ColumnName"]))
+            {
+                return true;
+            }
             DataColumn? dataColumn = dataRow.Table.Columns["IsHidden"];
             if (dataColumn != null)
             {

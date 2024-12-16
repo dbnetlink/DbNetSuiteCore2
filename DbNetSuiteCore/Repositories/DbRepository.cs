@@ -264,21 +264,36 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, ComponentModel? componentModel = null, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
         {
-            var connection = GetConnection(database);
-            connection.Open();
-            DataTable dataTable = new DataTable();
-
-            if (componentModel?.DataSourceType == DataSourceType.SQLite)
+            using (IDbConnection connection = GetConnection(database))
             {
-                if (componentModel.GetColumns().Any(c => c.AffinityDataType()))
-                {
-                    ConfigureDataTableForSQLiteTypeAffinity(dataTable, componentModel);
-                }
-            }
+                connection.Open();
+                DataTable dataTable = new DataTable();
 
-            dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
-            connection.Close();
-            return dataTable;
+                if (componentModel?.DataSourceType == DataSourceType.SQLite)
+                {
+                    if (componentModel.GetColumns().Any(c => c.AffinityDataType()))
+                    {
+                        ConfigureDataTableForSQLiteTypeAffinity(dataTable, componentModel);
+                    }
+                    try
+                    {
+                        dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
+                        connection.Close();
+                        return dataTable;
+                    }
+                    catch (Exception)
+                    {
+                        dataTable = new DataTable();
+                        foreach (var column in componentModel.GetColumns())
+                        {
+                            dataTable.Columns.Add(column.ColumnName, typeof(String));
+                        }
+                    }
+                }
+                dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
+                connection.Close();
+                return dataTable;
+            }
         }
 
         public void ConfigureDataTableForSQLiteTypeAffinity(DataTable dataTable, ComponentModel componentModel)
