@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.CSV
 {
-    public class CsvGridTests : GridTests
+    public class CsvGridTests : SqlLiteDbSetup
     {
 
         [Test]

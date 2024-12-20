@@ -111,6 +111,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task UpdateRecord(FormModel formModel)
         {
+            CheckUpdateDisabled();
             var database = GetDatabase(formModel);
             var collection = database.GetCollection<BsonDocument>(formModel.TableName);
             var filter = Builders<BsonDocument>.Filter.Eq(MongoDbRepository.PrimaryKeyName, PrimaryKeyValue(formModel));
@@ -120,6 +121,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task InsertRecord(FormModel formModel)
         {
+            CheckUpdateDisabled();
             var database = GetDatabase(formModel);
             var collection = database.GetCollection<BsonDocument>(formModel.TableName);
             var insert = new BsonDocument(GetValueDictionary(formModel));
@@ -128,10 +130,19 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task DeleteRecord(FormModel formModel)
         {
+            CheckUpdateDisabled();
             var database = GetDatabase(formModel);
             var collection = database.GetCollection<BsonDocument>(formModel.TableName);
             var filter = Builders<BsonDocument>.Filter.Eq(MongoDbRepository.PrimaryKeyName, PrimaryKeyValue(formModel));
             await collection.DeleteOneAsync(filter);
+        }
+
+        private void CheckUpdateDisabled()
+        {
+            if (_configuration.ConfigValue(ConfigurationHelper.AppSetting.UpdateDisabled).ToLower() == "true")
+            {
+                throw new Exception("Update has been disabled by configuration");
+            }
         }
 
         private Dictionary<string, object> GetValueDictionary(FormModel formModel)

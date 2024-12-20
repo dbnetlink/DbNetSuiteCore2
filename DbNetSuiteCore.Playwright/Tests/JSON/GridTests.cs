@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.JSON
 {
-    public class GridTests : ComponentTests
+    public class GridTests : SqlLiteDbSetup
     {
 
         [Test]

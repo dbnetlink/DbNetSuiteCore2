@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.Excel
 {
-    public class ExcelGridTests : GridTests
+    public class ExcelGridTests : SqlLiteDbSetup
     {
 
         [Test]

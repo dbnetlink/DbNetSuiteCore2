@@ -24,6 +24,7 @@
     <None Remove="TestDatabase\MySql\Northwind.sql" />
     <None Remove="TestDatabase\Northwind.sql" />
     <None Remove="TestDatabase\PostgreSql\Northwind.sql" />
+    <None Remove="TestDatabase\SQLite\Northwind.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +42,7 @@
     <EmbeddedResource Include="TestDatabase\MSSQL\Northwind.sql" />
     <EmbeddedResource Include="TestDatabase\MySql\Northwind.sql" />
     <EmbeddedResource Include="TestDatabase\PostgreSql\Northwind.sql" />
+    <EmbeddedResource Include="TestDatabase\SQLite\Northwind.sql" />
   </ItemGroup>
 
   <ItemGroup>

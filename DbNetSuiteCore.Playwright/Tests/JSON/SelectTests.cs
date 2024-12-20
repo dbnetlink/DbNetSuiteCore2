@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.JSON
 {
-    public class SelectTests : ComponentTests
+    public class SelectTests : SqlLiteDbSetup
     {
         [Test]
         public async Task SearchTest()

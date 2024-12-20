@@ -2,7 +2,7 @@
 
 namespace DbNetSuiteCore.Playwright.Tests
 {
-    public class DbSetUp : ComponentTests
+    public class DbSetUp : SqlLiteDbSetup
     {
         protected string DatabaseName = $"testdb_{Guid.NewGuid():N}".ToLower();
         protected string MasterConnectionString = string.Empty;

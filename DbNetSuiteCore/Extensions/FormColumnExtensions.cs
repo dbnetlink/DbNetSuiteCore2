@@ -65,7 +65,14 @@ namespace DbNetSuiteCore.Extensions
                 default:
                     if (string.IsNullOrEmpty(formColumn.Format) == false)
                     {
-                        return ColumnModelHelper.FormatedValue(formColumn, value);
+                        var formattedValue = ColumnModelHelper.FormatValue(formColumn, value);
+
+                        if (formColumn.ControlType == Enums.FormControlType.Number || formColumn.MinValue != null || formColumn.MaxValue != null)
+                        {
+                            formattedValue = RemoveNonNumberDigitsAndCharacters(formattedValue);
+                        }
+
+                        return formattedValue;
                     }
                     break;
             }
@@ -73,6 +80,11 @@ namespace DbNetSuiteCore.Extensions
             return value;
         }
 
+        private static string RemoveNonNumberDigitsAndCharacters(string text)
+        {
+            var numericChars = "0123456789,.".ToCharArray();
+            return new String(text.Where(c => numericChars.Any(n => n == c)).ToArray());
+        }
 
         private static bool DateTimeTryParseExact(string value, out DateTime dateTime)
         {

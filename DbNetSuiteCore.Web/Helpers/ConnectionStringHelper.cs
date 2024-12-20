@@ -10,7 +10,8 @@ namespace DbNetSuiteCore.Web.Helpers
             {DataSourceType.MSSQL, "Server=localhost;Database={0};Trusted_Connection=True;TrustServerCertificate=True;"},
             {DataSourceType.MySql, "server=localhost;database={0};user=root;password=password1234;"},
             {DataSourceType.PostgreSql, "Host=localhost;Username=postgres;Password=password1234;Database={0};pooling=false;"},
-            {DataSourceType.MongoDB, "{0}"} // database name
+            {DataSourceType.MongoDB, "{0}"}, 
+            {DataSourceType.SQLite, "Data Source=~/data/sqlite/{0}.db;Cache=Shared;"}
         };
 
         private static Dictionary<DataSourceType, string> ConnectionAlias = new Dictionary<DataSourceType, string>()
@@ -18,11 +19,12 @@ namespace DbNetSuiteCore.Web.Helpers
             {DataSourceType.MSSQL, "Northwind(mssql)"},
             {DataSourceType.MySql, "Northwind2(mysql)"},
             {DataSourceType.PostgreSql, "Northwind(postgresql)"},
-            {DataSourceType.MongoDB, "Northwind"} // database name
+            {DataSourceType.MongoDB, "Northwind"},
+            {DataSourceType.SQLite, "Northwind(sqlite)"}
         };
         public static string TestConnectionString(StringValues db, DataSourceType dataSourceType)
         {
-           return db  == StringValues.Empty ? ConnectionAlias[dataSourceType] : string.Format(ConnectionString[dataSourceType], db);
+           return db == StringValues.Empty ? ConnectionAlias[dataSourceType] : string.Format(ConnectionString[dataSourceType], db);
         }
     }
 }

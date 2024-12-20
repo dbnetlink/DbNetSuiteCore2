@@ -1,0 +1,34 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var deccoGrid = new GridModel(DataSourceType.MSSQL, "DeccoBK", "EmpBasicCapxx");
+    deccoGrid.Columns = new List<GridColumn>() {
+        new GridColumn("empid") {PrimaryKey = true, ForeignKey = true },
+        new GridColumn("name"),
+        new GridColumn("Aprvd1") {DataType = typeof(bool)},
+        new GridColumn("skilldesc1") {Lookup = new Lookup("SkillDesc","SkillDesc","SkillDesc")},
+        new GridColumn("website","Web Site"),
+    };
+
+    deccoGrid.ClientEvents[GridClientEvent.CellTransform] = "makeHyperlink";
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(deccoGrid))
+}
+
+<script>
+	function makeHyperlink(sender, args) {
+        switch (args.columnName.toLowerCase()) {
+			case "skilldesc1":
+				var row = args.cell.parentNode;
+				var website = sender.columnValue("website", row);
+				if (website != "") {
+					var link = `<a target='_blank' href='${website}'>${args.cell.innerText}</a>`
+					args.cell.innerHTML = link
+				}
+				break;
+		}
+	}
+</script>

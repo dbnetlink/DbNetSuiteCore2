@@ -34,7 +34,7 @@ namespace DbNetSuiteCore.Helpers
             return value;
         }
 
-        public static string FormatedValue(ColumnModel columnModel, object value)
+        public static string FormatValue(ColumnModel columnModel, object value)
         {
             string format = columnModel.Format;
 

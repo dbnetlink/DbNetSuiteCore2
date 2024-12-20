@@ -36,7 +36,7 @@ namespace DbNetSuiteCore.Extensions
                 return value;
             }
 
-            return ColumnModelHelper.FormatedValue(selectColumn, value);
+            return ColumnModelHelper.FormatValue(selectColumn, value);
         }
 
     }

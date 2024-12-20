@@ -69,7 +69,7 @@ namespace DbNetSuiteCore.Models
         public int Size { get; set; } = 4;
         public string Style { get; set; } = string.Empty;
         public string? Pattern { get; set; } = null;
-        public int? Step { get; set; } = null;
+        public double? Step { get; set; } = null;
 
         public bool SelectControlType => ControlType == FormControlType.Auto || ControlType == FormControlType.SelectMultiple;
 
@@ -165,11 +165,6 @@ namespace DbNetSuiteCore.Models
                 attributes["style"] = Style;
             }
 
-            if (Step.HasValue)
-            {
-                attributes["step"] = Step.Value.ToString();
-            }
-
             switch (ControlType)
             {
                 case FormControlType.Time:
@@ -190,6 +185,19 @@ namespace DbNetSuiteCore.Models
 
             SetMinMax(attributes, "min", MinValue);
             SetMinMax(attributes, "max", MaxValue);
+
+            if (ControlType == FormControlType.Number && Step.HasValue == false)
+            {
+                if (DataTypeName.StartsWith("Int") == false)
+                {
+                    Step = 0.01;
+                }
+            }
+
+            if (Step.HasValue)
+            {
+                attributes["step"] = Step.Value.ToString("0.00");
+            }
 
             if (DataOnly)
             {
@@ -236,7 +244,7 @@ namespace DbNetSuiteCore.Models
                 attributes["list"] = $"{attributes["id"]}_datalist";
                 dataList.Add($"<datalist id=\"{attributes["list"]}\">");
                 dataList.AddRange(OptionsList());
-                dataList.Add($"</datalist>{HelpTextElement()}");
+                dataList.Add($"</datalist>");
             }
             return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}{string.Join(string.Empty,dataList)}");
         }
@@ -436,10 +444,12 @@ namespace DbNetSuiteCore.Models
             switch (attrValue.GetType().Name)
             {
                 case nameof(Int64):
+                    ControlType = FormControlType.Number;
                     attributes["type"] = nameof(FormControlType.Number).ToLower();
                     attributes[attrName] = attrValue?.ToString() ?? String.Empty;
                     break;
                 case nameof(DateTime):
+                    ControlType = FormControlType.Date;
                     attributes["type"] = nameof(FormControlType.Date).ToLower();
                     attributes[attrName] = ((DateTime)attrValue).ToString("yyyy-MM-dd");
                     break;

@@ -5,11 +5,12 @@ using NUnit.Framework;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Playwright.Models;
 using Microsoft.Playwright;
+using DbNetSuiteCore.Playwright.Enums;
 
 
 namespace DbNetSuiteCore.Playwright.Tests
 {
-    public class ComponentTests : PageTest
+    public class SqlLiteDbSetup : PageTest
     {
         private int _port;
         protected CustomWebApplicationFactory<Program> _factory;
@@ -24,6 +25,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             _baseUrl = $"https://localhost:{_port}/";
             _factory = new CustomWebApplicationFactory<Program>(_baseUrl);
             _client = _factory.CreateClient();
+            
         }
         [OneTimeTearDown]
         public void OneTimeTearDown()
@@ -31,9 +33,10 @@ namespace DbNetSuiteCore.Playwright.Tests
             _factory.Dispose();
         }
 
-        public async Task GoToPage(string page, string component = "grid")
+        public async Task GoToPage(string page, ComponentType componentType = ComponentType.Grid)
         {
-            await Page.GotoAsync($"{_baseUrl}{component}control/{page}");
+            Playwright.Selectors.SetTestIdAttribute("button-type");
+            await Page.GotoAsync($"{_baseUrl}{componentType.ToString().ToLower()}control/{page}");
         }
 
         private int FreeTcpPort()
@@ -43,6 +46,22 @@ namespace DbNetSuiteCore.Playwright.Tests
             int port = ((IPEndPoint)l.LocalEndpoint).Port;
             l.Stop();
             return port;
+        }
+
+        protected string SolutionFolder()
+        {
+            return Folder(4);
+        }
+        protected string ProjectFolder()
+        {
+            return Folder(3);
+        }
+
+        private string Folder(int truncate)
+        {
+            var folders = TestContext.CurrentContext.TestDirectory.Split("\\").ToList();
+            folders.RemoveRange(folders.Count - truncate, truncate);
+            return $"{string.Join("\\", folders)}";
         }
 
         protected async Task GridQuickSearchTest(Dictionary<string, int> searches, string page)
@@ -92,7 +111,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         protected async Task SelectSearchTest(Dictionary<string, int> searches, string page)
         {
-            await GoToPage(page, "select");
+            await GoToPage(page, ComponentType.Select);
             ILocator search = Page.GetByPlaceholder("Search");
 
             foreach (string token in searches.Keys)
@@ -104,7 +123,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         protected async Task SelectGroupTest(Dictionary<string, KeyValuePair<int, int>> searches, string page)
         {
-            await GoToPage(page, "select");
+            await GoToPage(page, ComponentType.Select);
             ILocator search = Page.GetByPlaceholder("Search");
 
             foreach (string token in searches.Keys)
@@ -187,9 +206,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             return Page.Locator($"th[data-columnname=\"{columnName.ToLower()}\"]");
         }
 
-        private async Task TestRowCount(int expectedRowCount)
+        private async Task TestRowCount(int expectedRowCount, string type = "row")
         {
-            await Page.WaitForResponseAsync(r => r.Url.Contains("gridcontrol.htmx"));
+            await Page.WaitForResponseAsync(r => r.Url.Contains("control.htmx"));
 
             if (expectedRowCount == 0)
             {
@@ -197,7 +216,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
             else
             {
-                ILocator rowCount = Page.Locator("input[data-type=\"row-count\"]");
+                ILocator rowCount = Page.Locator($"input[data-type=\"{type}-count\"]");
                 await Expect(rowCount).ToHaveValueAsync(expectedRowCount.ToString());
             }
         }
@@ -235,6 +254,49 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
 
             return -1;
+        }
+
+        protected async Task FormQuickSearchTest(Dictionary<string, int> searches, string page = "")
+        {
+            if (string.IsNullOrEmpty(page) == false)
+            {
+                await GoToPage(page, ComponentType.Form);
+            }
+
+            ILocator search = Page.GetByPlaceholder("Search");
+
+            foreach (string token in searches.Keys)
+            {
+                await search.FillAsync(token);
+                await TestRowCount(searches[token],"record");
+            }
+        }
+
+        protected async Task FormInsertTest(Dictionary<string, string> values, string page)
+        {
+            await GoToPage(page, ComponentType.Form);
+            await Page.GetByTestId("insert").ClickAsync();
+            await Page.WaitForResponseAsync(r => r.Url.Contains("control.htmx"));
+
+            foreach (string columnName in values.Keys)
+            {
+                ILocator input = Page.Locator($"[name=\"_{columnName}\"]");
+                await input.FillAsync(values[columnName]);
+            }
+
+            await Page.GetByTestId("apply").ClickAsync();
+
+            await TestRowCount(92, "record");
+        }
+
+        protected async Task FormDeleteTest(string page = "")
+        {
+            if (string.IsNullOrEmpty(page) == false)
+            {
+                await GoToPage(page, ComponentType.Form);
+            }
+            await Page.GetByTestId("delete").ClickAsync();
+            await Page.GetByTestId("confirm").ClickAsync();
         }
     }
 }

@@ -100,6 +100,7 @@ namespace DbNetSuiteCore.Services
             foreach (var nestedGrid in gridModel._NestedGrids)
             {
                 nestedGrid.IsNested = true;
+                nestedGrid.Caption = string.Empty;
                 nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
                 nestedGrid.SetId();
 

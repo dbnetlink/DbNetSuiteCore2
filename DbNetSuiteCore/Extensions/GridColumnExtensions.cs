@@ -43,7 +43,7 @@ namespace DbNetSuiteCore.Extensions
                     value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img {(string.IsNullOrEmpty(gridColumn.Style) ? "" : $"style=\"{gridColumn.Style}\"")} src =\"{s}\"/>"));
                     break;
                 default:
-                    value = ColumnModelHelper.FormatedValue(gridColumn,value);
+                    value = ColumnModelHelper.FormatValue(gridColumn,value);
                     break;
             }
 

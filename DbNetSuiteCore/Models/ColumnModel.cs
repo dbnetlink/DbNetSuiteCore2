@@ -1,10 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MongoDB.Bson;
 using System.Data;
 using System.Text.Json.Serialization;
@@ -163,6 +159,11 @@ namespace DbNetSuiteCore.Models
             {
                 case DataSourceType.MongoDB:
                     PrimaryKey = (Name == MongoDbRepository.PrimaryKeyName);
+                    if (this is FormColumn)
+                    {
+                        var formColumn = (FormColumn)this;
+                        formColumn.Autoincrement = (Name == MongoDbRepository.PrimaryKeyName);
+                    }
                     break;
             }
         }

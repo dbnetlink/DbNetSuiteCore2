@@ -9,7 +9,7 @@
         new FormColumn("EmployeeID") { PrimaryKey = true},
         new FormColumn("LastName"),
         new FormColumn("FirstName"),
-        new FormColumn("BirthDate"),
+        new FormColumn("BirthDate") { DataType = typeof(DateTime)},
         new FormColumn("Title") { ColSpan = 2 },
         new FormColumn("TitleOfCourtesy"),
         new FormColumn("HireDate") { MaxValue = DateTime.Today, HelpText = "Hire date cannot be after today", InitialValue = DateTime.Today },

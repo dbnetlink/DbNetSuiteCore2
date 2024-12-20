@@ -11,7 +11,7 @@
         new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
         new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
         new FormColumn("QuantityPerUnit", "Qty"){ InitialValue = 0},
-        new FormColumn("UnitPrice", "Price") {Required = true,InitialValue = 0, MinValue = 0, MaxValue = 100, Format = "c" },
+        new FormColumn("UnitPrice", "Price") {Required = true,InitialValue = 0, MinValue = 0.00, MaxValue = 100.00, Format = "c" },
         new FormColumn("UnitsInStock", "Stock") {Required = true,InitialValue = 0, MinValue = 0 },
         new FormColumn("UnitsOnOrder", "On Order") {Required = true,InitialValue = 0 },
         new FormColumn("ReorderLevel", "Re-order Level") {Required = true,InitialValue = 0, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },

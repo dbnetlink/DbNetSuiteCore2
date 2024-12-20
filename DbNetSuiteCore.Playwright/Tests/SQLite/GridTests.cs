@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.SQLite
 {
-    public class GridTests : Tests.GridTests
+    public class GridTests : SqlLiteDbSetup
     {
         [Test]
         public async Task QuickSearchTest()
