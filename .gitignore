@@ -363,3 +363,11 @@ MigrationBackup/
 FodyWeavers.xsd
 /DbNetTimeCore.Web/appsettings.Development.json
 /DbNetSuiteCore/Resources/JS/gridcontrol.js
+
+# Test databases
+/DbNetTimeCore.Web/wwwroot/Data/sqlite/testdb_*.db
+
+
+/DbNetSuiteCore.Web/wwwroot/Data/sqlite/testdb_0a8436a5ca5e48cca10e712952a43960.db
+/DbNetSuiteCore.Web/wwwroot/Data/sqlite/testdb_0da62af339c2478e933ba7be24915639.db
+/DbNetSuiteCore.Web/wwwroot/Data/sqlite/testdb_336b771bcd15469d95c80b1028b43860.db
