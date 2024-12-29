@@ -692,8 +692,9 @@ select {
   --tw-ring-color: rgb(14 116 144 / var(--tw-ring-opacity));
 }
 
-.dbnetsuite select.column-filter {
-  padding-right: 2rem;
+.dbnetsuite select.column-filter,
+        .dbnetsuite-form select {
+  padding-right: 2rem !important;
 }
 
 .dbnetsuite [type="checkbox"],

@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.JSON
 {
-    public class SelectTests : SqlLiteDbSetup
+    public class SelectTests : ComponentTests
     {
         [Test]
         public async Task SearchTest()
@@ -16,7 +16,7 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
 
             await SelectSearchTest(searches, "json/customers");
             await SelectSearchTest(searches, $"json/customers?port={Port}");
-          //  await SelectSearchTest(searches, $"json/customers?port={Port}&mode=string");
+            await SelectSearchTest(searches, $"json/customers?port={Port}&mode=string");
         }
 
         [Test]

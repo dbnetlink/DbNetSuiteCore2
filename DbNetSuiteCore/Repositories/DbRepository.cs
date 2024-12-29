@@ -207,7 +207,14 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+                if (string.IsNullOrEmpty(lookup.TableName))
+                {
+                    query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} order by 1"; ;
+                }
+                else
+                {
+                    query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+                }
             }
 
             DataTable lookupData;
@@ -284,10 +291,12 @@ namespace DbNetSuiteCore.Repositories
                     catch (Exception)
                     {
                         dataTable = new DataTable();
+                        /*
                         foreach (var column in componentModel.GetColumns())
                         {
-                            dataTable.Columns.Add(column.ColumnName, typeof(String));
+                          //  dataTable.Columns.Add(column.ColumnName);
                         }
+                        */
                     }
                 }
                 dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));

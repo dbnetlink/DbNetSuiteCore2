@@ -15,17 +15,22 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public IEnumerable<SelectColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false);
         [JsonIgnore]
-        public SelectColumn ValueColumn => NonOptionGroupColumns.First();
+        public SelectColumn? ValueColumn => NonOptionGroupColumns.FirstOrDefault();
         [JsonIgnore]
-        public SelectColumn DescriptionColumn => NonOptionGroupColumns.Count() == 1 ? NonOptionGroupColumns.First() : NonOptionGroupColumns.Skip(1).First();
+        public SelectColumn? DescriptionColumn => Columns.Any() ? (NonOptionGroupColumns.Count() == 1 ? NonOptionGroupColumns.First() : NonOptionGroupColumns.Skip(1).First()) : null;
         [JsonIgnore]
-        public SelectColumn OptionGroupColumn => Columns.Where(c => c.OptionGroup).First();
+        public SelectColumn? OptionGroupColumn => Columns.Where(c => c.OptionGroup).FirstOrDefault();
         [JsonIgnore]
-        public IEnumerable<SelectColumn> SearchableColumns
+        public override IEnumerable<SelectColumn> SearchableColumns
         {
             get
             {
-                var searchableColumns = new List<SelectColumn>() { DescriptionColumn };
+                var searchableColumns = new List<SelectColumn>();
+
+                if (DescriptionColumn != null)
+                {
+                    searchableColumns.Add(DescriptionColumn);
+                }
                 if (IsGrouped)
                 {
                     searchableColumns.Add(Columns.First(c => c.OptionGroup));

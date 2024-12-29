@@ -30,6 +30,7 @@ namespace DbNetSuiteCore.Models
         public string Caption { get; set; } = string.Empty;
         internal bool IgnoreSchemaTable { get; set; } = false;
         internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
+        public abstract IEnumerable<ColumnModel> SearchableColumns { get; }
 
         public string Url
         {

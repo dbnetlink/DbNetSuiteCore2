@@ -151,7 +151,7 @@ namespace DbNetSuiteCore.Repositories
 
             foreach (FormColumn formColumn in formModel.Columns.Where(c => c.PrimaryKey == false))
             {
-                if (formColumn.ReadOnly || formColumn.Disabled)
+                if (formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled)
                 {
                     continue;
                 };
@@ -567,7 +567,7 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                columns = componentModel.GetColumns().Where(c => c.Searchable).ToList();
+                columns = componentModel.SearchableColumns.ToList();
             }
 
             foreach (var expression in columns.Select(c => c.Expression).ToList())

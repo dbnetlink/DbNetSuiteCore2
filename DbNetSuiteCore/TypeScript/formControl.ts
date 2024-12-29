@@ -27,7 +27,7 @@ class FormControl extends ComponentControl {
             return
         }
 
-        this.notifyParent(this.formBody.dataset.mode.toLowerCase() == "update")
+        this.notifyParent(this.formMode() == "update")
 
 
         switch (this.triggerName(evt)) {
@@ -58,6 +58,10 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('RecordLoaded');
     }
 
+    private formMode() {
+        return this.formBody.dataset.mode.toLowerCase();
+    }
+
     public afterSettle(evt) {
         if (this.isControlEvent(evt) == false) {
             return false
@@ -76,14 +80,21 @@ class FormControl extends ComponentControl {
                 }
 
                 if (this.formBody.dataset.committype) {
-                    if (this.parentControl) {
-                        if (this.parentControl instanceof GridControl) {
-                            this.cachedMessage = this.formMessage.innerText;
-                            this.parentControl.refreshPage()
-                        }
-                    }
+                    this.refreshParent();
                 }
                 break;
+            case "delete":
+                this.refreshParent();
+                break;
+        }
+    }
+
+    private refreshParent() {
+        if (this.parentControl) {
+            if (this.parentControl instanceof GridControl) {
+                this.cachedMessage = this.formMessage.innerText;
+                this.parentControl.refreshPage()
+            }
         }
     }
 
@@ -217,12 +228,14 @@ class FormControl extends ComponentControl {
                 return;
         }
 
-        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el) });
-        let modified = this.controlElements(".fc-control[data-modified='true']");
+        if (this.formMode() != "empty") {
+            this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el) });
+            let modified = this.controlElements(".fc-control[data-modified='true']");
 
-        if (modified.length) {
-            evt.preventDefault();
-            this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
+            if (modified.length) {
+                evt.preventDefault();
+                this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
+            }
         }
     }
 
@@ -282,6 +295,9 @@ class FormControl extends ComponentControl {
     }
 
     private formModified() {
+        if (this.formMode() == "empty") {
+            return false;
+        }
         let modified = [];
         this.controlElements(".fc-control").forEach((el) => {
             if (this.elementModified(el)) { modified.push(el) }

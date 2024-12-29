@@ -3,8 +3,6 @@ class GridControl extends ComponentControl {
     private textColourClass = "text-zinc-100";
     viewDialog: ViewDialog;
     selectedRow: HTMLTableRowElement;
-
-
     constructor(gridId) {
         super(gridId)
     }
@@ -66,7 +64,7 @@ class GridControl extends ComponentControl {
             }
         }
 
-        let row: HTMLElement = document.querySelector(this.rowSelector(rowIndex));
+        let row: HTMLElement = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null));
         if (row) {
             row.click();
         }
@@ -116,8 +114,9 @@ class GridControl extends ComponentControl {
     public refreshPage() {
         let selector = `#${this.controlId} input[name="refresh"]`;
         let pk = htmx.find(selector) as HTMLInputElement;
-        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
-        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        let rowIndex = this.selectedRow ? this.selectedRow.rowIndex : 1;
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex  }));
+        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
         htmx.trigger(selector, "changed",);
     }
 
@@ -403,7 +402,7 @@ class GridControl extends ComponentControl {
     }
 
     private rowSelector(rowIndex: number|null = null) {
-        var tr = (rowIndex) ? `tr:nth-child(${rowIndex-1})` : 'tr.grid-row';
+        var tr = (rowIndex) ? `tr:nth-child(${rowIndex})` : 'tr.grid-row';
         return `#tbody${this.controlId} > ${tr}`
     }
 

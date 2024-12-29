@@ -20,7 +20,7 @@
         new FormColumn("Replacement_Cost") {Format = "C"},
         new FormColumn("Special_Features") {RowSpan = 2, ControlType = FormControlType.SelectMultiple, LookupList = new List<string>(){"Behind the Scenes","Commentaries","Deleted Scenes","Trailers" }},
         new FormColumn("Rating") {ColSpan = 1, ControlType = FormControlType.Text, LookupDictionary = new Dictionary<string, string>(){{"G", "General audiences (G)"},{"PG", "Parental Guidance (PG)" },{"PG-13", "Parents strongly cautioned (PG-13)"},{"R","Restricted (R)"},{"NC-17", "No children under 17 (NC-17)"}}, HelpText = "Select multiple values against a custom list"},
-        new FormColumn("Last_Update") { DataType = typeof(DateTime), ReadOnly = true}
+        new FormColumn("Last_Update") { DataType = typeof(DateTime), ReadOnly = ReadOnlyMode.InsertAndUpdate}
     };
 
     @(await new DbNetSuiteCore.Control(HttpContext).Render(filmForm))

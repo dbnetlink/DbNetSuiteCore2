@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using Microsoft.AspNetCore.Identity;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -60,7 +61,7 @@ namespace DbNetSuiteCore.Extensions
 
             foreach (FormColumn formColumn in formModel.Columns.Where(c => c.PrimaryKey == false))
             {
-                if (formColumn.ReadOnly || formColumn.Disabled)
+                if (formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled)
                 {
                     continue;
                 };
@@ -96,7 +97,7 @@ namespace DbNetSuiteCore.Extensions
 
             foreach (FormColumn formColumn in formModel.Columns.Where(c => c.Autoincrement == false))
             {
-                if (formColumn.ReadOnly || formColumn.Disabled)
+                if (formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled)
                 {
                     continue;
                 };
@@ -123,6 +124,11 @@ namespace DbNetSuiteCore.Extensions
             if (formModel.FormValues.Keys.Contains(columnName))
             {
                 value = formModel.FormValues[columnName];
+
+                if (formColumn.HashPassword)
+                {
+                    return PasswordHash.Hash(value);
+                }
             }
             else if (formColumn.DataType != typeof(bool))
             {

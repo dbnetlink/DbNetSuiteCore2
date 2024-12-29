@@ -51,7 +51,7 @@ class GridControl extends ComponentControl {
                 htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target)); });
             }
         }
-        let row = document.querySelector(this.rowSelector(rowIndex));
+        let row = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null));
         if (row) {
             row.click();
         }
@@ -92,8 +92,9 @@ class GridControl extends ComponentControl {
     refreshPage() {
         let selector = `#${this.controlId} input[name="refresh"]`;
         let pk = htmx.find(selector);
-        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
-        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        let rowIndex = this.selectedRow ? this.selectedRow.rowIndex : 1;
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
+        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
         htmx.trigger(selector, "changed");
     }
     invokeCellTransform(cell) {
@@ -331,7 +332,7 @@ class GridControl extends ComponentControl {
         return this.controlContainer.children[1];
     }
     rowSelector(rowIndex = null) {
-        var tr = (rowIndex) ? `tr:nth-child(${rowIndex - 1})` : 'tr.grid-row';
+        var tr = (rowIndex) ? `tr:nth-child(${rowIndex})` : 'tr.grid-row';
         return `#tbody${this.controlId} > ${tr}`;
     }
     multiRowSelectAllSelector() {

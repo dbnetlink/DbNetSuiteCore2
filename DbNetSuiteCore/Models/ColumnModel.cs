@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MongoDB.Bson;
 using System.Data;
 using System.Text.Json.Serialization;
@@ -93,7 +94,7 @@ namespace DbNetSuiteCore.Models
         public ColumnModel(DataRow dataRow, DataSourceType dataSourceType) : this()
         {
             Expression = (string)RowValue(dataRow, "ColumnName", string.Empty);
-            Update(dataRow, dataSourceType);
+            Update(dataRow, dataSourceType, true);
         }
 
         public ColumnModel(string expression, string label) : this()
@@ -168,11 +169,18 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public void Update(DataRow dataRow, DataSourceType dataSourceType)
+        public void Update(DataRow dataRow, DataSourceType dataSourceType, bool generated = false)
         {
             try
             {
-                DataType = (Type)dataRow["DataType"];
+                switch (dataSourceType)
+                {
+                    case DataSourceType.SQLite:
+                        break;
+                    default:
+                        DataType = (Type)dataRow["DataType"];
+                        break;
+                }
 
                 string dataTypeName = (string)RowValue(dataRow, "DataTypeName", string.Empty);
                 int providerType = (int)RowValue(dataRow, "ProviderType", 0);
@@ -194,7 +202,7 @@ namespace DbNetSuiteCore.Models
                         break;
                     case DataSourceType.SQLite:
                         DbDataType = dataTypeName;
-                        if (UserDataType == nameof(String))
+                        if (string.IsNullOrEmpty(UserDataType) == false)
                         {
                             break;
                         }
@@ -210,6 +218,9 @@ namespace DbNetSuiteCore.Models
                                 break;
                             case nameof(SQLiteDataTypes.REAL):
                                 UserDataType = nameof(Double);
+                                break;
+                            default:
+                                DataType = (Type)dataRow["DataType"];
                                 break;
                         }
                         break;
@@ -245,7 +256,7 @@ namespace DbNetSuiteCore.Models
                     formColumn.Required = (bool)RowValue(dataRow, "AllowDBNull", true) == false;
                 }
                 formColumn.Autoincrement = isAutoincrement;
-                if (formColumn.MaxLength.HasValue == false)
+                if (formColumn.MaxLength.HasValue == false && formColumn.DataType == typeof(String))
                 {
                     int columnSize = (int)RowValue(dataRow, "ColumnSize", -1);
                     if (columnSize > 0)

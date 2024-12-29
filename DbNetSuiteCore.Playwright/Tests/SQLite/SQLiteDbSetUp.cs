@@ -13,7 +13,7 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
         }
 
         [OneTimeSetUp]
-        public async Task DbOneTimeSetUp()
+        public void DbOneTimeSetUp()
         {
             var dbFolder = $"{SolutionFolder()}\\DbNetSuiteCore.Web\\wwwroot\\data\\sqlite";
             foreach (string path in Directory.GetFiles(dbFolder))

@@ -124,10 +124,13 @@ namespace DbNetSuiteCore.Services
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
-            if (gridModel.TriggerName == TriggerNames.ParentKey)
+            switch (gridModel.TriggerName)
             {
-                gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
-                gridModel.Columns.ToList().ForEach(c => c.DbLookupOptions = null);
+                case TriggerNames.ParentKey:
+                case TriggerNames.Refresh:
+                    gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
+                    gridModel.Columns.ToList().ForEach(c => c.DbLookupOptions = null);
+                    break;
             }
 
             await GetRecords(gridModel);

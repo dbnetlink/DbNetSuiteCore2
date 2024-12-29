@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 List<string> searchFilterPart = new List<string>();
 
-                foreach (var columnName in gridModel.Columns.Where(c => c.Searchable).Select(c => c.Name).ToList())
+                foreach (var columnName in gridModel.SearchableColumns.Select(c => c.Name).ToList())
                 {
                     searchFilterPart.Add($"{TextHelper.DelimitColumn(columnName, gridModel.DataSourceType)} like '%{gridModel.SearchInput}%'");
                 }

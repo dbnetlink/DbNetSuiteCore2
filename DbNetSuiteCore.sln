@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.Web", "DbNet
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.Playwright", "DbNetSuiteCore.Playwright\DbNetSuiteCore.Playwright.csproj", "{B05EE004-BBB5-43ED-850A-44C988903F76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbNetSuiteCore.UnitTests", "DbNetSuiteCore.UnitTests\DbNetSuiteCore.UnitTests.csproj", "{E9F16AAA-02C8-47AF-9A40-C5E8E53383EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.UnitTests", "DbNetSuiteCore.UnitTests\DbNetSuiteCore.UnitTests.csproj", "{E9F16AAA-02C8-47AF-9A40-C5E8E53383EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

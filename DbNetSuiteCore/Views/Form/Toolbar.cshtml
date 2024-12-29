@@ -8,7 +8,7 @@
 @using DbNetSuiteCore.Constants
 
 <div id="toolbar" class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 @Justify()">
-    @if (Model.Mode != FormMode.Insert && Model.FormModel.OneToOne == false)
+    @if (Model.ShowQuickSearch)
     {
         <input style="width:10rem" type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="@TriggerNames.Search" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
     }
@@ -21,7 +21,7 @@
         </div>
     }
 
-    @if (Model.Mode == FormMode.Update && Model.FormModel.OneToOne == false)
+    @if (Model.ShowNavigation)
     {
         <div id="navigation" class="flex flex-row gap-1 items-center">
             @{
@@ -41,15 +41,15 @@
         @await Html.PartialAsync("QueryLimitWarning", Model.FormModel)
     }
 
-    @if (RenderInsert() || RenderDelete())
+    @if (Model.RenderInsertDelete)
     {
         <div class="flex flex-row gap-1" id="insertUpdate">
             @{
-                if (RenderInsert())
+                if (Model.RenderInsert)
                 {
                     RenderButton("insert", IconHelper.Insert(), NavButtonText(ResourceNames.Insert));
                 }
-                if (RenderDelete())
+                if (Model.RenderDelete)
                 {
                     RenderButton(TriggerNames.Delete, IconHelper.Delete(), NavButtonText(ResourceNames.Delete), false, "background-color: rgb(255 228 230)");
                 }
@@ -103,25 +103,15 @@
         return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
     }
 
-    bool RenderInsert()
-    {
-        return Model.FormModel.Insert && Model.Mode != FormMode.Insert && Model.ReadOnly == false;
-    }
-
-    bool RenderDelete()
-    {
-        return Model.FormModel.Delete && Model.Mode == FormMode.Update && Model.ReadOnly == false;
-    }
-
     string Justify()
     {
         if (Model.FormModel.OneToOne)
         {
-            return Model.Mode == FormMode.Insert ? "justify-end" : (RenderInsert() || RenderDelete() ? "justify-between" : "justify-end");
+            return Model.Mode == FormMode.Insert ? "justify-end" : (Model.RenderInsertDelete ? "justify-between" : "justify-end");
         }
         else
         {
-            return Model.Mode == FormMode.Insert ? "justify-end" : "justify-between";
+            return Model.JustifyEnd ? "justify-end" : "justify-between";
         }
     }
 }

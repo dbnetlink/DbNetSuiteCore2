@@ -224,7 +224,7 @@ class GridControl extends ComponentControl {
                 htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target)); });
             }
         }
-        let row = document.querySelector(this.rowSelector(rowIndex));
+        let row = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null));
         if (row) {
             row.click();
         }
@@ -265,8 +265,9 @@ class GridControl extends ComponentControl {
     refreshPage() {
         let selector = `#${this.controlId} input[name="refresh"]`;
         let pk = htmx.find(selector);
-        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
-        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: this.selectedRow.rowIndex }));
+        let rowIndex = this.selectedRow ? this.selectedRow.rowIndex : 1;
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
+        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
         htmx.trigger(selector, "changed");
     }
     invokeCellTransform(cell) {
@@ -504,7 +505,7 @@ class GridControl extends ComponentControl {
         return this.controlContainer.children[1];
     }
     rowSelector(rowIndex = null) {
-        var tr = (rowIndex) ? `tr:nth-child(${rowIndex - 1})` : 'tr.grid-row';
+        var tr = (rowIndex) ? `tr:nth-child(${rowIndex})` : 'tr.grid-row';
         return `#tbody${this.controlId} > ${tr}`;
     }
     multiRowSelectAllSelector() {
@@ -620,7 +621,7 @@ class FormControl extends ComponentControl {
         if (!this.formBody) {
             return;
         }
-        this.notifyParent(this.formBody.dataset.mode.toLowerCase() == "update");
+        this.notifyParent(this.formMode() == "update");
         switch (this.triggerName(evt)) {
             case "initialload":
                 this.initialise();
@@ -643,6 +644,9 @@ class FormControl extends ComponentControl {
         this.setFocus();
         this.invokeEventHandler('RecordLoaded');
     }
+    formMode() {
+        return this.formBody.dataset.mode.toLowerCase();
+    }
     afterSettle(evt) {
         if (this.isControlEvent(evt) == false) {
             return false;
@@ -657,14 +661,20 @@ class FormControl extends ComponentControl {
                     this.validateUpdate();
                 }
                 if (this.formBody.dataset.committype) {
-                    if (this.parentControl) {
-                        if (this.parentControl instanceof GridControl) {
-                            this.cachedMessage = this.formMessage.innerText;
-                            this.parentControl.refreshPage();
-                        }
-                    }
+                    this.refreshParent();
                 }
                 break;
+            case "delete":
+                this.refreshParent();
+                break;
+        }
+    }
+    refreshParent() {
+        if (this.parentControl) {
+            if (this.parentControl instanceof GridControl) {
+                this.cachedMessage = this.formMessage.innerText;
+                this.parentControl.refreshPage();
+            }
         }
     }
     triggerCommit() {
@@ -778,11 +788,13 @@ class FormControl extends ComponentControl {
             case "primarykey":
                 return;
         }
-        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el); });
-        let modified = this.controlElements(".fc-control[data-modified='true']");
-        if (modified.length) {
-            evt.preventDefault();
-            this.setMessage(this.formBody.dataset.unappliedmessage, 'warning');
+        if (this.formMode() != "empty") {
+            this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el); });
+            let modified = this.controlElements(".fc-control[data-modified='true']");
+            if (modified.length) {
+                evt.preventDefault();
+                this.setMessage(this.formBody.dataset.unappliedmessage, 'warning');
+            }
         }
     }
     configureHtmlEditor(configuration, name) {
@@ -833,6 +845,9 @@ class FormControl extends ComponentControl {
         return element;
     }
     formModified() {
+        if (this.formMode() == "empty") {
+            return false;
+        }
         let modified = [];
         this.controlElements(".fc-control").forEach((el) => {
             if (this.elementModified(el)) {

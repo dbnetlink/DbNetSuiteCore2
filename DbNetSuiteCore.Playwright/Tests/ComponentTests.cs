@@ -10,7 +10,7 @@ using DbNetSuiteCore.Playwright.Enums;
 
 namespace DbNetSuiteCore.Playwright.Tests
 {
-    public class SqlLiteDbSetup : PageTest
+    public class ComponentTests : PageTest
     {
         private int _port;
         protected CustomWebApplicationFactory<Program> _factory;

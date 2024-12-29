@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -18,9 +19,16 @@ namespace DbNetSuiteCore.ViewModels
         public DataRow Record => FormModel.Data.Rows.Count == 0 ? FormModel.Data.NewRow() : FormModel.Data.Rows[0];
         public object RecordId => FormModel.RecordId;
         public string SearchInput => FormModel.SearchInput;
-        public bool HideToolbar => FormModel.IsLinked && string.IsNullOrEmpty(FormModel.ParentKey);
+        public bool HideToolbar => FormModel.IsLinked && string.IsNullOrEmpty(FormModel.ParentKey) && FormModel.OneToOne == false;
         public FormMode Mode => FormModel.Mode;
         public bool ReadOnly => FormModel.ReadOnly;
+        public bool RenderInsert => FormModel.Insert && Mode != FormMode.Insert && ReadOnly == false;
+        public bool RenderDelete => FormModel.Delete && Mode == FormMode.Update && ReadOnly == false;
+        public bool ShowNavigation => Mode == FormMode.Update && FormModel.OneToOne == false;
+        public bool ShowQuickSearch => Mode != FormMode.Insert && FormModel.OneToOne == false && FormModel.SearchableColumns.Any();
+        public bool RenderInsertDelete => RenderInsert || RenderDelete;
+        public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation ==  false && ShowQuickSearch == false);
+
         public FormViewModel(FormModel formModel) : base(formModel)
         {
             _formModel = formModel;

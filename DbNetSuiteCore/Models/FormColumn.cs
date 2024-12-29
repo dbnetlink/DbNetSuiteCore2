@@ -1,12 +1,10 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Drawing;
 using Microsoft.AspNetCore.Html;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Data;
-using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Models
 {
@@ -14,10 +12,11 @@ namespace DbNetSuiteCore.Models
     {
         private object? _minValue { get; set; } = null;
         private object? _maxValue { get; set; } = null;
+        private bool _suggest = false;
         public FormControlType ControlType { get; set; } = FormControlType.Auto;
         public bool Required { get; set; } = false;
         public bool InError { get; set; } = false;
-        public bool ReadOnly { get; set; } = false;
+        public ReadOnlyMode? ReadOnly { get; set; } = null;
         public bool Disabled { get; set; } = false;
         public object? InitialValue { get; set; } = null;
         public object? MinValue
@@ -70,8 +69,41 @@ namespace DbNetSuiteCore.Models
         public string Style { get; set; } = string.Empty;
         public string? Pattern { get; set; } = null;
         public double? Step { get; set; } = null;
+        public bool Suggest
+        {
+            get { return _suggest; }
+            set
+            {
+                _suggest = value;
+                if (value == true && Lookup == null)
+                {
+                    Lookup = new Lookup();
+                }
+            }
+        }
 
-        public bool SelectControlType => ControlType == FormControlType.Auto || ControlType == FormControlType.SelectMultiple;
+        public bool HashPassword { get; set; } = false;
+        public bool IsReadOnly(FormMode formMode)
+        {
+            if (ReadOnly.HasValue == false)
+            {
+                return false;
+            }
+
+            switch (ReadOnly.Value)
+            {
+                case ReadOnlyMode.InsertAndUpdate:
+                    return true;
+                case ReadOnlyMode.InsertOnly: 
+                    return formMode == FormMode.Insert;
+                case ReadOnlyMode.UpdateOnly:
+                    return formMode == FormMode.Update;
+            }
+
+            return false;
+        }
+
+        public bool SelectControlType => (ControlType == FormControlType.Auto && Suggest == false) || ControlType == FormControlType.SelectMultiple;
 
         public HtmlEditor? HtmlEditor { get; set; } = null;
         public FormColumn()
@@ -288,16 +320,17 @@ namespace DbNetSuiteCore.Models
             List<string> select = new List<string>();
 
             select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(formModel, attr)}>");
-            select.AddRange(OptionsList(values));
+            select.AddRange(OptionsList(values, false));
             select.Add($"</select>{HelpTextElement()}");
 
             return new HtmlString(String.Join(string.Empty, select));
         }
 
-        private List<string> OptionsList(List<string>? values = null)
+        private List<string> OptionsList(List<string>? values = null, bool dataList = true)
         {
             List<string> options = new List<string>();
-            if (Required == false)
+
+            if (dataList == false)
             {
                 options.Add("<option value=\"\"></option >");
             }
@@ -361,7 +394,7 @@ namespace DbNetSuiteCore.Models
                 classes.Add("text-right");
             }
 
-            if (ReadOnly || DataType == typeof(Guid) || formModel.ReadOnly)
+            if (IsReadOnly(formModel.Mode) || DataType == typeof(Guid) || formModel.ReadOnly)
             {
                 classes.Add("readonly");
             }
@@ -378,7 +411,7 @@ namespace DbNetSuiteCore.Models
         {
             List<string> classes = new List<string>() { "fc-control" };
 
-            if (ReadOnly || formModel.ReadOnly)
+            if (IsReadOnly(formModel.Mode) || formModel.ReadOnly)
             {
                 classes.Add("readonly");
             }
@@ -397,7 +430,7 @@ namespace DbNetSuiteCore.Models
             {
                 attributes.Add("required");
             }
-            if ((ReadOnly && LookupOptions == null) || formModel.ReadOnly)
+            if ((IsReadOnly(formModel.Mode) && LookupOptions == null) || formModel.ReadOnly)
             {
                 attributes.Add("readonly");
             }

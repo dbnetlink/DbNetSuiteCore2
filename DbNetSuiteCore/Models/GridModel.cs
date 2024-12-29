@@ -40,7 +40,7 @@ namespace DbNetSuiteCore.Models
         public bool IsNested { get; set; } = false;
        
         public int ColSpan => VisbleColumns.ToList().Count;
-
+        public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.Searchable);
         public List<string> LinkedGridIds => GetLinkedControlIds(nameof(GridModel));  
 
         public List<GridModel> _NestedGrids { get; set; } = new List<GridModel>();
@@ -160,6 +160,7 @@ namespace DbNetSuiteCore.Models
                 if (string.IsNullOrEmpty(CurrentSortKey))
                 {
                     CurrentSortKey = InitalSortColumn?.Key ?? string.Empty;
+                    CurrentSortSequence = InitalSortColumn?.InitialSortOrder ?? SortOrder.Asc;
                 }
                 SortSequence = CurrentSortSequence ?? SortOrder.Asc;
             }

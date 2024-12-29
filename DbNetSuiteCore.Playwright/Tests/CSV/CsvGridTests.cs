@@ -1,9 +1,8 @@
-﻿using DbNetSuiteCore.Playwright.Models;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.CSV
 {
-    public class CsvGridTests : SqlLiteDbSetup
+    public class CsvGridTests : ComponentTests
     {
 
         [Test]

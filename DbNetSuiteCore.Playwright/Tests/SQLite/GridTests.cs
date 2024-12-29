@@ -1,9 +1,10 @@
 ﻿using DbNetSuiteCore.Playwright.Models;
+using DbNetSuiteCore.Playwright.Tests.PostgreSql;
 using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.SQLite
 {
-    public class GridTests : SqlLiteDbSetup
+    public class GridTests : SQLiteDbSetUp
     {
         [Test]
         public async Task QuickSearchTest()

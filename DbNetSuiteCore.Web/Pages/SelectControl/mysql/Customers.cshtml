@@ -6,6 +6,7 @@
 @using Microsoft.Extensions.Primitives
 @using DbNetSuiteCore.Web.Helpers
 @{
-    var customersSelect = new SelectModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "customer") { Searchable = true };
+    var customersSelect = new SelectModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "northwind2.customer") { Searchable = true };
+
     @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customersSelect))
 }

@@ -20,7 +20,6 @@ namespace DbNetSuiteCore.Helpers
         }
         public static string ObfuscateString(string input, IConfiguration configuration)
         {
-            //return input;
             var encryptionConfig = GetEncryptionConfig(configuration);
 
             if (encryptionConfig.IsValid == false)
@@ -32,7 +31,6 @@ namespace DbNetSuiteCore.Helpers
 
         public static string DeobfuscateString(string input, IConfiguration configuration)
         {
-            //return input;
             var encryptionConfig = GetEncryptionConfig(configuration);
 
             if (encryptionConfig.IsValid == false)

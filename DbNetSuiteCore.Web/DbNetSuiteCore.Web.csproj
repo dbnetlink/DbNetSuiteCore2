@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Content Remove="appsettings.json" />
+    <Content Remove="Pages\Accounts.cshtml" />
     <Content Remove="Pages\FormControl\mssql\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mongodb\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <None Include="appsettings.json" />
+    <None Include="Pages\Accounts.cshtml" />
     <None Include="Pages\FormControl\mssql\BrowseDb.cshtml" />
     <None Include="Pages\form_layout.cshtml" />
     <None Include="Pages\GridControl\mongodb\BrowseDb.cshtml" />

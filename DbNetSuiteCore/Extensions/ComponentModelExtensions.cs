@@ -64,7 +64,7 @@ namespace DbNetSuiteCore.Extensions
             if (!string.IsNullOrEmpty(componentModel.SearchInput))
             {
 
-                foreach (var column in componentModel.GetColumns().Where(c => c.Searchable))
+                foreach (var column in componentModel.SearchableColumns)
                 {
                     ComponentModelExtensions.AddSearchFilterPart(componentModel, column, query, filterParts);
                 }
