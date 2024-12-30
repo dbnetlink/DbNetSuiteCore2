@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.SQLite
 {
-    public class SelectTests : SQLiteDbSetUp
+    public class SelectTests : ComponentTests
     {
         [Test]
         public async Task SearchTest()
@@ -14,7 +14,8 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "", 92 }
             };
 
-            await SelectSearchTest(searches, $"sqlite/customers?db={DatabaseName}");
+            await SelectSearchTest(searches, $"sqlite/customers");
+            await SelectSearchTest(searches, $"customers", true);
         }
 
         [Test]
@@ -25,7 +26,8 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "", new KeyValuePair<int, int>(77,8) }
             };
 
-            await SelectGroupTest(searches, $"sqlite/products?db={DatabaseName}");
+            await SelectGroupTest(searches, $"sqlite/products");
+            await SelectGroupTest(searches, $"products", true);
         }
     }
 }

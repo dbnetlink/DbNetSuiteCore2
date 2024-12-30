@@ -1,0 +1,38 @@
+﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="flex flex-@(Model.SelectModel.Layout == LayoutType.Column ? "col" : "row") relative gap-1">
+
+    @if (string.IsNullOrEmpty(Model.SelectModel.Caption) == false)
+    {
+        <div class="flex">
+            <div class="flex text-lg caption">@Model.SelectModel.Caption</div>
+        </div>
+    }
+    @if (Model.SelectModel.Searchable)
+    {
+        <div class="flex">
+            <input type="search" class="w-full" aria-label="Search" name="@TriggerNames.Search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" autocomplete="off" />
+        </div>
+    }
+    <div class="flex">
+        <select id="@Model.SelectModel.Id" class="w-full" style="padding-right:2rem" @RazorHelper.Attribute("size", Model.SelectModel.Size) @Multiple() data-linkedselectids="@Model.LinkedSelectIds" data-linkedcontrolids="@Model.LinkedControlIds">></select>
+    </div>
+    <div class="flex target">
+        @await Html.PartialAsync("Select/__Options", Model)
+    </div>
+    @await Html.PartialAsync("__ToastMessage")
+</div>
+
+@functions {
+    public HtmlString? Multiple()
+    {
+        return (Model.SelectModel.Size > 0 && Model.SelectModel.RowSelection == RowSelection.Multiple) ? new HtmlString("multiple") : null;
+    }
+}

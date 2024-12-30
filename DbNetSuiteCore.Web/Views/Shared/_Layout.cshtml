@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main style="padding:20px">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @DbNetSuiteCore.Resources.ClientScript()
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

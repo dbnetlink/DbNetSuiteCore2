@@ -1,0 +1,34 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Insert = true, Delete = true, LayoutColumns = 3 };
+    productForm.Columns = new List<FormColumn>() {
+        new FormColumn("ProductID","ID") { DataOnly = true},
+        new FormColumn("ProductName", "Name"),
+        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
+        new FormColumn("QuantityPerUnit", "Qty"){ InitialValue = 0},
+        new FormColumn("UnitPrice", "Price") {Required = true,InitialValue = 0, MinValue = 0.00, MaxValue = 100.00, Format = "c" },
+        new FormColumn("UnitsInStock", "Stock") {Required = true,InitialValue = 0, MinValue = 0 },
+        new FormColumn("UnitsOnOrder", "On Order") {Required = true,InitialValue = 0 },
+        new FormColumn("ReorderLevel", "Re-order Level") {Required = true,InitialValue = 0, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
+        new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true, HelpText = "Discontinued products must have a re-order level of 0"}
+    };
+
+    productForm.FixedFilter = "UnitPrice > @unitprice";
+    productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
+
+    productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateUpdate";
+    @(await new DbNetSuiteCore.Control(Context).Render(productForm))
+}
+
+<script>
+    function validateUpdate(formControl, args) {
+        if (formControl.formControlValue("discontinued") && formControl.formControlValue("ReorderLevel") > 0) {
+            formControl.highlightError("discontinued");
+            formControl.highlightError("ReorderLevel");
+            args.message = `Re-order level must be zero for discontinued products`;
+        }
+    }
+</script>

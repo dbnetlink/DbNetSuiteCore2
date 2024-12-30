@@ -1,0 +1,25 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @DbNetSuiteCore.Resources.StyleSheet() @* Add the stylesheet *@
+</head>
+<body>
+    <main>
+@{
+            @* Pass the data source type, connection alias and table/view name to the constructor *@
+            var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind", "Customers");
+            @* Render the grid control *@
+            @(await new DbNetSuiteCore.Control(Context).Render(customerGrid))
+}
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript() @* Add the client-side library *@
+</body>
+</html>
+

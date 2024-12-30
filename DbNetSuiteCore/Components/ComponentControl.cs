@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace DbNetSuiteCore
 {
@@ -22,17 +23,17 @@ namespace DbNetSuiteCore
 
             ValidateControl(gridModel);
 
-            return await RenderView("Grid/ControlForm", gridModel);
+            return await RenderView("Grid/__ControlForm", gridModel);
         }
 
         public async Task<HtmlString> Render(SelectModel selectModel)
         {
-            return await RenderView("Select/ControlForm", selectModel);
+            return await RenderView("Select/__ControlForm", selectModel);
         }
 
         public async Task<HtmlString> Render(FormModel formModel)
         {
-            return await RenderView("Form/ControlForm", formModel);
+            return await RenderView("Form/__ControlForm", formModel);
         }
 
         protected void ValidateControl(ComponentModel componentModel)
@@ -45,6 +46,11 @@ namespace DbNetSuiteCore
 
         protected async Task<HtmlString> RenderView(string viewName, ComponentModel componentModel)
         {
+            if (_httpContext == null)
+            {
+                return new HtmlString("<div style=\"padding:20px\"> An instance of HttpContext must be passed to the DbNetSuiteCore control constructor. This should be the <b>HttpContext</b> property in a Razor pages or the <b>Context</b> property in an MVC view e.g. </br><code>...</br> @(await new DbNetSuiteCore.Control(<b>HttpContext</b>).Render(customerGrid))</br>...</br> @(await new DbNetSuiteCore.Control(<b>Context</b>).Render(customerGrid))</br>...</code></div>");
+            }
+
             var viewRenderService = _httpContext.RequestServices.GetService<RazorViewToStringRenderer>();
             return new HtmlString(await viewRenderService!.RenderViewToStringAsync(viewName, componentModel));
         }

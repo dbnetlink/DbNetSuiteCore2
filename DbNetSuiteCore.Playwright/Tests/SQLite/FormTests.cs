@@ -32,6 +32,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await FormQuickSearchTest(searches, $"sqlite/customers?db={DatabaseName}");
+            await FormQuickSearchTest(searches, $"customers?db={DatabaseName}", true);
         }
 
         [Test]
@@ -41,6 +42,11 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             await FormQuickSearchTest(new Dictionary<string, int>() { { "DBNET", 1 }});
             await FormDeleteTest();
             await FormQuickSearchTest(new Dictionary<string, int>() {{ "DBNET", 0 }, { "", 91 }});
+
+            await FormInsertTest(InsertValues, $"customers?db={DatabaseName}", true);
+            await FormQuickSearchTest(new Dictionary<string, int>() { { "DBNET", 1 } });
+            await FormDeleteTest();
+            await FormQuickSearchTest(new Dictionary<string, int>() { { "DBNET", 0 }, { "", 91 } });
         }
     }
 }

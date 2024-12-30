@@ -1,0 +1,51 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var citySelect = new SelectModel("cities") { Caption = "City", Searchable = true };
+    citySelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("cityid") {PrimaryKey = true },
+        new SelectColumn("cityname"),
+        new SelectColumn("stateid") { ForeignKey = true }
+    };
+
+    citySelect.ClientEvents[SelectClientEvent.OptionSelected] = "showSelectedCity";
+
+    var stateSelect = new SelectModel("states") { Caption = "State", Distinct = true };
+    stateSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("stateid") {PrimaryKey = true },
+        new SelectColumn("statename"),
+        new SelectColumn("countryid") { ForeignKey = true}
+    };
+    stateSelect.LinkedControl = citySelect;
+
+    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "countries") { Caption = "Country", Distinct = true };
+    countrySelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("countryid") {PrimaryKey = true },
+        new SelectColumn("countryname")
+    };
+    countrySelect.LinkedControl = stateSelect;
+}
+@(await new DbNetSuiteCore.SelectControl(Context).Render(countrySelect))
+@(await new DbNetSuiteCore.SelectControl(Context).Render(stateSelect))
+@(await new DbNetSuiteCore.SelectControl(Context).Render(citySelect))
+
+
+<script>
+    function showSelectedCity(selectControl, args)
+    {
+        alert(`${selectControl.parentControl.parentControl.select.selectedOptions[0].text} => ${selectControl.parentControl.select.selectedOptions[0].text} => ${args.selectedOptions[0].text}`)
+
+        for (var id in selectControl.parentControl.parentControl.childControls) { 
+            alert(selectControl.parentControl.parentControl.childControls[id].select.selectedOptions[0].text)
+        }
+
+        for (var id in selectControl.parentControl.childControls) {
+            alert(selectControl.parentControl.childControls[id].select.selectedOptions[0].text)
+        }
+    }
+</script>

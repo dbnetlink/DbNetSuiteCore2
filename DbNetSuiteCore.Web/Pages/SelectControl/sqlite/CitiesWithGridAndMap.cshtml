@@ -5,13 +5,12 @@
 @using DbNetSuiteCore.Web.Enums
 
 @{
-    var citiesGrid = new GridModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "."};
+    var citiesGrid = new GridModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "." };
     citiesGrid.Columns = new List<GridColumn>
     {
-        new GridColumn("id") { ForeignKey = true},
-        new GridColumn("Name", "City") ,
-        new GridColumn("state_name", "State"),
-        new GridColumn("country_name", "Country"),
+        new GridColumn("cityid") { ForeignKey = true},
+        new GridColumn("CityName", "City") ,
+        new GridColumn("stateid", "State") {Lookup = new Lookup("states","stateid","statename")},
         new GridColumn("latitude"),
         new GridColumn("longitude"),
         new GridColumn("(latitude & ',' & longitude)", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
@@ -22,27 +21,27 @@
     var citySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "City", Searchable = true };
     citySelect.Columns = new List<SelectColumn>
     {
-        new SelectColumn("id") {PrimaryKey = true },
-        new SelectColumn("name"),
-        new SelectColumn("state_id") { ForeignKey = true }
+        new SelectColumn("cityid") {PrimaryKey = true },
+        new SelectColumn("cityname"),
+        new SelectColumn("stateid") { ForeignKey = true }
     };
 
     citySelect.LinkedControl = citiesGrid;
 
-    var stateSelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "State", Searchable = true, Distinct = true };
+    var stateSelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "states") { Caption = "State", Searchable = true, Distinct = true };
     stateSelect.Columns = new List<SelectColumn>
     {
-        new SelectColumn("state_id") {PrimaryKey = true },
-        new SelectColumn("state_name"),
-        new SelectColumn("country_id") { ForeignKey = true }
+        new SelectColumn("stateid") {PrimaryKey = true },
+        new SelectColumn("statename"),
+        new SelectColumn("countryid") { ForeignKey = true }
     };
     stateSelect.LinkedControl = citySelect;
 
-    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "Country", Searchable = true, Distinct = true };
+    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "countries") { Caption = "Country", Searchable = true, Distinct = true };
     countrySelect.Columns = new List<SelectColumn>
     {
-        new SelectColumn("country_id") {PrimaryKey = true },
-        new SelectColumn("country_name")
+        new SelectColumn("countryid") {PrimaryKey = true },
+        new SelectColumn("countryname")
     };
     countrySelect.LinkedControl = stateSelect;
 }

@@ -3,7 +3,7 @@ using DbNetSuiteCore.Web.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
-
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -27,11 +27,13 @@ app.MapGet("/orders", () =>
 app.MapGet("/superstore", () =>
     FileHelper.GetJson("/data/json/superstore.json", builder.Environment));
 
-
 app.UseRouting();
 
 app.UseAuthorization();
 app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller}/{action}/{id?}");
 
 app.Run();
 

@@ -36,7 +36,7 @@ namespace DbNetSuiteCore.Services
             catch (Exception ex)
             {
                 context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
-                return await View("Error", ex);
+                return await View("__Error", ex);
             }
         }
 
@@ -50,11 +50,11 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.NestedGrid:
-                    return await View("Grid/Nested", ConfigureNestedGrid(gridModel));
+                    return await View("Grid/__Nested", ConfigureNestedGrid(gridModel));
                 case TriggerNames.ViewDialogContent:
-                    return await View("Grid/ViewDialogContent", await ViewDialogContent(gridModel));
+                    return await View("Grid/__ViewDialogContent", await ViewDialogContent(gridModel));
                 default:
-                    string viewName = gridModel.Uninitialised ? "Grid/Markup" : "Grid/Rows";
+                    string viewName = gridModel.Uninitialised ? "Grid/__Markup" : "Grid/__Rows";
                     return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
@@ -211,7 +211,7 @@ namespace DbNetSuiteCore.Services
             _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
             var gridViewModel = await GetGridViewModel(gridModel);
             gridViewModel.RenderMode = RenderMode.Export;
-            return await View("Grid/Export", gridViewModel);
+            return await View("Grid/__Export", gridViewModel);
         }
 
         private byte[] ConvertDataTableToJSON(DataTable dataTable)

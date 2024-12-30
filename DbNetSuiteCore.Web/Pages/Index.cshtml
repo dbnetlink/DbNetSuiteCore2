@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-    <p style="width:700px; padding-bottom:20px">Only the pages in the <b>json</b> and <b>sqlite</b> folders are guaranteed to run without changes. For other databases you will need to add your own connection strings to the <b>appsettings.json</b> file and update the connection aliases in the relevant <b>BrowseDb.cshtml.cs</b> file</p>
+    <p style="width:700px; padding-bottom:20px">These are Razor page samples. MVC samples <a href="/home/index">here</a></p>
 
     var samplesGrid = new GridModel(DataSourceType.FileSystem, "../Pages") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml','index.cshtml')" };
     samplesGrid.Columns = new List<GridColumn>()

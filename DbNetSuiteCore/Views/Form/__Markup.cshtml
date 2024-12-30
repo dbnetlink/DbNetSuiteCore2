@@ -1,0 +1,14 @@
+﻿@model DbNetSuiteCore.ViewModels.FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="form-container" data-linkedcontrolids="@Model.LinkedControlIds">
+    @await Html.PartialAsync("Form/__Form")
+    @await Html.PartialAsync("__ToastMessage")
+    @await Html.PartialAsync("Form/__ConfirmDialog")
+</div>

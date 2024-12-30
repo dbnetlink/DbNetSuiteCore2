@@ -1,0 +1,25 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main>
+        @{
+            var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+            customerSelect.FixedFilter = "companyname like @companyname";
+            customerSelect.FixedFilterParameters.Add(new DbParameter("@companyname", "B%"));
+            @(await new DbNetSuiteCore.Control(Context).Render(customerSelect))
+}
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

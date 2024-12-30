@@ -36,7 +36,7 @@ namespace DbNetSuiteCore.Services
             catch (Exception ex)
             {
                 context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
-                return await View("Error", ex);
+                return await View("__Error", ex);
             }
         }
 
@@ -56,7 +56,7 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.Insert:
                     return await InitialiseInsert(formModel);
                 default:
-                    string viewName = formModel.Uninitialised ? "Form/Markup" : "Form/Form";
+                    string viewName = formModel.Uninitialised ? "Form/__Markup" : "Form/__Form";
                     return await View(viewName, await GetFormViewModel(formModel));
             }
         }
@@ -144,7 +144,7 @@ namespace DbNetSuiteCore.Services
                 await GetRecord(formModel);
             }
 
-            return await View("Form/Form", formViewModel);
+            return await View("Form/__Form", formViewModel);
         }
 
         private async Task CommitUpdate(FormModel formModel)
@@ -189,19 +189,19 @@ namespace DbNetSuiteCore.Services
                 formModel.Message = ex.Message;
                 formModel.MessageType = MessageType.Error;
             }
-            return await View("Form/Form", await GetFormViewModel(formModel));
+            return await View("Form/__Form", await GetFormViewModel(formModel));
         }
 
         private async Task<Byte[]> Toolbar(FormModel formModel)
         {
-            return await View("Form/Toolbar", new FormViewModel(formModel));
+            return await View("Form/__Toolbar", new FormViewModel(formModel));
         }
 
         private async Task<Byte[]> InitialiseInsert(FormModel formModel)
         {
             formModel.Mode = FormMode.Insert;
             await GetLookupOptions(formModel);
-            return await View("Form/Form", new FormViewModel(formModel));
+            return await View("Form/__Form", new FormViewModel(formModel));
         }
 
         private async Task<bool> ValidateRecord(FormModel formModel)

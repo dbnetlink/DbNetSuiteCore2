@@ -1,0 +1,48 @@
+﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Extensions
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@{
+    var rowNumber = 0;
+    <select style="display:none">
+        @if (Model.Rows.Count > 0 && string.IsNullOrEmpty(Model.SelectModel.EmptyOption) == false)
+        {
+            <option value="">@Model.SelectModel.EmptyOption</option>
+        }
+
+        @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)
+        {
+            @Model.OpenOptionGroup(Model.Rows[0])
+        }
+
+        @foreach (DataRow row in Model.Rows)
+        {
+            @if (rowNumber > 0 && Model.ChangeInGroup(rowNumber))
+            {
+                @Model.CloseOptionGroup()
+                @Model.OpenOptionGroup(row)
+            }
+            @Model.RenderOption(row, rowNumber)
+            rowNumber++;
+        }
+        @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)
+        {
+            @Model.CloseOptionGroup()
+        }
+
+        @if (Model.Rows.Count == 0 && Model.SelectModel.IsLinked == false)
+        {
+            @Model.RenderNoRecordsOption()
+        }
+    </select>
+}
+@await Html.PartialAsync("Select/__Hidden", Model.SelectModel)
+@if (Model.SelectModel.IsLinked)
+{
+    <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest div.target" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.SelectModel.ParentKey" />
+}

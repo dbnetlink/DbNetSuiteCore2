@@ -1,0 +1,69 @@
+﻿@model FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.ViewModels
+@using Microsoft.AspNetCore.Html
+@using System.Text.Json
+@using DbNetSuiteCore.Constants
+
+<div id="toolbar" class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 @Model.Justify()">
+    @if (Model.ShowQuickSearch)
+    {
+        <input style="width:10rem" type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="@TriggerNames.Search" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
+    }
+
+    @if (Model.Mode == FormMode.Empty)
+    {
+        <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2">
+            @IconHelper.Info()
+            <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
+        </div>
+    }
+
+    @if (Model.ShowNavigation)
+    {
+        <div id="navigation" class="flex flex-row gap-1 items-center">
+            @{
+                @Model.RenderButton(TriggerNames.First, IconHelper.First(), ResourceNames.First, Model.CurrentRecord == 1)
+                @Model.RenderButton(TriggerNames.Previous, IconHelper.Previous(), ResourceNames.Previous, Model.CurrentRecord == 1)
+                <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Record)</span>
+                @Model.RenderRecordNumber(Model.CurrentRecord, Model.RecordCount)
+                <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
+                @Model.RenderRecordCount(Model.RecordCount)
+                @Model.RenderButton(TriggerNames.Next, IconHelper.Next(), ResourceNames.Next, Model.CurrentRecord == Model.RecordCount)
+                @Model.RenderButton(TriggerNames.Last, IconHelper.Last(), ResourceNames.Last, Model.CurrentRecord == Model.RecordCount)
+            }
+        </div>
+    }
+    @if (Model.RecordCount == Model.FormModel.QueryLimit)
+    {
+        @await Html.PartialAsync("__QueryLimitWarning", Model.FormModel)
+    }
+
+    @if (Model.RenderInsertDelete)
+    {
+        <div class="flex flex-row gap-1" id="insertUpdate">
+            @{
+                if (Model.RenderInsert)
+                {
+                    @Model.RenderButton("insert", IconHelper.Insert(), ResourceNames.Insert)
+                }
+                if (Model.RenderDelete)
+                {
+                    @Model.RenderButton(TriggerNames.Delete, IconHelper.Delete(), ResourceNames.Delete, false, "background-color: rgb(255 228 230)")
+                }
+            }
+        </div>
+    }
+
+    @if (Model.Mode != FormMode.Empty && Model.ReadOnly == false)
+    {
+        <div class="flex flex-row gap-1 " id="applyCancel">
+            @{
+                @Model.RenderButton(TriggerNames.Apply, IconHelper.Apply(), ResourceNames.Apply, false, "background-color: rgb(209 250 229)")
+                @Model.RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), ResourceNames.Cancel)
+            }
+        </div>
+    }
+</div>

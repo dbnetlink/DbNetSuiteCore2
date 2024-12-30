@@ -16,6 +16,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await GridQuickSearchTest(searches, "sqlite/invoices");
+            await GridQuickSearchTest(searches, "invoices", true);
         }
 
         [Test]
@@ -33,6 +34,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await GridHeadingSort(sorts, "sqlite/joined");
+            await GridHeadingSort(sorts, "joined", true);
         }
 
         [Test]
@@ -51,6 +53,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await GridHeadingReverseSort(sorts, "sqlite/joined");
+            await GridHeadingReverseSort(sorts, "joined", true);
         }
 
 
@@ -73,6 +76,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await GridColumnFilter(filterTests, "sqlite/joined");
+            await GridColumnFilter(filterTests, "joined", true);
         }
     }
 }

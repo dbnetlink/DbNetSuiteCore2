@@ -1,0 +1,28 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var employeeGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") {  };
+    employeeGrid.ViewDialog = new ViewDialog() { MaxWidth = 300, MaxHeight = 400, LayoutColumns = 1 };
+    employeeGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn("EmployeeID") { PrimaryKey = true},
+        new GridColumn("LastName"),
+        new GridColumn("FirstName"),
+        new GridColumn("Title"),
+        new GridColumn("TitleOfCourtesy"),
+        new GridColumn("BirthDate"),
+        new GridColumn("HireDate"),
+        new GridColumn("Address"),
+        new GridColumn("City") { Filter = FilterType.Distinct},
+        new GridColumn("Region") { Filter = FilterType.Distinct},
+        new GridColumn("PostalCode"),
+        new GridColumn("Country") { Filter = FilterType.Distinct},
+        new GridColumn("HomePhone"),
+        new GridColumn("Extension"),
+        new GridColumn("Photo") { Image = new Image(ImageType.Jpeg, 50)},
+        new GridColumn("Notes"),
+        new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = FilterType.Default}
+    };
+    @(await new DbNetSuiteCore.GridControl(Context).Render(employeeGrid))
+}

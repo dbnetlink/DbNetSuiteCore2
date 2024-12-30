@@ -1,6 +1,9 @@
 ﻿using DbNetSuiteCore.Enums;
 using System.Data;
 using DbNetSuiteCore.Models;
+using Microsoft.AspNetCore.Html;
+using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -46,6 +49,26 @@ namespace DbNetSuiteCore.ViewModels
         public SelectColumn? GetColumnInfo(DataColumn column)
         {
             return _GetColumnInfo(column, _selectModel.Columns.Cast<ColumnModel>()) as SelectColumn;
+        }
+
+        public HtmlString RenderNoRecordsOption()
+        {
+            return new HtmlString($"<option disabled selected value=\"\">{ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)}</option>");
+        }
+
+        public HtmlString RenderOption(DataRow row, int rowNumber)
+        {
+            var selected = rowNumber == 0 && SelectFirstOption ? " selected" : null;
+            return new HtmlString($"<option value=\"{Value(row)}\"{selected} {RazorHelper.DataAttributes(row, SelectModel)}>{Description(row)}</option>");
+        }
+
+        public HtmlString OpenOptionGroup(DataRow row)
+        {
+            return new HtmlString($"<optgroup label=\"{GroupValue(row)}\">");
+        }
+        public HtmlString CloseOptionGroup()
+        {
+            return new HtmlString("</optgroup>");
         }
     }
 }

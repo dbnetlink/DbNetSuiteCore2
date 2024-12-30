@@ -33,10 +33,21 @@ namespace DbNetSuiteCore.Playwright.Tests
             _factory.Dispose();
         }
 
-        public async Task GoToPage(string page, ComponentType componentType = ComponentType.Grid)
+        public async Task GoToPage(string page, ComponentType componentType = ComponentType.Grid, bool mvc = false)
         {
             Playwright.Selectors.SetTestIdAttribute("button-type");
-            await Page.GotoAsync($"{_baseUrl}{componentType.ToString().ToLower()}control/{page}");
+            string url = $"{_baseUrl}{componentType.ToString().ToLower()}control/{page}";
+
+            if (mvc)
+            {
+                url = $"{_baseUrl}{componentType.ToString().ToLower()}/{page}";
+            }
+            await Page.GotoAsync(url);
+        }
+
+        public async Task GoToPage(string page, bool mvc = false)
+        {
+            await GoToPage(page, ComponentType.Grid, mvc);
         }
 
         private int FreeTcpPort()
@@ -64,9 +75,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             return $"{string.Join("\\", folders)}";
         }
 
-        protected async Task GridQuickSearchTest(Dictionary<string, int> searches, string page)
+        protected async Task GridQuickSearchTest(Dictionary<string, int> searches, string page, bool mvc = false)
         {
-            await GoToPage(page);
+            await GoToPage(page, mvc);
             ILocator search = Page.GetByPlaceholder("Search");
 
             foreach (string token in searches.Keys)
@@ -76,9 +87,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task GridHeadingSort(Dictionary<string, string> sorts, string page)
+        protected async Task GridHeadingSort(Dictionary<string, string> sorts, string page, bool mvc = false)
         {
-            await GoToPage(page);
+            await GoToPage(page, mvc);
 
             foreach (string columnName in sorts.Keys)
             {
@@ -86,9 +97,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task GridHeadingReverseSort(Dictionary<string, KeyValuePair<string, string>> sorts, string page)
+        protected async Task GridHeadingReverseSort(Dictionary<string, KeyValuePair<string, string>> sorts, string page, bool mvc = false)
         {
-            await GoToPage(page);
+            await GoToPage(page, mvc);
 
             foreach (string columnName in sorts.Keys)
             {
@@ -99,9 +110,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task GridColumnFilter(List<ColumnFilterTest> columnFilterTests, string page)
+        protected async Task GridColumnFilter(List<ColumnFilterTest> columnFilterTests, string page, bool mvc = false)
         {
-            await GoToPage(page);
+            await GoToPage(page, mvc);
 
             foreach (ColumnFilterTest columnFilterTest in columnFilterTests)
             {
@@ -109,9 +120,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task SelectSearchTest(Dictionary<string, int> searches, string page)
+        protected async Task SelectSearchTest(Dictionary<string, int> searches, string page, bool mvc = false)
         {
-            await GoToPage(page, ComponentType.Select);
+            await GoToPage(page, ComponentType.Select, mvc);
             ILocator search = Page.GetByPlaceholder("Search");
 
             foreach (string token in searches.Keys)
@@ -121,9 +132,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task SelectGroupTest(Dictionary<string, KeyValuePair<int, int>> searches, string page)
+        protected async Task SelectGroupTest(Dictionary<string, KeyValuePair<int, int>> searches, string page, bool mvc = false)
         {
-            await GoToPage(page, ComponentType.Select);
+            await GoToPage(page, ComponentType.Select, mvc);
             ILocator search = Page.GetByPlaceholder("Search");
 
             foreach (string token in searches.Keys)
@@ -256,11 +267,11 @@ namespace DbNetSuiteCore.Playwright.Tests
             return -1;
         }
 
-        protected async Task FormQuickSearchTest(Dictionary<string, int> searches, string page = "")
+        protected async Task FormQuickSearchTest(Dictionary<string, int> searches, string page = "", bool mvc = false)
         {
             if (string.IsNullOrEmpty(page) == false)
             {
-                await GoToPage(page, ComponentType.Form);
+                await GoToPage(page, ComponentType.Form, mvc);
             }
 
             ILocator search = Page.GetByPlaceholder("Search");
@@ -272,9 +283,9 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task FormInsertTest(Dictionary<string, string> values, string page)
+        protected async Task FormInsertTest(Dictionary<string, string> values, string page, bool mvc = false)
         {
-            await GoToPage(page, ComponentType.Form);
+            await GoToPage(page, ComponentType.Form, mvc);
             await Page.GetByTestId("insert").ClickAsync();
             await Page.WaitForResponseAsync(r => r.Url.Contains("control.htmx"));
 
@@ -289,11 +300,11 @@ namespace DbNetSuiteCore.Playwright.Tests
             await TestRowCount(92, "record");
         }
 
-        protected async Task FormDeleteTest(string page = "")
+        protected async Task FormDeleteTest(string page = "", bool mvc = false)
         {
             if (string.IsNullOrEmpty(page) == false)
             {
-                await GoToPage(page, ComponentType.Form);
+                await GoToPage(page, ComponentType.Form, mvc);
             }
             await Page.GetByTestId("delete").ClickAsync();
             await Page.GetByTestId("confirm").ClickAsync();

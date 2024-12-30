@@ -1,0 +1,17 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers");
+
+    customerGrid.Caption = "Northwind Customers";
+
+    customerGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("CompanyName", "Name"),
+        new GridColumn("coalesce(Address,'') || ', ' || coalesce(City,'') as address", "Address") { DataType = typeof(String)},
+        new GridColumn("coalesce(Phone,'') || '/' || coalesce(Fax,'') as phone", "Phone/Fax") { DataType = typeof(String)}
+    };
+
+    @(await new DbNetSuiteCore.GridControl(Context).Render(customerGrid))
+}

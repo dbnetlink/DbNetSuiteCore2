@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace DbNetSuiteCore.Web.Models
+﻿namespace DbNetSuiteCore.Web.Models
 {
     public class NobelPrizes
     {
-        public List<NobelPrize> prizes { get; set; }
+        public List<NobelPrize> prizes { get; set; } = new List<NobelPrize> { };
     }
     public class NobelPrize
     {
-        public string year { get; set; }
-        public string category { get; set; }
-        public List<Laureate> laureates { get; set; }
+        public string year { get; set; } = string.Empty;
+        public string category { get; set; } = string.Empty;
+        public List<Laureate> laureates { get; set; } = new List<Laureate> { };
     }
 
     public class Laureate
     {
-        public string id { get; set; }
-        public string firstname { get; set; }
-        public string surname { get; set; }
-        public string motivation { get; set; }
-        public string share { get; set; }
+        public string id { get; set; } = string.Empty;
+        public string firstname { get; set; } = string.Empty;
+        public string surname { get; set; } = string.Empty;
+        public string motivation { get; set; } = string.Empty;
+        public string share { get; set; } = string.Empty;
     }
 
     public class NobelPrizeLaureate
@@ -37,11 +34,11 @@ namespace DbNetSuiteCore.Web.Models
         }
 
         public int year { get; set; }
-        public string category { get; set; }
+        public string category { get; set; } = string.Empty;
         public int id { get; set; }
-        public string firstname { get; set; }
-        public string surname { get; set; }
-        public string motivation { get; set; }
+        public string firstname { get; set; } = string.Empty;
+        public string surname { get; set; } = string.Empty;
+        public string motivation { get; set; } = string.Empty;
         public int share { get; set; }
     }
 

@@ -43,24 +43,24 @@
   <ItemGroup>
     <Content Remove="bundleconfig.json" />
     <Content Remove="package.json" />
-    <Content Remove="Views\Error.cshtml" />
-    <Content Remove="Views\Form\ControlForm.cshtml" />
-    <Content Remove="Views\Form\Form.cshtml" />
-    <Content Remove="Views\Form\Hidden.cshtml" />
-    <Content Remove="Views\Form\Markup.cshtml" />
-    <Content Remove="Views\Form\Toolbar.cshtml" />
+    <Content Remove="Views\Form\__ControlForm.cshtml" />
+    <Content Remove="Views\Form\__Form.cshtml" />
+    <Content Remove="Views\Form\__Hidden.cshtml" />
+    <Content Remove="Views\Form\__Markup.cshtml" />
+    <Content Remove="Views\Form\__Toolbar.cshtml" />
     <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\GridRows.cshtml" />
     <Content Remove="Views\GridToolbar.cshtml" />
-    <Content Remove="Views\Grid\Hidden.cshtml" />
     <Content Remove="Views\Grid\Markup - Copy.cshtml" />
     <Content Remove="Views\Grid\Rows - Copy.cshtml" />
-    <Content Remove="Views\Grid\ViewDialog.cshtml" />
-    <Content Remove="Views\Grid\ViewDialogContent.cshtml" />
-    <Content Remove="Views\QueryLimitWarning.cshtml" />
-    <Content Remove="Views\Select\ControlForm.cshtml" />
-    <Content Remove="Views\Select\Hidden.cshtml" />
-    <Content Remove="Views\ToastMessage.cshtml" />
+    <Content Remove="Views\Grid\__Hidden.cshtml" />
+    <Content Remove="Views\Grid\__ViewDialog.cshtml" />
+    <Content Remove="Views\Grid\__ViewDialogContent.cshtml" />
+    <Content Remove="Views\Select\__ControlForm.cshtml" />
+    <Content Remove="Views\Select\__Hidden.cshtml" />
+    <Content Remove="Views\__Error.cshtml" />
+    <Content Remove="Views\__QueryLimitWarning.cshtml" />
+    <Content Remove="Views\__ToastMessage.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,65 +120,65 @@
     <EmbeddedResource Include="TypeScript\htmlEditor.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
-    <EmbeddedResource Include="Views\QueryLimitWarning.cshtml">
+    <EmbeddedResource Include="Views\__QueryLimitWarning.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form\ControlForm.cshtml">
+    <EmbeddedResource Include="Views\Form\__ControlForm.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form\Hidden.cshtml">
+    <EmbeddedResource Include="Views\Form\__Hidden.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form\Form.cshtml">
+    <EmbeddedResource Include="Views\Form\__Form.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form\Markup.cshtml">
+    <EmbeddedResource Include="Views\Form\__Markup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form\Toolbar.cshtml">
+    <EmbeddedResource Include="Views\Form\__Toolbar.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Hidden.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Hidden.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form\ConfirmDialog.cshtml">
+    <EmbeddedResource Include="Views\Form\__ConfirmDialog.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\ToastMessage.cshtml">
+    <EmbeddedResource Include="Views\__ToastMessage.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Select\Options.cshtml">
+    <EmbeddedResource Include="Views\Select\__Options.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Select\Markup.cshtml">
+    <EmbeddedResource Include="Views\Select\__Markup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\ViewDialog.cshtml">
+    <EmbeddedResource Include="Views\Grid\__ViewDialog.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Toolbar.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Toolbar.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Rows.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Rows.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Nested.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Nested.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\ControlForm.cshtml">
+    <EmbeddedResource Include="Views\Grid\__ControlForm.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Export.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Export.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Markup.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Markup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Error.cshtml">
+    <EmbeddedResource Include="Views\__Error.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\ViewDialogContent.cshtml" />
-    <EmbeddedResource Include="Views\HxIndicator.cshtml">
+    <EmbeddedResource Include="Views\Grid\__ViewDialogContent.cshtml" />
+    <EmbeddedResource Include="Views\__HxIndicator.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\ICO\favicon.ico" />
@@ -188,10 +188,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\JS\surreal.js" />
     <EmbeddedResource Include="Resources\JS\tailwindcss.js" />
-    <EmbeddedResource Include="Views\Select\ControlForm.cshtml">
+    <EmbeddedResource Include="Views\Select\__ControlForm.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Select\Hidden.cshtml">
+    <EmbeddedResource Include="Views\Select\__Hidden.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

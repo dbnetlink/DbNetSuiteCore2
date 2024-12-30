@@ -1,0 +1,14 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var customerSelect = new SelectModel(DataSourceType.SQLite, "northwind", "customers") { EmptyOption = "Please select a customer", Searchable = true };
+
+    customerSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("CustomerID"),
+        new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')") {DataType = typeof(String)}
+    };
+
+    @(await new DbNetSuiteCore.SelectControl(Context).Render(customerSelect))
+}

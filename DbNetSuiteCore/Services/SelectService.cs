@@ -32,7 +32,7 @@ namespace DbNetSuiteCore.Services
             catch (Exception ex)
             {
                 context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
-                return await View("Error", ex);
+                return await View("__Error", ex);
             }
         }
 
@@ -44,7 +44,7 @@ namespace DbNetSuiteCore.Services
             switch (selectModel.TriggerName)
             {
                 default:
-                    string viewName = selectModel.Uninitialised ? "Select/Markup" : "Select/Options";
+                    string viewName = selectModel.Uninitialised ? "Select/__Markup" : "Select/__Options";
                     return await View(viewName, await GetSelectViewModel(selectModel));
             }
         }

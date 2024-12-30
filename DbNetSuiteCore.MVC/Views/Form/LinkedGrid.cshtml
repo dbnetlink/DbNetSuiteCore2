@@ -1,0 +1,46 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var customerForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Customers") { Insert = true, Delete = true, Caption = "Customer" };
+    customerForm.Columns = new List<FormColumn>() {
+        new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase},
+        new FormColumn("CompanyName") {Required = true},
+        new FormColumn("ContactName"),
+        new FormColumn("ContactTitle"),
+        new FormColumn("Address"),
+        new FormColumn("City"),
+        new FormColumn("Region"),
+        new FormColumn("PostalCode"),
+        new FormColumn("Country"),
+        new FormColumn("Phone"),
+        new FormColumn("Fax") 
+    };
+
+
+    var ordersGrid = new GridModel("Orders") { Caption = "Orders" };
+    ordersGrid.Columns = new List<GridColumn>() {
+        new GridColumn("OrderID"),
+        new GridColumn("CustomerID") { ForeignKey = true, DataOnly = true},
+        new GridColumn("EmployeeID","Employee")  { Lookup = new Lookup("Employees", "EmployeeID", "LastName || ',' || FirstName") },
+        new GridColumn("OrderDate") { DataType = typeof(DateTime)},
+        new GridColumn("RequiredDate") { DataType = typeof(DateTime) },
+        new GridColumn("ShippedDate") { DataType = typeof(DateTime) },
+        new GridColumn("ShipVia") { Lookup = new Lookup("Shippers", "ShipperId", "CompanyName")},
+        new GridColumn("Freight") { Format = "c" },
+        new GridColumn("ShipAddress","Address"),
+        new GridColumn("ShipCity","City"),
+        new GridColumn("ShipRegion","Region"),
+        new GridColumn("ShipPostalCode","Post Code"),
+        new GridColumn("ShipCountry","Country")
+    };
+
+    customerForm.LinkedControl = ordersGrid;
+
+    <div style="display:flex; flex-direction: column; gap:5px">
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(customerForm))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(ordersGrid))</div>
+    </div>
+    
+    
+}

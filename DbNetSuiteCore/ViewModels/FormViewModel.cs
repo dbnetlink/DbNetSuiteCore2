@@ -3,6 +3,9 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DocumentFormat.OpenXml.EMMA;
+using Microsoft.AspNetCore.Html;
+using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -27,7 +30,7 @@ namespace DbNetSuiteCore.ViewModels
         public bool ShowNavigation => Mode == FormMode.Update && FormModel.OneToOne == false;
         public bool ShowQuickSearch => Mode != FormMode.Insert && FormModel.OneToOne == false && FormModel.SearchableColumns.Any();
         public bool RenderInsertDelete => RenderInsert || RenderDelete;
-        public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation ==  false && ShowQuickSearch == false);
+        public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation == false && ShowQuickSearch == false);
 
         public FormViewModel(FormModel formModel) : base(formModel)
         {
@@ -65,7 +68,55 @@ namespace DbNetSuiteCore.ViewModels
                 value = FormModel.FormValues[formColumn.ColumnName];
             }
 
-            return new KeyValuePair<string,string>(formColumn.ToStringOrEmpty(dbValue), formColumn.ToStringOrEmpty(value));
+            return new KeyValuePair<string, string>(formColumn.ToStringOrEmpty(dbValue), formColumn.ToStringOrEmpty(value));
+        }
+
+        public HtmlString RenderRecordNumber(int recordNumber, int recordCount)
+        {
+            List<HtmlString> html = new List<HtmlString>();
+            html.Add(new HtmlString($"<select name=\"{TriggerNames.Record}\" value=\"{recordNumber}\" hx-post=\"{SubmitUrl}\" hx-target=\"{HxTarget}\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" style=\"padding-right:2em\">"));
+
+            for (var i = 1; i <= recordCount; i++)
+            {
+                var selected = i == recordNumber ? " selected" : string.Empty;
+                html.Add(new HtmlString($"<option value=\"{i}\"{selected}>{i}</option>"));
+            }
+            html.Add(new HtmlString($"</select>"));
+            return new HtmlString(string.Join(" ", html));
+        }
+
+        public HtmlString RenderButton(string name, HtmlString icon, ResourceNames resourceName, bool disabled = false, string style = "")
+        {
+            Dictionary<string, string> attributes = new Dictionary<string, string>();
+
+            if (name == TriggerNames.Delete)
+            {
+                attributes["hx-confirm-dialog"] = ResourceHelper.GetResourceString(ResourceNames.ConfirmDelete);
+            }
+            var disabledAttr = disabled ? " disabled" : null;
+            return new HtmlString($"<button type=\"button\" style=\"{style}\" button-type=\"{name}\" title=\"{NavButtonText(resourceName)}\" hx-post=\"{SubmitUrl}\" name=\"{name}\" hx-trigger=\"click\" hx-target=\"{HxTarget}\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" {disabledAttr} {RazorHelper.Attributes(attributes)}>{icon}</button>");
+        }
+
+        public string Justify()
+        {
+            if (FormModel.OneToOne)
+            {
+                return Mode == FormMode.Insert ? "justify-end" : (RenderInsertDelete ? "justify-between" : "justify-end");
+            }
+            else
+            {
+                return JustifyEnd ? "justify-end" : "justify-between";
+            }
+        }
+
+        public HtmlString RenderRecordCount(int recordCount)
+        {
+            return new HtmlString($"<input class=\"text-center\" style=\"width:{(recordCount.ToString().Length + 1)}em\" readonly type=\"text\" data-type=\"record-count\" value=\"{recordCount}\" />");
+        }
+
+        private string NavButtonText(ResourceNames resourceName)
+        {
+            return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
         }
     }
 }
