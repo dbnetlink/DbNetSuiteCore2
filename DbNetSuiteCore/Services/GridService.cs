@@ -45,6 +45,8 @@ namespace DbNetSuiteCore.Services
             GridModel gridModel = GetGridModel() ?? new GridModel();
             gridModel.TriggerName = RequestHelper.TriggerName(_context);
 
+            CheckLicense(gridModel);
+
             switch (gridModel.TriggerName)
             {
                 case TriggerNames.Download:

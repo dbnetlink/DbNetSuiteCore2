@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Services;
+using DbNetSuiteCore.Helpers;
 
 namespace DbNetSuiteCore.Middleware
 {

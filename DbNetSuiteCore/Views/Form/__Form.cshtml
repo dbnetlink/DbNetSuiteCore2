@@ -64,4 +64,6 @@
 
         <div id="form-message" class="border rounded border-slate-300 p-1 my-1" @highlightAttr>@Html.Raw(Model.FormModel.Message)</div>
     }
+
+    @await Html.PartialAsync("__LicenseInfo", Model.FormModel.LicenseInfo)
 </div>

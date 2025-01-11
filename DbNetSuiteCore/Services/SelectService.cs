@@ -6,7 +6,6 @@ using System.Data;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
-using DbNetSuiteCore.Constants;
 
 namespace DbNetSuiteCore.Services
 {
@@ -40,6 +39,8 @@ namespace DbNetSuiteCore.Services
         {
             SelectModel selectModel = GetSelectModel() ?? new SelectModel();
             selectModel.TriggerName = RequestHelper.TriggerName(_context);
+
+            CheckLicense(selectModel);
 
             switch (selectModel.TriggerName)
             {

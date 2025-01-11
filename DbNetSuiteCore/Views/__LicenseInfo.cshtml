@@ -1,0 +1,13 @@
+﻿@model DbNetSuiteCore.Models.LicenseInfo
+
+@if (Model != null)
+{
+    @if (Model.Valid == false)
+    {
+        <!--
+        <div class="border border-lime-600 rounded p-1 my-2 bg-lime-200 text-lime-700" >
+            This server (<b>@Model.HostName</b>) is not currently licensed for <a href="https://dbnetsuitecore.com" target="_blank">DbNetSuiteCore</a>. You can purchase a license <a href="https://dbnetlink.co.uk/licensing" target="_blank">here</a>
+        </div>
+        -->
+    }
+}

@@ -31,6 +31,10 @@ namespace DbNetSuiteCore.Models
         internal bool IgnoreSchemaTable { get; set; } = false;
         internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
         public abstract IEnumerable<ColumnModel> SearchableColumns { get; }
+        [JsonIgnore]
+        public LicenseInfo LicenseInfo { get; set; }
+
+        public string FingerPrint { get; set; } = string.Empty;
 
         public string Url
         {

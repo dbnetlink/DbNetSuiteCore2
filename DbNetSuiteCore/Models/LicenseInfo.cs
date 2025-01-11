@@ -1,0 +1,17 @@
+﻿using DbNetSuiteCore.Enums;
+using System.Text.Json.Serialization;
+
+namespace DbNetSuiteCore.Models
+{
+    public class LicenseInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public LicenseType Type { get; set; } = LicenseType.Development;
+        public string HostName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        [JsonIgnore]
+        public bool LocalRequest { get; set; } = false;
+        [JsonIgnore]
+        public bool Valid => LocalRequest == true || HostName == System.Net.Dns.GetHostName() || Type == LicenseType.OEM;
+    }
+}

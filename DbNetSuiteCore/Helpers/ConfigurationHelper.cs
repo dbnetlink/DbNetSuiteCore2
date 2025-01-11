@@ -8,7 +8,9 @@
             EncryptionKey,
             EncryptionSalt,
             AllowConnectionString,
-            UpdateDisabled
+            UpdateDisabled,
+            LicenseKey,
+            LicenseId
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)

@@ -5,8 +5,6 @@ using DbNetSuiteCore.Repositories;
 using System.Data;
 using System.Text;
 using DbNetSuiteCore.Constants;
-using System.Text.RegularExpressions;
-using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetSuiteCore.Services
 {
@@ -399,5 +397,13 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+
+        protected void CheckLicense(ComponentModel componentModel)
+        {
+            if (componentModel.Uninitialised)
+            {
+                componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context);
+            }
+        }
     }
 }

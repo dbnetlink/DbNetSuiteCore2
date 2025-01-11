@@ -19,6 +19,10 @@
     <div class="flex mt-2">
         <table class="table-auto border-collapse" data-linkedgridids="@Model.LinkedGridIds" data-linkedcontrolids="@Model.LinkedControlIds">
             <colgroup>
+                @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
+                {
+                    <col />
+                }
                 @if (Model.GridModel._NestedGrids.Any())
                 {
                     <col />
@@ -29,6 +33,10 @@
                     {
                         <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" />
                     }
+                }
+                @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
+                {
+                    <col />
                 }
             </colgroup>
 
@@ -80,7 +88,7 @@
                         {
                             if (Model.GetDataColumn(gridColumn) != null)
                             {
-                                 <th class="text-base">@Model.RenderColumnFilter(gridColumn)</th>
+                                <th class="text-base">@Model.RenderColumnFilter(gridColumn)</th>
 
                             }
                         }
@@ -93,11 +101,13 @@
             </thead>
             @await Html.PartialAsync("Grid/__Rows", Model)
         </table>
+
     </div>
     @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Bottom)
     {
         @await Html.PartialAsync("Grid/__Toolbar", Model)
     }
+    @await Html.PartialAsync("__LicenseInfo", Model.GridModel.LicenseInfo)
     <div class="flex">
         @await Html.PartialAsync("__HxIndicator")
     </div>

@@ -30,6 +30,8 @@ namespace DbNetSuiteCore.ViewModels
 
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
+        public int ColSpan => VisibleColumns.Count() + (GridModel._NestedGrids.Any() ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
+
         public GridViewModel(GridModel gridModel) : base(gridModel)
         {
             _gridModel = gridModel;

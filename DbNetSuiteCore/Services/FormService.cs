@@ -45,6 +45,8 @@ namespace DbNetSuiteCore.Services
             FormModel formModel = GetFormModel();
             formModel.TriggerName = RequestHelper.TriggerName(_context);
 
+            CheckLicense(formModel);
+
             switch (formModel.TriggerName)
             {
                 case TriggerNames.Apply:
