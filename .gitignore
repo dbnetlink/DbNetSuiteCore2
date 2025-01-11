@@ -366,3 +366,4 @@ FodyWeavers.xsd
 
 # Test databases
 /DbNetSuiteCore.Web/wwwroot/Data/sqlite/testdb_*.db
+/DbNetSuiteCore.Web/appsettings.development.json
