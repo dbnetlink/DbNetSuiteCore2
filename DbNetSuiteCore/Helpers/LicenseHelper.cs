@@ -17,7 +17,7 @@ namespace DbNetSuiteCore.Helpers
             string licenseId = configuration.ConfigValue(ConfigurationHelper.AppSetting.LicenseId);
             string licenseKey = configuration.ConfigValue(ConfigurationHelper.AppSetting.LicenseKey);
 
-            LicenseInfo licenseInfo = InitialiseLicense(context, licenseId, webHostEnvironment);
+            LicenseInfo? licenseInfo = null;
 
             if (IsDevEnvironment(webHostEnvironment) == false)
             {
@@ -28,7 +28,7 @@ namespace DbNetSuiteCore.Helpers
                         try
                         {
                             var decryptedJson = EncryptionHelper.Decrypt(licenseKey, licenseId, Microsoft.VisualBasic.Strings.StrReverse(licenseId));
-                            return System.Text.Json.JsonSerializer.Deserialize<LicenseInfo>(decryptedJson);
+                            licenseInfo = System.Text.Json.JsonSerializer.Deserialize<LicenseInfo>(decryptedJson);
                         }
                         catch
                         {
@@ -37,6 +37,13 @@ namespace DbNetSuiteCore.Helpers
                 }
             }
 
+            if (licenseInfo == null)
+            {
+                licenseInfo = new LicenseInfo() { Id = licenseId };
+            }
+
+            licenseInfo.LocalRequest = LicenseHelper.IsLocalRequest(context);
+            licenseInfo.ApplicationName = webHostEnvironment.ApplicationName;
             return licenseInfo;
         }
 
@@ -45,10 +52,6 @@ namespace DbNetSuiteCore.Helpers
             return webHostEnvironment.EnvironmentName == Environments.Development;
         }
 
-        public static LicenseInfo InitialiseLicense(HttpContext context, string licenseId,IWebHostEnvironment webHostEnvironment)
-        {
-            return new LicenseInfo() { LocalRequest = LicenseHelper.IsLocalRequest(context), Id = licenseId, ApplicationName = webHostEnvironment.ApplicationName };
-        }
         public static string HostName()
         {
             return Dns.GetHostName();
