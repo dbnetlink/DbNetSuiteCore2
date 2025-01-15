@@ -15,8 +15,8 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "Ordynacka 10", 7 }
             };
 
-            await GridQuickSearchTest(searches, "sqlite/invoices");
-            await GridQuickSearchTest(searches, "invoices", true);
+            await GridQuickSearchTest(searches, $"sqlite/invoices?db={DatabaseName}");
+            await GridQuickSearchTest(searches, $"invoices?db={DatabaseName}", true);
         }
 
         [Test]
@@ -33,8 +33,8 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "last_update", "06/03/21" }
             };
 
-            await GridHeadingSort(sorts, "sqlite/joined");
-            await GridHeadingSort(sorts, "joined", true);
+            await GridHeadingSort(sorts, $"sqlite/joined?db={DatabaseName}");
+            await GridHeadingSort(sorts, $"joined?db={DatabaseName}", true);
         }
 
         [Test]

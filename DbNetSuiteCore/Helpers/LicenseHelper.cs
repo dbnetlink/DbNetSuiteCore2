@@ -39,7 +39,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static LicenseInfo InitialiseLicense(HttpContext context, string licenseId)
         {
-            return new LicenseInfo() { LocalRequest = LicenseHelper.IsLocalRequest(context), HostName = HostName(), Id = licenseId };
+            return new LicenseInfo() { LocalRequest = LicenseHelper.IsLocalRequest(context), Id = licenseId };
         }
         public static string HostName()
         {

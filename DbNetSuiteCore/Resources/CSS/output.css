@@ -1109,9 +1109,9 @@ form.dbnetsuite {
   border-style: solid;
 }
 
-.border-lime-600 {
+.border-lime-700 {
   --tw-border-opacity: 1;
-  border-color: rgb(101 163 13 / var(--tw-border-opacity));
+  border-color: rgb(77 124 15 / var(--tw-border-opacity));
 }
 
 .border-orange-400 {

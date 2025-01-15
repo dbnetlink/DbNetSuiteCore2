@@ -12,6 +12,15 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public bool LocalRequest { get; set; } = false;
         [JsonIgnore]
-        public bool Valid => LocalRequest == true || HostName == System.Net.Dns.GetHostName() || Type == LicenseType.OEM;
+        public bool Valid => LocalRequest == true || HostName == ServerHostName || Type == LicenseType.OEM;
+        [JsonIgnore]
+        public string ServerHostName => System.Net.Dns.GetHostName();
+        [JsonIgnore]
+        public bool ExisingLicense => LicenseIdIsGuid() && string.IsNullOrEmpty(HostName) == false;
+
+        private bool LicenseIdIsGuid() 
+        {
+            return Guid.TryParse(Id, out var newGuid);
+        }
     }
 }
