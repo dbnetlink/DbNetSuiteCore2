@@ -16,7 +16,7 @@ namespace DbNetSuiteCore.Services
 {
     public class FormService : ComponentService, IComponentService
     {
-        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration)
+        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration, webHostEnvironment)
         {
         }
 
@@ -99,7 +99,7 @@ namespace DbNetSuiteCore.Services
 
             if (formModel.DiagnosticsMode)
             {
-                formViewModel.Diagnostics = RequestHelper.Diagnostics(_context);
+                formViewModel.Diagnostics = RequestHelper.Diagnostics(_context,_configuration,_webHostEnvironment);
             }
 
             formModel.ValidationPassed = false;

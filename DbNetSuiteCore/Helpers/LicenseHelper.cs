@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using DbNetSuiteCore.Models;
+using Microsoft.AspNetCore.Hosting;
 namespace DbNetSuiteCore.Helpers
 {
     public static class LicenseHelper
@@ -11,25 +12,27 @@ namespace DbNetSuiteCore.Helpers
             return EncryptionHelper.Encrypt(licenseJson, licenseInfo.Id, Microsoft.VisualBasic.Strings.StrReverse(licenseInfo.Id));
         }
 
-        public static LicenseInfo ValidateLicense(IConfiguration configuration, HttpContext context)
+        public static LicenseInfo ValidateLicense(IConfiguration configuration, HttpContext context, IWebHostEnvironment webHostEnvironment)
         {
             string licenseId = configuration.ConfigValue(ConfigurationHelper.AppSetting.LicenseId);
             string licenseKey = configuration.ConfigValue(ConfigurationHelper.AppSetting.LicenseKey);
 
-            LicenseInfo licenseInfo = InitialiseLicense(context, licenseId);
+            LicenseInfo licenseInfo = InitialiseLicense(context, licenseId, webHostEnvironment);
 
-            if (licenseInfo.LocalRequest == false)
+            if (IsDevEnvironment(webHostEnvironment) == false)
             {
-
-                if (string.IsNullOrEmpty(licenseId) == false && string.IsNullOrEmpty(licenseKey) == false)
+                if (LicenseHelper.IsLocalRequest(context) == false)
                 {
-                    try
+                    if (string.IsNullOrEmpty(licenseId) == false && string.IsNullOrEmpty(licenseKey) == false)
                     {
-                        var decryptedJson = EncryptionHelper.Decrypt(licenseKey, licenseId, Microsoft.VisualBasic.Strings.StrReverse(licenseId));
-                        return System.Text.Json.JsonSerializer.Deserialize<LicenseInfo>(decryptedJson);
-                    }
-                    catch
-                    {
+                        try
+                        {
+                            var decryptedJson = EncryptionHelper.Decrypt(licenseKey, licenseId, Microsoft.VisualBasic.Strings.StrReverse(licenseId));
+                            return System.Text.Json.JsonSerializer.Deserialize<LicenseInfo>(decryptedJson);
+                        }
+                        catch
+                        {
+                        }
                     }
                 }
             }
@@ -37,9 +40,14 @@ namespace DbNetSuiteCore.Helpers
             return licenseInfo;
         }
 
-        public static LicenseInfo InitialiseLicense(HttpContext context, string licenseId)
+        private static bool IsDevEnvironment(IWebHostEnvironment webHostEnvironment)
         {
-            return new LicenseInfo() { LocalRequest = LicenseHelper.IsLocalRequest(context), Id = licenseId };
+            return webHostEnvironment.EnvironmentName == Environments.Development;
+        }
+
+        public static LicenseInfo InitialiseLicense(HttpContext context, string licenseId,IWebHostEnvironment webHostEnvironment)
+        {
+            return new LicenseInfo() { LocalRequest = LicenseHelper.IsLocalRequest(context), Id = licenseId, ApplicationName = webHostEnvironment.ApplicationName };
         }
         public static string HostName()
         {
@@ -70,18 +78,20 @@ namespace DbNetSuiteCore.Helpers
             }
 
             // Check for localhost
+            /*
             if (IPAddress.IsLoopback(remoteIp) ||
                 string.Equals(httpContext.Request.Host.Host, "localhost", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
+            */
 
             // Check if client IP matches server IP (local network)
             if (remoteIp.Equals(localIp))
             {
                 return true;
             }
-
+            /*
             // Check for private network ranges
             byte[] remoteBytes = remoteIp.GetAddressBytes();
             if (remoteIp.AddressFamily == AddressFamily.InterNetwork)
@@ -103,7 +113,7 @@ namespace DbNetSuiteCore.Helpers
                 if (remoteBytes[0] >= 0xfc && remoteBytes[0] <= 0xfd)
                     return true;
             }
-
+            */
             return false;
         }
     }

@@ -100,7 +100,7 @@
     @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
     {
         <tr style="display:none">
-            <td>
+            <td colspan="@Model.ColSpan">
                 <div>
                     @await Html.PartialAsync("Grid/__Hidden", Model.GridModel)
                     <span style="display:none" id="sortIcon">@Model.SortIcon</span>
@@ -127,7 +127,7 @@
     @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey)
     {
         <tr style="display:none" class="column-filter-refresh">
-            <td>
+            <td colspan="@Model.ColSpan">
                 @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
                 {
                     @Model.RenderColumnSelectFilterRefresh(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
@@ -139,7 +139,7 @@
     @if (Model.GridModel.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
     {
         <tr style="display:none" class="column-filter-error">
-            <td>
+            <td colspan="@Model.ColSpan">
                 @foreach (var gridColumn in Model.GridModel.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
                 {
                     @Model.RenderColumnFilterError(gridColumn)
@@ -150,8 +150,8 @@
 
     @if (string.IsNullOrEmpty(Model.Diagnostics) == false)
     {
-        <tr style="display:none">
-            <td>@(Model.Diagnostics)</td>
+        <tr>
+            <td colspan="@Model.ColSpan">@Html.Raw(Model.Diagnostics)</td>
         </tr>
     }
 </tbody>

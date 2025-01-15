@@ -21,8 +21,9 @@ namespace DbNetSuiteCore.Services
         protected readonly IMongoDbRepository _mongoDbRepository;
         protected HttpContext? _context = null;
         protected readonly IConfiguration _configuration;
+        protected readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration)
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -34,6 +35,7 @@ namespace DbNetSuiteCore.Services
             _excelRepository = excelRepository;
             _mongoDbRepository = mongoDbRepository;
             _configuration = configuration;
+            _webHostEnvironment = webHostEnvironment;
         }
 
 
@@ -402,7 +404,7 @@ namespace DbNetSuiteCore.Services
         {
             if (componentModel.Uninitialised)
             {
-                componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context);
+                componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
             }
         }
     }

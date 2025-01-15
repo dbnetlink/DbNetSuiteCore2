@@ -1,7 +1,9 @@
 ﻿using Azure.Core;
 using DbNetSuiteCore.Constants;
 using DocumentFormat.OpenXml.InkML;
+using System.Runtime.CompilerServices;
 using System.Text;
+using static DbNetSuiteCore.Helpers.ConfigurationHelper;
 
 namespace DbNetSuiteCore.Helpers
 {
@@ -63,56 +65,75 @@ namespace DbNetSuiteCore.Helpers
             return string.Empty;
         }
 
-        public static string Diagnostics(HttpContext httpContext)
+        public static string Diagnostics(HttpContext httpContext, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
-            var diagnostics = new StringBuilder();
+            var diagnostics = new List<string>();
 
             // Request Headers
-            diagnostics.AppendLine("=== Headers ===");
+            diagnostics.Add("<b>=== Headers ===</b>");
             foreach (var header in httpContext.Request.Headers.OrderBy(h => h.Key))
             {
-                diagnostics.AppendLine($"{header.Key}: {string.Join(", ", header.Value)}");
+                diagnostics.Add($"{header.Key}: {string.Join(", ", header.Value)}");
             }
 
             // Content Type Details
-            diagnostics.AppendLine("\n=== Content Type Details ===");
-            diagnostics.AppendLine($"Content-Type: {httpContext.Request.ContentType}");
-            diagnostics.AppendLine($"Content-Length: {httpContext.Request.ContentLength}");
+            diagnostics.Add("<b>=== Content Type Details ===</b>");
+            diagnostics.Add($"Content-Type: {httpContext.Request.ContentType}");
+            diagnostics.Add($"Content-Length: {httpContext.Request.ContentLength}");
 
             // Form Data
-            diagnostics.AppendLine("\n=== Form Data ===");
+            diagnostics.Add("<b>=== Form Data ===</b>");
             if (httpContext.Request.HasFormContentType)
             {
                 foreach (var form in httpContext.Request.Form.OrderBy(f => f.Key))
                 {
-                    diagnostics.AppendLine($"{form.Key}: {string.Join(", ", form.Value)}");
+                    switch(form.Key)
+                    {
+                        case "model":
+                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value,configuration)}");
+                            break;
+                        default:
+                            diagnostics.Add($"{form.Key}: {string.Join(", ", form.Value)}");
+                            break;
+                    }
                 }
             }
 
             // Raw Body
-            diagnostics.AppendLine("\n=== Raw Request Body ===");
+            diagnostics.Add("<b>=== Raw Request Body ===</b>");
             using (var reader = new StreamReader(httpContext.Request.Body, Encoding.UTF8, true, 1024, true))
             {
                 try
                 {
                     httpContext.Request.Body.Position = 0; // Reset position to read from start
                     var body = reader.ReadToEndAsync().Result;
-                    diagnostics.AppendLine(body);
+                    diagnostics.Add(body);
                     httpContext.Request.Body.Position = 0; // Reset for other middleware
                 }
                 catch (Exception ex)
                 {
-                    diagnostics.AppendLine($"Error reading body: {ex.Message}");
+                    diagnostics.Add($"Error reading body: {ex.Message}");
                 }
             }
 
             // Environment Information
-            diagnostics.AppendLine("\n=== Environment ===");
-            diagnostics.AppendLine($"ASP.NET Core Version: {Environment.Version}");
-            diagnostics.AppendLine($"Environment Name: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
-            diagnostics.AppendLine($"Process Name: {System.Diagnostics.Process.GetCurrentProcess().ProcessName}");
+            diagnostics.Add("<b>=== Environment ===</b>");
+            diagnostics.Add($"ASP.NET Core Version: {Environment.Version}");
+            diagnostics.Add($"Environment Name: {webHostEnvironment.EnvironmentName}");
+            diagnostics.Add($"Application Name: {webHostEnvironment.ApplicationName}");
+            diagnostics.Add($"Process Name: {System.Diagnostics.Process.GetCurrentProcess().ProcessName}");
+            diagnostics.Add($"Host Name: {System.Net.Dns.GetHostName()}");
 
-            return diagnostics.ToString();
+            // Environment Information
+            diagnostics.Add("<b>=== Settings ===</b>");
+            foreach(AppSetting appSetting in Enum.GetValues<AppSetting>())
+            {
+                diagnostics.Add($"{appSetting}: {configuration.ConfigValue(appSetting)}");
+            }
+            diagnostics.Add("<b>=== License ===</b>");
+            diagnostics.Add($"License: {System.Text.Json.JsonSerializer.Serialize(LicenseHelper.ValidateLicense(configuration, httpContext, webHostEnvironment))}");
+
+            return string.Join("</br>", diagnostics);
         }
     }
 }
