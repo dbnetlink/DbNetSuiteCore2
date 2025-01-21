@@ -11,7 +11,7 @@
     <license type="expression">MIT</license>
     <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
     <projectUrl>https://dbnetsuitecore.com/</projectUrl>
-    <description>Interactive data-driven UI components for ASP.Net Core Razor. Support for MSSQL, MySql, PostgreSql, MongoDB, SQLite, JSON, Excel, CSV and the file system</description>
+    <description>Interactive data-driven UI components for ASP.Net Core Razor pages and MVC views. Support for MSSQL, MySql, PostgreSql, MongoDB, SQLite, JSON, Excel, CSV and the file system</description>
     <copyright>Copyright (c) DbNetLink Limited 2024</copyright>
     <tags>asp.netcore components component asp.net core razor blazor htmx ssr spreadsheet excel csv sqlite mysql mssql postgresql mongodb json datagrid datatable</tags>
 

@@ -18,8 +18,8 @@
         new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true, HelpText = "Discontinued products must have a re-order level of 0"}
     };
 
-    productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateReOrderLevel";
-    productForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
+    productForm.Bind(FormClientEvent.ValidateUpdate,"validateReOrderLevel");
+    productForm.Bind(FormClientEvent.ValidateDelete,"validateDelete");
     @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
 }
 

@@ -299,7 +299,13 @@ namespace DbNetSuiteCore.Repositories
                         */
                     }
                 }
-                dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
+                using (DataSet ds = new DataSet() { EnforceConstraints = false })
+                {
+                    ds.Tables.Add(dataTable);
+                    dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
+                    ds.Tables.Remove(dataTable);
+                }
+               
                 connection.Close();
                 return dataTable;
             }

@@ -32,6 +32,14 @@ namespace DbNetSuiteCore.Web.Controllers
         {
             return View();
         }
+        public IActionResult Chart()
+        {
+            return View();
+        }
+        public IActionResult ChartMultiSeries()
+        {
+            return View();
+        }
         public IActionResult GroupByMonth()
         {
             return View();

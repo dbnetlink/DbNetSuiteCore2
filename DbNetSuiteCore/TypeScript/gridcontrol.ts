@@ -3,6 +3,7 @@ class GridControl extends ComponentControl {
     private textColourClass = "text-zinc-100";
     viewDialog: ViewDialog;
     selectedRow: HTMLTableRowElement;
+    jsonData: [any];
     constructor(gridId) {
         super(gridId)
     }
@@ -94,7 +95,12 @@ class GridControl extends ComponentControl {
             thead.style.zIndex = '1';
         }
 
-        this.invokeEventHandler('PageLoaded');
+        var args = {}
+        if (this.gridControlElement("#jsonData")) {
+            this.jsonData = JSON.parse((this.gridControlElement("#jsonData") as HTMLTextAreaElement).value);
+            args['json'] = this.jsonData;
+        }
+        this.invokeEventHandler('PageLoaded', args);
     }
 
     private initialise() {
@@ -109,6 +115,50 @@ class GridControl extends ComponentControl {
         }
 
         this.invokeEventHandler('Initialised');
+    }
+
+    public columnSeriesData(columnName: string) {
+        let series = [];
+        if (this.jsonData.length) {
+            let propName = this.getPropertyName(this.jsonData[0], columnName);
+
+            if (propName) {
+                for (var i = 0; i < this.jsonData.length; i++) {
+                    series.push(this.jsonData[i][propName])
+                }
+            }
+        }
+        return series;
+    }
+
+    private getPropertyName(object: any, columnName: string) {
+        let propName = null;
+        for (var name in object) {
+            if (name.toLowerCase() == columnName.toLowerCase()) {
+                propName = name;
+                break;
+            }
+        }
+
+        return propName;
+    }
+
+    public rowSeriesData(columnSeriesName: string, columnSeriesValue: string, columnNames:string[]) {
+        let series = [];
+        if (this.jsonData.length) {
+            let columnSeriesValues = this.columnSeriesData(columnSeriesName);
+            for (let r = 0; r < columnSeriesValues.length; r++) {
+                if (columnSeriesValues[r] == columnSeriesValue) {
+                    for (let c = 0; c < columnNames.length; c++) {
+                        let propName = this.getPropertyName(this.jsonData[r], columnNames[c]);
+                        if (propName) {
+                            series.push(this.jsonData[r][propName])
+                        }
+                    }
+                }
+            }
+        }
+        return series;
     }
 
     public refreshPage() {
@@ -414,7 +464,7 @@ class GridControl extends ComponentControl {
         return `td > input.multi-select`
     }
 
-    public gridControlElement(selector): HTMLButtonElement {
+    public gridControlElement(selector): HTMLElement {
         return this.controlElement(selector)
     }
 

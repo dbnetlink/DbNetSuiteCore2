@@ -249,7 +249,12 @@ class GridControl extends ComponentControl {
             thead.style.position = 'sticky';
             thead.style.zIndex = '1';
         }
-        this.invokeEventHandler('PageLoaded');
+        var args = {};
+        if (this.gridControlElement("#jsonData")) {
+            this.jsonData = JSON.parse(this.gridControlElement("#jsonData").value);
+            args['json'] = this.jsonData;
+        }
+        this.invokeEventHandler('PageLoaded', args);
     }
     initialise() {
         if (this.toolbarExists()) {
@@ -261,6 +266,45 @@ class GridControl extends ComponentControl {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
         this.invokeEventHandler('Initialised');
+    }
+    columnSeriesData(columnName) {
+        let series = [];
+        if (this.jsonData.length) {
+            let propName = this.getPropertyName(this.jsonData[0], columnName);
+            if (propName) {
+                for (var i = 0; i < this.jsonData.length; i++) {
+                    series.push(this.jsonData[i][propName]);
+                }
+            }
+        }
+        return series;
+    }
+    getPropertyName(object, columnName) {
+        let propName = null;
+        for (var name in object) {
+            if (name.toLowerCase() == columnName.toLowerCase()) {
+                propName = name;
+                break;
+            }
+        }
+        return propName;
+    }
+    rowSeriesData(columnSeriesName, columnSeriesValue, columnNames) {
+        let series = [];
+        if (this.jsonData.length) {
+            let columnSeriesValues = this.columnSeriesData(columnSeriesName);
+            for (let r = 0; r < columnSeriesValues.length; r++) {
+                if (columnSeriesValues[r] == columnSeriesValue) {
+                    for (let c = 0; c < columnNames.length; c++) {
+                        let propName = this.getPropertyName(this.jsonData[r], columnNames[c]);
+                        if (propName) {
+                            series.push(this.jsonData[r][propName]);
+                        }
+                    }
+                }
+            }
+        }
+        return series;
     }
     refreshPage() {
         let selector = `#${this.controlId} input[name="refresh"]`;

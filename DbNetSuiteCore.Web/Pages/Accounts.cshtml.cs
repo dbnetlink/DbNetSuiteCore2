@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Web.Pages
     {
         private string _activeTab = string.Empty;
 
-        private DataSourceType _dateSourceType = DataSourceType.SQLite;
+        private DataSourceType _dateSourceType = DataSourceType.MSSQL;
 
 
         [FromQuery(Name = "financialyear")]

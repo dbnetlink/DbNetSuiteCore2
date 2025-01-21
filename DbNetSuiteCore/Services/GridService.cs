@@ -85,6 +85,11 @@ namespace DbNetSuiteCore.Services
                 ConfigureColumnsForStoredProcedure(gridModel);
             }
 
+            if (gridModel.IncludeJsonData)
+            {
+                gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
+            }
+
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
 
             var gridViewModel = new GridViewModel(gridModel);

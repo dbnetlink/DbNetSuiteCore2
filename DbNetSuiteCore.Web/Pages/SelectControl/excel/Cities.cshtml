@@ -30,10 +30,9 @@
     };
 
     stateSelect.LinkedControl = citySelect;
-    stateSelect.ClientEvents[SelectClientEvent.OptionsLoaded] = "setStateCaption";
-
     countrySelect.LinkedControl = stateSelect;
-    citySelect.ClientEvents[SelectClientEvent.OptionsLoaded] = "setCityCaption";
+    stateSelect.Bind(SelectClientEvent.OptionsLoaded,"setStateCaption");
+    stateSelect.Bind(SelectClientEvent.OptionsLoaded,"setCityCaption");
    
 }
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(countrySelect))
@@ -41,11 +40,11 @@
 @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
 
 <script>
-    function setStateCaption(selectControl, args) { 
-        selectControl.setCaption(`State (${selectControl.parentControl.select.selectedOptions[0].text})`);
-    }
+function setStateCaption(selectControl, args) { 
+    selectControl.setCaption(`State (${selectControl.parentControl.select.selectedOptions[0].text})`);
+}
 
-    function setCityCaption(selectControl, args) {
-        selectControl.setCaption(`City (${selectControl.parentControl.select.selectedOptions[0].text})`);
-    }
+function setCityCaption(selectControl, args) {
+    selectControl.setCaption(`City (${selectControl.parentControl.select.selectedOptions[0].text})`);
+}
 </script>

@@ -38,7 +38,9 @@ namespace DbNetSuiteCore.Models
         internal List<string> ColumnFilter { get; set; } = new List<string>();
         public int PageSize { get; set; } = 20;
         public bool IsNested { get; set; } = false;
-       
+        public bool IncludeJsonData { get; set; } = false;
+        [JsonIgnore]
+        public string JsonData { get; set; } = string.Empty;
         public int ColSpan => VisbleColumns.ToList().Count;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.Searchable);
         public List<string> LinkedGridIds => GetLinkedControlIds(nameof(GridModel));  

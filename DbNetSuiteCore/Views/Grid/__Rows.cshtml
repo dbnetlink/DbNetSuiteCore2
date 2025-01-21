@@ -148,10 +148,17 @@
         </tr>
     }
 
-    @if (string.IsNullOrEmpty(Model.Diagnostics) == false)
+    @if (string.IsNullOrEmpty(Model.GridModel.JsonData) == false)
     {
         <tr>
-            <td colspan="@Model.ColSpan">@Html.Raw(Model.Diagnostics)</td>
+            <td style="display:none" colspan="@Model.ColSpan">
+                <textarea style="display:none" id="jsonData">@Model.GridModel.JsonData</textarea>
+            </td>
         </tr>
+    }
+
+    @if (string.IsNullOrEmpty(Model.Diagnostics) == false)
+    {
+
     }
 </tbody>
