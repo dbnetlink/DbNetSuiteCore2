@@ -22,5 +22,6 @@
         public const string Delete = "delete";
         public const string Insert = "insert";
         public const string Refresh = "refresh";
+        public const string SearchDialog = "searchDialog";
     }
 }

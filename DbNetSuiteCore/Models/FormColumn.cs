@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
+using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Html;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -60,7 +61,7 @@ namespace DbNetSuiteCore.Models
         public int? MaxLength { get; set; } = null;
         public int? MinLength { get; set; } = null;
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
-        public string DateTimeFormat => GetDateTimeFormat();
+        public string DateTimeFormat => GetDateTimeFormat(ControlType.ToString());
         public int ColSpan { get; set; } = 1;
         public int RowSpan { get; set; } = 1;
         public int TextAreaRows { get; set; } = 4;
@@ -129,20 +130,6 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        private string GetDateTimeFormat()
-        {
-            switch (DataType.Name)
-            {
-                case nameof(DateTime):
-                    return (ControlType == FormControlType.DateTime) ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd";
-                case nameof(DateTimeOffset):
-                    return (ControlType == FormControlType.DateTime) ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd";
-                case nameof(TimeSpan):
-                    return (ControlType == FormControlType.TimeWithSeconds) ? @"hh\:mm\:ss" : @"hh\:mm";
-            }
-
-            return string.Empty;
-        }
 
         public HtmlString RenderLabel()
         {
@@ -270,15 +257,9 @@ namespace DbNetSuiteCore.Models
             AddAttribute(attributes, MaxLength, "maxlength");
             AddAttribute(attributes, MinLength, "minlength");
 
-            List<string> dataList = new List<string>();
-            if (LookupOptions != null)
-            {
-                attributes["list"] = $"{attributes["id"]}_datalist";
-                dataList.Add($"<datalist id=\"{attributes["list"]}\">");
-                dataList.AddRange(OptionsList());
-                dataList.Add($"</datalist>");
-            }
-            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}{string.Join(string.Empty,dataList)}");
+            string dataList = DataList(attributes);
+           
+            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}{dataList}");
         }
 
         private void AddAttribute(Dictionary<string, string> attributes, object? attrValue , string attrName)
@@ -324,22 +305,6 @@ namespace DbNetSuiteCore.Models
             select.Add($"</select>{HelpTextElement()}");
 
             return new HtmlString(String.Join(string.Empty, select));
-        }
-
-        private List<string> OptionsList(List<string>? values = null, bool dataList = true)
-        {
-            List<string> options = new List<string>();
-
-            if (dataList == false)
-            {
-                options.Add("<option value=\"\"></option >");
-            }
-
-            foreach (var option in LookupOptions ?? new List<KeyValuePair<string, string>>())
-            {
-                options.Add($"<option value=\"{option.Key}\" {((values ?? new List<string>()).Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
-            }
-            return options;
         }
 
         private HtmlString RenderTextArea(string value, Dictionary<string, string> attributes, FormModel formModel)

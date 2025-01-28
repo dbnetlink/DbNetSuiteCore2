@@ -33,8 +33,7 @@ namespace DbNetSuiteCore.Models
         public abstract IEnumerable<ColumnModel> SearchableColumns { get; }
         [JsonIgnore]
         public LicenseInfo LicenseInfo { get; set; }
-
-        public string FingerPrint { get; set; } = string.Empty;
+        internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
 
         public string Url
         {

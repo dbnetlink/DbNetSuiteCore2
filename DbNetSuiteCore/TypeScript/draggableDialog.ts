@@ -8,7 +8,7 @@
     private xOffset: number = 0;
     private yOffset: number = 0;
 
-    constructor(dialogId: string, dragHandleClass: string = 'dialog-header', container:HTMLElement) {
+    constructor(dialogId: string, dragHandleClass: string = 'dialog-header', container: HTMLElement) {
         this.dialog = document.getElementById(dialogId) as HTMLDialogElement;
         this.container = container;
         if (!this.dialog) {
@@ -20,6 +20,15 @@
             throw new Error(`Drag handle with class "${dragHandleClass}" not found in the dialog`);
         }
 
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                this.ensureDialogInViewport();
+            }
+        });
+
+        // Start observing
+        resizeObserver.observe(this.container);
+
         this.initDragEvents();
     }
 
@@ -28,9 +37,14 @@
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
 
-        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft;
-        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
+        let xadj = this.dialog.getBoundingClientRect().left - this.container.getBoundingClientRect().left
+        let yadj = this.dialog.getBoundingClientRect().top - this.container.getBoundingClientRect().top
+
+        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft + xadj;
+        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop + yadj;
+
         this.setTranslate(this.xOffset, this.yOffset);
+
     }
 
     private startDragging(e: MouseEvent): void {
@@ -65,5 +79,38 @@
         requestAnimationFrame(() => {
             this.dialog.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
         });
+    }
+
+    ensureDialogInViewport() {
+        const viewport = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+
+        const dialogRect = this.dialog.getBoundingClientRect();
+        const referenceRect = this.container.getBoundingClientRect();
+
+        const corrections = {
+            x: 0,
+            y: 0
+        };
+
+        // Adjust calculations relative to reference div's position
+        if (dialogRect.left < referenceRect.left) {
+            corrections.x = referenceRect.left - dialogRect.left;
+        }
+        if (dialogRect.top < referenceRect.top) {
+            corrections.y = referenceRect.top - dialogRect.top;
+        }
+        if (dialogRect.right > viewport.width) {
+            corrections.x = viewport.width - dialogRect.right;
+        }
+        if (dialogRect.bottom > viewport.height) {
+            corrections.y = viewport.height - dialogRect.bottom;
+        }
+
+        this.xOffset = corrections.x != 0 ? corrections.x : this.xOffset;
+        this.yOffset = corrections.y != 0 ? corrections.y : this.yOffset;
+        this.setTranslate(this.xOffset, this.yOffset);
     }
 }

@@ -6,7 +6,8 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Data;
 using System.Globalization;
-using Microsoft.AspNetCore.Http;
+using DbNetSuiteCore.Attributes;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -63,7 +64,6 @@ namespace DbNetSuiteCore.Extensions
 
             if (!string.IsNullOrEmpty(componentModel.SearchInput))
             {
-
                 foreach (var column in componentModel.SearchableColumns)
                 {
                     ComponentModelExtensions.AddSearchFilterPart(componentModel, column, query, filterParts);
@@ -72,12 +72,104 @@ namespace DbNetSuiteCore.Extensions
                 foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
                 {
                     query.Params[$"@{column.ParamName}"] = $"%{componentModel.SearchInput}%";
-                    var lookupSql = $"select {column.Lookup.KeyColumn} from {column.Lookup.TableName} where {column.Lookup.DescriptionColumn} like @{column.ParamName}";
+                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} like @{column.ParamName}";
                     filterParts.Add($"{RefineSearchExpression(column, componentModel)} in ({lookupSql})");
                 }
 
             }
             return string.Join(" or ", filterParts);
+        }
+
+        public static string AddSearchDialogFilterPart(this ComponentModel componentModel, QueryCommandConfig query)
+        {
+            List<string> filterParts = new List<string>();
+
+            foreach (var searchFilterPart in componentModel.SearchDialogFilter)
+            {
+                ColumnModel colummn = componentModel.GetColumns().First(c => c.Key == searchFilterPart.ColumnKey);
+                string filterExpression = FilterExpression(searchFilterPart, query);
+                if (string.IsNullOrEmpty(filterExpression) == false)
+                {
+                    filterParts.Add($"{RefineSearchExpression(colummn, componentModel)} {FilterExpression(searchFilterPart, query)}");
+                }
+            }
+            return string.Join(" and ", filterParts);
+        }
+
+        private static string FilterExpression(SearchDialogFilter searchDialogFilter, QueryCommandConfig query)
+        {
+            string template = searchDialogFilter.Operator.GetAttribute<FilterExpressionAttribute>()?.Expression ?? string.Empty;
+
+            if (template == string.Empty)
+            {
+                return template;
+            }
+            List<string> parameterNames = new List<string>();
+
+            switch (searchDialogFilter.Operator)
+            {
+                case SearchOperator.In:
+                case SearchOperator.NotIn:
+                    foreach(object paramValue in searchDialogFilter.Value1 as List<object> ?? new List<object>())
+                    {
+                        parameterNames.Add(ParameterName(searchDialogFilter.ColumnKey, parameterNames.Count));
+                        query.Params[parameterNames.Last()] = paramValue;
+                    }
+                    return template.Replace("{0}", string.Join(",", parameterNames));
+                case SearchOperator.IsEmpty:
+                case SearchOperator.IsNotEmpty:
+                    return template;
+                case SearchOperator.Between:
+                case SearchOperator.NotBetween:
+                    foreach ( int i in Enumerable.Range(0,2))
+                    {
+                        parameterNames.Add(ParameterName(searchDialogFilter.ColumnKey, parameterNames.Count));
+                        query.Params[parameterNames.Last()] = (i == 0 ? searchDialogFilter.Value1 : searchDialogFilter.Value2) ?? string.Empty;
+                    }
+                    return template.Replace("{0}", parameterNames[0]).Replace("{1}", parameterNames[1]);
+                default:
+                    var paramName = ParameterName(searchDialogFilter.ColumnKey, 0);
+                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator,searchDialogFilter.Value1) ?? string.Empty;
+                    return template.Replace("{0}", paramName);
+            }
+
+            string ParameterName(string columnKey, int idx)
+            {
+                return DbHelper.ParameterName($"sd_{columnKey}{idx}");
+            }
+        }
+
+        private static object? SearchFilterParam(SearchOperator searchOperator, object? value)
+        {
+            string template = string.Empty;
+            switch (searchOperator)
+            {
+                case SearchOperator.Contains:
+                case SearchOperator.DoesNotContain:
+                    template = "%{0}%";
+                    break;
+                case SearchOperator.StartsWith:
+                case SearchOperator.DoesNotStartWith:
+                    template = "{0}%";
+                    break;
+                case SearchOperator.EndsWith:
+                case SearchOperator.DoesNotEndWith:
+                    template = "%{0}";
+                    break;
+                case SearchOperator.True:
+                    value = true;
+                    break;
+                case SearchOperator.False:
+                    value = false;
+                    break;
+            }
+
+            if (string.IsNullOrEmpty(template))
+            {
+                return value;
+            }
+
+            return string.Format(template, value?.ToString());
         }
 
         public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel)
@@ -94,21 +186,34 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
-            if (col.DataType != typeof(DateTime))
+            switch (col.DataTypeName) 
             {
-                return columnExpression;
-            }
-
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.MSSQL:
-                    if (col.DbDataType != "31") // "Date"
+                case nameof(DateTime):
+                    switch (componentModel.DataSourceType)
                     {
-                        columnExpression = $"CONVERT(DATE,{columnExpression})";
+                        case DataSourceType.MSSQL:
+                            if (col.DbDataType != nameof(MSSQLDataTypes.Date)) 
+                            {
+                                columnExpression = $"CONVERT(DATE,{columnExpression})";
+                            }
+                            break;
+                        case DataSourceType.SQLite:
+                            columnExpression = $"DATE({columnExpression})";
+                            break;
                     }
                     break;
-                case DataSourceType.SQLite:
-                    columnExpression = $"DATE({columnExpression})";
+                case nameof(TimeSpan):
+                    switch (componentModel.DataSourceType)
+                    {
+                        case DataSourceType.MSSQL:
+                            if (col.DbDataType == nameof(MSSQLDataTypes.Time))
+                            {
+                                columnExpression = $"cast(Format({columnExpression}, N'hh\\:mm') as time)";
+                            }
+                            break;
+                    }
+                    break;
+                default:
                     break;
             }
 
@@ -251,7 +356,7 @@ namespace DbNetSuiteCore.Extensions
             return componentModel.Distinct ? "distinct " : string.Empty;
         }
 
-        public static object? ParamValue(object value, ColumnModel column, DataSourceType dataSourceType)
+        public static object? ParamValue(object value, ColumnModel column, DataSourceType dataSourceType, bool gridColumnFilter = false)
         {
             var dataType = column.DataTypeName;
             if (value == null)
@@ -278,9 +383,18 @@ namespace DbNetSuiteCore.Extensions
                         paramValue = ParseBoolean(value.ToString());
                         break;
                     case nameof(TimeSpan):
-                        if (column is FormColumn)
+                        if (gridColumnFilter == false)
                         {
-                            paramValue = TimeSpan.ParseExact(value.ToString(), "g", CultureInfo.CurrentCulture, TimeSpanStyles.None);
+                            if (column is FormColumn)
+                            {
+                                string inputType = (column as FormColumn).ControlType.ToString();
+                                paramValue = TimeSpan.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, TimeSpanStyles.None);
+                            }
+                            if (column is GridColumn)
+                            {
+                                string inputType = (column as GridColumn).SearchControlType.ToString();
+                                paramValue = TimeSpan.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, TimeSpanStyles.None);
+                            }
                         }
                         else
                         {
@@ -288,9 +402,18 @@ namespace DbNetSuiteCore.Extensions
                         }
                         break;
                     case nameof(DateTime):
-                        if (column is FormColumn)
+                        if (gridColumnFilter == false)
                         {
-                            paramValue = DateTime.ParseExact(value.ToString(), (column as FormColumn).DateTimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None);
+                            if (column is FormColumn)
+                            {
+                                string inputType = (column as FormColumn).ControlType.ToString();
+                                paramValue = DateTime.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, DateTimeStyles.None);
+                            }
+                            if (column is GridColumn)
+                            {
+                                string inputType = (column as GridColumn).SearchControlType.ToString();
+                                paramValue = DateTime.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, DateTimeStyles.None);
+                            }
                         }
                         else
                         {

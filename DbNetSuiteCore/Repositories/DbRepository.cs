@@ -5,7 +5,6 @@ using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
-using System.Configuration;
 
 
 namespace DbNetSuiteCore.Repositories

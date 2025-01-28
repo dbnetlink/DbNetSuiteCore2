@@ -693,6 +693,7 @@ select {
 }
 
 .dbnetsuite select.column-filter,
+        .dbnetsuite select.search-operator,
         .dbnetsuite-form select {
   padding-right: 2rem !important;
 }
@@ -808,7 +809,8 @@ form.dbnetsuite {
   background-color: rgb(241 245 249 / var(--tw-bg-opacity));
 }
 
-.dbnetsuite td, .dbnetsuite th {
+.dbnetsuite .grid-table td, 
+    .dbnetsuite .grid-table th {
   border-top-width: 1px;
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
@@ -1031,6 +1033,12 @@ form.dbnetsuite {
   border-collapse: collapse;
 }
 
+.border-spacing-2 {
+  --tw-border-spacing-x: 0.5rem;
+  --tw-border-spacing-y: 0.5rem;
+  border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -1127,6 +1135,11 @@ form.dbnetsuite {
 .border-sky-400 {
   --tw-border-opacity: 1;
   border-color: rgb(56 189 248 / var(--tw-border-opacity));
+}
+
+.border-slate-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(226 232 240 / var(--tw-border-opacity));
 }
 
 .border-slate-300 {

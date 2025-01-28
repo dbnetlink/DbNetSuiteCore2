@@ -342,6 +342,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
                 AssignParentKey(gridModel);
+                AssignSearchDialogFilter(gridModel);
 
                 gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
 
@@ -352,6 +353,72 @@ namespace DbNetSuiteCore.Services
                 return new GridModel();
             }
         }
+
+        private void AssignSearchDialogFilter(GridModel gridModel)
+        {
+            gridModel.SearchDialogFilter = new List<SearchDialogFilter>();
+            var operatorList = RequestHelper.FormValueList("searchDialogOperator", _context).Select(f => f.Trim()).ToList();
+            var value1List = RequestHelper.FormValueList("searchDialogValue1", _context).Select(f => f.Trim()).ToList();
+            var value2List = RequestHelper.FormValueList("searchDialogValue2", _context).Select(f => f.Trim()).ToList();
+            var keyList = RequestHelper.FormValueList("searchDialogKey", _context).Select(f => f.Trim()).ToList();
+
+            for (var i = 0; i < operatorList.Count; i++)
+            {
+                if (string.IsNullOrEmpty(operatorList[i]))
+                {
+                    continue;
+                }
+
+                var searchDialogFilter = new SearchDialogFilter() { Operator = Enum.Parse<SearchOperator>(operatorList[i]), ColumnKey = keyList[i] };
+                GridColumn? gridColumn = gridModel.Columns.FirstOrDefault(c => c.Key == searchDialogFilter.ColumnKey);
+
+                if (gridColumn == null)
+                {
+                    continue;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.IsEmpty:
+                    case SearchOperator.IsNotEmpty:
+                    case SearchOperator.True:
+                    case SearchOperator.False:
+                        gridModel.SearchDialogFilter.Add(searchDialogFilter);
+                        continue;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.In:
+                    case SearchOperator.NotIn:
+                        var paramList = new List<object?>();
+                        foreach (var value in value1List[i].Split(','))
+                        {
+                            paramList.Add(ComponentModelExtensions.ParamValue(value, gridColumn, gridModel.DataSourceType));
+                        }
+                        searchDialogFilter.Value1 = paramList;
+                        break;
+                    default:
+                        searchDialogFilter.Value1 = ComponentModelExtensions.ParamValue(value1List[i], gridColumn, gridModel.DataSourceType);
+                        break;
+                }
+
+                switch(searchDialogFilter.Operator)
+                {
+                    case SearchOperator.Between:
+                    case SearchOperator.NotBetween:
+                        if (string.IsNullOrEmpty(value2List[i]))
+                        {
+                            continue;
+                        }
+                        searchDialogFilter.Value2 = ComponentModelExtensions.ParamValue(value2List[i], gridColumn, gridModel.DataSourceType);
+                        break;
+                }
+
+                gridModel.SearchDialogFilter.Add(searchDialogFilter);
+            }
+        }
+
         private int GetPageNumber(GridModel gridModel)
         {
             switch (RequestHelper.TriggerName(_context))
@@ -362,6 +429,7 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.Search:
                 case TriggerNames.First:
                 case TriggerNames.ColumnFilter:
+                case TriggerNames.SearchDialog:
                     return 1;
                 case TriggerNames.Next:
                     return gridModel.CurrentPage + 1;

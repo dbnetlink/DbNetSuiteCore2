@@ -265,7 +265,25 @@ class GridControl extends ComponentControl {
         if (viewDialog) {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
+        var searchDialog = this.controlElement(".search-dialog");
+        if (searchDialog && this.getButton("search")) {
+            this.searchDialog = new SearchDialog(searchDialog, this);
+        }
+        document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         this.invokeEventHandler('Initialised');
+    }
+    beforeRequest(evt) {
+        if (this.isControlEvent(evt) == false)
+            return;
+        switch (this.triggerName(evt)) {
+            case "searchdialog":
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity();
+                    evt.preventDefault();
+                    return;
+                }
+                break;
+        }
     }
     columnSeriesData(columnName) {
         let series = [];
@@ -798,7 +816,7 @@ class FormControl extends ComponentControl {
                 return;
             }
         }
-        this.confirmDialog.show(evt, this.formBody);
+        this.confirmDialog.open(evt, this.formBody);
     }
     configRequest(evt) {
         if (this.isControlEvent(evt) == false) {
@@ -821,13 +839,12 @@ class FormControl extends ComponentControl {
             case "apply":
                 if (this.formModified() == false) {
                     evt.preventDefault();
-                    return;
                 }
-                if (this.form.checkValidity() == false) {
+                else if (this.form.checkValidity() == false) {
                     this.form.reportValidity();
                     evt.preventDefault();
-                    return;
                 }
+                return;
             case "cancel":
             case "primarykey":
                 return;
@@ -980,14 +997,23 @@ class DraggableDialog {
         if (!this.dragHandle) {
             throw new Error(`Drag handle with class "${dragHandleClass}" not found in the dialog`);
         }
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                this.ensureDialogInViewport();
+            }
+        });
+        // Start observing
+        resizeObserver.observe(this.container);
         this.initDragEvents();
     }
     initDragEvents() {
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
-        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft;
-        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
+        let xadj = this.dialog.getBoundingClientRect().left - this.container.getBoundingClientRect().left;
+        let yadj = this.dialog.getBoundingClientRect().top - this.container.getBoundingClientRect().top;
+        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft + xadj;
+        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop + yadj;
         this.setTranslate(this.xOffset, this.yOffset);
     }
     startDragging(e) {
@@ -1019,34 +1045,86 @@ class DraggableDialog {
             this.dialog.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
         });
     }
+    ensureDialogInViewport() {
+        const viewport = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+        const dialogRect = this.dialog.getBoundingClientRect();
+        const referenceRect = this.container.getBoundingClientRect();
+        const corrections = {
+            x: 0,
+            y: 0
+        };
+        // Adjust calculations relative to reference div's position
+        if (dialogRect.left < referenceRect.left) {
+            corrections.x = referenceRect.left - dialogRect.left;
+        }
+        if (dialogRect.top < referenceRect.top) {
+            corrections.y = referenceRect.top - dialogRect.top;
+        }
+        if (dialogRect.right > viewport.width) {
+            corrections.x = viewport.width - dialogRect.right;
+        }
+        if (dialogRect.bottom > viewport.height) {
+            corrections.y = viewport.height - dialogRect.bottom;
+        }
+        this.xOffset = corrections.x != 0 ? corrections.x : this.xOffset;
+        this.yOffset = corrections.y != 0 ? corrections.y : this.yOffset;
+        this.setTranslate(this.xOffset, this.yOffset);
+    }
 }
 
-class ViewDialog {
-    constructor(dialog, gridControl) {
+class Dialog {
+    constructor(dialog, control) {
         this.draggableDialog = null;
         this.dialog = dialog;
-        this.gridControl = gridControl;
-        let closeButtons = this.dialog.querySelectorAll(this.gridControl.buttonSelector("close"));
+        this.dialog.style.margin = '0';
+        this.dialog.style.position = 'absolute';
+        this.control = control;
+        this.container = control.controlContainer;
+        let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
         closeButtons.forEach((e) => {
-            e.addEventListener("click", () => this.dialog.close());
+            e.addEventListener("click", () => this.close());
         });
-        this.dialog.querySelector(this.gridControl.buttonSelector("previous")).addEventListener("click", () => this.gridControl.previousRow());
-        this.dialog.querySelector(this.gridControl.buttonSelector("next")).addEventListener("click", () => this.gridControl.nextRow());
-        this.gridControl.getButton("view").addEventListener("click", this.open.bind(this));
+    }
+    show(draggable = true, modal = false) {
+        if (modal) {
+            this.dialog.showModal();
+        }
+        else {
+            this.dialog.show();
+        }
+        this.container.style.position = 'relative';
+        if (this.dialog.style.transform == '') {
+            this.dialog.style.transform = `translate(-50%, -50%)`;
+            this.dialog.style.left = '50%';
+            this.dialog.style.top = '50%';
+        }
+        if (draggable && !this.draggableDialog) {
+            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav", this.container);
+        }
+    }
+    close() {
+        if (this.dependentDialog) {
+            this.dependentDialog.close();
+        }
+        if (this.dialog && this.dialog.open) {
+            this.dialog.close();
+        }
+    }
+}
+
+class ViewDialog extends Dialog {
+    constructor(dialog, gridControl) {
+        super(dialog, gridControl);
+        this.gridControl = gridControl;
+        this.dialog.querySelector(this.control.buttonSelector("previous")).addEventListener("click", () => gridControl.previousRow());
+        this.dialog.querySelector(this.control.buttonSelector("next")).addEventListener("click", () => gridControl.nextRow());
+        this.control.getButton("view").addEventListener("click", this.open.bind(this));
     }
     open() {
         this.getRecord();
-    }
-    close() {
-        if (this.dialog && this.dialog.open) {
-            this.close();
-        }
-    }
-    show() {
-        this.dialog.show();
-        if (!this.draggableDialog) {
-            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav", this.gridControl.gridControlElement("tbody"));
-        }
     }
     update() {
         if (this.dialog && this.dialog.open) {
@@ -1074,27 +1152,16 @@ class ViewDialog {
     }
 }
 
-class ConfirmDialog {
+class ConfirmDialog extends Dialog {
     constructor(control, prompt) {
-        this.control = control;
-        this.dialog = this.control.controlElement(".confirm-dialog");
+        super(control.controlElement(".confirm-dialog"), control);
         this.dialog.querySelector(".prompt").innerHTML = prompt;
-        let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
-        closeButtons.forEach((e) => {
-            e.addEventListener("click", () => this.dialog.close());
-        });
         this.dialog.querySelector(this.control.buttonSelector("confirm")).addEventListener("click", () => this.confirm());
         this.dialog.querySelector(this.control.buttonSelector("cancel")).addEventListener("click", () => this.cancel());
     }
-    show(event, container) {
+    open(event, container) {
         this.event = event;
-        this.dialog.show();
-        this.dialog.style.left = this.coordinate(container.offsetLeft, container.clientWidth, this.dialog.clientWidth);
-        this.dialog.style.top = this.coordinate(container.offsetTop, container.clientHeight, this.dialog.clientHeight);
-    }
-    coordinate(offset, container, dialog) {
-        let adj = container > dialog ? ((container - dialog) * 0.5) : 0;
-        return `${offset + (dialog * 0.5) + adj}px`;
+        this.show(false, true);
     }
     confirm() {
         this.event.detail.issueRequest(true);
@@ -1209,3 +1276,104 @@ class HtmlEditor {
 HtmlEditor.TinyMCE = "TinyMCE";
 HtmlEditor.CKEditor = "CKEditor";
 HtmlEditor.Froala = "Froala";
+
+class SearchDialog extends Dialog {
+    constructor(dialog, gridControl) {
+        super(dialog, gridControl);
+        this.lookupDialog = new LookupDialog(gridControl.controlElement(".lookup-dialog"), gridControl);
+        this.dependentDialog = this.lookupDialog;
+        this.control.getButton("search").addEventListener("click", this.show.bind(this));
+        this.control.getButton("clear").addEventListener("click", this.clear.bind(this));
+        dialog.querySelectorAll(".search-operator").forEach(e => e.addEventListener("change", (e) => this.operatorSelected(e)));
+        dialog.querySelectorAll("input").forEach(e => "input,change".split(',').forEach(en => e.addEventListener(en, this.valueEntered.bind({ event: e }))));
+        dialog.querySelectorAll("button[button-type='list']").forEach(e => e.addEventListener("click", (e) => this.showLookup(e)));
+    }
+    operatorSelected(event) {
+        let select = event.target;
+        let tr = select.closest('tr');
+        tr.querySelectorAll(".first").forEach(e => e.classList.remove("hidden"));
+        switch (select.value) {
+            case "Between":
+            case "NotBetween":
+                tr.querySelectorAll(".between").forEach(e => e.classList.remove("hidden"));
+                break;
+            case "IsEmpty":
+            case "IsNotEmpty":
+                tr.querySelectorAll(".between").forEach(e => e.classList.add("hidden"));
+                tr.querySelectorAll(".first").forEach(e => e.classList.add("hidden"));
+                break;
+            default:
+                tr.querySelectorAll(".between").forEach(e => e.classList.add("hidden"));
+                break;
+        }
+        tr.querySelectorAll("input").forEach(e => {
+            if (e.type != 'hidden') {
+                e.required = false;
+            }
+        });
+        if (select.value == '') {
+            tr.querySelectorAll("input").forEach(e => {
+                if (e.type != 'hidden') {
+                    e.value = '';
+                }
+            });
+        }
+        else {
+            tr.querySelectorAll("input").forEach(e => { if (this.isVisible(e))
+                e.required = true; });
+        }
+    }
+    isVisible(el) {
+        return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    }
+    valueEntered(event) {
+        let input = event.target;
+        let tr = input.closest('tr');
+        let select = tr.querySelector("select");
+        if (input.value != '' && select.value == '') {
+            select.options[1].selected = true;
+        }
+        else if (input.value == '') {
+            select.value = "";
+        }
+    }
+    showLookup(event) {
+        let button = event.target.closest("button");
+        let input = button.closest("tr").querySelector("input");
+        let select = this.dialog.querySelector(`select[data-key='${button.dataset.key}']`);
+        this.lookupDialog.open(select, input);
+    }
+    clear() {
+        this.dialog.querySelectorAll(".search-operator").forEach((e) => { e.value = ''; e.dispatchEvent(new Event('change')); });
+    }
+}
+
+class LookupDialog extends Dialog {
+    constructor(dialog, gridControl) {
+        super(dialog, gridControl);
+        this.select = dialog.querySelector("select");
+        this.control.getButton("cancel").addEventListener("click", () => this.close());
+        this.control.getButton("select").addEventListener("click", () => this.apply());
+    }
+    open(select, input) {
+        this.select.innerHTML = select.innerHTML;
+        var selectedValues = input.value.split(',');
+        selectedValues.forEach(value => {
+            const options = this.select.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === value) {
+                    options[i].selected = true;
+                }
+            }
+        });
+        this.input = input;
+        this.show();
+        this.select.focus();
+    }
+    apply() {
+        var selectedValues = Array.from(this.select.selectedOptions).map(({ value }) => value);
+        this.input.value = selectedValues.join(',');
+        this.input.dispatchEvent(new Event('change'));
+        this.close();
+    }
+}

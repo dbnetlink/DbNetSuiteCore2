@@ -24,6 +24,7 @@
     }
 
         .dbnetsuite select.column-filter,
+        .dbnetsuite select.search-operator,
         .dbnetsuite-form select {
             @apply pr-8 !important;
         }
@@ -66,7 +67,8 @@
             @apply bg-slate-100 border border-solid border-slate-200;
         }
 
-    .dbnetsuite td, .dbnetsuite th {
+    .dbnetsuite .grid-table td, 
+    .dbnetsuite .grid-table th {
         @apply border-y border-slate-300 py-0.5 px-0.5;
     }
 

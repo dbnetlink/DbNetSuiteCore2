@@ -1,7 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.AspNetCore.Html;
 using MongoDB.Bson;
 using System.Data;
 using System.Text.Json.Serialization;
@@ -14,6 +14,7 @@ namespace DbNetSuiteCore.Models
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte), nameof(SByte) };
         private Type? _DataType = null;
         private List<KeyValuePair<string, string>>? _EnumOptions;
+        private SearchControlType _searchControlType = SearchControlType.Text;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
@@ -65,14 +66,51 @@ namespace DbNetSuiteCore.Models
         public bool Initialised { get; set; } = false;
         public bool Valid { get; set; } = true;
         public Lookup? Lookup { get; set; }
+        public bool DistinctLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName);
+        public bool SearchLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName) == false;
         public bool DataOnly { get; set; } = false;
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
-        internal bool Searchable => (DataType == typeof(string) && DbDataType != "xml");
+        internal bool StringSearchable => (DataType == typeof(string) && DbDataType != "xml");
         public SortOrder? InitialSortOrder { get; set; } = null;
         public bool LookupNotPopulated => (Lookup != null && LookupOptions == null);
         public string EnumName { get; set; } = string.Empty;
+        public bool AllowDBNull { get; set; } = true;
+        public bool Search { get; set; } = true;
+        public bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType();
+        public SearchControlType SearchControlType
+        {
+            get
+            {
+                if (_searchControlType == SearchControlType.Text)
+                {
+                    if (IsNumeric)
+                    {
+                        return SearchControlType.Number;
+                    }
+                    else
+                    {
+                        switch (DataTypeName)
+                        {
+                            case nameof(DateTime):
+                            case nameof(DateTimeOffset):
+                                return SearchControlType.Date;
+                            case nameof(TimeSpan):
+                                return SearchControlType.Time;
+                        }
+                    }
+                }
 
+                return _searchControlType;
+            }
+            set
+            {
+                if (_searchControlType == SearchControlType.Text)
+                {
+                    _searchControlType = value;
+                };
+            }
+        }
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
@@ -248,6 +286,7 @@ namespace DbNetSuiteCore.Models
             bool isAutoincrement = (bool)RowValue(dataRow, "IsAutoincrement", false);
 
             PrimaryKey = (bool)RowValue(dataRow, "IsKey", false) || isAutoincrement;
+            AllowDBNull = (bool)RowValue(dataRow, "AllowDBNull", true);
             if (this is FormColumn)
             {
                 var formColumn = (FormColumn)this;
@@ -352,6 +391,275 @@ namespace DbNetSuiteCore.Models
         private string CleanColumnName(string columnName)
         {
             return new Regex("[^a-zA-Z0-9_]").Replace(columnName, string.Empty);
+        }
+
+
+        protected string DataList(Dictionary<string, string> attributes)
+        {
+            List<string> dataList = new List<string>();
+            if (LookupOptions != null)
+            {
+                attributes["list"] = $"{attributes["id"]}_datalist";
+                dataList.Add($"<datalist id=\"{attributes["list"]}\">");
+                dataList.AddRange(OptionsList());
+                dataList.Add($"</datalist>");
+            }
+
+            return string.Join(string.Empty, dataList);
+        }
+
+        protected List<string> OptionsList(List<string>? values = null, bool dataList = true)
+        {
+            List<string> options = new List<string>();
+
+            if (dataList == false)
+            {
+                options.Add("<option value=\"\"></option >");
+            }
+
+            foreach (var option in LookupOptions ?? new List<KeyValuePair<string, string>>())
+            {
+                options.Add($"<option value=\"{option.Key}\" {((values ?? new List<string>()).Contains(option.Key) ? "selected" : "")}>{option.Value}</option>");
+            }
+            return options;
+        }
+
+
+        internal string GetDateTimeFormat(string inputType)
+        {
+            switch (DataType.Name)
+            {
+                case nameof(DateTime):
+                    return (inputType == nameof(FormControlType.DateTime)) ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd";
+                case nameof(DateTimeOffset):
+                    return (inputType == nameof(FormControlType.DateTime)) ? "yyyy-MM-dd'T'HH:mm" : "yyyy-MM-dd";
+                case nameof(TimeSpan):
+                    return (inputType == nameof(FormControlType.TimeWithSeconds)) ? @"hh\:mm\:ss" : @"hh\:mm";
+            }
+
+            return string.Empty;
+        }
+
+        public HtmlString SearchOperatorSelection()
+        {
+            var attributes = new Dictionary<string, string>();
+            attributes["name"] = $"searchDialogOperator";
+            attributes["class"] = $"search-operator";
+            List<string> select = new List<string>();
+            select.Add($"<select {RazorHelper.Attributes(attributes)}><option/>");
+            var options = SearchOperatorOptions();
+            select.AddRange(options.Select(o => $"<option value=\"{o.ToString()}\">{ResourceHelper.GetResourceString(o)}</option>").ToList());
+            select.Add("</select>");
+
+            return new HtmlString(string.Join(string.Empty, select));
+        }
+
+        public HtmlString SearchInput()
+        {
+            var attributes = new Dictionary<string, string>();
+            attributes["name"] = "searchDialogValue1";
+            attributes["type"] = "hidden";
+            List<string> input = new List<string>();
+
+            if (DataType == typeof(bool))
+            {
+                input.Add($"<input {RazorHelper.Attributes(attributes)}/>");
+                attributes["name"] = attributes["name"].Replace("1","2");
+                input.Add($"<input {RazorHelper.Attributes(attributes)}/>");
+                return new HtmlString(string.Join(string.Empty, input));
+            }
+
+            bool supportsBetween = !SearchLookup;
+          
+            attributes["style"] = "width:130px;";
+            attributes["data-datatype"] = DataTypeName;
+            attributes["class"] = "first";
+            attributes["type"] = SearchControlType.ToString().ToLower();
+
+            if (attributes["type"] == "text")
+            {
+                attributes["style"] = "width:295px;";
+                supportsBetween = false;
+            }
+
+            
+
+            input.Add($"<div style=\"display:flex;flex-direction:row;align-items:center;gap:5px;\">");
+            string lookup = string.Empty;
+            if (DistinctLookup)
+            {
+                attributes["id"] = $"{Key}";
+                lookup = DataList(attributes);
+            }
+            if (SearchLookup)
+            {
+                attributes["type"] = "text";
+                attributes["style"] = "width:257px;";
+                attributes["readonly"] = "readonly";
+                lookup = RazorHelper.IconButton("List", IconHelper.List(), new Dictionary<string, string>() { { "data-key", Key },{ "class", "first" } }).ToString();
+            }
+
+            input.Add($"<input {RazorHelper.Attributes(attributes)}/>{lookup}");
+
+            attributes["name"] = $"searchDialogValue2";
+            if (supportsBetween)
+            {
+                attributes["class"] = "between hidden";
+                input.Add($"<span class=\"between hidden\"> and </span>");
+                input.Add($"<input {RazorHelper.Attributes(attributes)}/>");
+            }
+            else
+            {
+                attributes["type"] = "hidden";
+                input.Add($"<input {RazorHelper.Attributes(attributes)}/>");
+            }
+
+            input.Add("</div>");
+
+            return new HtmlString(string.Join(string.Empty, input));
+        }
+
+
+        private List<SearchOperator> SearchOperatorOptions()
+        {
+            var options = new List<SearchOperator>();
+
+            foreach (SearchOperator searchOperator in Enum.GetValues(typeof(SearchOperator)))
+            {
+                if (Lookup == null || DistinctLookup)
+                {
+                    AddOperator(searchOperator, options);
+                }
+                else
+                {
+                    switch (searchOperator)
+                    {
+                        case SearchOperator.In:
+                        case SearchOperator.NotIn:
+                            options.Add(searchOperator);
+                            break;
+                        case SearchOperator.IsEmpty:
+                        case SearchOperator.IsNotEmpty:
+                            if (AllowDBNull)
+                            {
+                                options.Add(searchOperator);
+                            }
+                            break;
+                    }
+                }
+            }
+
+            return options;
+        }
+
+        private void AddOperator(SearchOperator searchOperator, List<SearchOperator> options)
+        {
+            if (IsNumeric)
+            {
+                if (IsNonStringOperator(searchOperator) == false)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                switch (DataTypeName)
+                {
+                    case nameof(Boolean):
+                        if (IsBooleanOperator(searchOperator) == false)
+                        {
+                            return;
+                        }
+                        break;
+                    case nameof(DateTime):
+                    case nameof(DateTimeOffset):
+                    case nameof(TimeSpan):
+                        if (IsNonStringOperator(searchOperator) == false)
+                        {
+                            return;
+                        }
+                        break;
+                    default:
+                        if (IsStringOperator(searchOperator) == false)
+                        {
+                            return;
+                        }
+                        break;
+                }
+            }
+
+            options.Add(searchOperator);
+        }
+
+        private Boolean IsBooleanOperator(SearchOperator searchOperator)
+        {
+            switch (searchOperator)
+            {
+                case SearchOperator.True:
+                case SearchOperator.False:
+                    return true;
+                case SearchOperator.IsEmpty:
+                case SearchOperator.IsNotEmpty:
+                    if (AllowDBNull)
+                    {
+                        return true;
+                    }
+                    break;
+            }
+
+            return false;
+        }
+
+        private Boolean IsStringOperator(SearchOperator searchOperator)
+        {
+            switch (searchOperator)
+            {
+                case SearchOperator.EqualTo:
+                case SearchOperator.Contains:
+                case SearchOperator.StartsWith:
+                case SearchOperator.EndsWith:
+                case SearchOperator.NotEqualTo:
+                case SearchOperator.DoesNotContain:
+                case SearchOperator.DoesNotEndWith:
+                case SearchOperator.DoesNotStartWith:
+                case SearchOperator.IsEmpty:
+                case SearchOperator.IsNotEmpty:
+                    return true;
+            }
+
+            return false;
+        }
+
+        private Boolean IsNonStringOperator(SearchOperator searchOperator)
+        {
+            switch (searchOperator)
+            {
+                case SearchOperator.EqualTo:
+                case SearchOperator.NotEqualTo:
+                case SearchOperator.GreaterThan:
+                case SearchOperator.LessThan:
+                case SearchOperator.Between:
+                case SearchOperator.NotBetween:
+                case SearchOperator.NotLessThan:
+                case SearchOperator.NotGreaterThan:
+                case SearchOperator.IsEmpty:
+                case SearchOperator.IsNotEmpty:
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool SearchableDataType()
+        {
+            switch (DbDataType)
+            {
+                case nameof(MSSQLDataTypes.Xml):
+                case nameof(MSSQLDataTypes.Sql_Variant):
+                    return false;
+            }
+
+            return true;
         }
     }
 }

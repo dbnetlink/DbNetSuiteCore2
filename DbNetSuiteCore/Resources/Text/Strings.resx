@@ -123,6 +123,9 @@
   <data name="Apply" xml:space="preserve">
     <value>Apply your changes</value>
   </data>
+  <data name="Between" xml:space="preserve">
+    <value>Between</value>
+  </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel your changes</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="ConfirmDelete" xml:space="preserve">
     <value>Please confirm deletion of current record</value>
+  </data>
+  <data name="Contains" xml:space="preserve">
+    <value>Contains</value>
   </data>
   <data name="DataFormatError" xml:space="preserve">
     <value>Format of entered data is not valid</value>
@@ -141,14 +147,50 @@
   <data name="Deleted" xml:space="preserve">
     <value>Record has been deleted</value>
   </data>
+  <data name="DoesNotContain" xml:space="preserve">
+    <value>Does not contain</value>
+  </data>
+  <data name="DoesNotEndWith" xml:space="preserve">
+    <value>Does not end with</value>
+  </data>
+  <data name="DoesNotStartWith" xml:space="preserve">
+    <value>Does not start with</value>
+  </data>
+  <data name="Ends with" xml:space="preserve">
+    <value>Ends with</value>
+  </data>
+  <data name="EndsWith" xml:space="preserve">
+    <value>Ends with</value>
+  </data>
+  <data name="EqualTo" xml:space="preserve">
+    <value>Equal to</value>
+  </data>
+  <data name="False" xml:space="preserve">
+    <value>False</value>
+  </data>
   <data name="First" xml:space="preserve">
     <value>First</value>
+  </data>
+  <data name="GreaterThan" xml:space="preserve">
+    <value>Greater Than</value>
+  </data>
+  <data name="In" xml:space="preserve">
+    <value>In</value>
   </data>
   <data name="Insert" xml:space="preserve">
     <value>Add</value>
   </data>
+  <data name="IsEmpty" xml:space="preserve">
+    <value>Is empty</value>
+  </data>
+  <data name="IsNotEmpty" xml:space="preserve">
+    <value>Is not empty</value>
+  </data>
   <data name="Last" xml:space="preserve">
     <value>Last</value>
+  </data>
+  <data name="LessThan" xml:space="preserve">
+    <value>Less than</value>
   </data>
   <data name="MaxCharsError" xml:space="preserve">
     <value>A maximum of {0} characters must be entered</value>
@@ -170,6 +212,21 @@
   </data>
   <data name="NoRecordsFound" xml:space="preserve">
     <value>No records found</value>
+  </data>
+  <data name="NotBetween" xml:space="preserve">
+    <value>Not between</value>
+  </data>
+  <data name="NotEqualTo" xml:space="preserve">
+    <value>Not equal to</value>
+  </data>
+  <data name="NotGreaterThan" xml:space="preserve">
+    <value>Not greater than</value>
+  </data>
+  <data name="NotIn" xml:space="preserve">
+    <value>Not in</value>
+  </data>
+  <data name="NotLessThan" xml:space="preserve">
+    <value>Not less than</value>
   </data>
   <data name="Of" xml:space="preserve">
     <value>of</value>
@@ -201,8 +258,17 @@
   <data name="Rows" xml:space="preserve">
     <value>Rows</value>
   </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>Search</value>
+  </data>
+  <data name="StartsWith" xml:space="preserve">
+    <value>Starts with</value>
+  </data>
+  <data name="True" xml:space="preserve">
+    <value>True</value>
   </data>
   <data name="UnappliedChanges" xml:space="preserve">
     <value>You have unapplied changes. Please apply or cancel.</value>

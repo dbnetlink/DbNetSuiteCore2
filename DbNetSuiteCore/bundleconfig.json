@@ -7,9 +7,12 @@
       "Resources/JS/selectControl.js",
       "Resources/JS/formControl.js",
       "Resources/JS/draggableDialog.js",
+      "Resources/JS/dialog.js",
       "Resources/JS/viewDialog.js",
       "Resources/JS/confirmDialog.js",
-      "Resources/JS/htmlEditor.js"
+      "Resources/JS/htmlEditor.js",
+      "Resources/JS/searchDialog.js",
+      "Resources/JS/lookupDialog.js"
     ]
   },
   {

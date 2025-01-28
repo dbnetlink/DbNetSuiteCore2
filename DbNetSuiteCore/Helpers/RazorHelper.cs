@@ -63,7 +63,7 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString(string.Join(" ", dataAttributes));
         }
 
-        public static HtmlString Attributes(Dictionary<string, string> attributes )
+        public static HtmlString Attributes(Dictionary<string, string> attributes)
         {
             attributes.Keys.ToList().ForEach(k => { attributes[k] = attributes[k]; });
             return new HtmlString(string.Join(" ", attributes.Keys.ToList().Select(key => Attribute(key, attributes[key])).ToList()));
@@ -82,6 +82,18 @@ namespace DbNetSuiteCore.Helpers
 
             dateTime = Convert.ToDateTime(dateTime);
             return (dateTime as DateTime?).Value.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+        }
+
+        public static HtmlString IconButton(string type, HtmlString icon, Dictionary<string, string>? attributes = null)
+        {
+            if (attributes == null)
+            {
+                attributes = new Dictionary<string, string>();
+            }
+            attributes.Add("button-type", type.ToLower());
+            attributes.Add("type", "button");
+            attributes.Add("title", ResourceHelper.GetResourceString(type));
+            return new HtmlString($"<button {Attributes(attributes)}>{icon.ToString()}</button>");
         }
     }
 }

@@ -16,7 +16,7 @@ namespace DbNetSuiteCore.Models
         public FilterType Filter
         {
             get { return _Filter; }
-            set 
+            set
             {
                 _Filter = value;
                 if (value == FilterType.Distinct && Lookup == null)
@@ -31,7 +31,7 @@ namespace DbNetSuiteCore.Models
 
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;
-        [Description("Apply a format template to the column value e.g. <b>{0}</b>")]
+     
 
         public GridColumn()
         {
@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Models
         internal GridColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
         {
         }
-        
+
         internal GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
         {
         }
@@ -57,7 +57,7 @@ namespace DbNetSuiteCore.Models
 
         private bool IsSortable()
         {
-            switch(DbDataType)
+            switch (DbDataType)
             {
                 case nameof(MSSQLDataTypes.Xml):
                 case nameof(MSSQLDataTypes.Text):
@@ -66,7 +66,7 @@ namespace DbNetSuiteCore.Models
                     return false;
             }
 
-           return (DataOnly == false);
+            return (DataOnly == false);
         }
     }
 }

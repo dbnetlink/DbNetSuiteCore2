@@ -1,8 +1,9 @@
 ﻿@using DbNetSuiteCore.Helpers;
 @using DbNetSuiteCore.Constants;
 @using DbNetSuiteCore.ViewModels;
+@model DbNetSuiteCore.ViewModels.FormViewModel
 
-<dialog class="confirm-dialog dialog border-solid border-2 border-stone-200 rounded-md bg-neutral-100" style="margin: 0;position: absolute;z-index:100;">
+<dialog class="confirm-dialog dialog border-solid border-2 border-stone-200 rounded-md bg-neutral-100" style="margin: 0;position: absolute;z-index:100;" id="@Model.ConfirmDialogId">
     <div class="flex flex-col">
         <nav class="dialog-nav">
             <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">

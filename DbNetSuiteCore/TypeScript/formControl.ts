@@ -29,7 +29,6 @@ class FormControl extends ComponentControl {
 
         this.notifyParent(this.formMode() == "update")
 
-
         switch (this.triggerName(evt)) {
             case "initialload":
                 this.initialise();
@@ -187,7 +186,7 @@ class FormControl extends ComponentControl {
                 return;
             }
         }
-        this.confirmDialog.show(evt, this.formBody);
+        this.confirmDialog.open(evt, this.formBody);
     }
 
     public configRequest(evt) {
@@ -214,15 +213,12 @@ class FormControl extends ComponentControl {
             case "apply":
                 if (this.formModified() == false) {
                     evt.preventDefault();
-                    return;
                 }
-
-                if (this.form.checkValidity() == false) {
+                else if (this.form.checkValidity() == false) {
                     this.form.reportValidity()
                     evt.preventDefault();
-                    return;
                 }
-
+                return
             case "cancel":
             case "primarykey":
                 return;
@@ -239,7 +235,7 @@ class FormControl extends ComponentControl {
         }
     }
 
-    public configureHtmlEditor(configuration: any, name:string) {
+    public configureHtmlEditor(configuration: any, name: string) {
         this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
     }
 

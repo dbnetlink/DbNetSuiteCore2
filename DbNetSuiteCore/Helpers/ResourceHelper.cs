@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using DbNetSuiteCore.Enums;
+using System.Globalization;
 using System.Reflection;
 using System.Resources;
 
@@ -42,8 +43,18 @@ namespace DbNetSuiteCore.Helpers
     {
         static public string GetResourceString(ResourceNames name)
         {
+            return GetResourceString(name.ToString());
+        }
+
+        static public string GetResourceString(SearchOperator name)
+        {
+            return GetResourceString(name.ToString());
+        }
+
+        public static string GetResourceString(string name)
+        {
             var resourceHelper = new ResourceManager("DbNetSuiteCore.Resources.Text.Strings", Assembly.GetExecutingAssembly());
-            return resourceHelper.GetString(name.ToString(), CultureInfo.CurrentCulture) ?? name.ToString();
+            return resourceHelper.GetString(name, CultureInfo.CurrentCulture) ?? name;
         }
     }
 }

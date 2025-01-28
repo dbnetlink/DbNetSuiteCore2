@@ -150,7 +150,7 @@ class FormControl extends ComponentControl {
                 return;
             }
         }
-        this.confirmDialog.show(evt, this.formBody);
+        this.confirmDialog.open(evt, this.formBody);
     }
     configRequest(evt) {
         if (this.isControlEvent(evt) == false) {
@@ -173,13 +173,12 @@ class FormControl extends ComponentControl {
             case "apply":
                 if (this.formModified() == false) {
                     evt.preventDefault();
-                    return;
                 }
-                if (this.form.checkValidity() == false) {
+                else if (this.form.checkValidity() == false) {
                     this.form.reportValidity();
                     evt.preventDefault();
-                    return;
                 }
+                return;
             case "cancel":
             case "primarykey":
                 return;

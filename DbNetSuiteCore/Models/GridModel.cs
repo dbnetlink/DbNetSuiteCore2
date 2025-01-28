@@ -42,7 +42,7 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public string JsonData { get; set; } = string.Empty;
         public int ColSpan => VisbleColumns.ToList().Count;
-        public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.Searchable);
+        public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
         public List<string> LinkedGridIds => GetLinkedControlIds(nameof(GridModel));  
 
         public List<GridModel> _NestedGrids { get; set; } = new List<GridModel>();
@@ -85,7 +85,7 @@ namespace DbNetSuiteCore.Models
         public MultiRowSelectLocation MultiRowSelectLocation { get; set; } = MultiRowSelectLocation.None;
         public HeadingMode HeadingMode { get; set; } = HeadingMode.Normal;
         public ViewDialog? ViewDialog { get; set; }
-     
+        public bool Search { get; set; } = true;
         public GridModel() : base()
         {
         }

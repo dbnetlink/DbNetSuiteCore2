@@ -2,7 +2,6 @@
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Html;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Helpers;
@@ -31,6 +30,8 @@ namespace DbNetSuiteCore.ViewModels
         public bool ShowQuickSearch => Mode != FormMode.Insert && FormModel.OneToOne == false && FormModel.SearchableColumns.Any();
         public bool RenderInsertDelete => RenderInsert || RenderDelete;
         public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation == false && ShowQuickSearch == false);
+        public string ConfirmDialogId => $"confirmDialog{_formModel.Id}";
+
 
         public FormViewModel(FormModel formModel) : base(formModel)
         {

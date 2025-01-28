@@ -1,24 +1,13 @@
-class ConfirmDialog {
+class ConfirmDialog extends Dialog {
     constructor(control, prompt) {
-        this.control = control;
-        this.dialog = this.control.controlElement(".confirm-dialog");
+        super(control.controlElement(".confirm-dialog"), control);
         this.dialog.querySelector(".prompt").innerHTML = prompt;
-        let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
-        closeButtons.forEach((e) => {
-            e.addEventListener("click", () => this.dialog.close());
-        });
         this.dialog.querySelector(this.control.buttonSelector("confirm")).addEventListener("click", () => this.confirm());
         this.dialog.querySelector(this.control.buttonSelector("cancel")).addEventListener("click", () => this.cancel());
     }
-    show(event, container) {
+    open(event, container) {
         this.event = event;
-        this.dialog.show();
-        this.dialog.style.left = this.coordinate(container.offsetLeft, container.clientWidth, this.dialog.clientWidth);
-        this.dialog.style.top = this.coordinate(container.offsetTop, container.clientHeight, this.dialog.clientHeight);
-    }
-    coordinate(offset, container, dialog) {
-        let adj = container > dialog ? ((container - dialog) * 0.5) : 0;
-        return `${offset + (dialog * 0.5) + adj}px`;
+        this.show(false, true);
     }
     confirm() {
         this.event.detail.issueRequest(true);

@@ -2,6 +2,7 @@ class GridControl extends ComponentControl {
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
     viewDialog: ViewDialog;
+    searchDialog: SearchDialog;
     selectedRow: HTMLTableRowElement;
     jsonData: [any];
     constructor(gridId) {
@@ -114,7 +115,29 @@ class GridControl extends ComponentControl {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
 
+        var searchDialog = this.controlElement(".search-dialog");
+        if (searchDialog && this.getButton("search")) {
+            this.searchDialog = new SearchDialog(searchDialog, this);
+        }
+
+        document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
+
         this.invokeEventHandler('Initialised');
+    }
+
+    public beforeRequest(evt) {
+        if (this.isControlEvent(evt) == false)
+            return;
+
+        switch (this.triggerName(evt)) {
+            case "searchdialog":
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity()
+                    evt.preventDefault();
+                    return;
+                }
+                break;
+        }
     }
 
     public columnSeriesData(columnName: string) {

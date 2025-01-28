@@ -23,11 +23,17 @@ namespace DbNetSuiteCore.Extensions
         {
             List<string> filterParts = new List<string>();
 
-            var filter = ComponentModelExtensions.AddSearchInputFilterPart(gridModel, query);
+            string filter = ComponentModelExtensions.AddSearchInputFilterPart(gridModel, query);
 
             if (string.IsNullOrEmpty(filter) == false)
             {
                 filterParts.Add(filter);
+            }
+
+            string searchDialogFilter = ComponentModelExtensions.AddSearchDialogFilterPart(gridModel, query);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                filterParts.Add(searchDialogFilter);
             }
 
             List<string> columnFilterParts = ColumnFilterParts(gridModel, query);
@@ -105,7 +111,7 @@ namespace DbNetSuiteCore.Extensions
                 if (columnFilter != null)
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
-                    object? paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType);
+                    object? paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType, true);
                    
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
@@ -229,7 +235,7 @@ namespace DbNetSuiteCore.Extensions
         {
             if (gridModel.Data.Rows.Count > 0)
             {
-                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName)))
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.DistinctLookup))
                 {
                     DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
                     var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false).Select(dr => dr[0]).ToList();
