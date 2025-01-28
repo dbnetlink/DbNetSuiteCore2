@@ -1,6 +1,8 @@
 ﻿using System.Data;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Models;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Html;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -15,6 +17,14 @@ namespace DbNetSuiteCore.ViewModels
         public ComponentViewModel(ComponentModel componentModel)
         {
             _componentModel = componentModel;
+            if (componentModel is GridModel)
+            {
+                HxIdTarget = $"#tbody{componentModel.Id}";
+            }
+            else
+            {
+                HxIdTarget = $"#hx_target_{componentModel.Id}";
+            }
         }
 
         protected ColumnModel? _GetColumnInfo(DataColumn column, IEnumerable<ColumnModel> columns)
@@ -32,7 +42,33 @@ namespace DbNetSuiteCore.ViewModels
             return Convert.ToBoolean(_componentModel.RowValue(dataRow, FileSystemColumn.IsDirectory.ToString(), false));
         }
 
-        public string LinkedControlIds => string.Join(",", _componentModel.GetLinkedControlIds());
+        public string HxIdTarget { get; set; }
+        public string SearchDialogId => $"searchDialog{_componentModel.Id}";
+        public string LookupDialogId => $"lookupDialog{_componentModel.Id}";
 
+        public string LinkedControlIds => string.Join(",", _componentModel.GetLinkedControlIds());
+        public IEnumerable<ColumnModel> SearchDialogColumns => _componentModel.GetColumns().Where(c => c.IsSearchable);
+        public bool SearchDialog => SearchDialogColumns.Any();
+        public HtmlString RenderSearchLookupOptions(List<KeyValuePair<string, string>> options, string key)
+        {
+            List<HtmlString> html = new List<HtmlString>();
+            html.Add(new HtmlString($"<select style=\"display:none\" data-key=\"{key}\">"));
+            AddColumnFilterOptions(html, options, false);
+            html.Add(new HtmlString($"</select>"));
+            return new HtmlString(string.Join(" ", html));
+        }
+
+        protected void AddColumnFilterOptions(List<HtmlString> html, List<KeyValuePair<string, string>> options, bool includeEmpty = true)
+        {
+            if (includeEmpty)
+            {
+                html.Add(new HtmlString($"<option value=\"\"></option>"));
+            }
+
+            foreach (var option in options)
+            {
+                html.Add(new HtmlString($"<option value=\"{option.Key}\">{option.Value}</option>"));
+            }
+        }
     }
 }

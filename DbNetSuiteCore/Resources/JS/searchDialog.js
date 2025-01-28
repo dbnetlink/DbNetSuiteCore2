@@ -1,13 +1,16 @@
 class SearchDialog extends Dialog {
-    constructor(dialog, gridControl) {
-        super(dialog, gridControl);
-        this.lookupDialog = new LookupDialog(gridControl.controlElement(".lookup-dialog"), gridControl);
+    constructor(dialog, componentControl) {
+        super(dialog, componentControl);
+        this.lookupDialog = new LookupDialog(componentControl.controlElement(".lookup-dialog"), componentControl);
         this.dependentDialog = this.lookupDialog;
-        this.control.getButton("search").addEventListener("click", this.show.bind(this));
+        this.bindSearchButton();
         this.control.getButton("clear").addEventListener("click", this.clear.bind(this));
         dialog.querySelectorAll(".search-operator").forEach(e => e.addEventListener("change", (e) => this.operatorSelected(e)));
         dialog.querySelectorAll("input").forEach(e => "input,change".split(',').forEach(en => e.addEventListener(en, this.valueEntered.bind({ event: e }))));
         dialog.querySelectorAll("button[button-type='list']").forEach(e => e.addEventListener("click", (e) => this.showLookup(e)));
+    }
+    bindSearchButton() {
+        this.control.getButton("search").addEventListener("click", this.show.bind(this));
     }
     operatorSelected(event) {
         let select = event.target;

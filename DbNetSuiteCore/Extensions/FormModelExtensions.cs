@@ -19,6 +19,12 @@ namespace DbNetSuiteCore.Extensions
                 filterParts.Add(filter);
             }
 
+            string searchDialogFilter = ComponentModelExtensions.AddSearchDialogFilterPart(formModel, query);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                filterParts.Add(searchDialogFilter);
+            }
+
             if (formModel.IsLinked)
             {
                 ComponentModelExtensions.AddParentKeyFilterPart(formModel, query, filterParts);

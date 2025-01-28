@@ -9,7 +9,7 @@ class ConfirmDialog extends Dialog{
         this.dialog.querySelector(this.control.buttonSelector("cancel")).addEventListener("click", () => this.cancel());
     }
 
-    public open(event: any, container: HTMLElement) {
+    public open(event: any) {
         this.event = event;
         this.show(false, true);
     }

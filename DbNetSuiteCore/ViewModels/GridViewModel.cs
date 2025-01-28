@@ -19,10 +19,7 @@ namespace DbNetSuiteCore.ViewModels
         public int TotalPages => RowCount == 0 ? 0 : (int)Math.Ceiling((double)RowCount / GridModel.PageSize);
         public int RowCount => GridModel.Data.Rows.Count;
         public string GridId => _gridModel.Id;
-        public string TBodyId => $"tbody{_gridModel.Id}";
         public string ViewDialogId => $"viewDialog{_gridModel.Id}";
-        public string SearchDialogId => $"searchDialog{_gridModel.Id}";
-        public string LookupDialogId => $"lookupDialog{_gridModel.Id}";
         public string LinkedGridIds => string.Join(",", _gridModel.LinkedGridIds);
         public string SearchInput => _gridModel.SearchInput;
         public string CurrentSortKey => _gridModel.CurrentSortKey;
@@ -33,7 +30,6 @@ namespace DbNetSuiteCore.ViewModels
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
         public int ColSpan => VisibleColumns.Count() + (GridModel._NestedGrids.Any() ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
-        public IEnumerable<GridColumn> SearchDialogColumns => Columns.Where(c => c.IsSearchable);
         public GridViewModel(GridModel gridModel) : base(gridModel)
         {
             _gridModel = gridModel;
@@ -101,14 +97,7 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString(string.Join(" ", html));
         }
 
-        public HtmlString RenderSearchLookupOptions(List<KeyValuePair<string, string>> options, string key)
-        {
-            List<HtmlString> html = new List<HtmlString>();
-            html.Add(new HtmlString($"<select style=\"display:none\" data-key=\"{key}\">"));
-            AddColumnFilterOptions(html, options, false);
-            html.Add(new HtmlString($"</select>"));
-            return new HtmlString(string.Join(" ", html));
-        }
+    
 
         public HtmlString RenderColumnFilterError(GridColumn gridColumn)
         {
@@ -145,23 +134,9 @@ namespace DbNetSuiteCore.ViewModels
             AddColumnFilterOptions(html, options);
             html.Add(new HtmlString($"</select>"));
 
-
             return new HtmlString(string.Join(" ", html));
         }
-
-        private void AddColumnFilterOptions(List<HtmlString> html, List<KeyValuePair<string, string>> options, bool includeEmpty = true)
-        {
-            if (includeEmpty)
-            {
-                html.Add(new HtmlString($"<option value=\"\"></option>"));
-            }
-
-            foreach (var option in options)
-            {
-                html.Add(new HtmlString($"<option value=\"{option.Key}\">{option.Value}</option>"));
-            }
-        }
-
+   
         public HtmlString RenderPageNumber(int pageNumber, int totalPages)
         {
             List<HtmlString> html = new List<HtmlString>();

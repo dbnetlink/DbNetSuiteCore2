@@ -75,7 +75,7 @@ namespace DbNetSuiteCore.Services
                 throw new Exception("At least one form column must be designated as a primary key");
             }
 
-            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search || formModel.TriggerName == TriggerNames.ParentKey)
+            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search || formModel.TriggerName == TriggerNames.ParentKey || formModel.TriggerName == TriggerNames.SearchDialog)
             {
                 await GetRecords(formModel);
                 formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => PrimaryKeyValue(r.ItemArray[0])).ToList();
@@ -435,6 +435,7 @@ namespace DbNetSuiteCore.Services
                 formModel.CommitType = null;
 
                 AssignParentKey(formModel);
+                AssignSearchDialogFilter(formModel);
 
                 return formModel;
             }

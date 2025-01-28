@@ -20,6 +20,10 @@
             <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
         </div>
     }
+    @if (Model.SearchDialog)
+    {
+        @RazorHelper.IconButton("Search", IconHelper.Search())
+    }
 
     @if (Model.ShowNavigation)
     {

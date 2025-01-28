@@ -17,9 +17,9 @@ namespace DbNetSuiteCore.ViewModels
         public int CurrentRecord => FormModel.CurrentRecord;
         public string SelectId => _formModel.Id;
         public string LinkedFormIds => string.Join(",", FormModel.LinkedFormIds);
-        public string HxTarget => "closest div.form-and-toolbar";
         public DataRow Record => FormModel.Data.Rows.Count == 0 ? FormModel.Data.NewRow() : FormModel.Data.Rows[0];
         public object RecordId => FormModel.RecordId;
+        public string HxTarget => "closest div.form-and-toolbar";
         public string SearchInput => FormModel.SearchInput;
         public bool HideToolbar => FormModel.IsLinked && string.IsNullOrEmpty(FormModel.ParentKey) && FormModel.OneToOne == false;
         public FormMode Mode => FormModel.Mode;

@@ -10,7 +10,7 @@
 @using DbNetSuiteCore.Enums
 @using System.Text.Encodings.Web
 
-<div class="form-and-toolbar">
+<div class="form-and-toolbar" id="@Model.HxIdTarget.Replace("#","")">
     @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom && Model.HideToolbar == false)
     {
         @await Html.PartialAsync("Form/__Toolbar")

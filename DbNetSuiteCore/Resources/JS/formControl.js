@@ -23,6 +23,9 @@ class FormControl extends ComponentControl {
                 this.initialise();
                 break;
             default:
+                if (this.searchDialog) {
+                    this.searchDialog.bindSearchButton();
+                }
                 if (this.htmlEditorMissing == false) {
                     this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].reset(el); });
                 }
@@ -106,6 +109,7 @@ class FormControl extends ComponentControl {
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         document.body.addEventListener('htmx:confirm', (ev) => { this.confirmRequest(ev); });
         document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev); });
+        this.assignSearchDialog();
         this.invokeEventHandler('Initialised');
     }
     transformText(input) {
@@ -150,7 +154,7 @@ class FormControl extends ComponentControl {
                 return;
             }
         }
-        this.confirmDialog.open(evt, this.formBody);
+        this.confirmDialog.open(evt);
     }
     configRequest(evt) {
         if (this.isControlEvent(evt) == false) {
@@ -169,6 +173,9 @@ class FormControl extends ComponentControl {
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
             return;
+        if (this.validateSearchDialog(evt) == false) {
+            return;
+        }
         switch (this.triggerName(evt)) {
             case "apply":
                 if (this.formModified() == false) {

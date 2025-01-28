@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 
-<tbody id="@Model.TBodyId" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
+<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>

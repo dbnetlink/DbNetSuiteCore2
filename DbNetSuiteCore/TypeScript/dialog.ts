@@ -2,14 +2,12 @@ class Dialog {
     dialog: HTMLDialogElement;
     dependentDialog: Dialog;
     control: ComponentControl;
-    container: HTMLElement;
     draggableDialog: DraggableDialog | null = null;
     constructor(dialog: HTMLDialogElement, control: ComponentControl) {
         this.dialog = dialog;
         this.dialog.style.margin = '0';
-        this.dialog.style.position = 'absolute';
+        this.dialog.style.position = 'fixed';
         this.control = control;
-        this.container = control.controlContainer;
         let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
         closeButtons.forEach((e) => {
             e.addEventListener("click", () => this.close());
@@ -24,8 +22,6 @@ class Dialog {
             this.dialog.show();
         }
 
-        this.container.style.position = 'relative';
-
         if (this.dialog.style.transform == '') {
             this.dialog.style.transform = `translate(-50%, -50%)`;
             this.dialog.style.left = '50%';
@@ -33,7 +29,7 @@ class Dialog {
         }
 
         if (draggable && !this.draggableDialog) {
-            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav", this.container);
+            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav");
         }
     }
 
@@ -45,6 +41,4 @@ class Dialog {
             this.dialog.close();
         }
     }
-
-
 }

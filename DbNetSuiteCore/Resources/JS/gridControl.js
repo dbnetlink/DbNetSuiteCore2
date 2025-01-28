@@ -92,24 +92,15 @@ class GridControl extends ComponentControl {
         if (viewDialog) {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
-        var searchDialog = this.controlElement(".search-dialog");
-        if (searchDialog && this.getButton("search")) {
-            this.searchDialog = new SearchDialog(searchDialog, this);
-        }
+        this.assignSearchDialog();
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         this.invokeEventHandler('Initialised');
     }
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
             return;
-        switch (this.triggerName(evt)) {
-            case "searchdialog":
-                if (this.form.checkValidity() == false) {
-                    this.form.reportValidity();
-                    evt.preventDefault();
-                    return;
-                }
-                break;
+        if (this.validateSearchDialog(evt) == false) {
+            return;
         }
     }
     columnSeriesData(columnName) {

@@ -5,6 +5,7 @@ using DbNetSuiteCore.Repositories;
 using System.Data;
 using System.Text;
 using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Extensions;
 
 namespace DbNetSuiteCore.Services
 {
@@ -37,7 +38,6 @@ namespace DbNetSuiteCore.Services
             _configuration = configuration;
             _webHostEnvironment = webHostEnvironment;
         }
-
 
         protected void ValidateModel(ComponentModel componentModel)
         {
@@ -399,6 +399,70 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        protected void AssignSearchDialogFilter(ComponentModel componentModel)
+        {
+            componentModel.SearchDialogFilter = new List<SearchDialogFilter>();
+            var operatorList = RequestHelper.FormValueList("searchDialogOperator", _context).Select(f => f.Trim()).ToList();
+            var value1List = RequestHelper.FormValueList("searchDialogValue1", _context).Select(f => f.Trim()).ToList();
+            var value2List = RequestHelper.FormValueList("searchDialogValue2", _context).Select(f => f.Trim()).ToList();
+            var keyList = RequestHelper.FormValueList("searchDialogKey", _context).Select(f => f.Trim()).ToList();
+
+            for (var i = 0; i < operatorList.Count; i++)
+            {
+                if (string.IsNullOrEmpty(operatorList[i]))
+                {
+                    continue;
+                }
+
+                var searchDialogFilter = new SearchDialogFilter() { Operator = Enum.Parse<SearchOperator>(operatorList[i]), ColumnKey = keyList[i] };
+                ColumnModel? columnModel = componentModel.GetColumns().FirstOrDefault(c => c.Key == searchDialogFilter.ColumnKey);
+
+                if (columnModel == null)
+                {
+                    continue;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.IsEmpty:
+                    case SearchOperator.IsNotEmpty:
+                    case SearchOperator.True:
+                    case SearchOperator.False:
+                        componentModel.SearchDialogFilter.Add(searchDialogFilter);
+                        continue;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.In:
+                    case SearchOperator.NotIn:
+                        var paramList = new List<object?>();
+                        foreach (var value in value1List[i].Split(','))
+                        {
+                            paramList.Add(ComponentModelExtensions.ParamValue(value, columnModel, componentModel.DataSourceType));
+                        }
+                        searchDialogFilter.Value1 = paramList;
+                        break;
+                    default:
+                        searchDialogFilter.Value1 = ComponentModelExtensions.ParamValue(value1List[i], columnModel, componentModel.DataSourceType);
+                        break;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.Between:
+                    case SearchOperator.NotBetween:
+                        if (string.IsNullOrEmpty(value2List[i]))
+                        {
+                            continue;
+                        }
+                        searchDialogFilter.Value2 = ComponentModelExtensions.ParamValue(value2List[i], columnModel, componentModel.DataSourceType);
+                        break;
+                }
+
+                componentModel.SearchDialogFilter.Add(searchDialogFilter);
+            }
+        }
 
         protected void CheckLicense(ComponentModel componentModel)
         {

@@ -1,8 +1,8 @@
 class LookupDialog extends Dialog {
     select: HTMLSelectElement;
     input: HTMLInputElement;
-    constructor(dialog: HTMLDialogElement, gridControl: GridControl) {
-        super(dialog, gridControl);
+    constructor(dialog: HTMLDialogElement, componentControl: ComponentControl) {
+        super(dialog, componentControl);
         this.select = dialog.querySelector("select");
         this.control.getButton("cancel").addEventListener("click", () => this.close())
         this.control.getButton("select").addEventListener("click", () => this.apply())

@@ -11,4 +11,8 @@
     @await Html.PartialAsync("Form/__Form")
     @await Html.PartialAsync("__ToastMessage")
     @await Html.PartialAsync("Form/__ConfirmDialog")
+    @if (Model.SearchDialog)
+    {
+        @await Html.PartialAsync("Shared/__SearchDialog", Model)
+    }
 </div>

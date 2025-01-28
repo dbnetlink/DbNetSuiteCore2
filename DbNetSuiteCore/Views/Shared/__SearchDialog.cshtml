@@ -1,0 +1,81 @@
+﻿@using DbNetSuiteCore.Helpers;
+@using DbNetSuiteCore.Constants;
+@using DbNetSuiteCore.ViewModels;
+@using DbNetSuiteCore.Models;
+@model ComponentViewModel
+
+<dialog class="search-dialog dialog border-solid border-2 border-stone-200 rounded-md bg-neutral-100" id="@Model.SearchDialogId">
+    <div class="flex flex-col">
+        <nav class="dialog-nav">
+            <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
+                <div>
+                    <span class="font-bold text-xl text-cyan-800">Search</span>
+                </div>
+                <div>
+                    <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
+                </div>
+            </div>
+        </nav>
+        <div class="flex search-dialog-content" style="max-height:400px;overflow-y:scroll;padding:5px;">
+            <table cellpadding="3" class="table-auto border-collapse m-1 border-spacing-2">
+                @foreach (ColumnModel columnModel in Model.SearchDialogColumns)
+                {
+                    <tr>
+                        <td style="font-weight:bold">
+                            @columnModel.Label
+                        </td>
+                        <td>
+                            @columnModel.SearchOperatorSelection()
+                        </td>
+                        <td>
+                            @columnModel.SearchInput()
+                            <input type="hidden" name="searchDialogKey" value="@columnModel.Key" />
+                        </td>
+                    </tr>
+                }
+                @foreach (ColumnModel columnModel in Model.SearchDialogColumns)
+                {
+                    <tr style="display:none">
+                        <td colspan="3">
+                            @Model.RenderSearchLookupOptions(columnModel.LookupOptions ?? new List<KeyValuePair<string, string>>(), columnModel.Key)
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="flex flex-row justify-between items-center border-solid border border-slate-200 bg-slate-50 rounded-md m-1 p-1">
+            <div>
+                <button type="button" button-type="clear">Clear</button>
+            </div>
+            <div>
+                <button type="button" name="@TriggerNames.SearchDialog" hx-post="@Model.SubmitUrl" hx-trigger="click" hx-target="@Model.HxIdTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">Apply</button>
+            </div>
+        </div>
+    </div>
+</dialog>
+
+<dialog class="lookup-dialog dialog border-solid border-2 border-stone-200 rounded-md bg-neutral-100" style="max-width:800px" id="@Model.LookupDialogId">
+    <div class="flex flex-col">
+        <nav class="dialog-nav">
+            <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
+                <div>
+                    <span class="font-bold text-xl text-cyan-800">Lookup</span>
+                </div>
+                <div>
+                    <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
+                </div>
+            </div>
+        </nav>
+        <div class="flex lookup-dialog-content" style="padding:5px;">
+            <select multiple size="10"></select>
+        </div>
+        <div class="flex flex-row justify-between items-center border-solid border border-slate-200 bg-slate-50 rounded-md m-1 p-1">
+            <div>
+                <button type="button" button-type="cancel">Cancel</button>
+            </div>
+            <div>
+                <button type="button" button-type="select">Select</button>
+            </div>
+        </div>
+    </div>
+</dialog>

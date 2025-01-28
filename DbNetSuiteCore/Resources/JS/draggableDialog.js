@@ -1,12 +1,11 @@
 class DraggableDialog {
-    constructor(dialogId, dragHandleClass = 'dialog-header', container) {
+    constructor(dialogId, dragHandleClass = 'dialog-header') {
         this.isDragging = false;
         this.initialX = 0;
         this.initialY = 0;
         this.xOffset = 0;
         this.yOffset = 0;
         this.dialog = document.getElementById(dialogId);
-        this.container = container;
         if (!this.dialog) {
             throw new Error(`Dialog with id "${dialogId}" not found`);
         }
@@ -14,23 +13,29 @@ class DraggableDialog {
         if (!this.dragHandle) {
             throw new Error(`Drag handle with class "${dragHandleClass}" not found in the dialog`);
         }
-        const resizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                this.ensureDialogInViewport();
-            }
-        });
-        // Start observing
-        resizeObserver.observe(this.container);
         this.initDragEvents();
     }
     initDragEvents() {
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
-        let xadj = this.dialog.getBoundingClientRect().left - this.container.getBoundingClientRect().left;
-        let yadj = this.dialog.getBoundingClientRect().top - this.container.getBoundingClientRect().top;
-        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft + xadj;
-        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop + yadj;
+        var rect = this.dialog.getBoundingClientRect();
+        this.xOffset = rect.left - rect.width;
+        this.yOffset = rect.top - rect.height;
+        const computedStyle = window.getComputedStyle(this.dialog);
+        const transformValue = computedStyle.transform;
+        // Parse the transform matrix to extract tx and ty
+        let tx = 0, ty = 0;
+        if (transformValue && transformValue !== 'none') {
+            const matrix = transformValue.match(/^matrix\((.+)\)$/);
+            if (matrix) {
+                const values = matrix[1].split(', ');
+                tx = parseFloat(values[4]); // tx is the 5th value in the matrix
+                ty = parseFloat(values[5]); // ty is the 6th value in the matrix
+            }
+        }
+        this.xOffset = tx;
+        this.yOffset = ty;
         this.setTranslate(this.xOffset, this.yOffset);
     }
     startDragging(e) {
@@ -58,36 +63,9 @@ class DraggableDialog {
         document.removeEventListener('mouseup', this.stopDragging);
     }
     setTranslate(xPos, yPos) {
+        console.log(`xPos: ${xPos}, yPos: ${yPos}`);
         requestAnimationFrame(() => {
             this.dialog.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
         });
-    }
-    ensureDialogInViewport() {
-        const viewport = {
-            width: window.innerWidth,
-            height: window.innerHeight
-        };
-        const dialogRect = this.dialog.getBoundingClientRect();
-        const referenceRect = this.container.getBoundingClientRect();
-        const corrections = {
-            x: 0,
-            y: 0
-        };
-        // Adjust calculations relative to reference div's position
-        if (dialogRect.left < referenceRect.left) {
-            corrections.x = referenceRect.left - dialogRect.left;
-        }
-        if (dialogRect.top < referenceRect.top) {
-            corrections.y = referenceRect.top - dialogRect.top;
-        }
-        if (dialogRect.right > viewport.width) {
-            corrections.x = viewport.width - dialogRect.right;
-        }
-        if (dialogRect.bottom > viewport.height) {
-            corrections.y = viewport.height - dialogRect.bottom;
-        }
-        this.xOffset = corrections.x != 0 ? corrections.x : this.xOffset;
-        this.yOffset = corrections.y != 0 ? corrections.y : this.yOffset;
-        this.setTranslate(this.xOffset, this.yOffset);
     }
 }

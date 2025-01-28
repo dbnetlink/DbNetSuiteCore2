@@ -85,7 +85,6 @@ namespace DbNetSuiteCore.Models
         public MultiRowSelectLocation MultiRowSelectLocation { get; set; } = MultiRowSelectLocation.None;
         public HeadingMode HeadingMode { get; set; } = HeadingMode.Normal;
         public ViewDialog? ViewDialog { get; set; }
-        public bool Search { get; set; } = true;
         public GridModel() : base()
         {
         }

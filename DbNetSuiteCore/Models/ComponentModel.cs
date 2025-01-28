@@ -32,7 +32,7 @@ namespace DbNetSuiteCore.Models
         internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
         public abstract IEnumerable<ColumnModel> SearchableColumns { get; }
         [JsonIgnore]
-        public LicenseInfo LicenseInfo { get; set; }
+        public LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
 
         public string Url
@@ -75,7 +75,6 @@ namespace DbNetSuiteCore.Models
         public bool Cache { get; set; } = false;
         public int QueryLimit { get; set; } = -1;
         public bool DiagnosticsMode { get; set; } = false;
-
 
         public ComponentModel()
         {

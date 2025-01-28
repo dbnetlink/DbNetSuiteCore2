@@ -115,8 +115,8 @@
     {
         @await Html.PartialAsync("Grid/__ViewDialog", Model)
     }
-    @if (Model.GridModel.Search)
+    @if (Model.SearchDialog)
     {
-        @await Html.PartialAsync("Grid/__SearchDialog", Model)
+        @await Html.PartialAsync("Shared/__SearchDialog", Model)
     }
 </div>

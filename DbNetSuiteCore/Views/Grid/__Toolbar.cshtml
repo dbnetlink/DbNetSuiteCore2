@@ -16,7 +16,7 @@
         @IconHelper.Info()
         <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
     </div>
-    @if (Model.GridModel.Search)
+    @if (Model.SearchDialog)
     {
         @RazorHelper.IconButton("Search", IconHelper.Search())
     }

@@ -36,6 +36,8 @@ class ComponentControl {
     childControls: Dictionary<ComponentControl> = {};
     controlContainer: HTMLElement;
     eventHandlers = {};
+    searchDialog: SearchDialog;
+
     constructor(controlId) {
         this.controlId = controlId;
         this.form = document.querySelector(this.formSelector());
@@ -48,6 +50,11 @@ class ComponentControl {
         if (caption) {
             caption.innerText = text;
         }
+    }
+
+    protected isControlEvent(evt) {
+        let formId = evt.target.closest("form").id;
+        return formId.startsWith(this.controlId);
     }
 
     protected invokeEventHandler(eventName, args = {}) {
@@ -204,8 +211,24 @@ class ComponentControl {
         select.value = pageNumber.toString();
     }
 
-    public isControlEvent(evt) {
-        let formId = evt.target.closest("form").id;
-        return formId.startsWith(this.controlId);
+    protected assignSearchDialog() {
+        var searchDialog = this.controlElement(".search-dialog");
+        if (searchDialog && this.getButton("search")) {
+            this.searchDialog = new SearchDialog(searchDialog, this);
+        }
+    }
+
+    protected validateSearchDialog(evt) {
+        switch (this.triggerName(evt)) {
+            case "searchdialog":
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity()
+                    evt.preventDefault();
+                    return false;
+                }
+                break;
+        }
+
+        return true;
     }
 }

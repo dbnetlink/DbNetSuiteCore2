@@ -44,6 +44,10 @@ class ComponentControl {
             caption.innerText = text;
         }
     }
+    isControlEvent(evt) {
+        let formId = evt.target.closest("form").id;
+        return formId.startsWith(this.controlId);
+    }
     invokeEventHandler(eventName, args = {}) {
         //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
@@ -165,8 +169,22 @@ class ComponentControl {
         }
         select.value = pageNumber.toString();
     }
-    isControlEvent(evt) {
-        let formId = evt.target.closest("form").id;
-        return formId.startsWith(this.controlId);
+    assignSearchDialog() {
+        var searchDialog = this.controlElement(".search-dialog");
+        if (searchDialog && this.getButton("search")) {
+            this.searchDialog = new SearchDialog(searchDialog, this);
+        }
+    }
+    validateSearchDialog(evt) {
+        switch (this.triggerName(evt)) {
+            case "searchdialog":
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity();
+                    evt.preventDefault();
+                    return false;
+                }
+                break;
+        }
+        return true;
     }
 }

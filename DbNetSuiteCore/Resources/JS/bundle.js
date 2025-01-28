@@ -44,6 +44,10 @@ class ComponentControl {
             caption.innerText = text;
         }
     }
+    isControlEvent(evt) {
+        let formId = evt.target.closest("form").id;
+        return formId.startsWith(this.controlId);
+    }
     invokeEventHandler(eventName, args = {}) {
         //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
@@ -165,9 +169,23 @@ class ComponentControl {
         }
         select.value = pageNumber.toString();
     }
-    isControlEvent(evt) {
-        let formId = evt.target.closest("form").id;
-        return formId.startsWith(this.controlId);
+    assignSearchDialog() {
+        var searchDialog = this.controlElement(".search-dialog");
+        if (searchDialog && this.getButton("search")) {
+            this.searchDialog = new SearchDialog(searchDialog, this);
+        }
+    }
+    validateSearchDialog(evt) {
+        switch (this.triggerName(evt)) {
+            case "searchdialog":
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity();
+                    evt.preventDefault();
+                    return false;
+                }
+                break;
+        }
+        return true;
     }
 }
 
@@ -265,24 +283,15 @@ class GridControl extends ComponentControl {
         if (viewDialog) {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
-        var searchDialog = this.controlElement(".search-dialog");
-        if (searchDialog && this.getButton("search")) {
-            this.searchDialog = new SearchDialog(searchDialog, this);
-        }
+        this.assignSearchDialog();
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         this.invokeEventHandler('Initialised');
     }
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
             return;
-        switch (this.triggerName(evt)) {
-            case "searchdialog":
-                if (this.form.checkValidity() == false) {
-                    this.form.reportValidity();
-                    evt.preventDefault();
-                    return;
-                }
-                break;
+        if (this.validateSearchDialog(evt) == false) {
+            return;
         }
     }
     columnSeriesData(columnName) {
@@ -689,6 +698,9 @@ class FormControl extends ComponentControl {
                 this.initialise();
                 break;
             default:
+                if (this.searchDialog) {
+                    this.searchDialog.bindSearchButton();
+                }
                 if (this.htmlEditorMissing == false) {
                     this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].reset(el); });
                 }
@@ -772,6 +784,7 @@ class FormControl extends ComponentControl {
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         document.body.addEventListener('htmx:confirm', (ev) => { this.confirmRequest(ev); });
         document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev); });
+        this.assignSearchDialog();
         this.invokeEventHandler('Initialised');
     }
     transformText(input) {
@@ -816,7 +829,7 @@ class FormControl extends ComponentControl {
                 return;
             }
         }
-        this.confirmDialog.open(evt, this.formBody);
+        this.confirmDialog.open(evt);
     }
     configRequest(evt) {
         if (this.isControlEvent(evt) == false) {
@@ -835,6 +848,9 @@ class FormControl extends ComponentControl {
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
             return;
+        if (this.validateSearchDialog(evt) == false) {
+            return;
+        }
         switch (this.triggerName(evt)) {
             case "apply":
                 if (this.formModified() == false) {
@@ -982,14 +998,13 @@ class FormControl extends ComponentControl {
 }
 
 class DraggableDialog {
-    constructor(dialogId, dragHandleClass = 'dialog-header', container) {
+    constructor(dialogId, dragHandleClass = 'dialog-header') {
         this.isDragging = false;
         this.initialX = 0;
         this.initialY = 0;
         this.xOffset = 0;
         this.yOffset = 0;
         this.dialog = document.getElementById(dialogId);
-        this.container = container;
         if (!this.dialog) {
             throw new Error(`Dialog with id "${dialogId}" not found`);
         }
@@ -997,23 +1012,29 @@ class DraggableDialog {
         if (!this.dragHandle) {
             throw new Error(`Drag handle with class "${dragHandleClass}" not found in the dialog`);
         }
-        const resizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                this.ensureDialogInViewport();
-            }
-        });
-        // Start observing
-        resizeObserver.observe(this.container);
         this.initDragEvents();
     }
     initDragEvents() {
         this.dragHandle.addEventListener('mousedown', this.startDragging.bind(this));
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
-        let xadj = this.dialog.getBoundingClientRect().left - this.container.getBoundingClientRect().left;
-        let yadj = this.dialog.getBoundingClientRect().top - this.container.getBoundingClientRect().top;
-        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft + xadj;
-        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop + yadj;
+        var rect = this.dialog.getBoundingClientRect();
+        this.xOffset = rect.left - rect.width;
+        this.yOffset = rect.top - rect.height;
+        const computedStyle = window.getComputedStyle(this.dialog);
+        const transformValue = computedStyle.transform;
+        // Parse the transform matrix to extract tx and ty
+        let tx = 0, ty = 0;
+        if (transformValue && transformValue !== 'none') {
+            const matrix = transformValue.match(/^matrix\((.+)\)$/);
+            if (matrix) {
+                const values = matrix[1].split(', ');
+                tx = parseFloat(values[4]); // tx is the 5th value in the matrix
+                ty = parseFloat(values[5]); // ty is the 6th value in the matrix
+            }
+        }
+        this.xOffset = tx;
+        this.yOffset = ty;
         this.setTranslate(this.xOffset, this.yOffset);
     }
     startDragging(e) {
@@ -1041,37 +1062,10 @@ class DraggableDialog {
         document.removeEventListener('mouseup', this.stopDragging);
     }
     setTranslate(xPos, yPos) {
+        console.log(`xPos: ${xPos}, yPos: ${yPos}`);
         requestAnimationFrame(() => {
             this.dialog.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
         });
-    }
-    ensureDialogInViewport() {
-        const viewport = {
-            width: window.innerWidth,
-            height: window.innerHeight
-        };
-        const dialogRect = this.dialog.getBoundingClientRect();
-        const referenceRect = this.container.getBoundingClientRect();
-        const corrections = {
-            x: 0,
-            y: 0
-        };
-        // Adjust calculations relative to reference div's position
-        if (dialogRect.left < referenceRect.left) {
-            corrections.x = referenceRect.left - dialogRect.left;
-        }
-        if (dialogRect.top < referenceRect.top) {
-            corrections.y = referenceRect.top - dialogRect.top;
-        }
-        if (dialogRect.right > viewport.width) {
-            corrections.x = viewport.width - dialogRect.right;
-        }
-        if (dialogRect.bottom > viewport.height) {
-            corrections.y = viewport.height - dialogRect.bottom;
-        }
-        this.xOffset = corrections.x != 0 ? corrections.x : this.xOffset;
-        this.yOffset = corrections.y != 0 ? corrections.y : this.yOffset;
-        this.setTranslate(this.xOffset, this.yOffset);
     }
 }
 
@@ -1080,9 +1074,8 @@ class Dialog {
         this.draggableDialog = null;
         this.dialog = dialog;
         this.dialog.style.margin = '0';
-        this.dialog.style.position = 'absolute';
+        this.dialog.style.position = 'fixed';
         this.control = control;
-        this.container = control.controlContainer;
         let closeButtons = this.dialog.querySelectorAll(this.control.buttonSelector("close"));
         closeButtons.forEach((e) => {
             e.addEventListener("click", () => this.close());
@@ -1095,14 +1088,13 @@ class Dialog {
         else {
             this.dialog.show();
         }
-        this.container.style.position = 'relative';
         if (this.dialog.style.transform == '') {
             this.dialog.style.transform = `translate(-50%, -50%)`;
             this.dialog.style.left = '50%';
             this.dialog.style.top = '50%';
         }
         if (draggable && !this.draggableDialog) {
-            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav", this.container);
+            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav");
         }
     }
     close() {
@@ -1159,7 +1151,7 @@ class ConfirmDialog extends Dialog {
         this.dialog.querySelector(this.control.buttonSelector("confirm")).addEventListener("click", () => this.confirm());
         this.dialog.querySelector(this.control.buttonSelector("cancel")).addEventListener("click", () => this.cancel());
     }
-    open(event, container) {
+    open(event) {
         this.event = event;
         this.show(false, true);
     }
@@ -1278,15 +1270,18 @@ HtmlEditor.CKEditor = "CKEditor";
 HtmlEditor.Froala = "Froala";
 
 class SearchDialog extends Dialog {
-    constructor(dialog, gridControl) {
-        super(dialog, gridControl);
-        this.lookupDialog = new LookupDialog(gridControl.controlElement(".lookup-dialog"), gridControl);
+    constructor(dialog, componentControl) {
+        super(dialog, componentControl);
+        this.lookupDialog = new LookupDialog(componentControl.controlElement(".lookup-dialog"), componentControl);
         this.dependentDialog = this.lookupDialog;
-        this.control.getButton("search").addEventListener("click", this.show.bind(this));
+        this.bindSearchButton();
         this.control.getButton("clear").addEventListener("click", this.clear.bind(this));
         dialog.querySelectorAll(".search-operator").forEach(e => e.addEventListener("change", (e) => this.operatorSelected(e)));
         dialog.querySelectorAll("input").forEach(e => "input,change".split(',').forEach(en => e.addEventListener(en, this.valueEntered.bind({ event: e }))));
         dialog.querySelectorAll("button[button-type='list']").forEach(e => e.addEventListener("click", (e) => this.showLookup(e)));
+    }
+    bindSearchButton() {
+        this.control.getButton("search").addEventListener("click", this.show.bind(this));
     }
     operatorSelected(event) {
         let select = event.target;
@@ -1349,8 +1344,8 @@ class SearchDialog extends Dialog {
 }
 
 class LookupDialog extends Dialog {
-    constructor(dialog, gridControl) {
-        super(dialog, gridControl);
+    constructor(dialog, componentControl) {
+        super(dialog, componentControl);
         this.select = dialog.querySelector("select");
         this.control.getButton("cancel").addEventListener("click", () => this.close());
         this.control.getButton("select").addEventListener("click", () => this.apply());

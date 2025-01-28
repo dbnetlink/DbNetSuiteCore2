@@ -125,7 +125,7 @@
     <EmbeddedResource Include="TypeScript\searchDialog.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
-    <EmbeddedResource Include="Views\Grid\__SearchDialog.cshtml">
+    <EmbeddedResource Include="Views\Shared\__SearchDialog.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\__LicenseInfo.cshtml">

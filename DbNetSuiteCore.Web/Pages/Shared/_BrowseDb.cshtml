@@ -84,7 +84,7 @@
                                             }
                                             if (Model.ControlType == typeof(FormModel))
                                             {
-                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new FormModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000 }))
+                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new FormModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000, Insert = true, Delete = true }))
                                             }
                                         }
                                     </div>
