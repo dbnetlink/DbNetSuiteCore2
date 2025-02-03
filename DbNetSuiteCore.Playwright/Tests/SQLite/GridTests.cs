@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Playwright.Models;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Playwright.Models;
 using DbNetSuiteCore.Playwright.Tests.PostgreSql;
 using NUnit.Framework;
 
@@ -66,10 +67,10 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 new ColumnFilterTest("last_update",">=06/03/21",599),
                 new ColumnFilterTest("last_update",">06/03/21",9),
                 new ColumnFilterTest("last_update","",599),
-                new ColumnFilterTest("active","1",582, FilterType.Select),
-                new ColumnFilterTest("active","0",17, FilterType.Select),
+                new ColumnFilterTest("active","1",582, FilterControl.Select),
+                new ColumnFilterTest("active","0",17, FilterControl.Select),
                 new ColumnFilterTest("postal_code","00",1),
-                new ColumnFilterTest("active","1",14, FilterType.Select),
+                new ColumnFilterTest("active","1",14, FilterControl.Select),
                 new ColumnFilterTest("last_update","xxx",Helpers.ResourceNames.DataFormatError),
                 new ColumnFilterTest("last_update","",14),
                 new ColumnFilterTest("last_update",">=",Helpers.ResourceNames.ColumnFilterNoData)
@@ -77,6 +78,24 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
 
             await GridColumnFilter(filterTests, "sqlite/joined");
             await GridColumnFilter(filterTests, "joined", true);
+        }
+
+        [Test]
+        public async Task SearchDialog()
+        {
+            List<SearchDialogTest> searchDialogTests = new List<SearchDialogTest>() {
+                new SearchDialogTest("last_update",SearchOperator.GreaterThan,"2024-06-17",6),
+                new SearchDialogTest("last_update",SearchOperator.NotLessThan,"2024-06-17",9),
+                new SearchDialogTest("last_update",SearchOperator.NotLessThan, "2021-03-06",599),
+                new SearchDialogTest("last_update",SearchOperator.GreaterThan,"2021-03-06",9),
+                new SearchDialogTest("last_update",null,string.Empty,599),
+                new SearchDialogTest("active",SearchOperator.False,string.Empty,17),
+                new SearchDialogTest("active",SearchOperator.True, string.Empty,582),
+                new SearchDialogTest("postal_code",SearchOperator.Contains,"00",14)
+            };
+
+            await GridSearchDialogFilter(searchDialogTests, "sqlite/joined");
+            await GridSearchDialogFilter(searchDialogTests, "joined", true);
         }
     }
 }

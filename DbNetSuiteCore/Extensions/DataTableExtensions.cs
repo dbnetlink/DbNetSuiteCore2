@@ -1,5 +1,8 @@
-﻿using DbNetSuiteCore.Helpers;
+﻿using DbNetSuiteCore.Attributes;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories;
 using System.Data;
 
 namespace DbNetSuiteCore.Extensions
@@ -103,6 +106,12 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
+            string searchDialogFilter = AddSearchDialogFilterPart(gridModel);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                filterParts.Add(searchDialogFilter);
+            }
+
             if (gridModel.FilterColumns.Any())
             {
                 List<string> columnFilterPart = new List<string>();
@@ -162,6 +171,62 @@ namespace DbNetSuiteCore.Extensions
             }
 
             return String.Join(" and ", filterParts);
+        }
+
+        public static string AddSearchDialogFilterPart(this ComponentModel componentModel)
+        {
+            List<string> filterParts = new List<string>();
+
+            foreach (var searchFilterPart in componentModel.SearchDialogFilter)
+            {
+                ColumnModel columnModel = componentModel.GetColumns().First(c => c.Key == searchFilterPart.ColumnKey);
+                string filterExpression = FilterExpression(searchFilterPart, columnModel, componentModel);
+                if (string.IsNullOrEmpty(filterExpression) == false)
+                {
+                    filterParts.Add(filterExpression);
+                }
+            }
+            return string.Join($" {componentModel.SearchDialogConjunction} ", filterParts);
+        }
+
+        private static string FilterExpression(SearchDialogFilter searchDialogFilter, ColumnModel columnModel, ComponentModel componentModel)
+        {
+            string template = searchDialogFilter.Operator.GetAttribute<FilterExpressionAttribute>()?.Expression ?? string.Empty;
+            string columnName = TextHelper.DelimitColumn(columnModel.Name, componentModel.DataSourceType);
+
+            if (template == string.Empty)
+            {
+                return template;
+            }
+
+            List<string> values = new List<string>();
+            string quotedValue1 = QuotedValue(searchDialogFilter.Value1);
+            string quotedValue2 = QuotedValue(searchDialogFilter.Value2);
+
+            switch (searchDialogFilter.Operator)
+            {
+                case SearchOperator.In:
+                case SearchOperator.NotIn:
+                    foreach (string value in searchDialogFilter.Value1.Split(","))
+                    {
+                        values.Add(QuotedValue(value));
+                    }
+                    return $"{columnName} {template.Replace("{0}", $"{Quoted(columnModel)}{string.Join(",", values)}{Quoted(columnModel)}")}";
+                case SearchOperator.IsEmpty:
+                case SearchOperator.IsNotEmpty:
+                    return $"{columnName} {template}";
+                case SearchOperator.Between:
+                    return $"({columnName} >= {quotedValue1} and {columnName} <= {quotedValue2})";
+                case SearchOperator.NotBetween:
+                    return $"({columnName} < {quotedValue1} or {columnName} > {quotedValue2})";
+                default:
+                    return $"{columnName} {template.Replace("{0}", quotedValue1)}";
+            }
+
+            string QuotedValue(string value)
+            {
+                return $"{Quoted(columnModel)}{searchDialogFilter.Value1}{Quoted(columnModel)}";
+            }
         }
 
         private static string AddFilter(SelectModel selectModel)

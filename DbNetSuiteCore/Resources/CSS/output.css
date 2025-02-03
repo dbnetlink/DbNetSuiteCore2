@@ -694,6 +694,7 @@ select {
 
 .dbnetsuite select.column-filter,
         .dbnetsuite select.search-operator,
+        .dbnetsuite select.conjunction,
         .dbnetsuite-form select {
   padding-right: 2rem !important;
 }

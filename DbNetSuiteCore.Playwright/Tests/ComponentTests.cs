@@ -6,6 +6,8 @@ using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Playwright.Models;
 using Microsoft.Playwright;
 using DbNetSuiteCore.Playwright.Enums;
+using DbNetSuiteCore.Enums;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace DbNetSuiteCore.Playwright.Tests
@@ -120,6 +122,16 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
+        protected async Task GridSearchDialogFilter(List<SearchDialogTest> searchDialogTests, string page, bool mvc = false)
+        {
+            await GoToPage(page, mvc);
+
+            foreach (SearchDialogTest searchDialogTest in searchDialogTests)
+            {
+                await TestSearchDialog(searchDialogTest);
+            }
+        }
+
         protected async Task SelectSearchTest(Dictionary<string, int> searches, string page, bool mvc = false)
         {
             await GoToPage(page, ComponentType.Select, mvc);
@@ -166,8 +178,8 @@ namespace DbNetSuiteCore.Playwright.Tests
             var columnKey = await heading.GetAttributeAsync("data-key");
             ILocator filter = Page.Locator($"tr.filter-row {columnFilterTest.FilterType.ToString().ToLower()}[data-key=\"{columnKey}\"]");
 
-            var element = await filter.ElementHandleAsync();
-            if (columnFilterTest.FilterType == FilterType.Select)
+        //    var element = await filter.ElementHandleAsync();
+            if (columnFilterTest.FilterType == FilterControl.Select)
             {
                 await filter.SelectOptionAsync(columnFilterTest.FilterValue);
             }
@@ -184,6 +196,54 @@ namespace DbNetSuiteCore.Playwright.Tests
             {
                 await TestRowCount(columnFilterTest.ExpectedRowCount);
             }
+        }
+
+        private async Task TestSearchDialog(SearchDialogTest searchDialogTest)
+        {
+            await Page.GetByTestId("search").ClickAsync();
+            ILocator row = GetSearchDialogRow(searchDialogTest.ColumnName);
+            ILocator select = row.Locator("select");
+            ILocator input1 = row.Locator("input[name='searchDialogValue1']");
+            ILocator input2 = row.Locator("input[name='searchDialogValue2']");
+            ILocator lookupBtn = row.Locator("button");
+
+            await select.SelectOptionAsync(searchDialogTest.SearchOperator?.ToString() ?? string.Empty);
+
+            switch(searchDialogTest.SearchOperator)
+            {
+                case SearchOperator.True:
+                case SearchOperator.False:
+                    break;
+                case SearchOperator.In:
+                case SearchOperator.NotIn:
+                    await lookupBtn.ClickAsync();
+                    ILocator lookupSelect = Page.Locator($"dialog.lookup-dialog select");
+
+                    await lookupSelect.SelectOptionAsync(Array.Empty<string>());
+
+                    if (string.IsNullOrEmpty(searchDialogTest.FilterValue) == false)
+                    {
+                        foreach (string value in searchDialogTest.FilterValue.Split(","))
+                        {
+                            await lookupSelect.SelectOptionAsync(value);
+                        }
+                    }
+                    ILocator selectBtn = Page.Locator($"dialog.lookup-dialog button[button-type=\"select\"]");
+                    await selectBtn.ClickAsync();
+                    break;
+                case SearchOperator.Between:
+                case SearchOperator.NotBetween:
+                    await input1.FillAsync(searchDialogTest.FilterValue.Split(":").First());
+                    await input2.FillAsync(searchDialogTest.FilterValue.Split(":").Last());
+                    break;
+                default:
+                    await input1.FillAsync(searchDialogTest.FilterValue);
+                    break;
+            }
+
+            await Page.GetByTestId("search-dialog-apply").ClickAsync();
+            await TestRowCount(searchDialogTest.ExpectedRowCount);
+
         }
 
         private async Task TestFilterErrorString(ILocator filter, ResourceNames errorString)
@@ -215,6 +275,11 @@ namespace DbNetSuiteCore.Playwright.Tests
         private ILocator GetHeading(string columnName)
         {
             return Page.Locator($"th[data-columnname=\"{columnName.ToLower()}\"]");
+        }
+
+        private ILocator GetSearchDialogRow(string columnName)
+        {
+            return Page.Locator($"dialog.search-dialog tr[data-columnname=\"{columnName.ToLower()}\"]");
         }
 
         private async Task TestRowCount(int expectedRowCount, string type = "row")

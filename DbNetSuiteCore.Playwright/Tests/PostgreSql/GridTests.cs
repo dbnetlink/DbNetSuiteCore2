@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Playwright.Models;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Playwright.Models;
 using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
@@ -65,7 +66,7 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
         {
             List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
                 new ColumnFilterTest("OrderId",">11000",77),
-                new ColumnFilterTest("ShipperId","1",23, FilterType.Select),
+                new ColumnFilterTest("ShipperId","1",23, FilterControl.Select),
                 new ColumnFilterTest("RequiredDate","14/5/2008",3),
                 new ColumnFilterTest("RequiredDate",">14/5/2008",10),
                 new ColumnFilterTest("RequiredDate","<14/5/2008",10),
@@ -73,11 +74,33 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
                 new ColumnFilterTest("RequiredDate",">=14/5/2008",13),
                 new ColumnFilterTest("OrderId","",13),
                 new ColumnFilterTest("RequiredDate","",249),
-                new ColumnFilterTest("ShipperId","",830, FilterType.Select),
+                new ColumnFilterTest("ShipperId","",830, FilterControl.Select),
             };
 
             await GridColumnFilter(filterTests, $"postgresql/orders?db={DatabaseName}");
         }
 
+
+        [Test]
+        public async Task SearchDialog()
+        {
+            List<SearchDialogTest> searchDialogTests = new List<SearchDialogTest>() {
+                new SearchDialogTest("OrderId",SearchOperator.GreaterThan,"11000",77),
+                new SearchDialogTest("ShipperId",SearchOperator.In,"1",23),
+                new SearchDialogTest("RequiredDate",SearchOperator.EqualTo, "2008-05-14",3),
+                new SearchDialogTest("RequiredDate",SearchOperator.GreaterThan,"2008-05-14",10),
+                new SearchDialogTest("RequiredDate",SearchOperator.LessThan,"2008-05-14",10),
+                new SearchDialogTest("RequiredDate",SearchOperator.NotGreaterThan,"2008-05-14",13),
+                new SearchDialogTest("RequiredDate",SearchOperator.NotLessThan,"2008-05-14",13),
+                new SearchDialogTest("RequiredDate",SearchOperator.Between,"2008-05-01:2008-05-31",20),
+                new SearchDialogTest("RequiredDate",SearchOperator.NotBetween,"2008-05-01:2008-05-31",3),
+                new SearchDialogTest("RequiredDate",SearchOperator.NotLessThan,"2008-05-14",13),
+                new SearchDialogTest("OrderId",null,string.Empty,13),
+                new SearchDialogTest("RequiredDate",null,string.Empty,249),
+                new SearchDialogTest("ShipperId",SearchOperator.In, string.Empty,830)
+            };
+
+            await GridSearchDialogFilter(searchDialogTests, $"postgresql/orders?db={DatabaseName}");
+        }
     }
 }

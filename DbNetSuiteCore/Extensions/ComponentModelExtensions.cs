@@ -86,17 +86,17 @@ namespace DbNetSuiteCore.Extensions
 
             foreach (var searchFilterPart in componentModel.SearchDialogFilter)
             {
-                ColumnModel colummn = componentModel.GetColumns().First(c => c.Key == searchFilterPart.ColumnKey);
-                string filterExpression = FilterExpression(searchFilterPart, query);
+                ColumnModel colummnModel = componentModel.GetColumns().First(c => c.Key == searchFilterPart.ColumnKey);
+                string filterExpression = FilterExpression(searchFilterPart, query, componentModel, colummnModel);
                 if (string.IsNullOrEmpty(filterExpression) == false)
                 {
-                    filterParts.Add($"{RefineSearchExpression(colummn, componentModel)} {FilterExpression(searchFilterPart, query)}");
+                    filterParts.Add($"{RefineSearchExpression(colummnModel, componentModel)} {filterExpression}");
                 }
             }
-            return string.Join(" and ", filterParts);
+            return string.Join($" {componentModel.SearchDialogConjunction} ", filterParts);
         }
 
-        private static string FilterExpression(SearchDialogFilter searchDialogFilter, QueryCommandConfig query)
+        private static string FilterExpression(SearchDialogFilter searchDialogFilter, QueryCommandConfig query, ComponentModel componentModel, ColumnModel columnModel)
         {
             string template = searchDialogFilter.Operator.GetAttribute<FilterExpressionAttribute>()?.Expression ?? string.Empty;
 
@@ -110,10 +110,10 @@ namespace DbNetSuiteCore.Extensions
             {
                 case SearchOperator.In:
                 case SearchOperator.NotIn:
-                    foreach(object paramValue in searchDialogFilter.Value1 as List<object> ?? new List<object>())
+                    foreach(string paramValue in searchDialogFilter.Value1.Split(","))
                     {
                         parameterNames.Add(ParameterName(searchDialogFilter.ColumnKey, parameterNames.Count));
-                        query.Params[parameterNames.Last()] = paramValue;
+                        query.Params[parameterNames.Last()] = ParamValue(paramValue, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
                     }
                     return template.Replace("{0}", string.Join(",", parameterNames));
                 case SearchOperator.IsEmpty:
@@ -121,15 +121,18 @@ namespace DbNetSuiteCore.Extensions
                     return template;
                 case SearchOperator.Between:
                 case SearchOperator.NotBetween:
+                    object value1 = ParamValue(searchDialogFilter.Value1, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
+                    object value2 = ParamValue(searchDialogFilter.Value2, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
                     foreach ( int i in Enumerable.Range(0,2))
                     {
                         parameterNames.Add(ParameterName(searchDialogFilter.ColumnKey, parameterNames.Count));
-                        query.Params[parameterNames.Last()] = (i == 0 ? searchDialogFilter.Value1 : searchDialogFilter.Value2) ?? string.Empty;
+                        query.Params[parameterNames.Last()] = (i == 0 ? value1 : value2) ?? string.Empty;
                     }
                     return template.Replace("{0}", parameterNames[0]).Replace("{1}", parameterNames[1]);
                 default:
+                    object value = ParamValue(searchDialogFilter.Value1, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
                     var paramName = ParameterName(searchDialogFilter.ColumnKey, 0);
-                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator,searchDialogFilter.Value1) ?? string.Empty;
+                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator, value) ?? string.Empty;
                     return template.Replace("{0}", paramName);
             }
 

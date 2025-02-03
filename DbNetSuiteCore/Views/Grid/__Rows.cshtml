@@ -66,6 +66,10 @@
                 }
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
+                    if (string.IsNullOrEmpty(column.Lookup?.TableName) && column.IsNumeric)
+                    {
+                        classes.Add("text-right");
+                    }
                     <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
                         @Html.Raw(row[dataColumn])
                     </td>
@@ -126,11 +130,11 @@
 
     @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey)
     {
-        <tr style="display:none" class="column-filter-refresh">
+        <tr style="display:none" class="lookup-refresh">
             <td colspan="@Model.ColSpan">
                 @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
                 {
-                    @Model.RenderColumnSelectFilterRefresh(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
+                    @Model.RenderLookupOptions(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
                 }
             </td>
         </tr>

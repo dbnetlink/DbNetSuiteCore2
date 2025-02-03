@@ -341,6 +341,8 @@ namespace DbNetSuiteCore.Services
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
+                gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
+
                 AssignParentKey(gridModel);
                 AssignSearchDialogFilter(gridModel);
 

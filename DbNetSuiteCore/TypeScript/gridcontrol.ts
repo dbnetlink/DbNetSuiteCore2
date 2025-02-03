@@ -70,7 +70,7 @@ class GridControl extends ComponentControl {
             row.click();
         }
 
-        this.controlElements("tr.column-filter-refresh select").forEach((select: HTMLSelectElement) => {
+        this.controlElements("tr.lookup-refresh select").forEach((select: HTMLSelectElement) => {
             let filter: HTMLSelectElement = this.controlElement(`thead select[data-key="${select.dataset.key}"]`)
             if (filter) {
                 filter.innerHTML = select.innerHTML;

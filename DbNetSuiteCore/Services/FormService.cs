@@ -433,6 +433,7 @@ namespace DbNetSuiteCore.Services
                 formModel.Message = string.Empty;
                 formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
                 formModel.CommitType = null;
+                formModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
 
                 AssignParentKey(formModel);
                 AssignSearchDialogFilter(formModel);

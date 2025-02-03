@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.Models
     {
         public string ColumnKey { get; set; } = string.Empty;
         public SearchOperator Operator { get; set; }
-        public object? Value1 { get; set; } = null;
-        public object? Value2 { get; set; } = null;
+        public string Value1 { get; set; } = string.Empty;
+        public string Value2 { get; set; } = string.Empty;
     }
 }

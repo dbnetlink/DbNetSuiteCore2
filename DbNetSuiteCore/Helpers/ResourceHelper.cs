@@ -23,6 +23,8 @@ namespace DbNetSuiteCore.Helpers
         Last,
         Apply,
         Cancel,
+        ApplyChanges,
+        CancelChanges,
         Required,
         Updated,
         UnappliedChanges,
@@ -37,7 +39,13 @@ namespace DbNetSuiteCore.Helpers
         PrimaryKeyExists,
         MinCharsError,
         MaxCharsError,
-        PatternError
+        PatternError, 
+        MatchAll,
+        MatchAtLeastOne,
+        Search,
+        Clear,
+        Lookup,
+        Select
     }
     public static class ResourceHelper
     {

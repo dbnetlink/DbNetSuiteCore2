@@ -9,7 +9,7 @@
         <nav class="dialog-nav">
             <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
                 <div>
-                    <span class="font-bold text-xl text-cyan-800">Search</span>
+                    <span class="font-bold text-xl text-cyan-800">@ResourceHelper.GetResourceString(ResourceNames.Search)</span>
                 </div>
                 <div>
                     <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
@@ -17,10 +17,10 @@
             </div>
         </nav>
         <div class="flex search-dialog-content" style="max-height:400px;overflow-y:scroll;padding:5px;">
-            <table cellpadding="3" class="table-auto border-collapse m-1 border-spacing-2">
+            <table cellpadding="3" class="table-auto border-collapse m-1 border-spacing-2 search-dialog">
                 @foreach (ColumnModel columnModel in Model.SearchDialogColumns)
                 {
-                    <tr>
+                    <tr data-columnname="@columnModel.ColumnName.ToLower()">
                         <td style="font-weight:bold">
                             @columnModel.Label
                         </td>
@@ -45,10 +45,16 @@
         </div>
         <div class="flex flex-row justify-between items-center border-solid border border-slate-200 bg-slate-50 rounded-md m-1 p-1">
             <div>
-                <button type="button" button-type="clear">Clear</button>
+                <button type="button" button-type="clear">@ResourceHelper.GetResourceString(ResourceNames.Clear)</button>
             </div>
             <div>
-                <button type="button" name="@TriggerNames.SearchDialog" hx-post="@Model.SubmitUrl" hx-trigger="click" hx-target="@Model.HxIdTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">Apply</button>
+                <div class="flex flex-row gap-1">
+                    <select name="searchDialogConjunction" class="conjunction">
+                        <option selected value="and">@ResourceHelper.GetResourceString(ResourceNames.MatchAll)</option>
+                        <option value="or">@ResourceHelper.GetResourceString(ResourceNames.MatchAtLeastOne)</option>
+                    </select>
+                    <button type="button" button-type="search-dialog-apply" name="@TriggerNames.SearchDialog" hx-post="@Model.SubmitUrl" hx-trigger="click" hx-target="@Model.HxIdTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML">@ResourceHelper.GetResourceString(ResourceNames.Apply)</button>
+                </div>
             </div>
         </div>
     </div>
@@ -59,7 +65,7 @@
         <nav class="dialog-nav">
             <div class="flex flex-row justify-between items-center border-solid border border-stone-200 bg-stone-200 rounded-md m-1 p-1">
                 <div>
-                    <span class="font-bold text-xl text-cyan-800">Lookup</span>
+                    <span class="font-bold text-xl text-cyan-800">@ResourceHelper.GetResourceString(ResourceNames.Lookup)</span>
                 </div>
                 <div>
                     <button button-type="close" type="button" title="Close">@IconHelper.Close()</button>
@@ -67,14 +73,14 @@
             </div>
         </nav>
         <div class="flex lookup-dialog-content" style="padding:5px;">
-            <select multiple size="10"></select>
+            <select class="lookup-select" multiple size="10"></select>
         </div>
         <div class="flex flex-row justify-between items-center border-solid border border-slate-200 bg-slate-50 rounded-md m-1 p-1">
             <div>
-                <button type="button" button-type="cancel">Cancel</button>
+                <button type="button" button-type="cancel">@ResourceHelper.GetResourceString(ResourceNames.Cancel)</button>
             </div>
             <div>
-                <button type="button" button-type="select">Select</button>
+                <button type="button" button-type="select">@ResourceHelper.GetResourceString(ResourceNames.Select)</button>
             </div>
         </div>
     </div>

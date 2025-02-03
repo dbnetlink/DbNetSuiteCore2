@@ -64,13 +64,13 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
         public async Task ColumnFilter()
         {
             List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
-                new ColumnFilterTest("CustomerId","BSBEV",10, FilterType.Select),
+                new ColumnFilterTest("CustomerId","BSBEV",10, FilterControl.Select),
                 new ColumnFilterTest("OrderDate","16/05/1997",1),
                 new ColumnFilterTest("OrderDate","<16/05/1997",4),
                 new ColumnFilterTest("OrderDate",">16/05/1997",5),
-                new ColumnFilterTest("CustomerId","",538, FilterType.Select),
-                new ColumnFilterTest("ShipRegion","WY",3, FilterType.Select),
-                new ColumnFilterTest("ShipRegion","",538, FilterType.Select),
+                new ColumnFilterTest("CustomerId","",538, FilterControl.Select),
+                new ColumnFilterTest("ShipRegion","WY",3, FilterControl.Select),
+                new ColumnFilterTest("ShipRegion","",538, FilterControl.Select),
                 new ColumnFilterTest("OrderDate","  ",830)
             };
 

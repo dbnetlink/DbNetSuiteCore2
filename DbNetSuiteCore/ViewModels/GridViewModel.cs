@@ -88,17 +88,6 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString(string.Join(" ", html));
         }
 
-        public HtmlString RenderColumnSelectFilterRefresh(List<KeyValuePair<string, string>> options, string key)
-        {
-            List<HtmlString> html = new List<HtmlString>();
-            html.Add(new HtmlString($"<select data-key=\"{key}\">"));
-            AddColumnFilterOptions(html, options);
-            html.Add(new HtmlString($"</select>"));
-            return new HtmlString(string.Join(" ", html));
-        }
-
-    
-
         public HtmlString RenderColumnFilterError(GridColumn gridColumn)
         {
             return new HtmlString($"<span data-key=\"{gridColumn.Key}\">{gridColumn.FilterError}</span>");
@@ -131,7 +120,7 @@ namespace DbNetSuiteCore.ViewModels
         {
             List<HtmlString> html = new List<HtmlString>();
             html.Add(new HtmlString($"<select class=\"column-filter\" name=\"columnFilter\" hx-post=\"{SubmitUrl}\" hx-trigger=\"change\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{key}\">"));
-            AddColumnFilterOptions(html, options);
+            AddLookupFilterOptions(html, options);
             html.Add(new HtmlString($"</select>"));
 
             return new HtmlString(string.Join(" ", html));

@@ -121,13 +121,22 @@
     <value>Record has been added</value>
   </data>
   <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ApplyChanges" xml:space="preserve">
     <value>Apply your changes</value>
   </data>
   <data name="Between" xml:space="preserve">
     <value>Between</value>
   </data>
   <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CancelChanges" xml:space="preserve">
     <value>Cancel your changes</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
   </data>
   <data name="ColumnFilterNoData" xml:space="preserve">
     <value>No filter value supplied</value>
@@ -191,6 +200,15 @@
   </data>
   <data name="LessThan" xml:space="preserve">
     <value>Less than</value>
+  </data>
+  <data name="Lookup" xml:space="preserve">
+    <value>Lookup</value>
+  </data>
+  <data name="MatchAll" xml:space="preserve">
+    <value>Match all the criteria</value>
+  </data>
+  <data name="MatchAtLeastOne" xml:space="preserve">
+    <value>Match at leat one of the criteria</value>
   </data>
   <data name="MaxCharsError" xml:space="preserve">
     <value>A maximum of {0} characters must be entered</value>
@@ -263,6 +281,9 @@
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>Search</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
   </data>
   <data name="StartsWith" xml:space="preserve">
     <value>Starts with</value>

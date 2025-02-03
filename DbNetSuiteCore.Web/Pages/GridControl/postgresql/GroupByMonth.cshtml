@@ -6,17 +6,17 @@
 @{
     var invoiceColumns = new List<GridColumn>
     {
-        new GridColumn("Product_Id", "Product Name") {Lookup = new Lookup("Products", "Product_Id", "Product_name")}
+        new GridColumn("ProductId", "Product Name") {Lookup = new Lookup("Product", "ProductId", "Productname")}
     };
 
     for (var i =1; i<=12; i++)
     {
         var monthName = new DateTime(2024, i, 1).ToString("MMMM");
-        var column = new GridColumn($"(case when EXTRACT(month FROM order_date) = {i} then Quantity else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, Format = "####0" };
+        var column = new GridColumn($"(case when EXTRACT(month FROM orderdate) = {i} then Qty else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, Format = "####0" };
         invoiceColumns.Add(column);
     }
 
-    var invoiceGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(Postgresql)", "Order_Details join Orders on Orders.Order_Id = Order_Details.Order_id");
+    var invoiceGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(Postgresql)", "OrderDetail join SalesOrder on SalesOrder.OrderId = OrderDetail.Orderid");
     invoiceGrid.Columns = invoiceColumns;
     invoiceGrid.ClientEvents[GridClientEvent.CellTransform] = "highlightQuantity";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))

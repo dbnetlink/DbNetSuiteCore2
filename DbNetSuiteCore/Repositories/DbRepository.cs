@@ -187,7 +187,7 @@ namespace DbNetSuiteCore.Repositories
                 {
                     return;
                 }
-                var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Select(dr => dr[0].ToString()).ToList();
+                var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], column.DataType)).OrderBy(v => v).ToList();
 
                 if (string.IsNullOrEmpty(lookup.TableName))
                 {
@@ -200,7 +200,8 @@ namespace DbNetSuiteCore.Repositories
                 int i = 0;
                 paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
 
-                var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
+                //var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
+                var keyColumn = $"{lookup.KeyColumn}";
 
                 query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
             }

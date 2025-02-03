@@ -93,6 +93,15 @@
     font-weight: bold;
 }
 
+.dbnetsuite table.search-dialog td {
+    border-top-width: 0px;
+    border-bottom-width: 0px;
+}
+
+.dbnetsuite .lookup-select > option:empty {
+    display: none;
+}
+
 .dbnetsuite .dialog {
     position: relative;
     /*

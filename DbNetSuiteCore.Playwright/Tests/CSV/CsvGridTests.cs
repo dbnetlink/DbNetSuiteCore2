@@ -69,6 +69,5 @@ namespace DbNetSuiteCore.Playwright.Tests.CSV
             await GridHeadingReverseSort(sorts, "excel/Countries");
             await GridHeadingReverseSort(sorts, "excel/renderfile?name=countries.csv");
         }
-        
     }
 }

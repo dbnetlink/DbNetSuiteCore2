@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Playwright.Models;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Playwright.Models;
 using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.Excel
@@ -104,13 +105,29 @@ namespace DbNetSuiteCore.Playwright.Tests.Excel
             List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
                 new ColumnFilterTest("order date","08/11/2016",2),
                 new ColumnFilterTest("order date","",9994),
-                new ColumnFilterTest("ship mode","First Class",1538, FilterType.Select),
-                new ColumnFilterTest("city","Troy",14, FilterType.Select),
+                new ColumnFilterTest("ship mode","First Class",1538, FilterControl.Select),
+                new ColumnFilterTest("city","Troy",14, FilterControl.Select),
             };
 
             await GridColumnFilter(filterTests, "excel/Superstore?ext=csv");
             await GridColumnFilter(filterTests, "excel/Superstore?ext=xls");
             await GridColumnFilter(filterTests, "excel/Superstore?ext=xlsx");
+        }
+
+
+        [Test]
+        public async Task SearchDialog()
+        {
+            List<SearchDialogTest> searchDialogTests = new List<SearchDialogTest>() {
+                new SearchDialogTest("Order Date",SearchOperator.EqualTo, "2016-11-08",2),
+                new SearchDialogTest("Order Date",null,string.Empty,9994),
+                new SearchDialogTest("Ship Mode",SearchOperator.EqualTo,"First Class",1538),
+                new SearchDialogTest("City",SearchOperator.EqualTo,"Troy",14)
+            };
+
+            await GridSearchDialogFilter(searchDialogTests, "excel/Superstore?ext=csv");
+            await GridSearchDialogFilter(searchDialogTests, "excel/Superstore?ext=xls");
+            await GridSearchDialogFilter(searchDialogTests, "excel/Superstore?ext=xlsx");
         }
     }
 }

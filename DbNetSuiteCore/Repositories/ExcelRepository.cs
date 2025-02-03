@@ -5,7 +5,6 @@ using System.Data.OleDb;
 using CsvHelper;
 using System.Globalization;
 using CsvHelper.Configuration;
-using Microsoft.Extensions.Caching.Memory;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 
@@ -13,15 +12,11 @@ namespace DbNetSuiteCore.Repositories
 {
     public class ExcelRepository : IExcelRepository
     {
-        private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
-        private readonly IMemoryCache _memoryCache;
 
-        public ExcelRepository(IConfiguration configuration, IWebHostEnvironment env, IMemoryCache memoryCache)
+        public ExcelRepository(IWebHostEnvironment env)
         {
-            _configuration = configuration;
             _env = env;
-            _memoryCache = memoryCache;
         }
         public async Task GetRecords(ComponentModel componentModel)
         {

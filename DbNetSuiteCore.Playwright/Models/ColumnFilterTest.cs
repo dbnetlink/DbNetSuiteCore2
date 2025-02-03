@@ -2,7 +2,7 @@
 
 namespace DbNetSuiteCore.Playwright.Models
 {
-    public enum FilterType
+    public enum FilterControl
     {
         Input,
         Select
@@ -12,9 +12,9 @@ namespace DbNetSuiteCore.Playwright.Models
         public string ColumnName { get; set; }
         public string FilterValue { get; set; }
         public int ExpectedRowCount {  get; set; }
-        public FilterType FilterType { get; set; } = FilterType.Input;
+        public FilterControl FilterType { get; set; } = FilterControl.Input;
         public ResourceNames? ErrorString { get; set; } = null;
-        public ColumnFilterTest(string columnName, string filterValue, int expectedRowCount, FilterType filterType = FilterType.Input)
+        public ColumnFilterTest(string columnName, string filterValue, int expectedRowCount, FilterControl filterType = FilterControl.Input)
         {
             ColumnName = columnName;
             FilterValue = filterValue;
@@ -22,7 +22,7 @@ namespace DbNetSuiteCore.Playwright.Models
             FilterType = filterType;
         }
 
-        public ColumnFilterTest(string columnName, string filterValue, ResourceNames errorString, FilterType filterType = FilterType.Input)
+        public ColumnFilterTest(string columnName, string filterValue, ResourceNames errorString, FilterControl filterType = FilterControl.Input)
         {
             ColumnName = columnName;
             FilterValue = filterValue;

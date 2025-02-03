@@ -56,7 +56,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (filterParts.Any())
             {
-                query.Sql += $" where {string.Join(" and ", filterParts)}";
+                query.Sql += $" where ({string.Join(") and (", filterParts)})";
             }
         }
 
@@ -238,7 +238,7 @@ namespace DbNetSuiteCore.Extensions
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.DistinctLookup))
                 {
                     DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
-                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false).Select(dr => dr[0]).ToList();
+                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false && dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], gridColumn.DataType)).OrderBy(v => v).ToList();
                     gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
                 }
             }

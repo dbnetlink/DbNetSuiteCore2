@@ -64,7 +64,17 @@ class SearchDialog extends Dialog {
     showLookup(event) {
         let button = event.target.closest("button");
         let input = button.closest("tr").querySelector("input");
-        let select = this.dialog.querySelector(`select[data-key='${button.dataset.key}']`);
+        let select = null;
+        if (this.control instanceof (GridControl)) {
+            select = this.control.controlElement(`tr.lookup-refresh select[data-key='${button.dataset.key}']`);
+        }
+        if (this.control instanceof (FormControl)) {
+            select = this.control.controlElement(`div.lookup-refresh select[data-key='${button.dataset.key}']`);
+        }
+        if (!select) {
+            select = this.dialog.querySelector(`select[data-key='${button.dataset.key}']`);
+        }
+        this.control;
         this.lookupDialog.open(select, input);
     }
     clear() {

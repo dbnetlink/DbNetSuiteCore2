@@ -75,6 +75,8 @@ namespace DbNetSuiteCore.Models
         public bool Cache { get; set; } = false;
         public int QueryLimit { get; set; } = -1;
         public bool DiagnosticsMode { get; set; } = false;
+        public bool Search { get; set; } = true;
+        internal string SearchDialogConjunction { get; set; } = "and";
 
         public ComponentModel()
         {

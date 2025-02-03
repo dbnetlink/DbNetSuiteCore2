@@ -436,15 +436,17 @@ namespace DbNetSuiteCore.Services
                 {
                     case SearchOperator.In:
                     case SearchOperator.NotIn:
+                        /*
                         var paramList = new List<object?>();
                         foreach (var value in value1List[i].Split(','))
                         {
                             paramList.Add(ComponentModelExtensions.ParamValue(value, columnModel, componentModel.DataSourceType));
                         }
-                        searchDialogFilter.Value1 = paramList;
+                        */
+                        searchDialogFilter.Value1 = value1List[i];
                         break;
                     default:
-                        searchDialogFilter.Value1 = ComponentModelExtensions.ParamValue(value1List[i], columnModel, componentModel.DataSourceType);
+                        searchDialogFilter.Value1 = value1List[i];// ComponentModelExtensions.ParamValue(value1List[i], columnModel, componentModel.DataSourceType);
                         break;
                 }
 
@@ -456,7 +458,7 @@ namespace DbNetSuiteCore.Services
                         {
                             continue;
                         }
-                        searchDialogFilter.Value2 = ComponentModelExtensions.ParamValue(value2List[i], columnModel, componentModel.DataSourceType);
+                        searchDialogFilter.Value2 = value2List[i];// ComponentModelExtensions.ParamValue(value2List[i], columnModel, componentModel.DataSourceType);
                         break;
                 }
 

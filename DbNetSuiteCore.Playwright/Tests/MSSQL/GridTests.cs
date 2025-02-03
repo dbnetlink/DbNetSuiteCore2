@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Playwright.Models;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Playwright.Models;
 using NUnit.Framework;
 
 namespace DbNetSuiteCore.Playwright.Tests.MSSQL
@@ -64,17 +65,34 @@ namespace DbNetSuiteCore.Playwright.Tests.MSSQL
         public async Task ColumnFilter()
         {
             List<ColumnFilterTest> filterTests = new List<ColumnFilterTest>() {
-                new ColumnFilterTest("CustomerId","BSBEV",10, FilterType.Select),
+                new ColumnFilterTest("CustomerId","BSBEV",10, FilterControl.Select),
                 new ColumnFilterTest("OrderDate","16/05/1997",1),
                 new ColumnFilterTest("OrderDate","<16/05/1997",4),
                 new ColumnFilterTest("OrderDate",">16/05/1997",5),
-                new ColumnFilterTest("CustomerId","",538, FilterType.Select),
-                new ColumnFilterTest("ShipRegion","WY",3, FilterType.Select),
-                new ColumnFilterTest("ShipRegion","",538, FilterType.Select),
+                new ColumnFilterTest("CustomerId","",538, FilterControl.Select),
+                new ColumnFilterTest("ShipRegion","WY",3, FilterControl.Select),
+                new ColumnFilterTest("ShipRegion","",538, FilterControl.Select),
                 new ColumnFilterTest("OrderDate","  ",830)
             };
 
             await GridColumnFilter(filterTests, $"mssql/orders?db={DatabaseName}");
+        }
+
+        [Test]
+        public async Task SearchDialog()
+        {
+            List<SearchDialogTest> searchDialogTests = new List<SearchDialogTest>() {
+                new SearchDialogTest("CustomerId",SearchOperator.In,"BSBEV",10),
+                new SearchDialogTest("OrderDate",SearchOperator.EqualTo, "1997-05-16",1),
+                new SearchDialogTest("OrderDate",SearchOperator.LessThan,"1997-05-16",4),
+                new SearchDialogTest("OrderDate",SearchOperator.GreaterThan,"1997-05-16",5),
+                new SearchDialogTest("CustomerId",SearchOperator.In,"",538),
+                new SearchDialogTest("ShipRegion",SearchOperator.EqualTo,"WY",3),
+                new SearchDialogTest("ShipRegion",null, string.Empty,538),
+                new SearchDialogTest("OrderDate",null,"",830),
+            };
+
+            await GridSearchDialogFilter(searchDialogTests, $"mssql/orders?db={DatabaseName}");
         }
     }
 }
