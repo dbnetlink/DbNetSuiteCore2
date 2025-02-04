@@ -77,7 +77,7 @@ namespace DbNetSuiteCore.Models
         public string EnumName { get; set; } = string.Empty;
         public bool AllowDBNull { get; set; } = true;
         public bool Search { get; set; } = true;
-        public bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType();
+        public bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType() && ForeignKey == false;
         public SearchControlType SearchControlType
         {
             get
@@ -448,7 +448,15 @@ namespace DbNetSuiteCore.Models
             List<string> select = new List<string>();
             select.Add($"<select {RazorHelper.Attributes(attributes)}><option/>");
             var options = SearchOperatorOptions();
-            select.AddRange(options.Select(o => $"<option value=\"{o.ToString()}\">{ResourceHelper.GetResourceString(o)}</option>").ToList());
+
+            if (DataType == typeof(bool) && EnumOptions != null)
+            {
+                select.AddRange(EnumOptions.Select(o => $"<option value=\"{(o.Key == "1" ? "True" : "False")}\">{o.Value}</option>").ToList());
+            }
+            else
+            {
+                select.AddRange(options.Select(o => $"<option value=\"{o.ToString()}\">{ResourceHelper.GetResourceString(o)}</option>").ToList());
+            }
             select.Add("</select>");
 
             return new HtmlString(string.Join(string.Empty, select));

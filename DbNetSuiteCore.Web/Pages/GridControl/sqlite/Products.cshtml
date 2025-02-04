@@ -4,9 +4,9 @@
 @using DbNetSuiteCore.Web.Enums
 
 @{
-	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { ViewDialog = new ViewDialog() { LayoutColumns = 2 } };
+	var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { Search = true, ViewDialog = new ViewDialog() { LayoutColumns = 2 } };
 	productsGrid.Columns = new List<GridColumn>() {
-		new GridColumn("ProductID") { PrimaryKey = true },
+		new GridColumn("ProductID") { PrimaryKey = true, Search = false },
 		new GridColumn("ProductName"),
 		new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = FilterType.Default },
 		new GridColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"), Filter = FilterType.Default },
@@ -14,7 +14,7 @@
 		new GridColumn("UnitPrice","Price") { Format = "c"},
 		new GridColumn("UnitsInStock", "Stock"),
 		new GridColumn("UnitsOnOrder","On Order"),
-		new GridColumn("ReorderLevel"),
+		new GridColumn("ReorderLevel") { Search = false },
 		new GridColumn("Discontinued") { DataType = typeof(Boolean), Filter = FilterType.Default, LookupEnum = typeof(DiscontinuedEnum)}
 	};
 
