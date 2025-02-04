@@ -69,7 +69,7 @@ namespace DbNetSuiteCore.Extensions
             query.Sql += $" group by {string.Join(",", gridModel.Columns.Where(c => c.Aggregate == AggregateType.None).Select(c => c.Expression).ToList())}";
         }
 
-        public static void AddHavingPart(this GridModel gridModel, CommandConfig query)
+        public static void AddHavingPart(this GridModel gridModel, QueryCommandConfig query)
         {
             List<string> havingParts = new List<string>();
 
@@ -78,6 +78,12 @@ namespace DbNetSuiteCore.Extensions
             if (columnFilterParts.Any())
             {
                 havingParts.Add($"({string.Join(" and ", columnFilterParts)})");
+            }
+
+            string searchDialogFilter = ComponentModelExtensions.AddSearchDialogFilterPart(gridModel, query, true);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                havingParts.Add(searchDialogFilter);
             }
 
             if (havingParts.Any())

@@ -80,13 +80,23 @@ namespace DbNetSuiteCore.Extensions
             return string.Join(" or ", filterParts);
         }
 
-        public static string AddSearchDialogFilterPart(this ComponentModel componentModel, QueryCommandConfig query)
+        public static string AddSearchDialogFilterPart(this ComponentModel componentModel, QueryCommandConfig query, bool havingFilter = false)
         {
             List<string> filterParts = new List<string>();
 
             foreach (var searchFilterPart in componentModel.SearchDialogFilter)
             {
                 ColumnModel colummnModel = componentModel.GetColumns().First(c => c.Key == searchFilterPart.ColumnKey);
+
+                if (colummnModel is GridColumn)
+                {
+                    GridColumn gridColumn = (GridColumn)colummnModel;
+                    if (gridColumn.Aggregate == AggregateType.None == havingFilter)
+                    {
+                        continue;
+                    }
+                }
+
                 string filterExpression = FilterExpression(searchFilterPart, query, componentModel, colummnModel);
                 if (string.IsNullOrEmpty(filterExpression) == false)
                 {

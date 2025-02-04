@@ -1,8 +1,6 @@
-﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Helpers;
+﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
-using Microsoft.AspNetCore.Identity;
 
 namespace DbNetSuiteCore.Extensions
 {
