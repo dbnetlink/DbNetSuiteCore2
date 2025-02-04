@@ -1335,6 +1335,7 @@ class SearchDialog extends Dialog {
     showLookup(event) {
         let button = event.target.closest("button");
         let input = button.closest("tr").querySelector("input");
+        let label = button.closest("tr").querySelector("td").innerText;
         let select = null;
         if (this.control instanceof (GridControl)) {
             select = this.control.controlElement(`tr.lookup-refresh select[data-key='${button.dataset.key}']`);
@@ -1346,7 +1347,7 @@ class SearchDialog extends Dialog {
             select = this.dialog.querySelector(`select[data-key='${button.dataset.key}']`);
         }
         this.control;
-        this.lookupDialog.open(select, input);
+        this.lookupDialog.open(select, input, label);
     }
     clear() {
         this.dialog.querySelectorAll(".search-operator").forEach((e) => { e.value = ''; e.dispatchEvent(new Event('change')); });
@@ -1360,7 +1361,7 @@ class LookupDialog extends Dialog {
         this.control.getButton("cancel").addEventListener("click", () => this.close());
         this.control.getButton("select").addEventListener("click", () => this.apply());
     }
-    open(select, input) {
+    open(select, input, label) {
         this.select.innerHTML = select.innerHTML;
         var selectedValues = input.value.split(',');
         selectedValues.forEach(value => {
@@ -1371,6 +1372,7 @@ class LookupDialog extends Dialog {
                 }
             }
         });
+        this.dialog.querySelector(".caption").innerText = label;
         this.input = input;
         this.show();
         this.select.focus();

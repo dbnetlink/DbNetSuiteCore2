@@ -44,7 +44,6 @@ namespace DbNetSuiteCore.Helpers
         MatchAtLeastOne,
         Search,
         Clear,
-        Lookup,
         Select
     }
     public static class ResourceHelper

@@ -8,7 +8,7 @@ class LookupDialog extends Dialog {
         this.control.getButton("select").addEventListener("click", () => this.apply())
     }
 
-    open(select: HTMLSelectElement, input: HTMLInputElement) {
+    open(select: HTMLSelectElement, input: HTMLInputElement, label : string) {
         this.select.innerHTML = select.innerHTML;
         var selectedValues = input.value.split(',');
         selectedValues.forEach(value => {
@@ -19,6 +19,8 @@ class LookupDialog extends Dialog {
                 }
             }
         });
+
+        (this.dialog.querySelector(".caption") as HTMLElement).innerText = label;
 
         this.input = input;
         this.show();

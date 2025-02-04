@@ -201,9 +201,6 @@
   <data name="LessThan" xml:space="preserve">
     <value>Less than</value>
   </data>
-  <data name="Lookup" xml:space="preserve">
-    <value>Lookup</value>
-  </data>
   <data name="MatchAll" xml:space="preserve">
     <value>Match all the criteria</value>
   </data>

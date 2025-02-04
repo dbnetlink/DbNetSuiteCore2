@@ -5,7 +5,7 @@ class LookupDialog extends Dialog {
         this.control.getButton("cancel").addEventListener("click", () => this.close());
         this.control.getButton("select").addEventListener("click", () => this.apply());
     }
-    open(select, input) {
+    open(select, input, label) {
         this.select.innerHTML = select.innerHTML;
         var selectedValues = input.value.split(',');
         selectedValues.forEach(value => {
@@ -16,6 +16,7 @@ class LookupDialog extends Dialog {
                 }
             }
         });
+        this.dialog.querySelector(".caption").innerText = label;
         this.input = input;
         this.show();
         this.select.focus();
