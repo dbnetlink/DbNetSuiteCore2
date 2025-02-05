@@ -152,7 +152,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        private static object? SearchFilterParam(SearchOperator searchOperator, object? value)
+        public static object? SearchFilterParam(SearchOperator searchOperator, object? value)
         {
             string template = string.Empty;
             switch (searchOperator)

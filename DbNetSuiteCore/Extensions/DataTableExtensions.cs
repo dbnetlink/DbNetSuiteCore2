@@ -220,12 +220,38 @@ namespace DbNetSuiteCore.Extensions
                 case SearchOperator.NotBetween:
                     return $"({columnName} < {quotedValue1} or {columnName} > {quotedValue2})";
                 default:
-                    return $"{columnName} {template.Replace("{0}", quotedValue1)}";
+                    return $"{columnName} {template.Replace("{0}", QuotedValue(WildcardValue(searchDialogFilter.Operator,quotedValue1.Replace("'",""))))}";
             }
 
             string QuotedValue(string value)
             {
-                return $"{Quoted(columnModel)}{searchDialogFilter.Value1}{Quoted(columnModel)}";
+                return $"{Quoted(columnModel)}{value}{Quoted(columnModel)}";
+            }
+
+            string WildcardValue(SearchOperator searchOperator, string value)
+            {
+                string template = string.Empty;
+                switch (searchOperator)
+                {
+                    case SearchOperator.Contains:
+                    case SearchOperator.DoesNotContain:
+                        template = "%{0}%";
+                        break;
+                    case SearchOperator.StartsWith:
+                    case SearchOperator.DoesNotStartWith:
+                        template = "{0}%";
+                        break;
+                    case SearchOperator.EndsWith:
+                    case SearchOperator.DoesNotEndWith:
+                        template = "%{0}";
+                        break;
+                }
+
+                if (string.IsNullOrEmpty(template))
+                {
+                    return value;
+                }
+                return string.Format(template, value);
             }
         }
 

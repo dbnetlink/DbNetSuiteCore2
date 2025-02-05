@@ -12,6 +12,7 @@ namespace DbNetSuiteCore.ViewModels
 
         public string SubmitUrl => _componentModel.PostUrl;
         public string Diagnostics { get; set; } = string.Empty;
+        public ComponentModel ComponentModel => _componentModel;
 
         public ComponentViewModel(ComponentModel componentModel)
         {

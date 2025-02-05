@@ -16,6 +16,7 @@ class LookupDialog extends Dialog {
                 }
             }
         });
+        this.caption = label;
         this.dialog.querySelector(".caption").innerText = label;
         this.input = input;
         this.show();

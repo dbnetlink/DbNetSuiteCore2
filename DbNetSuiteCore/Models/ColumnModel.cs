@@ -186,8 +186,6 @@ namespace DbNetSuiteCore.Models
             }
             return LookupDictionary.OrderBy(o => o.Value).Select(o => new KeyValuePair<string, string>(o.Key, o.Value)).ToList();
         }
-
-
         public void Update(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             DataType = dataColumn.DataType;
@@ -392,8 +390,6 @@ namespace DbNetSuiteCore.Models
         {
             return new Regex("[^a-zA-Z0-9_]").Replace(columnName, string.Empty);
         }
-
-
         protected string DataList(Dictionary<string, string> attributes)
         {
             List<string> dataList = new List<string>();
@@ -440,14 +436,14 @@ namespace DbNetSuiteCore.Models
             return string.Empty;
         }
 
-        public HtmlString SearchOperatorSelection()
+        public HtmlString SearchOperatorSelection(DataSourceType dataSourceType)
         {
             var attributes = new Dictionary<string, string>();
             attributes["name"] = $"searchDialogOperator";
             attributes["class"] = $"search-operator";
             List<string> select = new List<string>();
             select.Add($"<select {RazorHelper.Attributes(attributes)}><option/>");
-            var options = SearchOperatorOptions();
+            var options = SearchOperatorOptions(dataSourceType);
 
             if (DataType == typeof(bool) && EnumOptions != null)
             {
@@ -472,13 +468,13 @@ namespace DbNetSuiteCore.Models
             if (DataType == typeof(bool))
             {
                 input.Add($"<input {RazorHelper.Attributes(attributes)}/>");
-                attributes["name"] = attributes["name"].Replace("1","2");
+                attributes["name"] = attributes["name"].Replace("1", "2");
                 input.Add($"<input {RazorHelper.Attributes(attributes)}/>");
                 return new HtmlString(string.Join(string.Empty, input));
             }
 
             bool supportsBetween = !SearchLookup;
-          
+
             attributes["style"] = "width:130px;";
             attributes["data-datatype"] = DataTypeName;
             attributes["class"] = "first";
@@ -490,7 +486,7 @@ namespace DbNetSuiteCore.Models
                 supportsBetween = false;
             }
 
-            
+
 
             input.Add($"<div style=\"display:flex;flex-direction:row;align-items:center;gap:5px;\">");
             string lookup = string.Empty;
@@ -504,7 +500,7 @@ namespace DbNetSuiteCore.Models
                 attributes["type"] = "text";
                 attributes["style"] = "width:257px;";
                 attributes["readonly"] = "readonly";
-                lookup = RazorHelper.IconButton("List", IconHelper.List(), new Dictionary<string, string>() { { "data-key", Key },{ "class", "first" } }).ToString();
+                lookup = RazorHelper.IconButton("List", IconHelper.List(), new Dictionary<string, string>() { { "data-key", Key }, { "class", "first" } }).ToString();
             }
 
             input.Add($"<input {RazorHelper.Attributes(attributes)}/>{lookup}");
@@ -528,36 +524,61 @@ namespace DbNetSuiteCore.Models
         }
 
 
-        private List<SearchOperator> SearchOperatorOptions()
+        private List<SearchOperator> SearchOperatorOptions(DataSourceType dataSourceType)
         {
             var options = new List<SearchOperator>();
 
             foreach (SearchOperator searchOperator in Enum.GetValues(typeof(SearchOperator)))
             {
-                if (Lookup == null || DistinctLookup)
+                switch (searchOperator)
                 {
-                    AddOperator(searchOperator, options);
-                }
-                else
-                {
-                    switch (searchOperator)
-                    {
-                        case SearchOperator.In:
-                        case SearchOperator.NotIn:
+                    case SearchOperator.In:
+                    case SearchOperator.NotIn:
+                        if (IsLookup())
+                        {
                             options.Add(searchOperator);
-                            break;
-                        case SearchOperator.IsEmpty:
-                        case SearchOperator.IsNotEmpty:
-                            if (AllowDBNull)
-                            {
-                                options.Add(searchOperator);
-                            }
-                            break;
-                    }
+                        }
+                        break;
+                    case SearchOperator.IsEmpty:
+                    case SearchOperator.IsNotEmpty:
+                        if (AllowDBNull && dataSourceType != DataSourceType.FileSystem)
+                        {
+                            options.Add(searchOperator);
+                        }
+                        break;
+                    case SearchOperator.True:
+                    case SearchOperator.False:
+                        if (DataType == typeof(bool) && dataSourceType != DataSourceType.FileSystem)
+                        {
+                            options.Add(searchOperator);
+                        }
+                        break;
+                    case SearchOperator.Contains:
+                    case SearchOperator.DoesNotContain:
+                    case SearchOperator.StartsWith:
+                    case SearchOperator.DoesNotStartWith:
+                    case SearchOperator.EndsWith:
+                    case SearchOperator.DoesNotEndWith:
+                        if (DataType == typeof(string) && IsLookup() == false)
+                        {
+                            options.Add(searchOperator);
+                        }
+                        break;
+                    default:
+                        if (DataType != typeof(string) && IsLookup() == false)
+                        {
+                            options.Add(searchOperator);
+                        }
+                        break;
                 }
             }
 
             return options;
+
+            bool IsLookup()
+            {
+                return Lookup != null && DistinctLookup == false;
+            }
         }
 
         private void AddOperator(SearchOperator searchOperator, List<SearchOperator> options)

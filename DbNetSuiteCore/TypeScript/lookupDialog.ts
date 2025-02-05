@@ -1,6 +1,7 @@
 class LookupDialog extends Dialog {
     select: HTMLSelectElement;
     input: HTMLInputElement;
+    caption: string;
     constructor(dialog: HTMLDialogElement, componentControl: ComponentControl) {
         super(dialog, componentControl);
         this.select = dialog.querySelector("select");
@@ -20,6 +21,7 @@ class LookupDialog extends Dialog {
             }
         });
 
+        this.caption = label;
         (this.dialog.querySelector(".caption") as HTMLElement).innerText = label;
 
         this.input = input;

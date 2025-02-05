@@ -1062,7 +1062,6 @@ class DraggableDialog {
         document.removeEventListener('mouseup', this.stopDragging);
     }
     setTranslate(xPos, yPos) {
-        console.log(`xPos: ${xPos}, yPos: ${yPos}`);
         requestAnimationFrame(() => {
             this.dialog.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
         });
@@ -1287,15 +1286,21 @@ class SearchDialog extends Dialog {
         let select = event.target;
         let tr = select.closest('tr');
         tr.querySelectorAll(".first").forEach(e => e.classList.remove("hidden"));
+        tr.querySelectorAll("button").forEach(e => e.style.display = 'inline-flex');
         switch (select.value) {
             case "Between":
             case "NotBetween":
                 tr.querySelectorAll(".between").forEach(e => e.classList.remove("hidden"));
                 break;
+            case "In":
+            case "NotIn":
+                this.openLookup(tr);
+                break;
             case "IsEmpty":
             case "IsNotEmpty":
                 tr.querySelectorAll(".between").forEach(e => e.classList.add("hidden"));
                 tr.querySelectorAll(".first").forEach(e => e.classList.add("hidden"));
+                tr.querySelectorAll("button").forEach(e => e.style.display = 'none');
                 break;
             default:
                 tr.querySelectorAll(".between").forEach(e => e.classList.add("hidden"));
@@ -1329,7 +1334,14 @@ class SearchDialog extends Dialog {
             select.options[1].selected = true;
         }
         else if (input.value == '') {
-            select.value = "";
+            switch (select.value) {
+                case "NotBetween":
+                case "Between":
+                    break;
+                default:
+                    select.value = "";
+                    break;
+            }
         }
     }
     showLookup(event) {
@@ -1346,11 +1358,16 @@ class SearchDialog extends Dialog {
         if (!select) {
             select = this.dialog.querySelector(`select[data-key='${button.dataset.key}']`);
         }
-        this.control;
         this.lookupDialog.open(select, input, label);
     }
     clear() {
         this.dialog.querySelectorAll(".search-operator").forEach((e) => { e.value = ''; e.dispatchEvent(new Event('change')); });
+    }
+    openLookup(tr) {
+        let caption = tr.querySelector("td").innerText;
+        if (!this.lookupDialog || this.lookupDialog.caption != caption || this.lookupDialog.dialog.open == false) {
+            tr.querySelector("button").click();
+        }
     }
 }
 
@@ -1372,6 +1389,7 @@ class LookupDialog extends Dialog {
                 }
             }
         });
+        this.caption = label;
         this.dialog.querySelector(".caption").innerText = label;
         this.input = input;
         this.show();

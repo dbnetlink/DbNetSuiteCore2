@@ -63,7 +63,6 @@ class DraggableDialog {
         document.removeEventListener('mouseup', this.stopDragging);
     }
     setTranslate(xPos, yPos) {
-        console.log(`xPos: ${xPos}, yPos: ${yPos}`);
         requestAnimationFrame(() => {
             this.dialog.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
         });

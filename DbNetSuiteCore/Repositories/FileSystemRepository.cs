@@ -260,6 +260,12 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
+            string searchDialogFilter = Extensions.DataTableExtensions.AddSearchDialogFilterPart(gridModel);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                filterParts.Add(searchDialogFilter);
+            }
+
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
                 filterParts.Add($"({gridModel.FixedFilter})");
@@ -267,6 +273,7 @@ namespace DbNetSuiteCore.Repositories
 
             return String.Join(" and ", filterParts);
         }
+
 
         private string AddFilterPart(SelectModel selectModel)
         {
