@@ -564,8 +564,15 @@ namespace DbNetSuiteCore.Models
                             options.Add(searchOperator);
                         }
                         break;
+                    case SearchOperator.EqualTo:
+                    case SearchOperator.NotEqualTo:
+                        if (DataType != typeof(bool) && IsLookup() == false)
+                        {
+                            options.Add(searchOperator);
+                        }
+                        break;
                     default:
-                        if (DataType != typeof(string) && IsLookup() == false)
+                        if (DataType != typeof(string) && DataType != typeof(bool) && IsLookup() == false)
                         {
                             options.Add(searchOperator);
                         }

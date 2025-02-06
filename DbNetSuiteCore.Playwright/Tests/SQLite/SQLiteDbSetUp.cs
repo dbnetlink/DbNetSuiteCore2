@@ -21,7 +21,14 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
                 string file = path.Split("\\").Last();
                 if (file.StartsWith("testdb_"))
                 {
-                    File.Delete(path);
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch 
+                    {
+  //                      throw new Exception($"Unable to delete SQLite database: {path}");
+                    }
                 }
             }
  
