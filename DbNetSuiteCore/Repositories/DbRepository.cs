@@ -30,7 +30,7 @@ namespace DbNetSuiteCore.Repositories
         public async Task GetRecords(ComponentModel componentModel)
         {
             QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, (componentModel is FormModel ? null : componentModel) , componentModel.IsStoredProcedure ? CommandType.StoredProcedure : CommandType.Text);
+            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, (componentModel is FormModel ? null : componentModel), componentModel.IsStoredProcedure ? CommandType.StoredProcedure : CommandType.Text);
 
             if (componentModel is FormModel)
             {
@@ -94,6 +94,7 @@ namespace DbNetSuiteCore.Repositories
             connection.Open();
             var reader = await ExecuteQuery(query, connection);
             var recordExists = reader.HasRows;
+            await reader.DisposeAsync();
             connection.Close();
             return recordExists;
         }
@@ -284,7 +285,9 @@ namespace DbNetSuiteCore.Repositories
                     }
                     try
                     {
-                        dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
+                        DbDataReader dataReader = await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType);
+                        dataTable.Load(dataReader);
+                        await dataReader.DisposeAsync();
                         connection.Close();
                         return dataTable;
                     }
@@ -302,10 +305,12 @@ namespace DbNetSuiteCore.Repositories
                 using (DataSet ds = new DataSet() { EnforceConstraints = false })
                 {
                     ds.Tables.Add(dataTable);
-                    dataTable.Load(await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType));
+                    DbDataReader dataReader = await ExecuteQuery(queryCommandConfig, connection, commandBehavior, commandType);
+                    dataTable.Load(dataReader);
+                    await dataReader.DisposeAsync();
                     ds.Tables.Remove(dataTable);
                 }
-               
+
                 connection.Close();
                 return dataTable;
             }
@@ -332,12 +337,15 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<DataTable> GetSchemaTable(QueryCommandConfig queryCommandConfig, string database)
         {
-            var connection = GetConnection(database);
-            connection.Open();
-            var reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
-            DataTable dataTable = reader.GetSchemaTable() ?? new DataTable();
-            connection.Close();
-            return dataTable;
+            using (IDbConnection connection = GetConnection(database))
+            {
+                connection.Open();
+                var reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
+                DataTable dataTable = reader.GetSchemaTable() ?? new DataTable();
+                await reader.DisposeAsync();
+                connection.Close();
+                return dataTable;
+            }
         }
 
         public async Task<DbDataReader> ExecuteQuery(string sql, IDbConnection connection)
@@ -360,31 +368,35 @@ namespace DbNetSuiteCore.Repositories
             {
                 throw new Exception("Update has been disabled by configuration");
             }
-            IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text);
-            await ((DbCommand)command).ExecuteNonQueryAsync();
+            using (IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text))
+            {
+                await ((DbCommand)command).ExecuteNonQueryAsync();
+            }
         }
 
         public async Task<List<string>> GetMySqlEnumOptions(string database, string tableName, string columnName)
         {
             var enumOptions = new List<string>();
             QueryCommandConfig query = new QueryCommandConfig() { Sql = $"SHOW COLUMNS FROM {tableName} WHERE Field = '{columnName}'" };
-            IDbConnection connection = GetConnection(database);
-            connection.Open();
-            using (var reader = await ExecuteQuery(query, connection))
+            using (IDbConnection connection = GetConnection(database))
             {
-                if (reader.Read())
+                connection.Open();
+                using (var reader = await ExecuteQuery(query, connection))
                 {
-                    string columnType = reader["Type"].ToString();
-                    // Extract options from column type definition
-                    var matches = Regex.Matches(columnType, "'([^']*)'");
-
-                    foreach (Match match in matches)
+                    if (reader.Read())
                     {
-                        enumOptions.Add(match.Groups[1].Value);
+                        string columnType = reader["Type"].ToString();
+                        // Extract options from column type definition
+                        var matches = Regex.Matches(columnType, "'([^']*)'");
+
+                        foreach (Match match in matches)
+                        {
+                            enumOptions.Add(match.Groups[1].Value);
+                        }
                     }
                 }
+                connection.Close();
             }
-            connection.Close();
             return enumOptions;
         }
 
@@ -403,30 +415,32 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<DataTable> GetColumnMetaData(QueryCommandConfig queryCommandConfig, string database)
         {
-            var connection = GetConnection(database);
-            connection.Open();
-
-            DataTable datatable = new DataTable();
-            datatable.Columns.Add("ColumnName", typeof(string));
-            datatable.Columns.Add("FieldType", typeof(Type));
-            datatable.Columns.Add("DataTypeName", typeof(string));
-            datatable.Columns.Add("ProviderType", typeof(Type));
-
-            using (DbDataReader reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo))
+            using (IDbConnection connection = GetConnection(database))
             {
-                for (int i = 0; i < reader.FieldCount; i++)
+                connection.Open();
+
+                DataTable datatable = new DataTable();
+                datatable.Columns.Add("ColumnName", typeof(string));
+                datatable.Columns.Add("FieldType", typeof(Type));
+                datatable.Columns.Add("DataTypeName", typeof(string));
+                datatable.Columns.Add("ProviderType", typeof(Type));
+
+                using (DbDataReader reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo))
                 {
-                    var row = datatable.NewRow();
-                    row["ColumnName"] = reader.GetName(i);
-                    row["FieldType"] = reader.GetFieldType(i);
-                    row["DataTypeName"] = reader.GetDataTypeName(i);
-                    row["ProviderType"] = reader.GetProviderSpecificFieldType(i);
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        var row = datatable.NewRow();
+                        row["ColumnName"] = reader.GetName(i);
+                        row["FieldType"] = reader.GetFieldType(i);
+                        row["DataTypeName"] = reader.GetDataTypeName(i);
+                        row["ProviderType"] = reader.GetProviderSpecificFieldType(i);
 
-                    datatable.Rows.Add(row);
+                        datatable.Rows.Add(row);
+                    }
                 }
-            }
 
-            return datatable;
+                return datatable;
+            }
         }
     }
 }
