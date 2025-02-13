@@ -14,6 +14,8 @@ namespace DbNetSuiteCore.Helpers
 
         public static LicenseInfo ValidateLicense(IConfiguration configuration, HttpContext context, IWebHostEnvironment webHostEnvironment)
         {
+            return new LicenseInfo() { LocalRequest = true };
+
             string licenseId = configuration.ConfigValue(ConfigurationHelper.AppSetting.LicenseId);
             string licenseKey = configuration.ConfigValue(ConfigurationHelper.AppSetting.LicenseKey);
 
