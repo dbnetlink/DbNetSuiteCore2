@@ -67,7 +67,8 @@ namespace DbNetSuiteCore.Models
         }
         public bool IsLinked { get; set; } = false;
         public string ParentKey { get; set; } = string.Empty;
-        public string HxFormTrigger => IsLinked ? "submit" : "load";
+        public bool DeferredLoad { get; set; } = false;
+        public string HxFormTrigger => IsLinked || DeferredLoad ? "submit" : "load";
         public string PostUrl => $"{this.GetType().Name.Replace("Model", "control").ToLower()}.htmx";
         public string TriggerName { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;

@@ -50,6 +50,8 @@ namespace DbNetSuiteCore.Models
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
 
+        public FormModel Form { get; set; } = new FormModel();
+
         [JsonIgnore]
 
         public GridModel NestedGrid
@@ -94,6 +96,7 @@ namespace DbNetSuiteCore.Models
 
         public GridModel(DataSourceType dataSourceType, string connectionAlias, string tableName, bool isStoredProcedure = false) : base(dataSourceType, connectionAlias, tableName, isStoredProcedure)
         {
+            Form = new FormModel(dataSourceType, connectionAlias, tableName) { Mode = FormMode.Update};
         }
 
         public GridModel(DataSourceType dataSourceType, string connectionAlias, string procedureName, List<DbParameter> procedureParameters) : base(dataSourceType, connectionAlias, procedureName, procedureParameters)

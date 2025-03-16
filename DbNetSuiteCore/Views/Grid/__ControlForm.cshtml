@@ -13,6 +13,6 @@
     }
     else
     {
-        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents))); });</text>
+        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonSerializer.Serialize(Model.ClientEvents)), @Model.DeferredLoad.ToString().ToLower()); });</text>
     }
 </script>

@@ -4,8 +4,13 @@ class GridControl extends ComponentControl {
     viewDialog: ViewDialog;
     selectedRow: HTMLTableRowElement;
     jsonData: [any];
-    constructor(gridId) {
+    deferredLoad: boolean = false;
+    constructor(gridId: string, deferredLoad:boolean) {
         super(gridId)
+        this.deferredLoad = deferredLoad;
+        if (this.deferredLoad) {
+            this.checkForVisibility();
+        }
     }
 
     afterRequest(evt) {
@@ -119,6 +124,22 @@ class GridControl extends ComponentControl {
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
 
         this.invokeEventHandler('Initialised');
+    }
+
+    checkForVisibility() {
+        let handleIntersection = function (entries) {
+            for (let entry of entries) {
+                if (entry.isIntersecting) {
+                    let form = (entry.target as HTMLFormElement);
+                    if (form.querySelectorAll("table").length == 0) {
+                        htmx.trigger(form, "submit");
+                    }
+                }
+            }
+        }
+
+        const observer = new IntersectionObserver(handleIntersection);
+        observer.observe(this.form);
     }
 
     public beforeRequest(evt) {

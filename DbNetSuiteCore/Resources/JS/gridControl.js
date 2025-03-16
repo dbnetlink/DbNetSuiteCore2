@@ -1,8 +1,13 @@
 class GridControl extends ComponentControl {
-    constructor(gridId) {
+    constructor(gridId, deferredLoad) {
         super(gridId);
         this.bgColourClass = "bg-cyan-600";
         this.textColourClass = "text-zinc-100";
+        this.deferredLoad = false;
+        this.deferredLoad = deferredLoad;
+        if (this.deferredLoad) {
+            this.checkForVisibility();
+        }
     }
     afterRequest(evt) {
         let gridId = evt.target.closest("form").id;
@@ -95,6 +100,20 @@ class GridControl extends ComponentControl {
         this.assignSearchDialog();
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         this.invokeEventHandler('Initialised');
+    }
+    checkForVisibility() {
+        let handleIntersection = function (entries) {
+            for (let entry of entries) {
+                if (entry.isIntersecting) {
+                    let form = entry.target;
+                    if (form.querySelectorAll("table").length == 0) {
+                        htmx.trigger(form, "submit");
+                    }
+                }
+            }
+        };
+        const observer = new IntersectionObserver(handleIntersection);
+        observer.observe(this.form);
     }
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)

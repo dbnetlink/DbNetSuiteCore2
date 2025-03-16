@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using DbNetSuiteCore.Enums;
 
-namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
+namespace DbNetSuiteCore.Playwright.Tests.SQLite
 {
     public class SQLiteDbSetUp : DbSetUp
     {

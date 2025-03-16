@@ -161,7 +161,10 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString($"<input class=\"text-center\" style=\"width:{(rowCount.ToString().Length + 1)}em\" readonly type=\"text\" data-type=\"row-count\" value=\"{rowCount}\" />");
         }
 
-
+        public FormColumn? GetFormColumn(GridColumn gridColumn)
+        {
+            return GridModel.Form.Columns.FirstOrDefault(c => c.ColumnName == gridColumn.ColumnName);
+        }
         public HtmlString RenderExportOptions()
         {
             var options = new List<string>() { "CSV", "Excel", "HTML", "JSON" };

@@ -80,7 +80,7 @@
                                         @{
                                             if (Model.ControlType == typeof(GridModel))
                                             {
-                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000 }))
+                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000, DeferredLoad = true }))
                                             }
                                             if (Model.ControlType == typeof(FormModel))
                                             {

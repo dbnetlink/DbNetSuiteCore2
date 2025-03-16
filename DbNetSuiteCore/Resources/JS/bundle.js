@@ -1,26 +1,32 @@
 var DbNetSuiteCore = {};
 var controlArray = {};
 DbNetSuiteCore.controlArray = controlArray;
-DbNetSuiteCore.createClientControl = function (controlId, clientEvents) {
+DbNetSuiteCore.createClientControl = function (controlId, clientEvents, deferredLoad = false) {
     document.addEventListener('htmx:afterRequest', function (evt) {
-        if (!DbNetSuiteCore.controlArray[controlId]) {
-            var clientControl = {};
-            if (controlId.startsWith("Grid")) {
-                clientControl = new GridControl(controlId);
-            }
-            if (controlId.startsWith("Select")) {
-                clientControl = new SelectControl(controlId);
-            }
-            if (controlId.startsWith("Form")) {
-                clientControl = new FormControl(controlId);
-            }
-            for (const [key, value] of Object.entries(clientEvents)) {
-                clientControl.eventHandlers[key] = window[value.toString()];
-            }
-            DbNetSuiteCore.controlArray[controlId] = clientControl;
-        }
+        DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
         DbNetSuiteCore.controlArray[controlId].afterRequest(evt);
     });
+    if (deferredLoad) {
+        DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
+    }
+};
+DbNetSuiteCore.assignClientControl = function (controlId, clientEvents, deferredLoad = false) {
+    if (!DbNetSuiteCore.controlArray[controlId]) {
+        var clientControl = {};
+        if (controlId.startsWith("Grid")) {
+            clientControl = new GridControl(controlId, deferredLoad);
+        }
+        if (controlId.startsWith("Select")) {
+            clientControl = new SelectControl(controlId);
+        }
+        if (controlId.startsWith("Form")) {
+            clientControl = new FormControl(controlId);
+        }
+        for (const [key, value] of Object.entries(clientEvents)) {
+            clientControl.eventHandlers[key] = window[value.toString()];
+        }
+        DbNetSuiteCore.controlArray[controlId] = clientControl;
+    }
 };
 class ComponentControl {
     constructor(controlId) {
@@ -190,10 +196,15 @@ class ComponentControl {
 }
 
 class GridControl extends ComponentControl {
-    constructor(gridId) {
+    constructor(gridId, deferredLoad) {
         super(gridId);
         this.bgColourClass = "bg-cyan-600";
         this.textColourClass = "text-zinc-100";
+        this.deferredLoad = false;
+        this.deferredLoad = deferredLoad;
+        if (this.deferredLoad) {
+            this.checkForVisibility();
+        }
     }
     afterRequest(evt) {
         let gridId = evt.target.closest("form").id;
@@ -286,6 +297,20 @@ class GridControl extends ComponentControl {
         this.assignSearchDialog();
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev); });
         this.invokeEventHandler('Initialised');
+    }
+    checkForVisibility() {
+        let handleIntersection = function (entries) {
+            for (let entry of entries) {
+                if (entry.isIntersecting) {
+                    let form = entry.target;
+                    if (form.querySelectorAll("table").length == 0) {
+                        htmx.trigger(form, "submit");
+                    }
+                }
+            }
+        };
+        const observer = new IntersectionObserver(handleIntersection);
+        observer.observe(this.form);
     }
     beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)

@@ -1,428 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Razor Component Documentation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
-    <style>
-        p,li {line-height: 150%;}
-    </style>
-</head>
-<body class="line-numbers bg-gray-50">
-    <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
-        <div class="h-16 px-4 flex items-center justify-between">
-            <button class="md:hidden p-2 rounded-lg hover:bg-gray-100" id="menu-toggle">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
-            <div class="max-w-md w-full">
-                <input type="text" id="search" placeholder="Search documentation..." 
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-        </div>
-    </header>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style type="text/css">
+    * {
+        font-family: verdana;
+        font-size:10pt;
+    }
 
-    <div class="pt-16 flex">
-        <!-- Sidebar -->
-        <nav class="fixed w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0" id="sidebar">
-            <div class="p-4 space-y-2">
-                <a href="#overview" class="nav-link block px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900 active">Overview</a>
-                <a href="#installation" class="nav-link block px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900">Installation</a>
-                <a href="#usage" class="nav-link block px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900">Usage</a>
-                <a href="#api" class="nav-link block px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900">API Reference</a>
-            </div>
-        </nav>
+    body {
+        padding:20px;
+    }
 
-        <!-- Main Content -->
-        <main class="flex-1 min-h-screen md:ml-64 p-6">
+    th {
+        text-align: left;
+        background-color: whitesmoke;
+    }
 
+    .row {
+        margin-top:40px;
+        margin-bottom:40px;
+        display:flex;
+        flex-direction:row;
+        justify-content:space-between;
+    }
 
-
-            <div id="overview" class="section space-y-6 active">
-                <h2 class="text-3xl font-bold text-gray-900">Overview</h2>
-                <p class="text-gray-600">Welcome to <b>DbNetGridCore</b> a data driven web reporting component for ASP.NET Core Razor pages and views. The component is designed to deliver exceptional functionality and performance with a minimal amount of coding. <b>DbNetGridCore</b> can be added to any ASP.NET Core web application as a Nuget package and functions completely independently of any other elements of the page.</p>
-
-                <p class="text-gray-600"><b>DbNetGridCore</b> allows you to create web reports that can be sorted, searched, filtered, linked and nested with just a small amount of code.</p>
-
-                <p class="text-gray-600">
-                    <b>DbNetGridCore</b> currently supports the following data sources.
-                    <ul class="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-                        <li>MS SQL Server</li>
-                        <li>PostgreSQL</li>
-                        <li>MySQL</li>
-                        <li>MongoDB</li>
-                        <li>SQLite</li>
-                        <li>Excel(xlsx,xls, csv)</li>
-                        <li>JSON</li>
-                        <li>File System</li>
-                    </ul>
-                </p>
-
-                <p>At it's simplest <b>DbNetGridCore</b> can be added to any Razor page or view with just a few lines of code.</p>
-<pre><code class="language-cshtml">@page
-@using DbNetSuiteCore.Enums
-@using DbNetSuiteCore.Models
-
-&lt;!DOCTYPE html&gt;
-&lt;html lang="en"&gt;
-&lt;head&gt;
-    @DbNetSuiteCore.Resources.StyleSheet() @* Add the stylesheet *@
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;main&gt;
-@{
-    @* Pass the data source type, connection alias and table/view name to the model constructor *@
-    GridModel customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
-    @* Render the grid control *@
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
-}
-    &lt;/main&gt;
-    @DbNetSuiteCore.Resources.ClientScript() @* Add the client-side library *@
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-            </div>
-
-
-
-
-
-            <div id="installation" class="section space-y-6 hidden">
-                <h2 class="text-3xl font-bold text-gray-900">Installation</h2>
-                <p class="text-gray-600"><b>DbNetGridCore</b> comes as a <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" target="_blank" href="https://www.nuget.org/packages/DbNetSuiteCore">Nuget</a> package can be installed using the package manager</p>
-                <pre><code class="">Install-Package DbNetSuiteCore</code></pre>
-                <p class="text-gray-600">After installing the package you need to update the <b>program.cs</b> file and add <b>DbNetGridCore</b> to the ASP.NET Core pipeline as follows:</p>
-                <pre><code class="language-csharp">using DbNetSuiteCore.Middleware;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbNetSuiteCore();  // Add DbNetSuiteCore
-
-builder.Services.AddRazorPages();
-
-var app = builder.Build();
-
-app.UseDbNetSuiteCore(); // Use DbNetSuiteCore
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthorization();
-app.MapRazorPages();
-app.Run();
-
-public partial class Program
-{
-}
-</code></pre>
-
-            </div>
-
-            <div id="usage" class="section space-y-6 hidden">
-                <h2 class="text-3xl font-bold text-gray-900">Usage</h2>
-
-                <p class="text-gray-600">Once you have added <b>DbNetGridCore</b> to the pipeline in <b>program.cs</b> you are ready to start adding the component to your Razor pages or views</p>
-
-                <p class="text-gray-600">First include the styles that <b>DbNetGridCore</b> needs as follows</p>
-                <pre><code class="language-cshtml">...
-@DbNetSuiteCore.Resources.StyleSheet()
-...</code></pre>
-
-                <p class="text-gray-600">Next include the client-script that <b>DbNetGridCore</b> needs as follows</p>
-                <pre><code class="language-cshtml">...
-@DbNetSuiteCore.Resources.ClientScript()
-...
-</code></pre>
-                <p class="text-gray-600">The client-side code includes an API that allows you to customise the grid look and feel after it has been rendered.</p>
-                <p class="text-gray-600">If you are planning to use <b>DbNetGridCore</b> on multiple pages then it makes sense to create a Razor <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="https://learn.microsoft.com/en-us/aspnet/core/mvc/views/layout" target="_blank">Layout</a> page with the styles and client-script already included. Note that you can use <b>DbNetGridCore</b> in conjunction with other libraries for example <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="https://getbootstrap.com/" target="_blank">Bootstrap</a>. In these situations it optimal to include those libraries after the <b>DbNetGridCore</b> libraries e.g.</p>
-
-                <pre><code class="language-cshtml">
-&lt;!DOCTYPE html&gt;
-&lt;html lang="en"&gt;
-&lt;head&gt;
-&lt;meta charset="utf-8" /&gt;
-&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
-&lt;title&gt;DbNetSuiteCore&lt;/title&gt;
-@DbNetSuiteCore.Resources.StyleSheet()
-&lt;link rel="stylesheet" href="~/css/bootstrap.min.css" /&gt;
-@await RenderSectionAsync("Styles", required: false)
-&lt;/head&gt;
-&lt;body&gt;
-&lt;main style="padding:20px"&gt;
-@RenderBody()
-&lt;/main&gt;
-@DbNetSuiteCore.Resources.ClientScript()
-&lt;script src="~/js/bootstrap.min.js"&gt;&lt;/script&gt;
-@await RenderSectionAsync("Scripts", required: false)
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-
-                <p class="text-gray-600">When it comes to rendering the grid control then you need to create an instance of the GridModel object which gives <b>DbNetGridCore</b> all the information it needs to create the render the component. The model does not need to be created inside the Razor page, it can be created in a service or controller and then passed to the Razor page or view via the Page or View model.</p>
-
-                <p class="text-gray-600">After the stylesheet and client-script libraries have been added to the page you are ready to add the grid control This can be as simple as.</p>
-
-                <pre><code class="language-csharp">...
-GridModel customerGrid = new GridModel(DataSourceType.MSSQL, "Northwind", "Customers");
-@(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
-...
-</code></pre>
-
-                <p class="text-gray-600">Here we are rendering a grid containing data from the <b>Customers</b> table in the <b>MSSQL</b> database in the connection string associated with the <b>Northwind</b> connection alias. The data will list data from all the columns in the table and will be navigable in 20 row pages and it will be sortable and searchable and the date will be exportable in HTML, CSV, JSON and Excel formats.</p>
-
-                <p class="text-gray-600">More typically particular columns will be selected from the data source which allows additional formatting and functionality to be added for the specified columns e.g..</p>
-
-                <pre><code class="language-csharp">...
-var productsGrid = new GridModel(DataSourceType.SQLite, "Northwind", "Products") { ViewDialog =  new ViewDialog() { LayoutColumns = 2 } };
-productsGrid.Columns = new List&lt;GridColumn&gt;() {
-    new GridColumn("ProductID") { PrimaryKey = true },
-    new GridColumn("ProductName"),
-    new GridColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"), Filter = true },
-    new GridColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"), Filter = true },
-    new GridColumn("QuantityPerUnit", "Qty."),
-    new GridColumn("UnitPrice","Price") { Format = "c"},
-    new GridColumn("UnitsInStock", "Stock"),
-    new GridColumn("UnitsOnOrder","On Order"),
-    new GridColumn("ReorderLevel"),
-    new GridColumn("Discontinued") { DataType = typeof(Boolean)}
-};
-customerGrid.Bind(ClientEvent.RowTransform, "highlightGridLowStock");
-customerGrid.Bind(ClientEvent.ViewDialogUpdated, "highlightViewLowStock");
-
-@(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
-...
-</code></pre>
-
-            <p class="text-gray-600">Here we are are using the GridColumn class to specify which columns we want to display from the data source table and specifying some additional formatting information for that column. These will be covered in more detail in the API reference</p>
-
-            </div>
-            <div id="api" class="section space-y-6 hidden">
-                <h2 class="text-3xl font-bold text-gray-900">API Reference</h2>
-
-                <h3 class="text-2xl font-bold text-gray-900">GridModel Class</h3>
-                <p class="text-gray-600">The GridModel class defines everything about the grid control and is passed to the Render method in order to create the instance of <b>DbNetGridCore</b>.</p>
-                <h3 class="text-2xl font-bold text-gray-900">Constructors</h3>
-                <h4 class="text-1xl font-bold text-gray-900">MSSQLServer, PostgreSQL, MySQL and SQLite</h4>
-
-                <p class="text-gray-600">
-                    For relational databases (MSSQLServer, PostgreSQL, MySQL and SQLite) the constructor always has the following 3 arguments:
-
-                    <ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#datasourcetype">dataSourceType</a> (DataSourceType) - The type of database ((MSSQLServer, PostgreSQL, MySQL and SQLite)</li>
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#connectionalias">connectionAlias</a> (string) - The connection alias or full connection string for the database</li>
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#tablename">tableName</a> (string) - The table,view or stored procedure name. Mutiple tables/views can be specified along with join information.</li>
-                    </ul>
-                </p>
-                <p class="text-gray-600">For stored procedures there is an optional 4th parameters where the parameters stored procedure is supplied.</p>
-
-                <ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-                    <li><a href="#parameters">parameters (List<DbParameter>)</a> - A list of named parameters with values expected by the stored procedure. If the stored procedure does not have any parameters an empty list should be supplied.</li>
-                </ul>
-
-                <p class="text-gray-600">See below for examples of constructors</p>
-
-                <pre><code class="language-csharp"> ...
-var employeeGrid = new GridModel(DataSourceType.SQLite, "Chinook", "Employees");
-...
-var ordersGrid = new GridModel(DataSourceType.PostgreSql, "Sakila", "salesorder");
-...
-var customerGridModel = new GridModel(DataSourceType.PostgreSql, "Sakila", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id");
-...
-var ordersGridParameters = new List&lt;DbParameter&gt;() { new DbParameter("orderDate", new DateTime(2006, 5, 1)) };
-var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind", "GetOrdersBeforeDate", ordersGridParameters);
-...
-</code></pre>
-                <h4 class="text-1xl font-bold text-gray-900">Excel and JSON</h4>
-                <p class="text-gray-600">
-                    For for file or url data sources (Excel or JSON) the constructor always has the following 2 arguments:
-
-                    <ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#datasourcetype">dataSourceType</a> (DataSourceType) - The type of file (Excel or JSON)</li>
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#filepath">filePath</a> (string) - The file name or url of the data source</li>
-                    </ul>
-                </p>
-
-
-                <p class="text-gray-600">See below for examples of file/url constructors are below</p>
-
-                <pre><code class="language-csharp">...
-var superstoreGrid = new GridModel(DataSourceType.Excel, "/data/excel/superstore.xlsx");
-...
-var superstoreGrid = new GridModel(DataSourceType.Excel, "/data/excel/stats.xlsx", "sheet5");
-...
-var superstoreGrid = new GridModel(DataSourceType.Excel, "c:\\users\\username\\documents\\superstore.xlsx");
-...
-var employeesGrid = new GridModel(DataSourceType.JSON, "/data/json/employees.json");
-...
-var employeesGrid = new GridModel(DataSourceType.JSON, "c:\\users\\username\\documents\\employees.json");
-...
-var employeesGrid = new GridModel(DataSourceType.JSON, "https://localhost:7243/getemployees");
-...
-</code></pre>
-                <p class="text-gray-600">For the Excel data source type the file extension can be xlsx, xls or csv. The path to the file can be either relative (to the root of the web site) or absolute (file system) or in the case of a JSON file an absoute URL. For JSON data sources the url can point to to a JSON file or an end-point that serves JSON</p>
-
-                <p class="text-gray-600">JSON can also be provided as a string as in the example below. This gives the opporuntity to modify or transform a raw JSON data source before passing it to the grid control. e.g.</p>
-
-                <pre><code class="language-csharp">...
-HttpClient client = new HttpClient();
-string json = await client.GetStringAsync("https://api.nobelprize.org/v1/prize.json");
-NobelPrizes nobelPrizes = System.Text.Json.JsonSerializer.Deserialize<NobelPrizes>(json);
-List&lt;NobelPrizeLaureate&gt; transformedList = nobelPrizes.prizes.Where(p => p.laureates != null).SelectMany(p =&gt; p.laureates.Select(l =&gt; new { p, l })).Select(x => new NobelPrizeLaureate(x.p, x.l)).ToList();
-var gridModel = new GridModel(DataSourceType.JSON, System.Text.Json.JsonSerializer.Serialize(transformedList));
-...
-</code></pre>
-
-                <h4 class="text-1xl font-bold text-gray-900">MongoDB</h4>
-                <p class="text-gray-600">
-                    Constructors for MongoDB are a little different to the other databases in that
-
-                    <ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#datasourcetype">dataSourceType</a> (DataSourceType) - MongoDB</li>
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#connectionalias">connectionAlias</a> (string) - The connection to the MongoDB server (either an alias or the full url)</li>
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#tablename">tableName</a> (string) - The name of the MongoDB database collection</li>
-                    </ul>
-                </p>
-
-                <p class="text-gray-600">In addition the name of the MongoDB database must be supplied in the additional <a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#databasename">DatabaseName</a> property.</p>
-
-                <pre><code class="language-csharp">...
-var moviesGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "movies") { DatabaseName = "sample_mflix" };
-...
-var ordersGrid = new GridModel(DataSourceType.MongoDB, "mongodb://localhost:27017/", "Orders") { DatabaseName = "Northwind" };
-...
-</code></pre>
-
-
-                <h4 class="text-1xl font-bold text-gray-900">File System</h4>
-                <p class="text-gray-600">
-                    Constructors when using the File system as a data source requite the data source type and the path to the root folder
-
-                    <ul class="space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#datasourcetype">dataSourceType</a> (DataSourceType) - FileSystem</li>
-                        <li><a class="font-medium text-blue-600 underline dark:text-blue-500 hover:no-underline" href="#connectionalias">url</a> (string) - The path to root folder (relative or absolute)</li>
-                    </ul>
-                </p>
-
-
-                <pre><code class="language-csharp">...
-var pagesGrid = new GridModel(DataSourceType.FileSystem, "../Pages");
-...
-var imagesGrid = new GridModel(DataSourceType.FileSystem, "C:\\Users\\username\\documents\\images") ;
-...
-</code></pre>
-            </div>
-
-        </main>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
-
-    <script>
-        // Define Razor grammar
-        (function(Prism) {
-            Prism.languages.cshtml = Prism.languages.extend('markup', {});
-            
-            Object.assign(Prism.languages.cshtml, {
-                'razor-block': [
-                    {
-                        pattern: /(@\{)[\s\S]*?(\})/,
-                        lookbehind: true,
-                        inside: {
-                            'punctuation': /[{}]/,
-                            rest: Prism.languages.csharp
-                        }
-                    }
-                ],
-                'razor-directive': {
-                    pattern: /@(?:model|using|inject|implements|inherits|layout|page|functions)\s+[^;{]*?(?=\r?\n|$)/i,
-                    inside: {
-                        'keyword': /^@\w+/i,
-                        rest: Prism.languages.csharp
-                    }
-                },
-                'razor-expression': {
-                    pattern: /@(?!\{)[^\s()@]*(?:\([^)]*\))?/,
-                    inside: {
-                        'punctuation': /[()]/,
-                        rest: Prism.languages.csharp
-                    }
-                }
-            });
-   
-        })(Prism);
-
-        // Tab switching functionality
-        function showCode(language) {
-            // Update tab active states
-            document.querySelectorAll('.language-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.textContent.toLowerCase().includes(language)) {
-                    tab.classList.add('active');
-                }
-            });
-
-            // Update code block visibility
-            document.querySelectorAll('.code-block').forEach(block => {
-                block.classList.remove('active');
-            });
-            document.getElementById(`${language}-block`).classList.add('active');
+    table, th, td {
+        border: 1px solid gainsboro;
+        border-collapse: collapse;
+        padding:5px;
         }
 
-        // Initial highlight
-        Prism.highlightAll();
-    </script>
-    <script>
-        // Navigation
-        const navLinks = document.querySelectorAll('.nav-link');
-        const sections = document.querySelectorAll('.section');
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1);
-                
-                // Update active states
-                navLinks.forEach(l => {
-                    l.classList.remove('bg-gray-100', 'font-semibold');
-                });
-                sections.forEach(s => s.classList.add('hidden'));
-                
-                link.classList.add('bg-gray-100', 'font-semibold');
-                const targetSection = document.getElementById(targetId);
-                targetSection.classList.remove('hidden');
-            });
-        });
-        
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-        });
-        
-        // Search functionality
-        const searchInput = document.getElementById('search');
-        
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            
-            if (searchTerm.length >= 2) {
-                sections.forEach(section => {
-                    const text = section.textContent.toLowerCase();
-                    section.classList.toggle('hidden', !text.includes(searchTerm));
-                });
-            } else {
-                sections.forEach(section => section.classList.add('hidden'));
-                document.getElementById('overview').classList.remove('hidden');
-            }
-        });
-    </script>
-</body>
+    .footer {
+        position: fixed;
+        font-size:8pt;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+    }
+     
+    </style>
+  </head>
+  <body>
+    <div class="row">
+        <div>
+            <img
+                width="167"
+                height="40"
+                src="data:image/jpg;base64,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"
+            />
+        </div>
+        <div style="text-align: right;">
+            <h1>DbNetLink Limited</h1>
+            78 Downs Park East  <br/>
+            Bristol, Somerset, BS6 7QE<br/>
+                United Kingdom<br/>
+                <br/>
+            info@dbnetlink.co.uk
+        </div>
+    </div>
+   
+ 
+    <div class="row">
+        <div>
+            <h3>Invoice To:</h3>
+            Domestic & General<br/>
+            Swan Court<br/>
+            11 Worple Road<br/>
+            Wimbledon<br/>
+            London<br/>
+            SW19 4JS
+        </div>
+        <div>
+            <h2>SALES INVOICE</h3>
+        </div>
+    </div>
+
+    <div class="row">
+        <table style="width:100%">
+           <tr>
+                <th>Invoice Date</th>
+                <th>Due Date</th>
+                <th>Reference</th>
+                <th>Invoice Number</th>
+           </tr>
+           <tr>
+                <td>3/03/2025</td>
+                <td>2/04/2025</td>
+                <td>PO-DGS-00002828</td>
+                <td>SI-91</td>
+            </tr>  
+        </table>
+    </div>
+
+    <div class="row">
+        <table style="width:100%">
+            <tr>
+                <th>Description</th>
+                <th>Price/Rate</th>
+                <th>VAT&nbsp;%</th>
+                <th>Net</th>
+            </tr>
+            <tr>
+                <td>DbNetTime 12 months support & maintenance for 360 Users @ £8/user - 1st April 2025 to 31st March 2026</td>
+                <td style="text-align:right">2,880.00</td>
+                <td style="text-align:right">0.00</td>
+                <td style="text-align:right">2,880.00</td>
+            </tr>  
+        </table>
+     </div>
+
+
+     <div class="row">
+        <div>
+            <table style="width:100%">
+                <tr>
+                    <th>VAT Rate</th>
+                    <th>Net</th>
+                    <th>VAT</th>
+                 </tr>
+                <tr>
+                    <td>No VAT (0.00%)</td>
+                    <td style="text-align:right">£2,880.00</td>
+                    <td style="text-align:right">£0.00</td>
+                </tr>  
+            </table>
+        </div>
+
+        <div>
+            <table style="width:100%; background-color:whitesmoke">
+                <tr>
+                    <td>Total Net</td>
+                    <td style="text-align:right">2,880.00</td>
+                 </tr>
+                <tr>
+                    <td>Total VAT</td>
+                    <td style="text-align:right">0.00</td>
+                </tr>  
+                <tr style="font-weight:bold;">
+                    <td>TOTAL</td>
+                    <td style="text-align:right">£2,880.00</td>
+                </tr> 
+            </table>
+        </div>
+     </div>
+
+     <div class="row">
+        <div>
+            <h3>Notes:</h3>
+            Payment can be made to:<br/><br/>
+            Account Name: DbNetLink Limited<br/>
+            Account Number: 61852175<br/>
+            Sort Code: 40-14-13<br/>
+        </div>
+    </div>
+  
+  
+    <p class="footer">
+      Registered in England and Wales No. 3947702. Registered Address 78 Downs Park East, Bristol, BS6 7QE, United Kingdom
+    </p>
+  </body>
 </html>

@@ -40,8 +40,11 @@
             FixedFilterParameters = new List<DbParameter>() { new DbParameter("@rating", tab) },
             ViewDialog = new ViewDialog()
         };
+
+        filmsModel.DeferredLoad = true;// (tab != ratings.First());
+
         <div class="tab-pane fade @(tab == ratings.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
-            @(await new DbNetSuiteCore.GridControl(Context).Render(filmsModel))
+            @(await new DbNetSuiteCore.Control(Context).Render(filmsModel))
         </div>
     }
 </div>

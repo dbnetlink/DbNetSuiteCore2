@@ -1,26 +1,32 @@
 var DbNetSuiteCore = {};
 var controlArray = {};
 DbNetSuiteCore.controlArray = controlArray;
-DbNetSuiteCore.createClientControl = function (controlId, clientEvents) {
+DbNetSuiteCore.createClientControl = function (controlId, clientEvents, deferredLoad = false) {
     document.addEventListener('htmx:afterRequest', function (evt) {
-        if (!DbNetSuiteCore.controlArray[controlId]) {
-            var clientControl = {};
-            if (controlId.startsWith("Grid")) {
-                clientControl = new GridControl(controlId);
-            }
-            if (controlId.startsWith("Select")) {
-                clientControl = new SelectControl(controlId);
-            }
-            if (controlId.startsWith("Form")) {
-                clientControl = new FormControl(controlId);
-            }
-            for (const [key, value] of Object.entries(clientEvents)) {
-                clientControl.eventHandlers[key] = window[value.toString()];
-            }
-            DbNetSuiteCore.controlArray[controlId] = clientControl;
-        }
+        DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
         DbNetSuiteCore.controlArray[controlId].afterRequest(evt);
     });
+    if (deferredLoad) {
+        DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
+    }
+};
+DbNetSuiteCore.assignClientControl = function (controlId, clientEvents, deferredLoad = false) {
+    if (!DbNetSuiteCore.controlArray[controlId]) {
+        var clientControl = {};
+        if (controlId.startsWith("Grid")) {
+            clientControl = new GridControl(controlId, deferredLoad);
+        }
+        if (controlId.startsWith("Select")) {
+            clientControl = new SelectControl(controlId);
+        }
+        if (controlId.startsWith("Form")) {
+            clientControl = new FormControl(controlId);
+        }
+        for (const [key, value] of Object.entries(clientEvents)) {
+            clientControl.eventHandlers[key] = window[value.toString()];
+        }
+        DbNetSuiteCore.controlArray[controlId] = clientControl;
+    }
 };
 class ComponentControl {
     constructor(controlId) {
