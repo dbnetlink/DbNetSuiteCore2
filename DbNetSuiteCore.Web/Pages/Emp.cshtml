@@ -27,14 +27,5 @@
         new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = FilterType.Default}
     };
 
-    employeeGrid.Form.Columns = new List<FormColumn>()
-    {
-        new FormColumn("TitleOfCourtesy"),
-        new FormColumn("BirthDate"),
-        new FormColumn("HireDate"),
-        new FormColumn("Address"),
-        new FormColumn("City")
-    };
-
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid))
 }
