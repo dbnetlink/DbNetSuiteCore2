@@ -90,6 +90,12 @@
                     }
 
                     var value = column.FormatValue(row[dataColumn]!);
+
+                    if (column.DataType == typeof(string) && column.MaxChars < value.ToString().Length)
+                    {
+                        value = column.TruncateValue(value.ToString());
+                        classes.Add("tooltip-text");
+                    }
                     <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
                 }
             }

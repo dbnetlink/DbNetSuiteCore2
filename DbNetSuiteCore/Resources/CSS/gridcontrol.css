@@ -31,6 +31,32 @@
         display: flex;
     }
 
+    .dbnetsuite-grid .tooltip-popover {
+        opacity: 0;
+        color:#000;
+        transition: opacity 0.5s ease-in-out;
+        max-width: 300px;
+        position: fixed;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: whitesmoke;
+        padding: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+        .dbnetsuite-grid .tooltip-popover::after {
+            content: " ";
+            position: absolute;
+            bottom: 100%;
+            left: 10%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent transparent gainsboro transparent;
+        }
+
 .dbnetsuite-form {
     border: 1px solid gainsboro;
     border-radius: 5px;
@@ -41,6 +67,7 @@
     --text-warning: rgb(194 65 12);
     --text-success: rgb(13 148 136);
 }
+
     .dbnetsuite-form input:disabled,
     .dbnetsuite-form select:disabled {
         background-color: rgb(226 232 240) !important;
@@ -49,8 +76,9 @@
     .dbnetsuite-form [type="checkbox"]:disabled {
         background-color: rgb(226 232 240) !important;
     }
+
     .dbnetsuite-form [type="color"] {
-        height:36px;
+        height: 36px;
     }
 
     .dbnetsuite-form .fc-control[data-modified='true'] {

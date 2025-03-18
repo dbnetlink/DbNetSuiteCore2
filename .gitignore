@@ -367,7 +367,6 @@ FodyWeavers.xsd
 # Test databases
 /DbNetSuiteCore.Web/wwwroot/Data/sqlite/testdb_*.db
 /DbNetSuiteCore.Web/appsettings.development.json
-/DbNetSuiteCore/Resources/CSS/gridcontrol.css
 /DbNetSuiteCore/Resources/JS/bundle.js
 /DbNetSuiteCore/Resources/JS/bundle.min.js
 /DbNetSuiteCore/Resources/JS/componentControl.js

@@ -56,6 +56,9 @@ class GridControl extends ComponentControl {
             e.classList.add("underline")
         });
 
+        this.controlElements('td.tooltip-text').forEach(cell => { cell.addEventListener("mouseenter", (ev) => this.showTextTooltip(ev)) });
+        this.controlElements('td.tooltip-text').forEach(cell => { cell.addEventListener("mouseleave", (ev) => this.hideTextTooltip(ev)) });
+
         if (this.rowSelection() != "none") {
             if (this.controlElement(this.multiRowSelectAllSelector())) {
                 this.controlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
@@ -106,6 +109,31 @@ class GridControl extends ComponentControl {
             args['json'] = this.jsonData;
         }
         this.invokeEventHandler('PageLoaded', args);
+    }
+
+    private showTextTooltip(event: Event) {
+        let cell = event.target as HTMLTableCellElement;
+        let popover = cell.querySelector(".tooltip-popover") as HTMLDivElement;
+
+        if (!popover) {
+            popover = document.createElement('div');
+            popover.innerText = cell.dataset.value;
+            popover.className = 'tooltip-popover'
+            cell.appendChild(popover);
+        }
+
+        const rect = cell.getBoundingClientRect();
+        popover.style.top = `${rect.bottom + window.scrollY}px`;
+        popover.style.left = `${rect.left + 20 + window.scrollX}px`;
+        popover.style.opacity = '1';
+    }
+
+    private hideTextTooltip(event: Event) {
+        let cell = event.target as HTMLTableCellElement;
+        let popover = cell.querySelector(".tooltip-popover") as HTMLDivElement;
+        if (popover) {
+            popover.style.opacity = '0';
+        }
     }
 
     private initialise() {

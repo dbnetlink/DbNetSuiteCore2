@@ -49,5 +49,18 @@ namespace DbNetSuiteCore.Extensions
 
             return value;
         }
+
+        public static string TruncateValue(this GridColumn gridColumn, string value)
+        {
+            var array = value.Substring(0, gridColumn.MaxChars).Split(" ");
+
+            if (array.Length > 1) {
+                value = string.Join(" ", array.Reverse().Skip(1).Reverse().ToArray());
+            }
+            else {
+                value = array.First();
+            }
+            return $"{value}...";
+        }
     }
 }

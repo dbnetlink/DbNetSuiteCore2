@@ -28,6 +28,7 @@ namespace DbNetSuiteCore.Models
         public string FilterError { get; set; } = string.Empty;
         public string Style { get; set; } = string.Empty;
         public Image? Image { get; set; }
+        public int MaxChars { get; set; } = int.MaxValue;
 
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;
