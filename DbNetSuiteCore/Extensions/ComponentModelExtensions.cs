@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Data;
 using System.Globalization;
 using DbNetSuiteCore.Attributes;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -15,13 +14,13 @@ namespace DbNetSuiteCore.Extensions
     {
         public static QueryCommandConfig BuildEmptyQuery(this ComponentModel componentModel)
         {
-            return new QueryCommandConfig($"select {ColumnsHelper.GetColumnExpressions(componentModel.GetColumns())} from {componentModel.TableName} where 1=2");
+            return new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select {ColumnsHelper.GetColumnExpressions(componentModel.GetColumns())} from {componentModel.TableName} where 1=2" };
         }
 
         public static QueryCommandConfig BuildQuery(this ComponentModel componentModel)
         {
             string sql = $"select {Distinct(componentModel)}{Top(componentModel)}{AddSelectPart(componentModel)} from {componentModel.TableName}";
-            QueryCommandConfig query = new QueryCommandConfig(sql);
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = sql };
 
             if (componentModel is GridModel)
             {
@@ -53,7 +52,7 @@ namespace DbNetSuiteCore.Extensions
         public static QueryCommandConfig BuildRecordQuery(this ComponentModel componentModel, object? primaryKeyValue = null)
         {
             string sql = $"select {AddSelectPart(componentModel, true)} from {componentModel.TableName}";
-            QueryCommandConfig query = new QueryCommandConfig(sql);
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = sql };
             AddPrimaryKeyFilterPart(componentModel, query, primaryKeyValue == null ? componentModel.ParentKey : primaryKeyValue);
             return query;
         }
@@ -71,8 +70,9 @@ namespace DbNetSuiteCore.Extensions
 
                 foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
                 {
-                    query.Params[$"@{column.ParamName}"] = $"%{componentModel.SearchInput}%";
-                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} like @{column.ParamName}";
+                    var paramName = DbHelper.ParameterName(column.ParamName, componentModel.DataSourceType);
+                    query.Params[$"{paramName}"] = $"%{componentModel.SearchInput}%";
+                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} like {paramName}";
                     filterParts.Add($"{RefineSearchExpression(column, componentModel)} in ({lookupSql})");
                 }
 
@@ -148,7 +148,7 @@ namespace DbNetSuiteCore.Extensions
 
             string ParameterName(string columnKey, int idx)
             {
-                return DbHelper.ParameterName($"sd_{columnKey}{idx}");
+                return DbHelper.ParameterName($"sd_{columnKey}{idx}", componentModel.DataSourceType);
             }
         }
 
@@ -236,8 +236,9 @@ namespace DbNetSuiteCore.Extensions
         private static void AddPrimaryKeyFilterPart(ComponentModel componentModel, CommandConfig query, object primaryKeyValue)
         {
             var primaryKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.PrimaryKey);
-            query.Sql += $" where {primaryKeyColumn.Expression} = @{primaryKeyColumn.ParamName}";
-            query.Params[$"@{primaryKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn, primaryKeyValue) ?? string.Empty;
+            var paramName = DbHelper.ParameterName(primaryKeyColumn.ParamName, componentModel.DataSourceType);
+            query.Sql += $" where {primaryKeyColumn.Expression} = {paramName}";
+            query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn, primaryKeyValue) ?? string.Empty;
         }
 
         public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)
@@ -247,8 +248,9 @@ namespace DbNetSuiteCore.Extensions
                 var foreignKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.ForeignKey);
                 if (foreignKeyColumn != null)
                 {
-                    filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = @{foreignKeyColumn.ParamName})");
-                    query.Params[$"@{foreignKeyColumn.ParamName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn, componentModel.ParentKey) ?? string.Empty;
+                    var paramName = DbHelper.ParameterName(foreignKeyColumn.ParamName, componentModel.DataSourceType);
+                    filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = {paramName})");
+                    query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn, componentModel.ParentKey) ?? string.Empty;
                 }
             }
             else
@@ -259,7 +261,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static QueryCommandConfig BuildProcedureCall(this ComponentModel componentModel)
         {
-            QueryCommandConfig query = new QueryCommandConfig($"{componentModel.ProcedureName}");
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"{componentModel.ProcedureName}" };
             AssignParameters(query, componentModel.ProcedureParameters);
             return query;
         }
@@ -272,7 +274,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
                 }
-                query.Params[DbHelper.ParameterName(parameter.Name)] = ColumnModelHelper.TypedValue(parameter.TypeName, parameter.Value);
+                query.Params[DbHelper.ParameterName(parameter.Name, query.DataSourceType)] = ColumnModelHelper.TypedValue(parameter.TypeName, parameter.Value);
             }
         }
 
@@ -319,8 +321,8 @@ namespace DbNetSuiteCore.Extensions
             string searchInput = componentModel.SearchInput.ToLower();
             string expression = DbHelper.StripColumnRename(columnModel.Expression);
             expression = CaseInsensitiveExpression(componentModel, expression);
-            query.Params[$"@{columnModel.ParamName}"] = $"%{searchInput}%";
-            filterParts.Add($"{expression} like @{columnModel.ParamName}");
+            query.Params[$"{DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}"] = $"%{searchInput}%";
+            filterParts.Add($"{expression} like {DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}");
         }
 
         public static string CaseInsensitiveExpression(ComponentModel componentModel, string expression)
@@ -334,6 +336,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 case DataSourceType.PostgreSql:
                 case DataSourceType.MySql:
+                case DataSourceType.Oracle:
                     expression = $"LOWER({expression})";
                     break;
             }

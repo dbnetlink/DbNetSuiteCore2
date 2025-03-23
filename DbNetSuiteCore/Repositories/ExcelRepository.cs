@@ -71,7 +71,7 @@ namespace DbNetSuiteCore.Repositories
                     string columns = componentModel.GetColumns().Any() ? String.Join(",", componentModel.GetColumns().Select(c => c.Expression)) : "*";
 
                     OleDbCommand command = new OleDbCommand(query.Sql, connection);
-                    DbHelper.AddCommandParameters(command, query.Params);
+                    DbHelper.AddCommandParameters(command, query);
                     dataTable.Load(await command.ExecuteReaderAsync());
                     connection.Close();
                 }

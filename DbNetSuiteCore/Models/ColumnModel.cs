@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
 using Microsoft.AspNetCore.Html;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using System.Data;
 using System.Text.Json.Serialization;
@@ -192,16 +193,16 @@ namespace DbNetSuiteCore.Models
             Initialised = true;
             Name = (dataSourceType == DataSourceType.Excel || dataSourceType == DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
 
-            switch (dataSourceType)
+            if (this is FormColumn)
             {
-                case DataSourceType.MongoDB:
-                    PrimaryKey = (Name == MongoDbRepository.PrimaryKeyName);
-                    if (this is FormColumn)
-                    {
-                        var formColumn = (FormColumn)this;
+                var formColumn = (FormColumn)this;
+                switch (dataSourceType)
+                {
+                    case DataSourceType.MongoDB:
+                        PrimaryKey = (Name == MongoDbRepository.PrimaryKeyName);
                         formColumn.Autoincrement = (Name == MongoDbRepository.PrimaryKeyName);
-                    }
-                    break;
+                        break;
+                }
             }
         }
 
@@ -300,6 +301,15 @@ namespace DbNetSuiteCore.Models
                     {
                         formColumn.MaxLength = columnSize;
                     }
+                }
+                switch (dataSourceType)
+                {
+                    case DataSourceType.Oracle:
+                        if (string.IsNullOrEmpty(formColumn.SequenceName) == false)
+                        {
+                            formColumn.Autoincrement = true;
+                        }
+                        break;
                 }
             }
         }

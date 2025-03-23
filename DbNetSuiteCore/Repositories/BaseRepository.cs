@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Models;
 using System.Data;
 
 namespace DbNetSuiteCore.Repositories
@@ -14,11 +15,12 @@ namespace DbNetSuiteCore.Repositories
     public class CommandConfig
     {
         public string Sql = String.Empty;
+        public DataSourceType DataSourceType = DataSourceType.MSSQL;
         public Dictionary<string, object> Params = new Dictionary<string, object>();
 
-        public CommandConfig()
-            : this("")
+        public CommandConfig(DataSourceType dataSourceType)
         {
+            DataSourceType = dataSourceType;
         }
 
         public CommandConfig(string sql)
@@ -35,15 +37,8 @@ namespace DbNetSuiteCore.Repositories
     {
         public CommandBehavior Behavior = CommandBehavior.Default;
 
-        public QueryCommandConfig()
-            : this("")
-        {
-        }
-        public QueryCommandConfig(string sql)
-            : base(sql)
-        {
-        }
-        public QueryCommandConfig(string sql, Dictionary<string, object> parameters) : base(sql, parameters)
+        public QueryCommandConfig(DataSourceType dataSourceType)
+            : base(dataSourceType)
         {
         }
     }
@@ -51,13 +46,10 @@ namespace DbNetSuiteCore.Repositories
     {
         public Dictionary<string, object> FilterParams = new Dictionary<string, object>();
 
-        public UpdateCommandConfig()
-            : this("")
+        public UpdateCommandConfig(DataSourceType dataSourceType)
+            : base(dataSourceType)
         {
         }
-        public UpdateCommandConfig(string Sql)
-            : base(Sql)
-        {
-        }
+      
     }
 }

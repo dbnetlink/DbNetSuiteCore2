@@ -107,6 +107,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IPostgreSqlRepository, PostgreSqlRepository>();
             services.AddScoped<IExcelRepository, ExcelRepository>();
             services.AddScoped<IMongoDbRepository, MongoDbRepository>();
+            services.AddScoped<IOracleRepository, OracleRepository>();
 
             return services;
         }

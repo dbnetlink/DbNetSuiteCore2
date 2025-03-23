@@ -1,0 +1,26 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main>
+        @{
+            var customerSelect = new SelectModel(DataSourceType.Oracle, "Northwind(oracle)", "Customers");
+            customerSelect.FixedFilter = "company_name like :companyname";
+            customerSelect.FixedFilterParameters.Add(new DbParameter(":companyname", "B%"));
+            @(await new DbNetSuiteCore.Control(HttpContext).Render(customerSelect))
+}
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

@@ -20,11 +20,13 @@ namespace DbNetSuiteCore.Services
         protected readonly IPostgreSqlRepository _postgreSqlRepository;
         protected readonly IExcelRepository _excelRepository;
         protected readonly IMongoDbRepository _mongoDbRepository;
+        protected readonly IOracleRepository _oracleRepository;
+
         protected HttpContext? _context = null;
         protected readonly IConfiguration _configuration;
         protected readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -35,6 +37,7 @@ namespace DbNetSuiteCore.Services
             _postgreSqlRepository = postgreSqlRepository;
             _excelRepository = excelRepository;
             _mongoDbRepository = mongoDbRepository;
+            _oracleRepository = oracleRepository;
             _configuration = configuration;
             _webHostEnvironment = webHostEnvironment;
         }
@@ -81,6 +84,7 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.MSSQL:
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
+                case DataSourceType.Oracle:
                     if (string.IsNullOrEmpty(componentModel.ConnectionAlias) && componentModel.IsLinked == false)
                     {
                         throw new Exception($"The ConnectionAlias must be specified if the control is not linked to a parent control (<b>{componentModel.TableName}</b>)");
@@ -152,6 +156,7 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.MySql:
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
+                    case DataSourceType.Oracle:
                         componentModel.SetColumns(schema.Rows.Cast<DataRow>().Where(r => IsRowHidden(r) == false).Select(r => componentModel.NewColumn(r, componentModel.DataSourceType)).Where(c => c.Valid).ToList());
                         break;
                     default:
@@ -180,6 +185,7 @@ namespace DbNetSuiteCore.Services
                         case DataSourceType.MySql:
                         case DataSourceType.PostgreSql:
                         case DataSourceType.SQLite:
+                        case DataSourceType.Oracle:
                             foreach (ColumnModel column in componentModel.GetColumns())
                             {
                                 DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString().ToLower() == column.Expression.ToLower());
@@ -290,6 +296,8 @@ namespace DbNetSuiteCore.Services
                     return await _fileSystemRepository.GetColumns(componentModel, _context);
                 case DataSourceType.MongoDB:
                     return await _mongoDbRepository.GetColumns(componentModel);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.GetColumns(componentModel);
                 default:
                     return await _msSqlRepository.GetColumns(componentModel);
             }
@@ -320,6 +328,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.GetRecords(componentModel);
                     break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.GetRecords(componentModel);
+                    break;
                 default:
                     await _msSqlRepository.GetRecords(componentModel);
                     break;
@@ -348,6 +359,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.GetRecord(componentModel);
                     break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.GetRecord(componentModel);
+                    break;
                 default:
                     await _msSqlRepository.GetRecord(componentModel);
                     break;
@@ -364,11 +378,10 @@ namespace DbNetSuiteCore.Services
                     return await _mySqlRepository.RecordExists(componentModel, primaryKeyValue);
                 case DataSourceType.PostgreSql:
                     return await _postgreSqlRepository.RecordExists(componentModel, primaryKeyValue);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.RecordExists(componentModel, primaryKeyValue);
                 case DataSourceType.Excel:
-                    // await _excelRepository.RecordExists(componentModel, primaryKeyValue);
-                    break;
                 case DataSourceType.MongoDB:
-                    //await _mongoDbRepository.RecordExists(componentModel, primaryKeyValue);
                     break;
                 default:
                     return await _msSqlRepository.RecordExists(componentModel, primaryKeyValue);
@@ -390,8 +403,10 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.PostgreSql:
                     await _postgreSqlRepository.GetLookupOptions(componentModel);
                     break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.GetLookupOptions(componentModel);
+                    break;
                 case DataSourceType.MongoDB:
-                    //   await _mongoDbRepository.GetLookupOptions(componentModel);
                     break;
                 default:
                     await _msSqlRepository.GetLookupOptions(componentModel);

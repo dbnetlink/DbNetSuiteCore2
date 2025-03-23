@@ -45,7 +45,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static QueryCommandConfig BuildEmptyQuery(this SelectModel selectModel)
         {
-            return new QueryCommandConfig($"select {GetColumnExpressions(selectModel)} from {selectModel.TableName} where 1=2");
+            return new QueryCommandConfig(selectModel.DataSourceType) { Sql = $"select {GetColumnExpressions(selectModel)} from {selectModel.TableName} where 1=2" };
         }
 
 

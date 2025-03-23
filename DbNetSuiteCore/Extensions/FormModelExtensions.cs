@@ -58,7 +58,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static CommandConfig BuildUpdate(this FormModel formModel)
         {
-            CommandConfig update = new CommandConfig();
+            CommandConfig update = new CommandConfig(formModel.DataSourceType);
             update.Sql = $"update {formModel.TableName}";
 
             List<string> set = new List<string>();
@@ -73,7 +73,7 @@ namespace DbNetSuiteCore.Extensions
                 if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
                     var columnName = formColumn.ColumnName;
-                    var paramName = DbHelper.ParameterName(columnName);
+                    var paramName = DbHelper.ParameterName(columnName, formModel.DataSourceType);
                     update.Params[paramName] = GetParamValue(formModel, formColumn);
                     paramName = ComponentModelExtensions.UpdateParamName(paramName, formColumn, formModel.DataSourceType);
                  
@@ -86,7 +86,7 @@ namespace DbNetSuiteCore.Extensions
                 update.Sql += $" set {string.Join(",", set)}";
             }
             var primaryKeyColumn = formModel.Columns.First(c => c.PrimaryKey);
-            update.Sql += $" where {primaryKeyColumn.ColumnName} = {DbHelper.ParameterName(primaryKeyColumn.ColumnName)}";
+            update.Sql += $" where {primaryKeyColumn.ColumnName} = {DbHelper.ParameterName(primaryKeyColumn.ColumnName, formModel.DataSourceType)}";
             update.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
 
             return update;
@@ -94,21 +94,21 @@ namespace DbNetSuiteCore.Extensions
 
         public static CommandConfig BuildInsert(this FormModel formModel)
         {
-            CommandConfig insert = new CommandConfig();
+            CommandConfig insert = new CommandConfig(formModel.DataSourceType);
 
             List<string> columnNames = new List<string>();
             List<string> paramNames = new List<string>();
 
-            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.Autoincrement == false))
+            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.Autoincrement == false || string.IsNullOrEmpty(c.SequenceName) == false))
             {
-                if (formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled)
+                if ((formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled) && string.IsNullOrEmpty(formColumn.SequenceName))
                 {
                     continue;
                 };
   
                 if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
-                    var paramName = DbHelper.ParameterName(formColumn.ColumnName);
+                    var paramName = DbHelper.ParameterName(formColumn.ColumnName, formModel.DataSourceType);
                     insert.Params[paramName] = GetParamValue(formModel, formColumn);
                     columnNames.Add(formColumn.ColumnName);
                     paramName = ComponentModelExtensions.UpdateParamName(paramName, formColumn, formModel.DataSourceType);
@@ -147,9 +147,9 @@ namespace DbNetSuiteCore.Extensions
 
         public static CommandConfig BuildDelete(this FormModel formModel)
         {
-            CommandConfig delete = new CommandConfig();
+            CommandConfig delete = new CommandConfig(formModel.DataSourceType);
             var primaryKeyColumn = formModel.Columns.First(c => c.PrimaryKey);
-            delete.Sql = $"delete from {formModel.TableName} where { primaryKeyColumn.ColumnName} = { DbHelper.ParameterName(primaryKeyColumn.ColumnName)}";
+            delete.Sql = $"delete from {formModel.TableName} where { primaryKeyColumn.ColumnName} = { DbHelper.ParameterName(primaryKeyColumn.ColumnName, formModel.DataSourceType)}";
             delete.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
             return delete;
         }

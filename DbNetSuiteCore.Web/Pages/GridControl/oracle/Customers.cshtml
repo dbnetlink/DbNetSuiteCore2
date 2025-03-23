@@ -1,0 +1,27 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var customerGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "CUSTOMERS");
+
+    customerGrid.Columns = new List<GridColumn> {
+        new GridColumn("CUSTOMER_ID"),
+        new GridColumn("CUSTOMER_CODE"),
+        new GridColumn("COMPANY_NAME"),
+        new GridColumn("CONTACT_NAME"),
+        new GridColumn("CONTACT_TITLE"),
+        new GridColumn("ADDRESS"),
+        new GridColumn("CITY"),
+        new GridColumn("REGION"),
+        new GridColumn("POSTAL_CODE"),
+        new GridColumn("COUNTRY"),
+        new GridColumn("PHONE"),
+        new GridColumn("FAX")
+    };
+
+    customerGrid.Caption = "Oracle Customers";
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+}

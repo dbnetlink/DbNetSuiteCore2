@@ -44,14 +44,7 @@ namespace DbNetSuiteCore.Repositories
                     await GetLookupOptions(componentModel, column);
                 }
 
-                if (componentModel is GridModel)
-                {
-                    foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null))
-                    {
-                        DataColumn? dataColumn = componentModel.GetDataColumn(column);
-                        componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
-                    }
-                }
+                ApplyLookups(componentModel);
             }
 
             await GetDbEnumOptions(componentModel);
@@ -75,6 +68,18 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
+        private void ApplyLookups(ComponentModel componentModel)
+        {
+            if (componentModel is GridModel)
+            {
+                foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null))
+                {
+                    DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                    componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
+                }
+            }
+        }
+
         public async Task GetRecord(ComponentModel componentModel)
         {
             object? primaryKeyValue = null;
@@ -85,6 +90,7 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
             await GetLookupOptions(componentModel);
+            ApplyLookups(componentModel);
         }
 
         public async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
@@ -158,11 +164,45 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task InsertRecord(FormModel formModel)
         {
+            switch(formModel.DataSourceType)
+            {
+                case DataSourceType.Oracle:
+                    FormColumn? sequenceColumn = formModel.Columns.FirstOrDefault(c => string.IsNullOrEmpty(c.SequenceName) == false);
+
+                    if (sequenceColumn != null)
+                    {
+                        formModel.FormValues[sequenceColumn.ColumnName] = (await GetOracleSequenceValue(sequenceColumn.SequenceName, formModel.ConnectionAlias)).ToString();
+                    }
+                    break;
+            }
+
             CommandConfig update = formModel.BuildInsert();
             var connection = GetConnection(formModel.ConnectionAlias);
             connection.Open();
             await ExecuteUpdate(update, connection);
             connection.Close();
+        }
+
+        private async Task<long> GetOracleSequenceValue(string sequenceName, string connectionAliad)
+        {
+            Int64 sequenceValue = -1;
+            using (IDbConnection connection = GetConnection(connectionAliad))
+            {
+                connection.Open();
+                var reader = await ExecuteQuery($"SELECT {sequenceName}.nextval FROM DUAL", connection);
+                if (reader.HasRows)
+                {
+                    reader.Read();
+                    sequenceValue = Convert.ToInt64(reader[0]);
+                }
+                else
+                {
+                    throw new Exception($"Unable to read sequence => {sequenceName}");
+                }
+                connection.Close();
+            }
+
+            return sequenceValue;
         }
 
         public async Task DeleteRecord(FormModel formModel)
@@ -177,7 +217,7 @@ namespace DbNetSuiteCore.Repositories
         private async Task GetLookupOptions(ComponentModel componentModel, ColumnModel column)
         {
             column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-            QueryCommandConfig query = new QueryCommandConfig();
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType);
             var lookup = column.Lookup!;
 
             if (componentModel is GridModel)
@@ -196,7 +236,7 @@ namespace DbNetSuiteCore.Repositories
                     return;
                 }
 
-                var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbHelper.ParameterName($"param{i}")).ToList();
+                var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbHelper.ParameterName($"param{i}", componentModel.DataSourceType)).ToList();
 
                 int i = 0;
                 paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
@@ -234,11 +274,12 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumn gridColumn)
         {
-            QueryCommandConfig query = new QueryCommandConfig();
+            QueryCommandConfig query = new QueryCommandConfig(gridModel.DataSourceType);
             var lookup = gridColumn.Lookup!;
 
-            query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
-            query.Sql = $"select {lookup.KeyColumn} from {lookup.TableName} where {lookup.DescriptionColumn} like @{gridColumn.ParamName}";
+            var paramName = DbHelper.ParameterName(gridColumn.ParamName, gridModel.DataSourceType);
+            query.Params[$"{paramName}"] = $"%{gridModel.SearchInput}%";
+            query.Sql = $"select {lookup.KeyColumn} from {lookup.TableName} where {lookup.DescriptionColumn} like {paramName}";
 
             var dataTable = await GetDataTable(query, gridModel.ConnectionAlias);
             return dataTable.Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
@@ -256,6 +297,7 @@ namespace DbNetSuiteCore.Repositories
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
                 case DataSourceType.SQLite:
+                case DataSourceType.Oracle:
                     if (componentModel.IgnoreSchemaTable)
                     {
                         return await GetDataTable(query, componentModel.ConnectionAlias, null, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
@@ -348,9 +390,10 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task<DbDataReader> ExecuteQuery(string sql, IDbConnection connection)
+        public async Task<DbDataReader> ExecuteQuery(string query, IDbConnection connection)
         {
-            return await ExecuteQuery(new QueryCommandConfig(sql), connection);
+            IDbCommand command = DbHelper.ConfigureCommand(query, connection);
+            return await ((DbCommand)command).ExecuteReaderAsync();
         }
         public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandType commandType)
         {
@@ -358,7 +401,7 @@ namespace DbNetSuiteCore.Repositories
         }
         public async Task<DbDataReader> ExecuteQuery(QueryCommandConfig query, IDbConnection connection, CommandBehavior commandBehavour = CommandBehavior.Default, CommandType commandType = CommandType.Text)
         {
-            IDbCommand command = DbHelper.ConfigureCommand(query.Sql, connection, query.Params, commandType);
+            IDbCommand command = DbHelper.ConfigureCommand(query, connection, commandType);
             return await ((DbCommand)command).ExecuteReaderAsync(commandBehavour);
         }
 
@@ -368,7 +411,7 @@ namespace DbNetSuiteCore.Repositories
             {
                 throw new Exception("Update has been disabled by configuration");
             }
-            using (IDbCommand command = DbHelper.ConfigureCommand(update.Sql, connection, update.Params, CommandType.Text))
+            using (IDbCommand command = DbHelper.ConfigureCommand(update, connection, CommandType.Text))
             {
                 await ((DbCommand)command).ExecuteNonQueryAsync();
             }
@@ -377,7 +420,7 @@ namespace DbNetSuiteCore.Repositories
         public async Task<List<string>> GetMySqlEnumOptions(string database, string tableName, string columnName)
         {
             var enumOptions = new List<string>();
-            QueryCommandConfig query = new QueryCommandConfig() { Sql = $"SHOW COLUMNS FROM {tableName} WHERE Field = '{columnName}'" };
+            QueryCommandConfig query = new QueryCommandConfig(DataSourceType.MySql) { Sql = $"SHOW COLUMNS FROM {tableName} WHERE Field = '{columnName}'" };
             using (IDbConnection connection = GetConnection(database))
             {
                 connection.Open();
@@ -402,7 +445,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<List<string>> GetPostgreSqlEnumOptions(ComponentModel componentModel, string enumName)
         {
-            QueryCommandConfig query = new QueryCommandConfig() { Sql = $"SELECT unnest(enum_range(NULL::{enumName}))" };
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"SELECT unnest(enum_range(NULL::{enumName}))" };
             var dataTable = await GetDataTable(query, componentModel.ConnectionAlias);
             var enumOptions = new List<string>();
 

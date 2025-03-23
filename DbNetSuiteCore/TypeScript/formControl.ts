@@ -271,7 +271,9 @@ class FormControl extends ComponentControl {
 
     public highlightError(columnName: string) {
         var element: HTMLInputElement = this.formControl(columnName);
-        element.dataset.error = "true";
+        if (element) {
+            element.dataset.error = "true";
+        }
     }
 
     private errorHighlighted() {
@@ -290,11 +292,14 @@ class FormControl extends ComponentControl {
     }
 
     public formControl(columnName: string) {
-        var element: HTMLInputElement;
+        var element: HTMLInputElement = null;
         this.controlElements(".fc-control").forEach((el) => {
             if (el.name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }
         });
 
+        if (!element) {
+            alert(`Form control => ${columnName} not found`);
+        }
         return element;
     }
 

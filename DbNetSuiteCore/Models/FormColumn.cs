@@ -105,6 +105,7 @@ namespace DbNetSuiteCore.Models
         }
 
         public bool SelectControlType => (ControlType == FormControlType.Auto && Suggest == false) || ControlType == FormControlType.SelectMultiple;
+        public string SequenceName { get; set; } = string.Empty;
 
         public HtmlEditor? HtmlEditor { get; set; } = null;
         public FormColumn()

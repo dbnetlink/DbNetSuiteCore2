@@ -1,7 +1,6 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
-using System.Globalization;
 using System.Data;
 using DbNetSuiteCore.Helpers;
 
@@ -11,7 +10,7 @@ namespace DbNetSuiteCore.Extensions
     {
         public static QueryCommandConfig BuildEmptyQuery(this GridModel gridModel)
         {
-            return new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
+            return new QueryCommandConfig(gridModel.DataSourceType) { Sql = $"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2"};
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)
@@ -130,7 +129,7 @@ namespace DbNetSuiteCore.Extensions
                         paramValue = paramValue.ToString().ToLower();
                         expression = ComponentModelExtensions.CaseInsensitiveExpression(gridModel, expression);
                     }
-                    string paramName = $"@columnfilter{i}";
+                    string paramName = DbHelper.ParameterName($"columnfilter{i}", gridModel.DataSourceType);
                     query.Params[paramName] = paramValue;
 
                     paramName = ComponentModelExtensions.UpdateParamName(paramName, column, gridModel.DataSourceType);

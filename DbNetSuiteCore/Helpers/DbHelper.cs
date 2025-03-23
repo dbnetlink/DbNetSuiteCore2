@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Repositories;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MongoDB.Driver;
@@ -25,6 +26,7 @@ namespace DbNetSuiteCore.Helpers
                         break;
                     case DataSourceType.PostgreSql:
                     case DataSourceType.MySql:
+                    case DataSourceType.Oracle:
                         connection = GetCustomDbConnection(dataSourceType, connectionString);
                         break;
                     default:
@@ -104,6 +106,10 @@ namespace DbNetSuiteCore.Helpers
                     assemblyName = "System.Data.OleDb";
                     connectionName = "OleDbConnection";
                     break;
+                case DataSourceType.Oracle:
+                    assemblyName = "Oracle.ManagedDataAccess";
+                    connectionName = "Client.OracleConnection";
+                    break;
                 default:
                     throw new NotImplementedException($"Custom connection not supported for {dataSourceType} data source type");
             }
@@ -131,14 +137,21 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null, CommandType commandType = CommandType.Text)
+        public static IDbCommand ConfigureCommand(CommandConfig commandConfig, IDbConnection connection, CommandType commandType = CommandType.Text)
         {
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = sql.Trim();
+            command.CommandText = commandConfig.Sql.Trim();
             command.CommandType = commandType;
             command.Parameters.Clear();
-            command.CommandText = sql.Trim();
-            AddCommandParameters(command, @params);
+            AddCommandParameters(command, commandConfig);
+            return command;
+        }
+
+        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, CommandType commandType = CommandType.Text)
+        {
+            IDbCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandType = commandType;
             return command;
         }
 
@@ -151,24 +164,24 @@ namespace DbNetSuiteCore.Helpers
             return String.Join(")", columnParts);
         }
 
-        public static void AddCommandParameters(IDbCommand command, Dictionary<string, object>? @params)
+        public static void AddCommandParameters(IDbCommand command, CommandConfig commandConfig)
         {
-            if (@params == null)
+            if (commandConfig.Params == null)
                 return;
 
-            foreach (string key in @params.Keys)
+            foreach (string key in commandConfig.Params.Keys)
             {
                 IDbDataParameter dbParam;
 
-                if (@params[key] is IDbDataParameter)
+                if (commandConfig.Params[key] is IDbDataParameter)
                 {
-                    dbParam = (IDbDataParameter)@params[key];
+                    dbParam = (IDbDataParameter)commandConfig.Params[key];
                 }
                 else
                 {
                     dbParam = command.CreateParameter();
-                    dbParam.ParameterName = ParameterName(key);
-                    dbParam.Value = @params[key];
+                    dbParam.ParameterName = ParameterName(key, commandConfig.DataSourceType);
+                    dbParam.Value = commandConfig.Params[key];
                 }
 
                 if (dbParam.Value == null)
@@ -180,9 +193,16 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static string ParameterName(string key, bool parameterValue = false)
+        public static string ParameterName(string key, DataSourceType dataSourceType, bool parameterValue = false)
         {
             var template = "@{0}";
+
+            switch(dataSourceType)
+            {
+                case DataSourceType.Oracle:
+                    template = ":{0}";
+                    break;
+            }
             if (key.Length > 0)
                 if (template.Substring(0, 1) == key.Substring(0, 1))
                     return key;
@@ -309,7 +329,7 @@ namespace DbNetSuiteCore.Helpers
                     sql = "SELECT CONCAT(`table_schema`,'.',`table_name`) AS name  FROM information_schema.tables order by 1";
                     break;
             }
-            var command = ConfigureCommand(sql, connection);
+            var command = ConfigureCommand(new QueryCommandConfig(dataSourceType) { Sql = sql }, connection);
 
             DataTable schemaTable = new DataTable();
             schemaTable.Load(command.ExecuteReader(CommandBehavior.Default));

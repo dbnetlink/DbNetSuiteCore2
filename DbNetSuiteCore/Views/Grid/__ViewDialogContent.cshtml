@@ -27,6 +27,11 @@
                         var value = Model.Record[dataColumn!];
                         var formattedvalue = gridColumn.FormatValue(value);
 
+                        if ((gridColumn.LookupOptions == null || gridColumn.LookupOptions.Any() == false) && gridColumn.IsNumeric)
+                        {
+                            classes.Add("text-right");
+                        }
+
                         <td class="font-bold whitespace-nowrap">@(gridColumn.Label)</td>
                         <td>
                             <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>

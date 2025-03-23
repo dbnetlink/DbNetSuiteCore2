@@ -16,7 +16,7 @@ namespace DbNetSuiteCore.Services
 {
     public class FormService : ComponentService, IComponentService
     {
-        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, configuration, webHostEnvironment)
+        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment)
         {
         }
 
@@ -462,6 +462,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.UpdateRecord(formModel);
                     break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.UpdateRecord(formModel);
+                    break;
                 default:
                     await _msSqlRepository.UpdateRecord(formModel);
                     break;
@@ -484,6 +487,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.InsertRecord(formModel);
                     break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.InsertRecord(formModel);
+                    break;
                 default:
                     await _msSqlRepository.InsertRecord(formModel);
                     break;
@@ -505,6 +511,9 @@ namespace DbNetSuiteCore.Services
                     break;
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.DeleteRecord(formModel);
+                    break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.DeleteRecord(formModel);
                     break;
                 default:
                     await _msSqlRepository.DeleteRecord(formModel);

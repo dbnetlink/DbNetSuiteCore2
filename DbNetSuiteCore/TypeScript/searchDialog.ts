@@ -12,7 +12,10 @@ class SearchDialog extends Dialog {
     }
 
     bindSearchButton() {
-        this.control.getButton("search").addEventListener("click", this.show.bind(this))
+        let btn = this.control.getButton("search");
+        if (btn) {
+            btn.addEventListener("click", this.show.bind(this))
+        }
     }
 
     operatorSelected(event: Event) {

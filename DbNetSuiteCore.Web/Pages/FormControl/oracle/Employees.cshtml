@@ -1,0 +1,27 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var employeeForm = new FormModel(DataSourceType.Oracle, "Northwind(oracle)", "Employees") { LayoutColumns = 4, Insert = true, Delete = true};
+    employeeForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("Employee_ID") { PrimaryKey = true},
+        new FormColumn("LastName"),
+        new FormColumn("FirstName"),
+        new FormColumn("BirthDate") { DataType = typeof(DateTime)},
+        new FormColumn("Title") { ColSpan = 2 },
+        new FormColumn("Title_Of_Courtesy"),
+        new FormColumn("HireDate") { MaxValue = DateTime.Today, HelpText = "Hire date cannot be after today", InitialValue = DateTime.Today },
+        new FormColumn("Reports_To") {Lookup = new Lookup("employees","Employee_ID","LastName || ', ' || FirstName")},
+        new FormColumn("Notes") {ControlType = FormControlType.TextArea, TextAreaRows = 10, ColSpan = 3, RowSpan = 4},
+        new FormColumn("Address") {ControlType = FormControlType.TextArea, TextAreaRows = 2},
+        new FormColumn("City"),
+        new FormColumn("Region"),
+        new FormColumn("Postal_Code"),
+        new FormColumn("Country"),
+        new FormColumn("Home_Phone"),
+        new FormColumn("Extension")
+    };
+    @(await new DbNetSuiteCore.FormControl(HttpContext).Render(employeeForm))
+}
