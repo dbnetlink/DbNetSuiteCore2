@@ -316,6 +316,9 @@ class FormControl extends ComponentControl {
     }
 
     private elementModified(el: HTMLFormElement) {
+        if (el.dataset.dbdatatype == "XmlType") {
+            return false;
+        }
         if (el.tagName == 'INPUT' && el.type == 'checkbox') {
             return this.isBoolean(el.dataset.value) != el.checked;
         }

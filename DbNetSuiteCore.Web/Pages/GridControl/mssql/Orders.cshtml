@@ -14,8 +14,9 @@
         new GridColumn("RequiredDate") {Filter = FilterType.Default},
         new GridColumn("ShippedDate"),
         new GridColumn("ShipVia") {Filter = FilterType.Default, Lookup = new Lookup("Shippers", "ShipperID", "CompanyName")},
-        new GridColumn("Freight"),
         new GridColumn("ShipName"),
+                new GridColumn("Freight"),
+
         new GridColumn("ShipAddress"),
         new GridColumn("ShipCity") {Filter = FilterType.Distinct},
         new GridColumn("ShipRegion") {Filter = FilterType.Distinct},

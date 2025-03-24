@@ -62,9 +62,14 @@ namespace DbNetSuiteCore.Models
             {
                 case nameof(MSSQLDataTypes.Xml):
                 case nameof(MSSQLDataTypes.Text):
-                case nameof(MSSQLDataTypes.Ntext):
+            //    case nameof(MSSQLDataTypes.Ntext):
                 case nameof(PostgreSqlDataTypes.Json):
-                    return false;
+                case nameof(OracleDataTypes.Clob):
+                case nameof(OracleDataTypes.Blob):
+                case nameof(OracleDataTypes.NClob):
+                case nameof(OracleDataTypes.XmlType):
+                case nameof(OracleDataTypes.Raw):
+                        return false;
             }
 
             return (DataOnly == false);

@@ -289,8 +289,6 @@ namespace DbNetSuiteCore.Repositories
         {
             QueryCommandConfig query = componentModel.BuildEmptyQuery();
 
-            var metaData = await GetColumnMetaData(query, componentModel.ConnectionAlias);
-
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MSSQL:
@@ -464,9 +462,10 @@ namespace DbNetSuiteCore.Repositories
 
                 DataTable datatable = new DataTable();
                 datatable.Columns.Add("ColumnName", typeof(string));
-                datatable.Columns.Add("FieldType", typeof(Type));
+                datatable.Columns.Add("DataType", typeof(Type));
                 datatable.Columns.Add("DataTypeName", typeof(string));
                 datatable.Columns.Add("ProviderType", typeof(Type));
+                datatable.Columns.Add("ProviderTypeName", typeof(string));
 
                 using (DbDataReader reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo))
                 {
@@ -474,10 +473,10 @@ namespace DbNetSuiteCore.Repositories
                     {
                         var row = datatable.NewRow();
                         row["ColumnName"] = reader.GetName(i);
-                        row["FieldType"] = reader.GetFieldType(i);
+                        row["DataType"] = reader.GetFieldType(i);
                         row["DataTypeName"] = reader.GetDataTypeName(i);
                         row["ProviderType"] = reader.GetProviderSpecificFieldType(i);
-
+                        row["ProviderTypeName"] = reader.GetProviderSpecificFieldType(i).Name;
                         datatable.Rows.Add(row);
                     }
                 }

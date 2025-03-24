@@ -328,6 +328,9 @@ namespace DbNetSuiteCore.Helpers
                 case DataSourceType.MySql:
                     sql = "SELECT CONCAT(`table_schema`,'.',`table_name`) AS name  FROM information_schema.tables order by 1";
                     break;
+                case DataSourceType.Oracle:
+                    sql = "select table_name as name from user_tables union select view_name as name from user_views order by 1";
+                    break;
             }
             var command = ConfigureCommand(new QueryCommandConfig(dataSourceType) { Sql = sql }, connection);
 

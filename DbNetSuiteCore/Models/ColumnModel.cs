@@ -225,7 +225,7 @@ namespace DbNetSuiteCore.Models
                 switch (dataSourceType)
                 {
                     case DataSourceType.MSSQL:
-                        IsSupportedType<MSSQLDataTypes>(dataTypeName);
+                        IsSupportedType<MSSQLDataTypes>(providerType);
                         break;
                     case DataSourceType.MySql:
                         IsSupportedType<MySqlDataTypes>(providerType);
@@ -261,6 +261,9 @@ namespace DbNetSuiteCore.Models
                                 break;
                         }
                         break;
+                    case DataSourceType.Oracle:
+                        DbDataType = ((OracleDataTypes)providerType).ToString();
+                        break;
                     default:
                         DbDataType = dataTypeName;
                         break;
@@ -293,7 +296,10 @@ namespace DbNetSuiteCore.Models
                 {
                     formColumn.Required = (bool)RowValue(dataRow, "AllowDBNull", true) == false;
                 }
-                formColumn.Autoincrement = isAutoincrement;
+                if (formColumn.Autoincrement == false)
+                {
+                    formColumn.Autoincrement = isAutoincrement;
+                }
                 if (formColumn.MaxLength.HasValue == false && formColumn.DataType == typeof(String))
                 {
                     int columnSize = (int)RowValue(dataRow, "ColumnSize", -1);
@@ -365,7 +371,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        private void IsSupportedType<T>(object value) where T : Enum
+        private void IsSupportedType<T>(int value) where T : Enum
         {
             T enumValue = (T)Enum.Parse(typeof(T), value.ToString(), ignoreCase: true);
 

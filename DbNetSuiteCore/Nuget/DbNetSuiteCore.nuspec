@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>DbNetSuiteCore</id>
-    <version>2.0.36</version>
+    <version>2.0.37</version>
     <authors>DbNetLink</authors>
     <owners>DbNetLink</owners>
     <icon>nuget_logo.png</icon>
@@ -11,9 +11,9 @@
     <license type="expression">MIT</license>
     <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
     <projectUrl>https://dbnetsuitecore.com/</projectUrl>
-    <description>Interactive data-driven UI components for ASP.Net Core Razor pages and MVC views. Support for MSSQL, MySql, PostgreSql, MongoDB, SQLite, JSON, Excel, CSV and the file system</description>
-    <copyright>Copyright (c) DbNetLink Limited 2024</copyright>
-    <tags>asp.netcore components component asp.net core razor blazor htmx ssr spreadsheet excel csv sqlite mysql mssql postgresql mongodb json datagrid datatable</tags>
+    <description>Interactive data-driven UI components for ASP.Net Core Razor pages and MVC views. Support for MSSQL, MySql, PostgreSql, Oracle, MongoDB, SQLite, JSON, Excel, CSV and the file system</description>
+    <copyright>Copyright (c) DbNetLink Limited 2025</copyright>
+    <tags>asp.netcore components component asp.net core razor blazor htmx ssr spreadsheet excel csv sqlite mysql mssql postgresql oracle mongodb json datagrid datatable crud ssr htmx</tags>
 
     <!-- Dependencies common to both frameworks -->
     

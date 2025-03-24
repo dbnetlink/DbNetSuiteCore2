@@ -1,0 +1,23 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+	var productsForm = new FormModel(DataSourceType.Oracle, "Northwind(oracle)", "PRODUCTS");
+	productsForm.Columns = new List<FormColumn>() {
+		new FormColumn("Product_ID") { PrimaryKey = true },
+		new FormColumn("Product_Name"),
+		new FormColumn("Supplier_ID","Supplier") { Lookup = new Lookup("Suppliers", "Supplier_Id", "Company_Name") },
+		new FormColumn("Category_ID","Category") { Lookup = new Lookup("Categories", "Category_ID", "Category_Name") },
+		new FormColumn("Quantity_Per_Unit", "Qty."),
+		new FormColumn("Unit_Price","Price") { Format = "c"},
+		new FormColumn("Units_In_Stock", "Stock"),
+		new FormColumn("Units_On_Order","On Order"),
+		new FormColumn("Reorder_Level"),
+		new FormColumn("Discontinued") { LookupEnum = typeof(YesNoEnum) }
+	};
+
+
+	@(await new DbNetSuiteCore.GridControl(HttpContext).Render(productsForm))
+}

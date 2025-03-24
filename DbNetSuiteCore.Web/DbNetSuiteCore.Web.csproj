@@ -17,9 +17,11 @@
     <Content Remove="appsettings.json" />
     <Content Remove="Pages\Accounts.cshtml" />
     <Content Remove="Pages\FormControl\mssql\BrowseDb.cshtml" />
+    <Content Remove="Pages\FormControl\oracle\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mongodb\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mysql\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\oracle\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\postgresql\BrowseDb.cshtml" />
     <Content Remove="wwwroot\css\boostrap.icons.min.css" />
     <Content Remove="wwwroot\css\bootstrap.min.css" />
@@ -31,10 +33,12 @@
     <None Include="appsettings.json" />
     <None Include="Pages\Accounts.cshtml" />
     <None Include="Pages\FormControl\mssql\BrowseDb.cshtml" />
+    <None Include="Pages\FormControl\oracle\BrowseDb.cshtml" />
     <None Include="Pages\form_layout.cshtml" />
     <None Include="Pages\GridControl\mongodb\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\mssql\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\mysql\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\oracle\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\postgresql\BrowseDb.cshtml" />
     <None Include="wwwroot\css\bootstrap.min.css" />
     <None Include="wwwroot\Data\sqlite\new_northwind.db" />

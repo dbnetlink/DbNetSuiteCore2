@@ -1,7 +1,7 @@
 
 # DbNetSuiteCore
 
-**DbNetSuiteCore** is a set of ASP.Net Core application UI development components designed to enable the rapid development of data driven web applications. **DbNetSuiteCore** currently supports MSSQL, MySQL, MariaDB, PostgreSQL, MongoDB and SQLite databases along with JSON (files and API), CSV and Excel files and the file system itself.
+**DbNetSuiteCore** is a set of ASP.Net Core application UI development components designed to enable the rapid development of data driven web applications. **DbNetSuiteCore** currently supports MSSQL, MySQL, MariaDB, PostgreSQL, Oracle, MongoDB and SQLite databases along with JSON (files and API), CSV and Excel files and the file system itself.
 
 Simply add DbNetSuiteCore to your pipeline as follows:
 ```c#

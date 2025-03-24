@@ -1,0 +1,9 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var grid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "example_table");
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(grid))
+}
