@@ -20,3 +20,6 @@ https://dbnetsuitecore.com
 
 ### For information about installation and usage see the docs ###
 https://dbnetsuitecore.document360.io/docs
+
+### To download some working samples ###
+https://github.com/dbnetlink/DbNetSuiteCore.Templates
