@@ -42,6 +42,16 @@ namespace DbNetSuiteCore
             {
                 componentModel.Url = string.Empty;
             }
+
+            if (componentModel is GridModel)
+            {
+                GridModel gridModel = (GridModel)componentModel;
+
+                if (gridModel.IsGrouped)
+                {
+                    gridModel.OptimizeForLargeDataset = false;
+                }
+            }
         }
 
         protected async Task<HtmlString> RenderView(string viewName, ComponentModel componentModel)

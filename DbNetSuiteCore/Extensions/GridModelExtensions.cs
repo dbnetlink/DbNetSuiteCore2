@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Extensions
     {
         public static QueryCommandConfig BuildEmptyQuery(this GridModel gridModel)
         {
-            return new QueryCommandConfig(gridModel.DataSourceType) { Sql = $"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2"};
+            return new QueryCommandConfig(gridModel.DataSourceType) { Sql = $"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2" };
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)
@@ -61,10 +61,6 @@ namespace DbNetSuiteCore.Extensions
 
         public static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
         {
-            if (gridModel.Columns.Any(c => c.Aggregate != AggregateType.None) == false)
-            {
-                return;
-            }
             query.Sql += $" group by {string.Join(",", gridModel.Columns.Where(c => c.Aggregate == AggregateType.None).Select(c => c.Expression).ToList())}";
         }
 
@@ -117,7 +113,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
                     object? paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType, true);
-                   
+
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
                         column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.DataFormatError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
@@ -167,6 +163,25 @@ namespace DbNetSuiteCore.Extensions
                 return;
             }
             query.Sql += $" order by {gridModel.SortColumnOrdinal} {gridModel.SortSequence}";
+        }
+
+        public static void AddPagination(this GridModel gridModel, QueryCommandConfig query)
+        {
+            if (gridModel.OptimizeForLargeDataset)
+            {
+                switch (gridModel.DataSourceType)
+                {
+                    case DataSourceType.MSSQL:
+                    case DataSourceType.Oracle:
+                        query.Sql += $" OFFSET({(gridModel.CurrentPage - 1) * gridModel.PageSize}) ROWS FETCH NEXT {gridModel.PageSize} ROWS ONLY";
+                        break;
+                    case DataSourceType.MySql:
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
+                        query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({(gridModel.CurrentPage - 1) * gridModel.PageSize})";
+                        break;
+                }
+            }
         }
 
         public static string AddDataTableOrderPart(this GridModel gridModel)

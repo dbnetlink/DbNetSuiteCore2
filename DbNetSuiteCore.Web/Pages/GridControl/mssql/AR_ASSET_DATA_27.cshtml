@@ -1,0 +1,11 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customersGrid = new GridModel(DataSourceType.MSSQL, "ESS_CH_283", "AR_ASSET_DATA_27") { OptimizeForLargeDataset = true };
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+}

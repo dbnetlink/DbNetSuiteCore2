@@ -26,9 +26,13 @@ namespace DbNetSuiteCore.Extensions
             {
                 var gridModel = (GridModel)componentModel;
                 gridModel.AddFilterPart(query);
-                gridModel.AddGroupByPart(query);
-                gridModel.AddHavingPart(query);
+                if (gridModel.IsGrouped)
+                {
+                    gridModel.AddGroupByPart(query);
+                    gridModel.AddHavingPart(query);
+                }
                 gridModel.AddOrderPart(query);
+                gridModel.AddPagination(query);
             }
 
             if (componentModel is SelectModel)
@@ -46,6 +50,14 @@ namespace DbNetSuiteCore.Extensions
             }
 
             query.Sql = $"{query.Sql}{Limit(componentModel)}";
+            return query;
+        }
+
+        public static QueryCommandConfig BuildCountQuery(this ComponentModel componentModel)
+        {
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select count(*) from {componentModel.TableName}" };
+            var gridModel = (GridModel)componentModel;
+            gridModel.AddFilterPart(query);
             return query;
         }
 
@@ -556,6 +568,13 @@ namespace DbNetSuiteCore.Extensions
 
         public static string Limit(ComponentModel componentModel)
         {
+            if (componentModel is GridModel)
+            {
+                if (((GridModel)componentModel).OptimizeForLargeDataset)
+                {
+                    return string.Empty;
+                }
+            }
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MySql:

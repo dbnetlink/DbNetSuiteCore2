@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@typescript/lib-dom": "npm:@types/web@^0.0.218",
     "autoprefixer": "^10",
     "concurrently": "^8",
     "daisyui": "^4.12.10",

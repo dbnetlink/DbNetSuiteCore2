@@ -49,9 +49,11 @@ namespace DbNetSuiteCore.Models
 
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
+        public bool OptimizeForLargeDataset { get; set; } = true;
+        public int TotalRows { get; set; }
+        public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
 
         [JsonIgnore]
-
         public GridModel NestedGrid
         {
             set

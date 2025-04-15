@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 
 
 namespace DbNetSuiteCore.Repositories
@@ -35,6 +37,13 @@ namespace DbNetSuiteCore.Repositories
             if (componentModel is FormModel)
             {
                 return;
+            }
+
+            if (componentModel is GridModel && ((GridModel)componentModel).OptimizeForLargeDataset)
+            {
+                GridModel gridModel = (GridModel)componentModel;
+                query = gridModel.BuildCountQuery();
+                gridModel.TotalRows = Convert.ToInt32(await ExecuteScalar(query, componentModel));
             }
 
             if (componentModel.Data.Rows.Count > 0)
@@ -309,7 +318,6 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-
         public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, ComponentModel? componentModel = null, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
         {
             using (IDbConnection connection = GetConnection(database))
@@ -385,6 +393,16 @@ namespace DbNetSuiteCore.Repositories
                 await reader.DisposeAsync();
                 connection.Close();
                 return dataTable;
+            }
+        }
+
+        public async Task<object?> ExecuteScalar(QueryCommandConfig query, ComponentModel componentModel)
+        {
+            using (IDbConnection connection = GetConnection(componentModel.ConnectionAlias))
+            {
+                connection.Open();
+                IDbCommand command = DbHelper.ConfigureCommand(query, connection);
+                return await ((DbCommand)command).ExecuteScalarAsync();
             }
         }
 
