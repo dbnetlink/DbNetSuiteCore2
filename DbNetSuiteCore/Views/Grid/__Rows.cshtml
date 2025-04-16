@@ -12,32 +12,35 @@
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>
-            @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
+            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
-                <td class="text-base"><input class="multi-select" type="checkbox" /></td>
-            }
-            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page && Model.GridModel._NestedGrids.Any())
-            {
-                if (Model.DataSourceType == DataSourceType.FileSystem)
+                if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
                 {
-                    <td class="text-base w-12" data-isfolder="@Model.IsFolder(row).ToString().ToLower()">
-                        @if (Model.IsFolder(row))
-                        {
-                            @Model.RenderNestedButtons(row, IconHelper.Folder(), IconHelper.FolderOpen())
-                        }
-                        else
-                        {
-                            @IconHelper.Document()
-                        }
-                    </td>
+                    <td class="text-base"><input class="multi-select" type="checkbox" /></td>
                 }
-                else
+                if (Model.GridModel._NestedGrids.Any())
                 {
-                    <td class="text-base w-12">
-                        @{
-                            @Model.RenderNestedButtons(row, IconHelper.ExpandDown(), IconHelper.ExpandUp())
-                        }
-                    </td>
+                    if (Model.DataSourceType == DataSourceType.FileSystem)
+                    {
+                        <td class="text-base w-12" data-isfolder="@Model.IsFolder(row).ToString().ToLower()">
+                            @if (Model.IsFolder(row))
+                            {
+                                @Model.RenderNestedButtons(row, IconHelper.Folder(), IconHelper.FolderOpen())
+                            }
+                            else
+                            {
+                                @IconHelper.Document()
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="text-base w-12">
+                            @{
+                                @Model.RenderNestedButtons(row, IconHelper.ExpandDown(), IconHelper.ExpandUp())
+                            }
+                        </td>
+                    }
                 }
             }
             @foreach (GridColumn column in Model.VisibleColumns)
@@ -100,9 +103,12 @@
                 }
             }
 
-            @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
+            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
-                <td class="text-base"><input class="multi-select" type="checkbox" /></td>
+                if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
+                {
+                    <td class="text-base"><input class="multi-select" type="checkbox" /></td>
+                }
             }
         </tr>
     }
@@ -132,43 +138,39 @@
             </td>
 
         </tr>
+
+        @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey)
+        {
+            <tr style="display:none" class="lookup-refresh">
+                <td colspan="@Model.ColSpan">
+                    @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
+                    {
+                        @Model.RenderLookupOptions(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
+                    }
+                </td>
+            </tr>
+        }
+
+        @if (Model.GridModel.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
+        {
+            <tr style="display:none" class="column-filter-error">
+                <td colspan="@Model.ColSpan">
+                    @foreach (var gridColumn in Model.GridModel.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
+                    {
+                        @Model.RenderColumnFilterError(gridColumn)
+                    }
+                </td>
+            </tr>
+        }
+
+        @if (string.IsNullOrEmpty(Model.GridModel.JsonData) == false)
+        {
+            <tr>
+                <td style="display:none" colspan="@Model.ColSpan">
+                    <textarea style="display:none" id="jsonData">@Model.GridModel.JsonData</textarea>
+                </td>
+            </tr>
+        }
     }
 
-    @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey)
-    {
-        <tr style="display:none" class="lookup-refresh">
-            <td colspan="@Model.ColSpan">
-                @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
-                {
-                    @Model.RenderLookupOptions(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
-                }
-            </td>
-        </tr>
-    }
-
-    @if (Model.GridModel.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
-    {
-        <tr style="display:none" class="column-filter-error">
-            <td colspan="@Model.ColSpan">
-                @foreach (var gridColumn in Model.GridModel.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
-                {
-                    @Model.RenderColumnFilterError(gridColumn)
-                }
-            </td>
-        </tr>
-    }
-
-    @if (string.IsNullOrEmpty(Model.GridModel.JsonData) == false)
-    {
-        <tr>
-            <td style="display:none" colspan="@Model.ColSpan">
-                <textarea style="display:none" id="jsonData">@Model.GridModel.JsonData</textarea>
-            </td>
-        </tr>
-    }
-
-    @if (string.IsNullOrEmpty(Model.Diagnostics) == false)
-    {
-
-    }
 </tbody>

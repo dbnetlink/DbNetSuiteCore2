@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using System.Data;
 using MongoDB.Bson;
+using DbNetSuiteCore.Constants;
 
 namespace DbNetSuiteCore.Models
 {
@@ -49,7 +50,8 @@ namespace DbNetSuiteCore.Models
 
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
-        public bool OptimizeForLargeDataset { get; set; } = true;
+        public bool OptimizeForLargeDataset { get; set; } = false;
+        internal bool PaginateQuery => OptimizeForLargeDataset && TriggerName != TriggerNames.Download;
         public int TotalRows { get; set; }
         public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
 

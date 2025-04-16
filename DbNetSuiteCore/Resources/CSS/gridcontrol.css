@@ -24,8 +24,10 @@
 
     .dbnetsuite-grid input.multi-select {
         zoom: 1.25;
-        margin-left: 5px;
-        margin-right: 5px;
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        margin-top: 0.15rem;
+        margin-bottom: 0.15rem;
         justify-content: center;
         align-items: center;
         display: flex;

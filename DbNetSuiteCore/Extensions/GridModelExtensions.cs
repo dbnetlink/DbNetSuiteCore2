@@ -167,7 +167,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static void AddPagination(this GridModel gridModel, QueryCommandConfig query)
         {
-            if (gridModel.OptimizeForLargeDataset)
+            if (gridModel.PaginateQuery)
             {
                 switch (gridModel.DataSourceType)
                 {

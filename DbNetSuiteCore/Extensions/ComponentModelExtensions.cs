@@ -61,6 +61,27 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
+        public static QueryCommandConfig BuildDistinctQuery(this ComponentModel componentModel, ColumnModel column)
+        {
+            List<string> columns = new List<string>()
+            {
+                DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType),
+                DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType)
+            };
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {string.Join(",",columns)} from {componentModel.TableName} order by 1" };
+            var gridModel = (GridModel)componentModel;
+            gridModel.AddFilterPart(query);
+            return query;
+        }
+
+        public static QueryCommandConfig BuildSubSelectQuery(this ComponentModel componentModel, ColumnModel column)
+        {
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType)} from {componentModel.TableName}" };
+            var gridModel = (GridModel)componentModel;
+            gridModel.AddFilterPart(query);
+            return query;
+        }
+
         public static QueryCommandConfig BuildRecordQuery(this ComponentModel componentModel, object? primaryKeyValue = null)
         {
             string sql = $"select {AddSelectPart(componentModel, true)} from {componentModel.TableName}";

@@ -7,6 +7,7 @@ using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
+using System.Linq;
 
 
 namespace DbNetSuiteCore.Repositories
@@ -39,7 +40,7 @@ namespace DbNetSuiteCore.Repositories
                 return;
             }
 
-            if (componentModel is GridModel && ((GridModel)componentModel).OptimizeForLargeDataset)
+            if (componentModel is GridModel && ((GridModel)componentModel).PaginateQuery)
             {
                 GridModel gridModel = (GridModel)componentModel;
                 query = gridModel.BuildCountQuery();
@@ -227,36 +228,29 @@ namespace DbNetSuiteCore.Repositories
         {
             column.DbLookupOptions = new List<KeyValuePair<string, string>>();
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType);
-            var lookup = column.Lookup!;
 
             if (componentModel is GridModel)
             {
-                DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                GridModel gridModel = (GridModel)componentModel;
 
-                if (dataColumn == null || componentModel.Data.Rows.Count == 0)
+                if (gridModel.PaginateQuery)
+                {
+                    BuildLookupOptionsFromDbQuery(gridModel, column, ref query);
+                }
+                else
+                {
+                    BuildLookupOptionsFromDataTableQuery(gridModel, column, ref query);
+                }
+
+                if (string.IsNullOrEmpty(query.Sql))
                 {
                     return;
                 }
-                var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], column.DataType)).OrderBy(v => v).ToList();
-
-                if (string.IsNullOrEmpty(lookup.TableName))
-                {
-                    column.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
-                    return;
-                }
-
-                var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbHelper.ParameterName($"param{i}", componentModel.DataSourceType)).ToList();
-
-                int i = 0;
-                paramNames.ForEach(p => query.Params[p] = lookupValues[i++]);
-
-                //var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
-                var keyColumn = $"{lookup.KeyColumn}";
-
-                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
             }
             else
             {
+                var lookup = column.Lookup!;
+
                 if (string.IsNullOrEmpty(lookup.TableName))
                 {
                     query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} order by 1"; ;
@@ -280,6 +274,60 @@ namespace DbNetSuiteCore.Repositories
 
             column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
         }
+
+        private void BuildLookupOptionsFromDataTableQuery(ComponentModel componentModel, ColumnModel column, ref QueryCommandConfig query)
+        {
+            var lookup = column.Lookup!;
+
+            DataColumn? dataColumn = componentModel.GetDataColumn(column);
+
+            if (dataColumn == null || componentModel.Data.Rows.Count == 0)
+            {
+                return;
+            }
+            var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], column.DataType)).OrderBy(v => v).ToList();
+
+            if (string.IsNullOrEmpty(lookup.TableName))
+            {
+                column.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+                return;
+            }
+
+            var paramNames = Enumerable.Range(1, lookupValues.Count).Select(i => DbHelper.ParameterName($"param{i}", componentModel.DataSourceType)).ToList();
+
+            int i = 0;
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            paramNames.ForEach(p => parameters[p] = lookupValues[i++]);
+            query.Params = parameters;
+
+            //var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
+            var keyColumn = $"{lookup.KeyColumn}";
+            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
+        }
+
+        private void BuildLookupOptionsFromDbQuery(ComponentModel componentModel, ColumnModel column, ref QueryCommandConfig query)
+        {
+            var lookup = column.Lookup!;
+
+            DataColumn? dataColumn = componentModel.GetDataColumn(column);
+
+            if (dataColumn == null || componentModel.Data.Rows.Count == 0)
+            {
+                return;
+            }
+            var lookupValues = componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], column.DataType)).OrderBy(v => v).ToList();
+
+            if (string.IsNullOrEmpty(lookup.TableName))
+            {
+                query = componentModel.BuildDistinctQuery(column);
+            }
+            else
+            {
+                query = componentModel.BuildSubSelectQuery(column);
+                query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {lookup.KeyColumn} in ({query.Sql}) order by 2";
+            }
+        }
+
 
         public async Task<List<object>> GetLookupKeys(GridModel gridModel, GridColumn gridColumn)
         {
