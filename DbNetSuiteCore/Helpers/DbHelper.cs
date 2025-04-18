@@ -279,6 +279,13 @@ namespace DbNetSuiteCore.Helpers
                 return expression;
             }
 
+            switch (dataSourceType)
+            {
+                case DataSourceType.PostgreSql:
+                    expression = expression.ToLower();
+                    break;
+            }
+
             return QualifyTemplate(dataSourceType).Replace("@", expression);
         }
 

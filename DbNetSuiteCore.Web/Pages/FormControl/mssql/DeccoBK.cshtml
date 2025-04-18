@@ -1,0 +1,19 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var deccoForm = new FormModel(DataSourceType.MSSQL, "DeccoBK", "EmpBasicCapxx") { Insert = true, Delete = true };
+    deccoForm.Columns = new List<FormColumn>() {
+        new FormColumn("empid") {PrimaryKey = true },
+        new FormColumn("name"),
+        new FormColumn("Aprvd1") {DataType = typeof(bool)},
+        new FormColumn("skilldesc1") {Lookup = new Lookup("SkillDesc","SkillDesc","SkillDesc")},
+        new FormColumn("website","Web Site"),
+    };
+
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(deccoForm))
+}
+

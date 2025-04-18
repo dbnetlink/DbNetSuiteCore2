@@ -28,6 +28,7 @@
 
     var ordersGrid = new GridModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "salesorder");
     ordersGrid.Columns = columns;
+    ordersGrid.OptimizeForLargeDataset = true;
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
 }

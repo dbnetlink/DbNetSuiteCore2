@@ -286,8 +286,13 @@ namespace DbNetSuiteCore.Models
             }
 
             bool isAutoincrement = (bool)RowValue(dataRow, "IsAutoincrement", false);
+            bool isPrimaryKey = (bool)RowValue(dataRow, "IsKey", false) || isAutoincrement;
 
-            PrimaryKey = (bool)RowValue(dataRow, "IsKey", false) || isAutoincrement;
+            if (isPrimaryKey && PrimaryKey == false)
+            {
+                PrimaryKey = true;
+            }
+
             AllowDBNull = (bool)RowValue(dataRow, "AllowDBNull", true);
             if (this is FormColumn)
             {

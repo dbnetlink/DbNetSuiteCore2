@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var customerGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "CUSTOMERS");
+    var customerGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "CUSTOMERS") {OptimizeForLargeDataset = true};
 
     customerGrid.Columns = new List<GridColumn> {
         new GridColumn("CUSTOMER_ID"),
@@ -22,6 +22,11 @@
     };
 
     customerGrid.Caption = "Oracle Customers";
+
+    <div>
+        <p>restart  lsnrctrl</p>
+        <p>restart  OracleServiceXE</p>
+</div>
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
 }

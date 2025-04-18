@@ -6,6 +6,6 @@
 @using Microsoft.Extensions.Primitives
 @using DbNetSuiteCore.Web.Helpers
 @{
-    var customersGrid = new GridModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "Customer");
+    var customersGrid = new GridModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "Customer") {OptimizeForLargeDataset = true};
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
 }

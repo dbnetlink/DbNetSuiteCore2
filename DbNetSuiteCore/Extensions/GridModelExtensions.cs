@@ -169,16 +169,19 @@ namespace DbNetSuiteCore.Extensions
         {
             if (gridModel.PaginateQuery)
             {
+                var offset = (gridModel.CurrentPage - 1) * gridModel.PageSize;
                 switch (gridModel.DataSourceType)
                 {
                     case DataSourceType.MSSQL:
                     case DataSourceType.Oracle:
-                        query.Sql += $" OFFSET({(gridModel.CurrentPage - 1) * gridModel.PageSize}) ROWS FETCH NEXT {gridModel.PageSize} ROWS ONLY";
+                        query.Sql += $" OFFSET({offset}) ROWS FETCH NEXT {gridModel.PageSize} ROWS ONLY";
                         break;
                     case DataSourceType.MySql:
+                        query.Sql += $" LIMIT {offset},{gridModel.PageSize}";
+                        break;
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
-                        query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({(gridModel.CurrentPage - 1) * gridModel.PageSize})";
+                        query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({offset})";
                         break;
                 }
             }
