@@ -35,7 +35,7 @@
 
     .dbnetsuite-grid .tooltip-popover {
         opacity: 0;
-        color:#000;
+        color: #000;
         transition: opacity 0.5s ease-in-out;
         max-width: 300px;
         position: fixed;
@@ -59,7 +59,7 @@
             border-color: transparent transparent gainsboro transparent;
         }
 
-.dbnetsuite-form {
+.dbnetsuite {
     border: 1px solid gainsboro;
     border-radius: 5px;
     --bg-error: rgb(254 205 211);
@@ -70,53 +70,53 @@
     --text-success: rgb(13 148 136);
 }
 
-    .dbnetsuite-form input:disabled,
-    .dbnetsuite-form select:disabled {
-        background-color: rgb(226 232 240) !important;
-    }
+.dbnetsuite-form input:disabled,
+.dbnetsuite-form select:disabled {
+    background-color: rgb(226 232 240) !important;
+}
 
-    .dbnetsuite-form [type="checkbox"]:disabled {
-        background-color: rgb(226 232 240) !important;
-    }
+.dbnetsuite-form [type="checkbox"]:disabled {
+    background-color: rgb(226 232 240) !important;
+}
 
-    .dbnetsuite-form [type="color"] {
-        height: 36px;
-    }
+.dbnetsuite-form [type="color"] {
+    height: 36px;
+}
 
-    .dbnetsuite-form .fc-control[data-modified='true'] {
-        background-color: var(--bg-warning);
-    }
+.dbnetsuite .fc-control[data-modified='true'] {
+    background-color: var(--bg-warning);
+}
 
-    .dbnetsuite-form .fc-control[data-error='true'] {
-        background-color: var(--bg-error);
-    }
+.dbnetsuite .fc-control[data-error='true'] {
+    background-color: var(--bg-error);
+}
 
-    .dbnetsuite-form div#form-message[data-highlight='success'] {
-        background-color: var(--bg-success);
-        color: var(--text-success);
-    }
+.dbnetsuite div#form-message[data-highlight='success'] {
+    background-color: var(--bg-success);
+    color: var(--text-success);
+}
 
-    .dbnetsuite-form div#form-message[data-highlight='warning'] {
-        background-color: var(--bg-warning);
-        color: var(--text-warning);
-    }
+.dbnetsuite div#form-message[data-highlight='warning'] {
+    background-color: var(--bg-warning);
+    color: var(--text-warning);
+}
 
-    .dbnetsuite-form div#form-message[data-highlight='error'] {
-        background-color: var(--bg-error);
-        color: var(--text-error);
-    }
+.dbnetsuite div#form-message[data-highlight='error'] {
+    background-color: var(--bg-error);
+    color: var(--text-error);
+}
 
-    .dbnetsuite-form .readonly,
+.dbnetsuite-form .readonly,
+.dbnetsuite-form .readonly {
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.8;
+}
+
+    .dbnetsuite-form .readonly *,
     .dbnetsuite-form .readonly {
-        pointer-events: none;
-        user-select: none;
-        opacity: 0.8;
+        cursor: default;
     }
-
-        .dbnetsuite-form .readonly *,
-        .dbnetsuite-form .readonly {
-            cursor: default;
-        }
 
 
 .dbnetsuite-select div.caption {

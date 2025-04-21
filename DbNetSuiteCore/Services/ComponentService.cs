@@ -488,5 +488,54 @@ namespace DbNetSuiteCore.Services
                 componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
             }
         }
+
+        protected bool LengthError(ResourceNames resourceName, int? length, object? paramValue, GridFormColumn gridFormColumn, ComponentModel componentModel)
+        {
+            if (length.HasValue == false)
+            {
+                return false;
+            }
+            if ((resourceName == ResourceNames.MinCharsError && length.Value > gridFormColumn.ToStringOrEmpty(paramValue).Length) ||
+                (resourceName == ResourceNames.MaxCharsError && length.Value < gridFormColumn.ToStringOrEmpty(paramValue).Length))
+            {
+                componentModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", length.Value.ToString());
+                gridFormColumn.InError = true;
+                componentModel.MessageType = MessageType.Error;
+                return true;
+            }
+            return false;
+        }
+
+        protected int Compare(object paramValue, object compareValue)
+        {
+            try
+            {
+                if (paramValue.GetType() != compareValue.GetType())
+                {
+                    compareValue = Convert.ChangeType(compareValue, paramValue.GetType());
+                }
+                string typeName = paramValue.GetType().Name;
+                switch (typeName)
+                {
+                    case nameof(Int16):
+                    case nameof(Int32):
+                    case nameof(Int64):
+                        return Comparer<Int64>.Default.Compare(Convert.ToInt64(paramValue), Convert.ToInt64(compareValue));
+                    case nameof(Decimal):
+                        return Comparer<Decimal>.Default.Compare(Convert.ToDecimal(paramValue), Convert.ToDecimal(compareValue));
+                    case nameof(Single):
+                    case nameof(Double):
+                        return Comparer<Double>.Default.Compare(Convert.ToDouble(paramValue), Convert.ToDouble(compareValue));
+                    case nameof(DateTime):
+                        return Comparer<DateTime>.Default.Compare(Convert.ToDateTime(paramValue), Convert.ToDateTime(compareValue));
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+
+            return 0;
+        }
     }
 }

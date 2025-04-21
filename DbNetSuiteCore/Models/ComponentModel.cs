@@ -78,7 +78,8 @@ namespace DbNetSuiteCore.Models
         public bool DiagnosticsMode { get; set; } = false;
         public bool Search { get; set; } = true;
         internal string SearchDialogConjunction { get; set; } = "and";
-
+        public string Message = string.Empty;
+        public MessageType MessageType = MessageType.None;
         public ComponentModel()
         {
             Id = GeneratedId();

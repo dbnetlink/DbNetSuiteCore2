@@ -44,6 +44,20 @@ namespace DbNetSuiteCore.Helpers
             return formValues;
         }
 
+        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext)
+        {
+            Dictionary<string, List<string>> formValues = new Dictionary<string, List<string>>();
+            foreach (string key in httpContext.Request.Form.Keys)
+            {
+                if (key.StartsWith("_"))
+                {
+                    formValues[key.Substring(1)] = FormValueList(key,httpContext);
+                }
+            }
+
+            return formValues;
+        }
+
         public static List<string> FormValueList(string key, HttpContext httpContext)
         {
         #if NET8_0

@@ -8,57 +8,13 @@ using System.Data;
 
 namespace DbNetSuiteCore.Models
 {
-    public class FormColumn : ColumnModel
+    public class FormColumn : GridFormColumn
     {
-        private object? _minValue { get; set; } = null;
-        private object? _maxValue { get; set; } = null;
         private bool _suggest = false;
-        public FormControlType ControlType { get; set; } = FormControlType.Auto;
-        public bool Required { get; set; } = false;
-        public bool InError { get; set; } = false;
         public ReadOnlyMode? ReadOnly { get; set; } = null;
         public bool Disabled { get; set; } = false;
         public object? InitialValue { get; set; } = null;
-        public object? MinValue
-        {
-            get
-            {
-                if (_minValue != null)
-                {
-                    return _minValue;
-                }
-                switch (DbDataType)
-                {
-                    case nameof(MSSQLDataTypes.TinyInt):
-                        _minValue = 0;
-                        break;
-                }
-                return _minValue;
-            }
-            set { _minValue = value; }
-        }
-        public object? MaxValue
-        {
-            get
-            {
-                if (_maxValue != null)
-                {
-                    return _maxValue;
-                }
-                switch (DbDataType)
-                {
-                    case nameof(MSSQLDataTypes.TinyInt):
-                        _maxValue = 255;
-                        break;
-                }
-                return _maxValue;
-            }
-            set { _maxValue = value; }
-        }
         public bool Autoincrement { get; set; } = false;
-        public TextTransform? TextTransform { get; set; } = null;
-        public int? MaxLength { get; set; } = null;
-        public int? MinLength { get; set; } = null;
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
         public string DateTimeFormat => GetDateTimeFormat(ControlType.ToString());
         public int ColSpan { get; set; } = 1;
@@ -67,7 +23,6 @@ namespace DbNetSuiteCore.Models
         public string HelpText { get; set; } = string.Empty;
         public int Size { get; set; } = 4;
         public string Style { get; set; } = string.Empty;
-        public string? Pattern { get; set; } = null;
         public double? Step { get; set; } = null;
         public bool Suggest
         {
@@ -136,7 +91,7 @@ namespace DbNetSuiteCore.Models
             return new HtmlString($"<label for=\"{ColumnName}\" class=\"font-bold text-slate-800\">{Label}</label>");
         }
 
-        public HtmlString RenderControl(string value, string dbValue, FormModel formModel)
+        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel)
         {
             var attributes = new Dictionary<string, string>();
 
@@ -170,13 +125,13 @@ namespace DbNetSuiteCore.Models
                     break;
             }
 
-            attributes["id"] = $"{formModel.Id}_{ColumnName}";
+            attributes["id"] = $"{componentModel.Id}_{ColumnName}";
             attributes["name"] = $"_{ColumnName}";
             attributes["data-value"] = $"{dbValue}";
             attributes["value"] = $"{value}";
             attributes["data-datatype"] = DataTypeName;
             attributes["data-dbdatatype"] = DbDataType;
-            attributes["class"] = Classes(formModel);
+            attributes["class"] = Classes(componentModel);
             attributes["data-error"] = InError.ToString().ToLower();
 
             if (string.IsNullOrEmpty(Style) == false)
@@ -221,23 +176,23 @@ namespace DbNetSuiteCore.Models
             if (DataOnly)
             {
                 attributes["type"] = "hidden";
-                return RenderInput(attributes, formModel);
+                return RenderInput(attributes, componentModel);
             }
             else if (LookupOptions != null && SelectControlType)
             {
-                return RenderSelect(value, attributes, formModel);
+                return RenderSelect(value, attributes, componentModel);
             }
             else if (ControlType == FormControlType.TextArea || HtmlEditor.HasValue)
             {
-                return RenderTextArea(value, attributes, formModel);
+                return RenderTextArea(value, attributes, componentModel);
             }
             else if (DataType == typeof(Boolean))
             {
-                return RenderCheckbox(value, attributes, formModel);
+                return RenderCheckbox(value, attributes, componentModel);
             }
             else
             {
-                return RenderInput(attributes, formModel);
+                return RenderInput(attributes, componentModel);
             }
         }
 
@@ -246,12 +201,7 @@ namespace DbNetSuiteCore.Models
             return string.IsNullOrEmpty(HelpText) ? string.Empty : $"<small>{HelpText}</small>";
         }
 
-        public string ToStringOrEmpty(object? value)
-        {
-            return value?.ToString() ?? string.Empty;
-        }
-
-        private HtmlString RenderInput(Dictionary<string, string> attributes, FormModel formModel)
+        private HtmlString RenderInput(Dictionary<string, string> attributes, ComponentModel componentModel)
         {
             AddAttribute(attributes, TextTransform, "data-texttransform");
             AddAttribute(attributes, MaxLength, "maxlength");
@@ -259,17 +209,17 @@ namespace DbNetSuiteCore.Models
 
             string dataList = DataList(attributes);
            
-            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(formModel)} />{HelpTextElement()}{dataList}");
+            return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(componentModel)} />{HelpTextElement()}{dataList}");
         }
 
         private void AddAttribute(Dictionary<string, string> attributes, object? attrValue , string attrName)
         {
             if (DataType == typeof(string) && attrValue != null)
             {
-                attributes[attrName] = ToStringOrEmpty(attrValue);
+                attributes[attrName] = this.ToStringOrEmpty(attrValue);
             }
         }
-        private HtmlString RenderSelect(string value, Dictionary<string, string> attributes, FormModel formModel)
+        private HtmlString RenderSelect(string value, Dictionary<string, string> attributes, ComponentModel componentModel)
         {
             if (DataType == typeof(Boolean))
             {
@@ -300,14 +250,14 @@ namespace DbNetSuiteCore.Models
 
             List<string> select = new List<string>();
 
-            select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(formModel, attr)}>");
+            select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(componentModel, attr)}>");
             select.AddRange(OptionsList(values, false));
             select.Add($"</select>{HelpTextElement()}");
 
             return new HtmlString(String.Join(string.Empty, select));
         }
 
-        private HtmlString RenderTextArea(string value, Dictionary<string, string> attributes, FormModel formModel)
+        private HtmlString RenderTextArea(string value, Dictionary<string, string> attributes, ComponentModel componentModel)
         {
             attributes.Remove("value");
             attributes["rows"] = TextAreaRows.ToString();
@@ -318,7 +268,7 @@ namespace DbNetSuiteCore.Models
                 attributes["data-htmleditor"] = HtmlEditor.Value.ToString();
             }
 
-            string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(formModel)}>{text}</textarea>";
+            string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(componentModel)}>{text}</textarea>";
 
             if (HtmlEditor.HasValue)
             {
@@ -337,21 +287,21 @@ namespace DbNetSuiteCore.Models
             return new HtmlString(textArea);
         }
 
-        private HtmlString RenderCheckbox(string value, Dictionary<string, string> attributes, FormModel formModel)
+        private HtmlString RenderCheckbox(string value, Dictionary<string, string> attributes, ComponentModel componentModel)
         {
             attributes.Remove("value");
             attributes.Remove("data-error");
-            attributes["class"] = CheckboxClasses(formModel);
+            attributes["class"] = CheckboxClasses(componentModel);
             attributes["style"] = "transform: scale(1.5);margin-left:5px";
 
             bool boolValue = ComponentModelExtensions.ParseBoolean(value);
 
-            string checkbox = $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(formModel, boolValue)}/>{HelpTextElement()}";
+            string checkbox = $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(componentModel, boolValue)}/>{HelpTextElement()}";
 
             return new HtmlString(checkbox);
         }
 
-        string Classes(FormModel formModel)
+        string Classes(ComponentModel componentModel)
         {
             List<string> classes = new List<string>() { "fc-control w-full" };
             if (IsNumeric && LookupOptions == null)
@@ -359,7 +309,10 @@ namespace DbNetSuiteCore.Models
                 classes.Add("text-right");
             }
 
-            if (IsReadOnly(formModel.Mode) || DataType == typeof(Guid) || formModel.ReadOnly)
+            FormMode mode = componentModel is FormModel ? ((FormModel)componentModel).Mode : FormMode.Update;
+            bool readOnly = componentModel is FormModel ? ((FormModel)componentModel).ReadOnly : false;
+
+            if (IsReadOnly(mode) || DataType == typeof(Guid) || readOnly)
             {
                 classes.Add("readonly");
             }
@@ -372,11 +325,14 @@ namespace DbNetSuiteCore.Models
             return string.Join(" ", classes);
         }
 
-        string CheckboxClasses(FormModel formModel)
+        string CheckboxClasses(ComponentModel componentModel)
         {
             List<string> classes = new List<string>() { "fc-control" };
 
-            if (IsReadOnly(formModel.Mode) || formModel.ReadOnly)
+            FormMode mode = componentModel is FormModel ? ((FormModel)componentModel).Mode : FormMode.Update;
+            bool readOnly = componentModel is FormModel ? ((FormModel)componentModel).ReadOnly : false;
+
+            if (IsReadOnly(mode) || readOnly)
             {
                 classes.Add("readonly");
             }
@@ -384,10 +340,10 @@ namespace DbNetSuiteCore.Models
             return string.Join(" ", classes);
         }
 
-        string Attributes(FormModel formModel, List<string>? attr = null)
+        string Attributes(ComponentModel componentModel, List<string>? attr = null)
         {
             List<string> attributes = new List<string>();
-            if (Disable(formModel))
+            if (Disable(componentModel))
             {
                 attributes.Add("disabled");
             }
@@ -395,7 +351,11 @@ namespace DbNetSuiteCore.Models
             {
                 attributes.Add("required");
             }
-            if ((IsReadOnly(formModel.Mode) && LookupOptions == null) || formModel.ReadOnly)
+
+            FormMode mode = componentModel is FormModel ? ((FormModel)componentModel).Mode : FormMode.Update;
+            bool readOnly = componentModel is FormModel ? ((FormModel)componentModel).ReadOnly : false;
+
+            if ((IsReadOnly(mode) && LookupOptions == null) || readOnly)
             {
                 attributes.Add("readonly");
             }
@@ -407,10 +367,11 @@ namespace DbNetSuiteCore.Models
 
             return string.Join(" ", attributes);
         }
-        string CheckboxAttributes(FormModel formModel, bool boolValue)
+        string CheckboxAttributes(ComponentModel componentModel, bool boolValue)
         {
             List<string> attributes = new List<string>();
-            if (Disabled || formModel.Mode == FormMode.Empty)
+            FormMode mode = componentModel is FormModel ? ((FormModel)componentModel).Mode : FormMode.Update;
+            if (Disabled || mode == FormMode.Empty)
             {
                 attributes.Add("disabled");
             }
@@ -423,13 +384,14 @@ namespace DbNetSuiteCore.Models
             return string.Join(" ", attributes);
         }
 
-        bool Disable(FormModel formModel)
+        bool Disable(ComponentModel componentModel)
         {
-            if (formModel.Mode == FormMode.Insert && PrimaryKeyRequired)
+            FormMode mode = componentModel is FormModel ? ((FormModel)componentModel).Mode : FormMode.Update;
+            if (mode == FormMode.Insert && PrimaryKeyRequired)
             {
                 return false;
             }
-            return (PrimaryKey || ForeignKey || Disabled || formModel.Mode == FormMode.Empty);
+            return (PrimaryKey || ForeignKey || Disabled || mode == FormMode.Empty);
         }
 
         void SetMinMax(Dictionary<string, string> attributes, string attrName, object? attrValue)

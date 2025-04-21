@@ -34,6 +34,8 @@ class GridControl extends ComponentControl {
             return
         }
 
+        this.formBody = this.controlElement("tbody")
+
         this.configureNavigation()
         this.configureSortIcon()
 
@@ -150,6 +152,7 @@ class GridControl extends ComponentControl {
         this.assignSearchDialog();
 
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
+        this.formMessage = this.controlElement("#form-message");
 
         this.invokeEventHandler('Initialised');
     }
@@ -170,12 +173,36 @@ class GridControl extends ComponentControl {
         observer.observe(this.form);
     }
 
+
     public beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
             return;
 
         if (this.validateSearchDialog(evt) == false) {
             return;
+        }
+
+        switch (this.triggerName(evt)) {
+            case "apply":
+                if (this.formModified() == false) {
+                    evt.preventDefault();
+                }
+                else if (this.form.checkValidity() == false) {
+                    this.form.reportValidity()
+                    evt.preventDefault();
+                }
+                return
+            case "cancel":
+            case "primarykey":
+                return;
+        }
+
+        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el) });
+        let modified = this.controlElements(".fc-control[data-modified='true']");
+
+        if (modified.length) {
+            evt.preventDefault();
+            this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
         }
     }
 

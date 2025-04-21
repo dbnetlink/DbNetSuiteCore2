@@ -1,7 +1,5 @@
 class FormControl extends ComponentControl {
     form: HTMLFormElement;
-    formMessage: HTMLDivElement;
-    formBody: HTMLElement;
     formContainer: HTMLElement;
     confirmDialog: ConfirmDialog | null;
     cachedMessage: string | null;
@@ -58,10 +56,6 @@ class FormControl extends ComponentControl {
 
         this.setFocus();
         this.invokeEventHandler('RecordLoaded');
-    }
-
-    private formMode() {
-        return this.formBody.dataset.mode.toLowerCase();
     }
 
     public afterSettle(evt) {
@@ -301,63 +295,6 @@ class FormControl extends ComponentControl {
             alert(`Form control => ${columnName} not found`);
         }
         return element;
-    }
-
-    private formModified() {
-        if (this.formMode() == "empty") {
-            return false;
-        }
-        let modified = [];
-        this.controlElements(".fc-control").forEach((el) => {
-            if (this.elementModified(el)) { modified.push(el) }
-        });
-
-        return modified.length > 0;
-    }
-
-    private elementModified(el: HTMLFormElement) {
-        if (el.dataset.dbdatatype == "XmlType") {
-            return false;
-        }
-        if (el.tagName == 'INPUT' && el.type == 'checkbox') {
-            return this.isBoolean(el.dataset.value) != el.checked;
-        }
-        else if (el.type == 'select-multiple') {
-            var selectedValues = Array.from(el.selectedOptions).map(({ value }) => value);
-
-            if (el.dataset.dbdatatype = 'Array') {
-                return this.cleanString(el.dataset.value) != this.cleanString(selectedValues.join(''));
-            }
-            else {
-                return el.dataset.value != selectedValues.join(',');
-            }
-        }
-        else if (el.tagName == 'TEXTAREA') {
-            return this.cleanString(el.dataset.value) != this.cleanString(el.value);
-        }
-        else {
-            return el.dataset.value != el.value;
-        }
-    }
-
-    private cleanString(value) {
-        return value.replace("&amp;#xA;", "").replace(/[^a-z0-9\.]+/gi, "").trim()
-    }
-
-    private isBoolean(value: string) {
-        return value == "1" || value.toLowerCase() == "true"
-    }
-
-    private setMessage(message: string, type: string = 'success') {
-        this.formMessage.innerText = message;
-        this.formMessage.dataset.highlight = type.toLowerCase();
-        window.setTimeout(() => { this.clearErrorMessage() }, 3000)
-    }
-
-    private clearErrorMessage() {
-        this.formMessage.innerHTML = "&nbsp";
-        delete this.formMessage.dataset.highlight;
-        this.controlElements(`.fc-control`).forEach((el) => { el.dataset.modified = false; el.dataset.error = false });
     }
 
     private htmlEditorElements(): NodeListOf<HTMLTextAreaElement> {

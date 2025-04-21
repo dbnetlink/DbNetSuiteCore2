@@ -205,6 +205,10 @@ namespace DbNetSuiteCore.Models
                 }
             }
         }
+        public string ToStringOrEmpty(object? value)
+        {
+            return value?.ToString() ?? string.Empty;
+        }
 
         public void Update(DataRow dataRow, DataSourceType dataSourceType, bool generated = false)
         {

@@ -1,5 +1,7 @@
 ﻿using System.Data;
+using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 
@@ -78,6 +80,11 @@ namespace DbNetSuiteCore.ViewModels
             AddLookupFilterOptions(html, options);
             html.Add(new HtmlString($"</select>"));
             return new HtmlString(string.Join(" ", html));
+        }
+
+        protected string ButtonText(ResourceNames resourceName)
+        {
+            return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
         }
     }
 }

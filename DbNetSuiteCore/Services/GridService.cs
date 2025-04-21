@@ -11,6 +11,8 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Services
 {
@@ -51,6 +53,8 @@ namespace DbNetSuiteCore.Services
             {
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
+                case TriggerNames.Apply:
+                    return await ApplyUpdate(gridModel);
                 case TriggerNames.NestedGrid:
                     return await View("Grid/__Nested", ConfigureNestedGrid(gridModel));
                 case TriggerNames.ViewDialogContent:
@@ -78,7 +82,13 @@ namespace DbNetSuiteCore.Services
             if (gridModel.IsStoredProcedure == false && gridModel.Uninitialised)
             {
                 await ConfigureColumns(gridModel);
+
+                foreach (var column in gridModel.Columns.Where(c => c.Editable))
+                {
+                    column.FormColumn = new FormColumn(column.Expression) { Name = column.Name, DataType = column.DataType, PrimaryKey = column.PrimaryKey };
+                }
             }
+
             await GetGridRecords(gridModel);
             if (gridModel.IsStoredProcedure && gridModel.Uninitialised)
             {
@@ -341,6 +351,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
+                gridModel.FormValues = RequestHelper.GridFormColumnValues(_context);
                 gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
 
                 AssignParentKey(gridModel);
@@ -362,6 +373,8 @@ namespace DbNetSuiteCore.Services
             {
                 case TriggerNames.Page:
                 case TriggerNames.Refresh:
+                case TriggerNames.Cancel:
+                case TriggerNames.Apply:
                     return Convert.ToInt32(RequestHelper.FormValue("page", "1", _context));
                 case TriggerNames.Search:
                 case TriggerNames.First:
@@ -392,6 +405,183 @@ namespace DbNetSuiteCore.Services
             }
 
             return contentType;
+        }
+
+        private async Task<Byte[]> ApplyUpdate(GridModel gridModel)
+        {
+            GridViewModel gridViewModel = new GridViewModel(gridModel);
+            var committed = false;
+
+            if (gridModel.ClientEvents.Keys.Contains(GridClientEvent.ValidateUpdate) == false)
+            {
+                if (await ValidateRecord(gridModel))
+                {
+                    await CommitUpdate(gridModel);
+                    gridViewModel = new GridViewModel(gridModel);
+                    committed = true;
+                }
+
+            }
+            else if (gridModel.ValidationPassed == false)
+            {
+                gridModel.ValidationPassed = await ValidateRecord(gridModel);
+            }
+            else
+            {
+                await CommitUpdate(gridModel);
+                gridViewModel = new GridViewModel(gridModel);
+                committed = true;
+            }
+
+            return await View("Grid/__Rows", gridViewModel);
+        }
+
+        private async Task CommitUpdate(GridModel gridModel)
+        {
+            try
+            {
+               // await UpdateRecord(gridModel);
+                gridModel.FormValues = new Dictionary<string, List<string>>();
+                gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+
+                gridModel.MessageType = MessageType.Success;
+            }
+            catch (Exception ex)
+            {
+                gridModel.Message = ex.Message;
+                gridModel.MessageType = MessageType.Error;
+            }
+        }
+
+        private async Task<bool> ValidateRecord(GridModel gridModel)
+        {
+            if (ValidateErrorType(gridModel, ResourceNames.Required))
+            {
+                if (ValidateErrorType(gridModel, ResourceNames.DataFormatError))
+                {
+                    if (ValidateErrorType(gridModel, ResourceNames.MinCharsError))
+                    {
+                        if (ValidateErrorType(gridModel, ResourceNames.MinValueError))
+                        {
+                            if (ValidateErrorType(gridModel, ResourceNames.PatternError))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool ValidateErrorType(GridModel gridModel, ResourceNames resourceName)
+        {
+            for (var r = 0; r < gridModel.Data.Rows.Count; r++)
+            {
+                foreach (GridFormColumn? gridFormColumn in gridModel.Columns.Where(c => c.Editable))
+                {
+                    var columnName = gridFormColumn.ColumnName;
+
+                    var value = string.Empty;
+
+                    if (gridModel.FormValues.ContainsKey(columnName))
+                    {
+                        value = gridModel.FormValues[columnName][r];
+                    }
+
+                    object? paramValue;
+
+                    switch (resourceName)
+                    {
+                        case ResourceNames.Required:
+                            gridFormColumn.InError = string.IsNullOrEmpty(value) && (gridFormColumn.Required);
+                            break;
+                        case ResourceNames.DataFormatError:
+                            paramValue = ComponentModelExtensions.ParamValue(value, gridFormColumn, gridModel.DataSourceType);
+                            if (paramValue == null)
+                            {
+                                gridFormColumn.InError = true;
+                            }
+                            break;
+                        case ResourceNames.PatternError:
+                            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(gridFormColumn.Pattern))
+                            {
+                                break;
+                            }
+                            if (new Regex(gridFormColumn.Pattern).IsMatch(value) == false)
+                            {
+                                gridFormColumn.InError = true;
+                            }
+                            break;
+                        case ResourceNames.MinCharsError:
+                            if (gridFormColumn.MinLength == null && gridFormColumn.MaxLength == null)
+                            {
+                                continue;
+                            }
+                            paramValue = ComponentModelExtensions.ParamValue(value, gridFormColumn, gridModel.DataSourceType);
+                            if (paramValue == null)
+                            {
+                                continue;
+                            }
+
+                            if (LengthError(ResourceNames.MinCharsError, gridFormColumn.MinLength, paramValue, gridFormColumn, gridModel))
+                            {
+                                return false;
+                            }
+                            if (LengthError(ResourceNames.MaxCharsError, gridFormColumn.MaxLength, paramValue, gridFormColumn, gridModel))
+                            {
+                                return false;
+                            }
+
+                            break;
+                        case ResourceNames.MinValueError:
+                            if (gridFormColumn.MinValue == null && gridFormColumn.MaxValue == null)
+                            {
+                                continue;
+                            }
+                            paramValue = ComponentModelExtensions.ParamValue(value, gridFormColumn, gridModel.DataSourceType);
+
+                            bool lessThanMinimum = false;
+                            bool greaterThanMaximum = false;
+
+                            if (gridFormColumn.MinValue != null)
+                            {
+                                lessThanMinimum = Compare(paramValue!, gridFormColumn.MinValue) < 0;
+                            }
+
+                            if (gridFormColumn.MaxValue != null)
+                            {
+                                greaterThanMaximum = Compare(paramValue!, gridFormColumn.MaxValue) > 0;
+                            }
+
+                            if (lessThanMinimum)
+                            {
+                                gridModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{gridFormColumn.Label}</b>", gridFormColumn.MinValue);
+                            };
+
+                            if (greaterThanMaximum)
+                            {
+                                gridModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{gridFormColumn.Label}</b>", gridFormColumn.MaxValue);
+                            };
+
+                            if (string.IsNullOrEmpty(gridModel.Message) == false)
+                            {
+                                gridModel.MessageType = MessageType.Error;
+                                return false;
+                            }
+                            break;
+                    }
+                }
+            }
+            if (gridModel.Columns.Any(c => c.InError))
+            {
+                gridModel.Message = ResourceHelper.GetResourceString(resourceName);
+                gridModel.MessageType = MessageType.Error;
+                return false;
+            }
+
+            return true;
         }
     }
 }

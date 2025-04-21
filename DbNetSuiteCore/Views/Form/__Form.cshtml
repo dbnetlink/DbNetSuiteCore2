@@ -16,7 +16,7 @@
         @await Html.PartialAsync("Form/__Toolbar")
     }
 
-    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.FormModel.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.FormModel.CommitType" data-id="@Model.RecordId">
+    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.CommitType" data-id="@Model.RecordId">
         @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
         {
             <div class="flex text-lg caption">@Model.FormModel.Caption</div>

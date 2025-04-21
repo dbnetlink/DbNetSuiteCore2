@@ -29,10 +29,10 @@ namespace DbNetSuiteCore.ViewModels
         public bool ShowNavigation => Mode == FormMode.Update && FormModel.OneToOne == false;
         public bool ShowQuickSearch => Mode != FormMode.Insert && FormModel.OneToOne == false && FormModel.SearchableColumns.Any();
         public bool ShowSearchDialog => Mode != FormMode.Insert && FormModel.OneToOne == false && SearchDialog;
-
         public bool RenderInsertDelete => RenderInsert || RenderDelete;
         public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation == false && ShowQuickSearch == false);
         public string ConfirmDialogId => $"confirmDialog{_formModel.Id}";
+        public FormMode? CommitType => FormModel.CommitType;
 
 
         public FormViewModel(FormModel formModel) : base(formModel)
@@ -97,7 +97,7 @@ namespace DbNetSuiteCore.ViewModels
                 attributes["hx-confirm-dialog"] = ResourceHelper.GetResourceString(ResourceNames.ConfirmDelete);
             }
             var disabledAttr = disabled ? " disabled" : null;
-            return new HtmlString($"<button type=\"button\" style=\"{style}\" button-type=\"{name}\" title=\"{NavButtonText(resourceName)}\" hx-post=\"{SubmitUrl}\" name=\"{name}\" hx-trigger=\"click\" hx-target=\"{HxTarget}\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" {disabledAttr} {RazorHelper.Attributes(attributes)}>{icon}</button>");
+            return new HtmlString($"<button type=\"button\" style=\"{style}\" button-type=\"{name}\" title=\"{this.ButtonText(resourceName)}\" hx-post=\"{SubmitUrl}\" name=\"{name}\" hx-trigger=\"click\" hx-target=\"{HxTarget}\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" {disabledAttr} {RazorHelper.Attributes(attributes)}>{icon}</button>");
         }
 
         public string Justify()
@@ -117,9 +117,5 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString($"<input class=\"text-center\" style=\"width:{(recordCount.ToString().Length + 1)}em\" readonly type=\"text\" data-type=\"record-count\" value=\"{recordCount}\" />");
         }
 
-        private string NavButtonText(ResourceNames resourceName)
-        {
-            return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
-        }
     }
 }

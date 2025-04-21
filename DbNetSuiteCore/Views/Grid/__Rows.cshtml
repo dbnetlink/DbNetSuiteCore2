@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 
-<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url">
+<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)">
     @foreach (DataRow row in Model.Rows)
     {
         <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>
@@ -51,7 +51,15 @@
                 {
                     continue;
                 }
+
                 var classes = new List<string>() { "text-base", "align-top" };
+
+                @if (column.Editable && column.PrimaryKey == false && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+                {
+                    string dbValue = column.ToStringOrEmpty((dataColumn == null) ? string.Empty : column.FormatValue(row[dataColumn]));
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)> @column.FormColumn.RenderControl(dbValue, dbValue, Model.GridModel)</td>
+                    continue;
+                }
 
                 if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
                 {

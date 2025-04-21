@@ -15,6 +15,10 @@
     @if (Model.GridModel.ToolbarPosition == ToolbarPosition.Top)
     {
         @await Html.PartialAsync("Grid/__Toolbar", Model)
+        @if (Model.GridModel.IsEditable)
+        {
+            <div id="form-message" class="border rounded border-slate-300 p-1 my-1">&nbsp;</div>
+        }
     }
     <div class="flex mt-2">
         <table class="table-auto border-collapse grid-table" data-linkedgridids="@Model.LinkedGridIds" data-linkedcontrolids="@Model.LinkedControlIds">

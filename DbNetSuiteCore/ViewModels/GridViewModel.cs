@@ -180,5 +180,18 @@ namespace DbNetSuiteCore.ViewModels
         {
             return $"/gridcontrol.htmx?page={pageNumber}";
         }
+
+        public HtmlString RenderButton(string name, HtmlString icon, ResourceNames resourceName, bool disabled = false, string style = "")
+        {
+            Dictionary<string, string> attributes = new Dictionary<string, string>();
+
+            var disabledAttr = disabled ? " disabled" : null;
+            return new HtmlString($"<button type=\"button\" style=\"{style}\" button-type=\"{name}\" title=\"{ButtonText(resourceName)}\" hx-post=\"{SubmitUrl}\" name=\"{name}\" hx-trigger=\"click\" hx-target=\"{HxTarget}\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" {disabledAttr} {RazorHelper.Attributes(attributes)}>{icon}</button>");
+        }
+
+        public string Justify()
+        {
+            return (GridModel.IsEditable) ? "justify-between" : "justify-start";
+        }
     }
 }

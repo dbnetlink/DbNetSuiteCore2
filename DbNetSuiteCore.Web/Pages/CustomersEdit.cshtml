@@ -1,0 +1,25 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers");
+
+    customerGrid.Columns = new List<GridColumn> {
+        new GridColumn("CustomerID") {Editable = true },
+        new GridColumn("CompanyName") {Editable = true },
+        new GridColumn("ContactName"),
+        new GridColumn("ContactTitle") {Editable = true},
+        new GridColumn("Address"),
+        new GridColumn("City"),
+        new GridColumn("Region"),
+        new GridColumn("PostalCode"),
+        new GridColumn("Country"),
+        new GridColumn("Phone"),
+        new GridColumn("Fax")
+    };
+  
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+}

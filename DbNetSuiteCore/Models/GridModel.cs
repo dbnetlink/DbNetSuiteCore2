@@ -45,15 +45,18 @@ namespace DbNetSuiteCore.Models
         public int ColSpan => VisbleColumns.ToList().Count;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
         public List<string> LinkedGridIds => GetLinkedControlIds(nameof(GridModel));  
-
         public List<GridModel> _NestedGrids { get; set; } = new List<GridModel>();
-
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
         public bool OptimizeForLargeDataset { get; set; } = false;
         internal bool PaginateQuery => OptimizeForLargeDataset && TriggerName != TriggerNames.Download;
         public int TotalRows { get; set; }
         public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
+        public bool IsEditable => Columns.Any(c => c.Editable);
+        public bool ValidationPassed { get; set; } = false;
+
+        public Dictionary<string, List<string>> FormValues;
+
 
         [JsonIgnore]
         public GridModel NestedGrid

@@ -6,7 +6,7 @@ using System.Data;
 
 namespace DbNetSuiteCore.Models
 {
-    public class GridColumn : ColumnModel
+    public class GridColumn : GridFormColumn
     {
         private FilterType _Filter = FilterType.None;
         public bool Sortable => IsSortable();
@@ -32,6 +32,8 @@ namespace DbNetSuiteCore.Models
 
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;
+
+        public FormColumn FormColumn { get; set; } = new FormColumn();
      
 
         public GridColumn()
