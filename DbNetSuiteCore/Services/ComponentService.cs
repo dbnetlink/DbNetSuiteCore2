@@ -6,6 +6,7 @@ using System.Data;
 using System.Text;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Extensions;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Services
 {
@@ -489,21 +490,95 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected bool LengthError(ResourceNames resourceName, int? length, object? paramValue, GridFormColumn gridFormColumn, ComponentModel componentModel)
+        protected void ValidateFormValue(GridFormColumn formColumn, string value, ResourceNames resourceName, ComponentModel formModel)
         {
-            if (length.HasValue == false)
+            object? paramValue;
+
+            switch (resourceName)
             {
-                return false;
+                case ResourceNames.Required:
+                    if (formColumn.DataType != typeof(Boolean))
+                    {
+                        bool primaryKeyRequired = (formColumn is FormColumn) ? ((FormColumn)formColumn).PrimaryKeyRequired : false;
+                        formColumn.InError = string.IsNullOrEmpty(value) && (formColumn.Required || primaryKeyRequired);
+                    }
+                    break;
+                case ResourceNames.DataFormatError:
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+                    if (paramValue == null)
+                    {
+                        formColumn.InError = true;
+                    }
+                    break;
+                case ResourceNames.PatternError:
+                    if (string.IsNullOrEmpty(value) == false && string.IsNullOrEmpty(formColumn.Pattern) == false)
+                    {
+                        if (new Regex(formColumn.Pattern).IsMatch(value) == false)
+                        {
+                            formColumn.InError = true;
+                        }
+                    }
+                    break;
+                case ResourceNames.MinCharsError:
+                    if (formColumn.MinLength == null && formColumn.MaxLength == null)
+                    {
+                        break;
+                    }
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+                    if (paramValue == null)
+                    {
+                        break;
+                    }
+                    CheckForLengthError(ResourceNames.MinCharsError, formColumn.MinLength, paramValue, formColumn, formModel);
+                    CheckForLengthError(ResourceNames.MaxCharsError, formColumn.MaxLength, paramValue, formColumn, formModel);
+                    break;
+                case ResourceNames.MinValueError:
+                    if (formColumn.MinValue == null && formColumn.MaxValue == null)
+                    {
+                        break;
+                    }
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+
+                    bool lessThanMinimum = false;
+                    bool greaterThanMaximum = false;
+
+                    if (formColumn.MinValue != null)
+                    {
+                        lessThanMinimum = Compare(paramValue!, formColumn.MinValue) < 0;
+                    }
+
+                    if (formColumn.MaxValue != null)
+                    {
+                        greaterThanMaximum = Compare(paramValue!, formColumn.MaxValue) > 0;
+                    }
+
+                    if (lessThanMinimum)
+                    {
+                        formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>", formColumn.MinValue);
+                        formColumn.InError = true;
+                    }
+
+                    if (greaterThanMaximum)
+                    {
+                        formColumn.InError = true;
+                        formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
+                    }
+                    break;
             }
-            if ((resourceName == ResourceNames.MinCharsError && length.Value > gridFormColumn.ToStringOrEmpty(paramValue).Length) ||
-                (resourceName == ResourceNames.MaxCharsError && length.Value < gridFormColumn.ToStringOrEmpty(paramValue).Length))
+        }
+
+        protected void CheckForLengthError(ResourceNames resourceName, int? length, object? paramValue, GridFormColumn gridFormColumn, ComponentModel componentModel)
+        {
+            if (length.HasValue)
             {
-                componentModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", length.Value.ToString());
-                gridFormColumn.InError = true;
-                componentModel.MessageType = MessageType.Error;
-                return true;
+                if ((resourceName == ResourceNames.MinCharsError && length.Value > gridFormColumn.ToStringOrEmpty(paramValue).Length) ||
+                    (resourceName == ResourceNames.MaxCharsError && length.Value < gridFormColumn.ToStringOrEmpty(paramValue).Length))
+                {
+                    componentModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", length.Value.ToString());
+                    gridFormColumn.InError = true;
+                    componentModel.MessageType = MessageType.Error;
+                }
             }
-            return false;
         }
 
         protected int Compare(object paramValue, object compareValue)

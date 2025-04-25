@@ -161,6 +161,30 @@ namespace DbNetSuiteCore.Models
             return ((DbLookupOptions ?? EnumOptions) ?? GetListOptions()) ?? GetDictionaryOptions() ?? GetRangeOptions();
         }
 
+        internal void SetLookupOptions(ColumnModel sourceColumn)
+        {
+            if (sourceColumn.DbLookupOptions != null)
+            {
+                DbLookupOptions = sourceColumn.DbLookupOptions;
+            }
+            else if (sourceColumn.EnumOptions != null)
+            {
+                EnumOptions = sourceColumn.EnumOptions;
+            }
+            else if (sourceColumn.LookupList != null)
+            {
+                LookupList = sourceColumn.LookupList;
+            }
+            else if (sourceColumn.LookupDictionary != null)
+            {
+                LookupDictionary = sourceColumn.LookupDictionary;
+            }
+            else if (sourceColumn.LookupRange != null)
+            {
+                LookupRange = sourceColumn.LookupRange;
+            }
+        }
+
         private List<KeyValuePair<string, string>>? GetListOptions()
         {
             if (LookupList == null)

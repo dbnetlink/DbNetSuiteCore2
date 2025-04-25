@@ -26,7 +26,8 @@
         .dbnetsuite select.column-filter,
         .dbnetsuite select.search-operator,
         .dbnetsuite select.conjunction,
-        .dbnetsuite-form select {
+        .dbnetsuite-form select,
+        .dbnetsuite-grid select {
             @apply pr-8 !important;
         }
 

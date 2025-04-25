@@ -82,7 +82,7 @@ namespace DbNetSuiteCore.Repositories
         {
             if (componentModel is GridModel)
             {
-                foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null))
+                foreach (var column in componentModel.GetColumns().Cast<GridColumn>().Where(c => c.Lookup != null && c.Editable == false))
                 {
                     DataColumn? dataColumn = componentModel.GetDataColumn(column);
                     componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);

@@ -51,7 +51,7 @@
         }
     </div>
 
-    @if (Model.GridModel.Columns.Any(c => c.Editable) )
+    @if (Model.Editable)
     {
         <div class="flex flex-row gap-1" id="applyCancel">
             @{

@@ -20,7 +20,7 @@ namespace DbNetSuiteCore.Models
         public Dictionary<string, string> FormValues = new Dictionary<string, string>();
         public bool Insert { get; set; } = false;
         public bool Delete { get; set; } = false;
-        internal FormMode Mode { get; set; } = FormMode.Empty;
+        public FormMode Mode { get; set; } = FormMode.Empty;
         public bool ValidationPassed { get; set; } = false;
         public bool OneToOne => IsLinked && Columns.Any(c => c.PrimaryKey && c.ForeignKey);
         public bool ReadOnly { get; set; } = false;

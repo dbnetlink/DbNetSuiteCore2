@@ -53,6 +53,7 @@ namespace DbNetSuiteCore.Models
         public int? MaxLength { get; set; } = null;
         public int? MinLength { get; set; } = null;
         public string? Pattern { get; set; } = null;
+        public string HelpText { get; set; } = string.Empty;
 
         public HtmlEditor? HtmlEditor { get; set; } = null;
         public GridFormColumn()

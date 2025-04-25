@@ -29,6 +29,7 @@ namespace DbNetSuiteCore.Models
         public string Style { get; set; } = string.Empty;
         public Image? Image { get; set; }
         public int MaxChars { get; set; } = int.MaxValue;
+        internal bool NoFormat => Editable && (MaxValue != null || MinValue != null);
 
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;

@@ -52,7 +52,21 @@
                     continue;
                 }
 
-                var classes = new List<string>() { "text-base", "align-top" };
+                var classes = new List<string>() { "text-base" };
+
+                @if (Model.Editable)
+                {
+                    classes.Add("align-middle");
+                }
+                else
+                {
+                    classes.Add("align-top");
+                }
+
+                if (column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
+                {
+                    classes.Add("text-center");
+                }
 
                 @if (column.Editable && column.PrimaryKey == false && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
                 {
@@ -69,7 +83,6 @@
 
                 if (column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
                 {
-                    classes.Add("text-center");
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));
                     <td @RazorHelper.CellDataAttributes(classes, boolValue, column.Style)>
                         <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>

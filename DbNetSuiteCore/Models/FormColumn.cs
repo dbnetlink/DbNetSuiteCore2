@@ -20,7 +20,6 @@ namespace DbNetSuiteCore.Models
         public int ColSpan { get; set; } = 1;
         public int RowSpan { get; set; } = 1;
         public int TextAreaRows { get; set; } = 4;
-        public string HelpText { get; set; } = string.Empty;
         public int Size { get; set; } = 4;
         public string Style { get; set; } = string.Empty;
         public double? Step { get; set; } = null;
@@ -36,6 +35,8 @@ namespace DbNetSuiteCore.Models
                 }
             }
         }
+
+        internal bool GridFormControl { get; set; } = false;
 
         public bool HashPassword { get; set; } = false;
         public bool IsReadOnly(FormMode formMode)
@@ -93,6 +94,8 @@ namespace DbNetSuiteCore.Models
 
         public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel)
         {
+            GridFormControl = componentModel is GridModel;
+
             var attributes = new Dictionary<string, string>();
 
             switch (ControlType)
@@ -198,7 +201,7 @@ namespace DbNetSuiteCore.Models
 
         private string HelpTextElement()
         {
-            return string.IsNullOrEmpty(HelpText) ? string.Empty : $"<small>{HelpText}</small>";
+            return string.IsNullOrEmpty(HelpText) || GridFormControl ? string.Empty : $"<small>{HelpText}</small>";
         }
 
         private HtmlString RenderInput(Dictionary<string, string> attributes, ComponentModel componentModel)
@@ -206,6 +209,11 @@ namespace DbNetSuiteCore.Models
             AddAttribute(attributes, TextTransform, "data-texttransform");
             AddAttribute(attributes, MaxLength, "maxlength");
             AddAttribute(attributes, MinLength, "minlength");
+
+            if (string.IsNullOrEmpty(HelpText) == false && GridFormControl)
+            {
+                attributes.Add("title", HelpText);
+            }
 
             string dataList = DataList(attributes);
            
@@ -248,6 +256,11 @@ namespace DbNetSuiteCore.Models
                 attributes.Add("size", Size.ToString());
             }
 
+            if (string.IsNullOrEmpty(HelpText) == false && GridFormControl)
+            {
+                attributes.Add("title", HelpText);
+            }
+
             List<string> select = new List<string>();
 
             select.Add($"<select {RazorHelper.Attributes(attributes)} {Attributes(componentModel, attr)}>");
@@ -266,6 +279,11 @@ namespace DbNetSuiteCore.Models
             if (HtmlEditor.HasValue)
             {
                 attributes["data-htmleditor"] = HtmlEditor.Value.ToString();
+            }
+
+            if (string.IsNullOrEmpty(HelpText) == false && GridFormControl)
+            {
+                attributes.Add("title", HelpText); ;
             }
 
             string textArea = $"<textarea {RazorHelper.Attributes(attributes)} {Attributes(componentModel)}>{text}</textarea>";
@@ -294,11 +312,29 @@ namespace DbNetSuiteCore.Models
             attributes["class"] = CheckboxClasses(componentModel);
             attributes["style"] = "transform: scale(1.5);margin-left:5px";
 
+            if (GridFormControl)
+            {
+                if (string.IsNullOrEmpty(HelpText) == false)
+                {
+                    attributes.Add("title", HelpText);
+                }
+            }
+
+            if (GridFormControl)
+            {
+                attributes.Remove("name");
+            }
+
             bool boolValue = ComponentModelExtensions.ParseBoolean(value);
 
-            string checkbox = $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(componentModel, boolValue)}/>{HelpTextElement()}";
+            List<string> checkbox = new List<string>() { $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(componentModel, boolValue)}/>{HelpTextElement()}" };
 
-            return new HtmlString(checkbox);
+            if (GridFormControl)
+            {
+                checkbox.Add($"<input type=\"hidden\" name=\"_{ColumnName}\"/>");
+            }
+
+            return new HtmlString(string.Join("",checkbox));
         }
 
         string Classes(ComponentModel componentModel)

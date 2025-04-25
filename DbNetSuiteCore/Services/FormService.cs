@@ -276,102 +276,27 @@ namespace DbNetSuiteCore.Services
                     continue;
                 }
 
-                object? paramValue;
-
-                switch (resourceName)
+                ValidateFormValue(formColumn, value, resourceName, formModel);
+             
+                if (resourceName == ResourceNames.MinValueError && formModel.Columns.Any(c => c.InError))
                 {
-                    case ResourceNames.Required:
-                        formColumn.InError = string.IsNullOrEmpty(value) && (formColumn.Required || formColumn.PrimaryKeyRequired);
-                        break;
-                    case ResourceNames.DataFormatError:
-                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
-                        if (paramValue == null)
-                        {
-                            formColumn.InError = true;
-                        }
-                        break;
-                    case ResourceNames.PatternError:
-                        if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(formColumn.Pattern))
-                        {
-                            break;
-                        }
-                        if (new Regex(formColumn.Pattern).IsMatch(value) == false)
-                        {
-                            formColumn.InError = true;
-                        }
-                        break;
-                    case ResourceNames.MinCharsError:
-                        if (formColumn.MinLength == null && formColumn.MaxLength == null)
-                        {
-                            continue;
-                        }
-                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
-                        if (paramValue == null)
-                        {
-                            continue;
-                        }
-
-                        if (LengthError(ResourceNames.MinCharsError, formColumn.MinLength, paramValue, formColumn,formModel))
-                        {
-                            return false;
-                        }
-                        if (LengthError(ResourceNames.MaxCharsError, formColumn.MaxLength, paramValue, formColumn, formModel))
-                        {
-                            return false;
-                        }
-
-                        break;
-                    case ResourceNames.MinValueError:
-                        if (formColumn.MinValue == null && formColumn.MaxValue == null)
-                        {
-                            continue;
-                        }
-                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
-
-                        bool lessThanMinimum = false;
-                        bool greaterThanMaximum = false;
-
-                        if (formColumn.MinValue != null)
-                        {
-                            lessThanMinimum = Compare(paramValue!, formColumn.MinValue) < 0;
-                        }
-
-                        if (formColumn.MaxValue != null)
-                        {
-                            greaterThanMaximum = Compare(paramValue!, formColumn.MaxValue) > 0;
-                        }
-
-                        if (lessThanMinimum)
-                        {
-                            formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>", formColumn.MinValue);
-                        };
-
-                        if (greaterThanMaximum)
-                        {
-                            formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
-                        };
-
-                        if (string.IsNullOrEmpty(formModel.Message) == false)
-                        {
-                            formModel.MessageType = MessageType.Error;
-                            return false;
-                        }
-                        break;
+                    break;
                 }
             }
 
             if (formModel.Columns.Any(c => c.InError))
             {
-                formModel.Message = ResourceHelper.GetResourceString(resourceName);
+                if (string.IsNullOrEmpty(formModel.Message))
+                {
+                    formModel.Message = ResourceHelper.GetResourceString(resourceName);
+                }
                 formModel.MessageType = MessageType.Error;
                 return false;
             }
 
             return true;
         }
-
-   
-
+  
         private FormModel GetFormModel()
         {
             try

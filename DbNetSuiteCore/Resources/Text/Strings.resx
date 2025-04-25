@@ -211,13 +211,13 @@
     <value>A maximum of {0} characters must be entered</value>
   </data>
   <data name="MaxValueError" xml:space="preserve">
-    <value>Entered {0} must be less than {1}</value>
+    <value>{0} cannot be greater than {1}</value>
   </data>
   <data name="MinCharsError" xml:space="preserve">
     <value>A minmum of {0} characters must be entered</value>
   </data>
   <data name="MinValueError" xml:space="preserve">
-    <value>Entered {0} must be greater than {1}</value>
+    <value>{0} cannot be less than {1}</value>
   </data>
   <data name="Next" xml:space="preserve">
     <value>Next</value>

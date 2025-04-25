@@ -24,6 +24,11 @@ namespace DbNetSuiteCore.Services
 
         public async Task<Byte[]> Process(HttpContext context, string page)
         {
+            if (context.Request.Method != "POST")
+            {
+                return new byte[0]; 
+            }
+
             try
             {
                 _context = context;
@@ -85,7 +90,8 @@ namespace DbNetSuiteCore.Services
 
                 foreach (var column in gridModel.Columns.Where(c => c.Editable))
                 {
-                    column.FormColumn = new FormColumn(column.Expression) { Name = column.Name, DataType = column.DataType, PrimaryKey = column.PrimaryKey };
+                    column.FormColumn = new FormColumn(column.Expression);
+                    ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
                 }
             }
 
@@ -93,6 +99,11 @@ namespace DbNetSuiteCore.Services
             if (gridModel.IsStoredProcedure && gridModel.Uninitialised)
             {
                 ConfigureColumnsForStoredProcedure(gridModel);
+            }
+
+            foreach (var column in gridModel.Columns.Where(c => c.Editable))
+            {
+                column.FormColumn.SetLookupOptions(column);
             }
 
             if (gridModel.IncludeJsonData)
@@ -433,6 +444,11 @@ namespace DbNetSuiteCore.Services
                 committed = true;
             }
 
+            if (committed == false)
+            {
+                await GetRecords(gridModel);
+            }
+
             return await View("Grid/__Rows", gridViewModel);
         }
 
@@ -477,7 +493,9 @@ namespace DbNetSuiteCore.Services
 
         private bool ValidateErrorType(GridModel gridModel, ResourceNames resourceName)
         {
-            for (var r = 0; r < gridModel.Data.Rows.Count; r++)
+            var firstColumn = gridModel.Columns.Where(c => c.Editable).First().ColumnName;
+
+            for (var r = 0; r < gridModel.FormValues[firstColumn].Count; r++)
             {
                 foreach (GridFormColumn? gridFormColumn in gridModel.Columns.Where(c => c.Editable))
                 {
@@ -490,98 +508,35 @@ namespace DbNetSuiteCore.Services
                         value = gridModel.FormValues[columnName][r];
                     }
 
-                    object? paramValue;
+                    ValidateFormValue(gridFormColumn, value, resourceName, gridModel);
 
-                    switch (resourceName)
+                    if (CellSpecificError())
                     {
-                        case ResourceNames.Required:
-                            gridFormColumn.InError = string.IsNullOrEmpty(value) && (gridFormColumn.Required);
-                            break;
-                        case ResourceNames.DataFormatError:
-                            paramValue = ComponentModelExtensions.ParamValue(value, gridFormColumn, gridModel.DataSourceType);
-                            if (paramValue == null)
-                            {
-                                gridFormColumn.InError = true;
-                            }
-                            break;
-                        case ResourceNames.PatternError:
-                            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(gridFormColumn.Pattern))
-                            {
-                                break;
-                            }
-                            if (new Regex(gridFormColumn.Pattern).IsMatch(value) == false)
-                            {
-                                gridFormColumn.InError = true;
-                            }
-                            break;
-                        case ResourceNames.MinCharsError:
-                            if (gridFormColumn.MinLength == null && gridFormColumn.MaxLength == null)
-                            {
-                                continue;
-                            }
-                            paramValue = ComponentModelExtensions.ParamValue(value, gridFormColumn, gridModel.DataSourceType);
-                            if (paramValue == null)
-                            {
-                                continue;
-                            }
-
-                            if (LengthError(ResourceNames.MinCharsError, gridFormColumn.MinLength, paramValue, gridFormColumn, gridModel))
-                            {
-                                return false;
-                            }
-                            if (LengthError(ResourceNames.MaxCharsError, gridFormColumn.MaxLength, paramValue, gridFormColumn, gridModel))
-                            {
-                                return false;
-                            }
-
-                            break;
-                        case ResourceNames.MinValueError:
-                            if (gridFormColumn.MinValue == null && gridFormColumn.MaxValue == null)
-                            {
-                                continue;
-                            }
-                            paramValue = ComponentModelExtensions.ParamValue(value, gridFormColumn, gridModel.DataSourceType);
-
-                            bool lessThanMinimum = false;
-                            bool greaterThanMaximum = false;
-
-                            if (gridFormColumn.MinValue != null)
-                            {
-                                lessThanMinimum = Compare(paramValue!, gridFormColumn.MinValue) < 0;
-                            }
-
-                            if (gridFormColumn.MaxValue != null)
-                            {
-                                greaterThanMaximum = Compare(paramValue!, gridFormColumn.MaxValue) > 0;
-                            }
-
-                            if (lessThanMinimum)
-                            {
-                                gridModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{gridFormColumn.Label}</b>", gridFormColumn.MinValue);
-                            };
-
-                            if (greaterThanMaximum)
-                            {
-                                gridModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{gridFormColumn.Label}</b>", gridFormColumn.MaxValue);
-                            };
-
-                            if (string.IsNullOrEmpty(gridModel.Message) == false)
-                            {
-                                gridModel.MessageType = MessageType.Error;
-                                return false;
-                            }
-                            break;
+                        break;
                     }
+                }
+
+                if (CellSpecificError())
+                {
+                    break;
                 }
             }
             if (gridModel.Columns.Any(c => c.InError))
             {
-                gridModel.Message = ResourceHelper.GetResourceString(resourceName);
+                if (string.IsNullOrEmpty(gridModel.Message))
+                {
+                    gridModel.Message = ResourceHelper.GetResourceString(resourceName);
+                }
                 gridModel.MessageType = MessageType.Error;
                 return false;
             }
 
             return true;
+
+            bool CellSpecificError()
+            {
+                return resourceName == ResourceNames.MinValueError && gridModel.Columns.Any(c => c.InError);
+            }
         }
     }
 }

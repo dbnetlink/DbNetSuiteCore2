@@ -52,6 +52,13 @@ class GridControl extends ComponentControl {
 
         this.controlElements("tr.grid-row").forEach((row: HTMLTableRowElement) => { this.invokeEventHandler('RowTransform', { row: row }) });
         this.controlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellTransform(cell) });
+        this.controlElements('input[type="checkbox"].fc-control').forEach((cb: HTMLInputElement) => {
+            (cb.nextElementSibling as HTMLInputElement).value = cb.checked.toString();
+            cb.addEventListener('change', function (ev) {
+                let cb = ev.target as HTMLInputElement;
+                (cb.nextElementSibling as HTMLInputElement).value = cb.checked.toString();
+            });
+        });
 
         this.controlElements("tbody a").forEach((e) => {
             e.classList.remove("selected");
@@ -187,10 +194,12 @@ class GridControl extends ComponentControl {
                 if (this.formModified() == false) {
                     evt.preventDefault();
                 }
+                /*
                 else if (this.form.checkValidity() == false) {
                     this.form.reportValidity()
                     evt.preventDefault();
                 }
+                */
                 return
             case "cancel":
             case "primarykey":

@@ -142,7 +142,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 value = "false";
             }
-            return string.IsNullOrEmpty(value) ? DBNull.Value : (ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType) ?? DBNull.Value);
+            return ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType) ?? DBNull.Value;
         }
 
         public static CommandConfig BuildDelete(this FormModel formModel)

@@ -418,6 +418,10 @@ namespace DbNetSuiteCore.Extensions
 
             if (string.IsNullOrEmpty(value.ToString()))
             {
+                if (dataType == nameof(Boolean))
+                {
+                    return false;
+                }
                 return DBNull.Value;
             }
 

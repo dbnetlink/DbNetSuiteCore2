@@ -51,7 +51,7 @@ namespace DbNetSuiteCore.Helpers
             {
                 if (key.StartsWith("_"))
                 {
-                    formValues[key.Substring(1)] = FormValueList(key,httpContext);
+                    formValues[key.Substring(1)] = FormValueList(key, httpContext).Select(f => f.Trim()).ToList();
                 }
             }
 
