@@ -490,7 +490,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected void ValidateFormValue(GridFormColumn formColumn, string value, ResourceNames resourceName, ComponentModel formModel)
+        protected void ValidateFormValue(GridFormColumn formColumn, string value, ResourceNames resourceName, ComponentModel componentModel)
         {
             object? paramValue;
 
@@ -504,7 +504,7 @@ namespace DbNetSuiteCore.Services
                     }
                     break;
                 case ResourceNames.DataFormatError:
-                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
                     if (paramValue == null)
                     {
                         formColumn.InError = true;
@@ -520,24 +520,35 @@ namespace DbNetSuiteCore.Services
                     }
                     break;
                 case ResourceNames.MinCharsError:
-                    if (formColumn.MinLength == null && formColumn.MaxLength == null)
+                    if (formColumn.MinLength == null)
                     {
                         break;
                     }
-                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
                     if (paramValue == null)
                     {
                         break;
                     }
-                    CheckForLengthError(ResourceNames.MinCharsError, formColumn.MinLength, paramValue, formColumn, formModel);
-                    CheckForLengthError(ResourceNames.MaxCharsError, formColumn.MaxLength, paramValue, formColumn, formModel);
+                    CheckForLengthError(ResourceNames.MinCharsError, formColumn.MinLength, paramValue, formColumn, componentModel);
+                    break;
+                case ResourceNames.MaxCharsError:
+                    if (formColumn.MaxLength == null)
+                    {
+                        break;
+                    }
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+                    if (paramValue == null)
+                    {
+                        break;
+                    }
+                    CheckForLengthError(ResourceNames.MaxCharsError, formColumn.MaxLength, paramValue, formColumn, componentModel);
                     break;
                 case ResourceNames.MinValueError:
                     if (formColumn.MinValue == null && formColumn.MaxValue == null)
                     {
                         break;
                     }
-                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, formModel.DataSourceType);
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
 
                     bool lessThanMinimum = false;
                     bool greaterThanMaximum = false;
@@ -554,14 +565,14 @@ namespace DbNetSuiteCore.Services
 
                     if (lessThanMinimum)
                     {
-                        formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>", formColumn.MinValue);
+                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>", formColumn.MinValue);
                         formColumn.InError = true;
                     }
 
                     if (greaterThanMaximum)
                     {
                         formColumn.InError = true;
-                        formModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
+                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
                     }
                     break;
             }

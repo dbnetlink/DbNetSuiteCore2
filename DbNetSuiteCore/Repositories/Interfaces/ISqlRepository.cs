@@ -11,7 +11,9 @@ namespace DbNetSuiteCore.Repositories
         public Task <bool>RecordExists(ComponentModel gridModel, object primaryKeyValue);
         public Task GetLookupOptions(ComponentModel gridModel);
         public Task UpdateRecord(FormModel formModel);
+        public Task UpdateRecords(GridModel gridModel);
         public Task DeleteRecord(FormModel formModel);
         public Task InsertRecord(FormModel formModel);
+        public Task<List<object>> GetPrimaryKeyValues(GridModel gridModel);
     }
 }

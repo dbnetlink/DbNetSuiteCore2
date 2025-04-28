@@ -10,17 +10,17 @@
 @using DbNetSuiteCore.Enums
 @using System.Text.Encodings.Web
 
-<div class="form-and-toolbar" id="@Model.HxIdTarget.Replace("#","")">
+<div class="form-and-toolbar flex flex-col gap-2" id="@Model.HxIdTarget.Replace("#","")">
     @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom && Model.HideToolbar == false)
     {
         @await Html.PartialAsync("Form/__Toolbar")
     }
+    @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
+    {
+        <div class="flex text-lg caption">@Model.FormModel.Caption</div>
+    }
+    <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.CommitType" data-id="@Model.RecordId">
 
-    <div class="form-body" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.CommitType" data-id="@Model.RecordId">
-        @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
-        {
-            <div class="flex text-lg caption">@Model.FormModel.Caption</div>
-        }
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
             @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == false))
             {
@@ -63,7 +63,7 @@
             highlightAttr = RazorHelper.Attribute("data-highlight", Model.FormModel.MessageType.ToString().ToLower());
         }
 
-        <div id="form-message" class="border rounded border-slate-300 p-1 my-1" @highlightAttr>@Html.Raw(Model.FormModel.Message)</div>
+        <div id="form-message" class="flex border rounded border-slate-300 p-1" @highlightAttr>@Html.Raw(Model.FormModel.Message)</div>
     }
 
     @await Html.PartialAsync("__LicenseInfo", Model.FormModel.LicenseInfo)

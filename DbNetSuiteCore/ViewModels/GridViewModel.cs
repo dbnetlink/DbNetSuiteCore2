@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.ViewModels
         private readonly GridModel _gridModel = new GridModel();
         public GridModel GridModel => _gridModel;
         public ViewDialog ViewDialog => _gridModel.ViewDialog!;
-        public IEnumerable<DataRow> Rows => GridModel.OptimizeForLargeDataset ? GridModel.Data.AsEnumerable() : GridModel.Data.AsEnumerable().Skip((GridModel.CurrentPage - 1) * GridModel.PageSize).Take(GridModel.PageSize);
+        public IEnumerable<DataRow> Rows => GridModel.Rows;
         public int TotalPages => RowCount == 0 ? 0 : (int)Math.Ceiling((double)RowCount / GridModel.PageSize);
         public int RowCount => GridModel.PaginateQuery ? GridModel.TotalRows : GridModel.Data.Rows.Count;
         public string GridId => _gridModel.Id;

@@ -26,7 +26,7 @@ namespace DbNetSuiteCore.Services
         {
             if (context.Request.Method != "POST")
             {
-                return new byte[0]; 
+                return new byte[0];
             }
 
             try
@@ -112,6 +112,8 @@ namespace DbNetSuiteCore.Services
             }
 
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
+            gridModel.FormValues.Clear();
+            gridModel.Columns.ToList().ForEach(c => c.LineInError.Clear());
 
             var gridViewModel = new GridViewModel(gridModel);
 
@@ -427,11 +429,8 @@ namespace DbNetSuiteCore.Services
             {
                 if (await ValidateRecord(gridModel))
                 {
-                    await CommitUpdate(gridModel);
-                    gridViewModel = new GridViewModel(gridModel);
-                    committed = true;
+                    await Commit();
                 }
-
             }
             else if (gridModel.ValidationPassed == false)
             {
@@ -439,9 +438,7 @@ namespace DbNetSuiteCore.Services
             }
             else
             {
-                await CommitUpdate(gridModel);
-                gridViewModel = new GridViewModel(gridModel);
-                committed = true;
+                await Commit();
             }
 
             if (committed == false)
@@ -450,13 +447,21 @@ namespace DbNetSuiteCore.Services
             }
 
             return await View("Grid/__Rows", gridViewModel);
+
+            async Task Commit()
+            {
+                await CommitUpdate(gridModel);
+                await GetGridRecords(gridModel);
+                gridViewModel = new GridViewModel(gridModel);
+                committed = true;
+            }
         }
 
         private async Task CommitUpdate(GridModel gridModel)
         {
             try
             {
-               // await UpdateRecord(gridModel);
+                await UpdateRecords(gridModel);
                 gridModel.FormValues = new Dictionary<string, List<string>>();
                 gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
 
@@ -469,6 +474,31 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        protected async Task UpdateRecords(GridModel gridModel)
+        {
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.UpdateRecords(gridModel);
+                    break;
+                default:
+                    await _msSqlRepository.UpdateRecords(gridModel);
+                    break;
+            }
+        }
+
         private async Task<bool> ValidateRecord(GridModel gridModel)
         {
             if (ValidateErrorType(gridModel, ResourceNames.Required))
@@ -477,11 +507,14 @@ namespace DbNetSuiteCore.Services
                 {
                     if (ValidateErrorType(gridModel, ResourceNames.MinCharsError))
                     {
-                        if (ValidateErrorType(gridModel, ResourceNames.MinValueError))
+                        if (ValidateErrorType(gridModel, ResourceNames.MaxCharsError))
                         {
-                            if (ValidateErrorType(gridModel, ResourceNames.PatternError))
+                            if (ValidateErrorType(gridModel, ResourceNames.MinValueError))
                             {
-                                return true;
+                                if (ValidateErrorType(gridModel, ResourceNames.PatternError))
+                                {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -493,13 +526,22 @@ namespace DbNetSuiteCore.Services
 
         private bool ValidateErrorType(GridModel gridModel, ResourceNames resourceName)
         {
-            var firstColumn = gridModel.Columns.Where(c => c.Editable).First().ColumnName;
+            int rows = gridModel.FormValues[gridModel.FirstEditableColumnName].Count;
 
-            for (var r = 0; r < gridModel.FormValues[firstColumn].Count; r++)
+            foreach (GridColumn? gridColumn in gridModel.Columns.Where(c => c.Editable))
             {
-                foreach (GridFormColumn? gridFormColumn in gridModel.Columns.Where(c => c.Editable))
+                gridColumn.LineInError = new List<bool>();
+                for (var r = 0; r < rows; r++)
                 {
-                    var columnName = gridFormColumn.ColumnName;
+                    gridColumn.LineInError.Add(false);
+                }
+            }
+
+            for (var r = 0; r < rows; r++)
+            {
+                foreach (GridColumn? gridColumn in gridModel.Columns.Where(c => c.Editable))
+                {
+                    var columnName = gridColumn.ColumnName;
 
                     var value = string.Empty;
 
@@ -508,7 +550,9 @@ namespace DbNetSuiteCore.Services
                         value = gridModel.FormValues[columnName][r];
                     }
 
-                    ValidateFormValue(gridFormColumn, value, resourceName, gridModel);
+                    gridColumn.InError = false;
+                    ValidateFormValue(gridColumn, value, resourceName, gridModel);
+                    gridColumn.LineInError[r] = gridColumn.InError;
 
                     if (CellSpecificError())
                     {
@@ -521,7 +565,8 @@ namespace DbNetSuiteCore.Services
                     break;
                 }
             }
-            if (gridModel.Columns.Any(c => c.InError))
+
+            if (gridModel.Columns.Any(c => c.LineInError.Contains(true)))
             {
                 if (string.IsNullOrEmpty(gridModel.Message))
                 {

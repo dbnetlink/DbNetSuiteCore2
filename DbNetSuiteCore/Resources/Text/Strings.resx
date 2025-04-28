@@ -292,6 +292,6 @@
     <value>You have unapplied changes. Please apply or cancel.</value>
   </data>
   <data name="Updated" xml:space="preserve">
-    <value>Record has been updated</value>
+    <value>Changes have been applied</value>
   </data>
 </root>

@@ -117,6 +117,11 @@ class GridControl extends ComponentControl {
             this.jsonData = JSON.parse((this.gridControlElement("#jsonData") as HTMLTextAreaElement).value);
             args['json'] = this.jsonData;
         }
+
+        if (this.formBody.dataset.message) {
+            this.setMessage(this.formBody.dataset.message, this.formBody.dataset.messagetype)
+        }
+       
         this.invokeEventHandler('PageLoaded', args);
     }
 

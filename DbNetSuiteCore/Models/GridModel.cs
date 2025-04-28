@@ -3,10 +3,11 @@ using System.Text.Json.Serialization;
 using System.Data;
 using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace DbNetSuiteCore.Models
 {
-    public class GridModel : ComponentModel
+    public class    GridModel : ComponentModel
     {
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
@@ -54,9 +55,11 @@ namespace DbNetSuiteCore.Models
         public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
         public bool IsEditable => Columns.Any(c => c.Editable);
         public bool ValidationPassed { get; set; } = false;
-
         public Dictionary<string, List<string>> FormValues;
-
+        internal string FirstEditableColumnName => Columns.Where(c => c.Editable).First().ColumnName;
+        [JsonIgnore]
+        public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
 
         [JsonIgnore]
         public GridModel NestedGrid
@@ -174,7 +177,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public string? PrimaryKeyValue(DataRow dataRow)
+        public object? PrimaryKeyValue(DataRow dataRow)
         {
             if (DataSourceType == DataSourceType.FileSystem)
             {
@@ -189,7 +192,7 @@ namespace DbNetSuiteCore.Models
 
                     if (dataColumn != null)
                     {
-                        return dataRow[dataColumn].ToString();
+                        return dataRow[dataColumn];
                     }
                 }
 
@@ -202,5 +205,6 @@ namespace DbNetSuiteCore.Models
         {
             ClientEvents[clientEvent] = functionName;
         }
+
     }
 }

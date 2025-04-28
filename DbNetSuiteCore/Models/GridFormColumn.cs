@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Helpers;
 using MongoDB.Bson;
 using System.Data;
+using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Models
 {
@@ -12,7 +13,9 @@ namespace DbNetSuiteCore.Models
         private bool _suggest = false;
         public FormControlType ControlType { get; set; } = FormControlType.Auto;
         public bool Required { get; set; } = false;
+        [JsonIgnore]
         public bool InError { get; set; } = false;
+      
         public object? MinValue
         {
             get

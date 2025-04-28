@@ -292,7 +292,7 @@ class ComponentControl {
     }
 
     protected setMessage(message: string, type: string = 'success') {
-        this.formMessage.innerText = message;
+        this.formMessage.innerHTML = message;
         this.formMessage.dataset.highlight = type.toLowerCase();
         window.setTimeout(() => { this.clearErrorMessage() }, 3000)
     }

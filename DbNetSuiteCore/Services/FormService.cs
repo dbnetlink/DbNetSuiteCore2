@@ -99,7 +99,7 @@ namespace DbNetSuiteCore.Services
 
             if (formModel.DiagnosticsMode)
             {
-                formViewModel.Diagnostics = RequestHelper.Diagnostics(_context,_configuration,_webHostEnvironment);
+                formViewModel.Diagnostics = RequestHelper.Diagnostics(_context, _configuration, _webHostEnvironment);
             }
 
             formModel.ValidationPassed = false;
@@ -124,9 +124,7 @@ namespace DbNetSuiteCore.Services
             {
                 if (await ValidateRecord(formModel))
                 {
-                    await CommitUpdate(formModel);
-                    formViewModel = await GetFormViewModel(formModel);
-                    committed = true;
+                    await Commit();
                 }
 
             }
@@ -136,9 +134,7 @@ namespace DbNetSuiteCore.Services
             }
             else
             {
-                await CommitUpdate(formModel);
-                formViewModel = await GetFormViewModel(formModel);
-                committed = true;
+                await Commit();
             }
 
             if (committed == false && formModel.Mode == FormMode.Update)
@@ -147,6 +143,13 @@ namespace DbNetSuiteCore.Services
             }
 
             return await View("Form/__Form", formViewModel);
+
+            async Task Commit()
+            {
+                await CommitUpdate(formModel);
+                formViewModel = await GetFormViewModel(formModel);
+                committed = true;
+            }
         }
 
         private async Task CommitUpdate(FormModel formModel)
@@ -214,13 +217,16 @@ namespace DbNetSuiteCore.Services
                 {
                     if (ValidateErrorType(formModel, ResourceNames.MinCharsError))
                     {
-                        if (ValidateErrorType(formModel, ResourceNames.MinValueError))
+                        if (ValidateErrorType(formModel, ResourceNames.MaxCharsError))
                         {
-                            if (ValidateErrorType(formModel, ResourceNames.PatternError))
+                            if (ValidateErrorType(formModel, ResourceNames.MinValueError))
                             {
-                                if (await ValidatePrimaryKey(formModel))
+                                if (ValidateErrorType(formModel, ResourceNames.PatternError))
                                 {
-                                    return true;
+                                    if (await ValidatePrimaryKey(formModel))
+                                    {
+                                        return true;
+                                    }
                                 }
                             }
                         }
@@ -277,7 +283,7 @@ namespace DbNetSuiteCore.Services
                 }
 
                 ValidateFormValue(formColumn, value, resourceName, formModel);
-             
+
                 if (resourceName == ResourceNames.MinValueError && formModel.Columns.Any(c => c.InError))
                 {
                     break;
@@ -296,7 +302,7 @@ namespace DbNetSuiteCore.Services
 
             return true;
         }
-  
+
         private FormModel GetFormModel()
         {
             try
@@ -348,6 +354,7 @@ namespace DbNetSuiteCore.Services
                     break;
             }
         }
+
 
         protected async Task InsertRecord(FormModel formModel)
         {

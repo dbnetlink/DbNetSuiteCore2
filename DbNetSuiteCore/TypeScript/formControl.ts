@@ -216,10 +216,12 @@ class FormControl extends ComponentControl {
                 if (this.formModified() == false) {
                     evt.preventDefault();
                 }
+                /*
                 else if (this.form.checkValidity() == false) {
                     this.form.reportValidity()
                     evt.preventDefault();
                 }
+                */
                 return
             case "cancel":
             case "primarykey":

@@ -50,7 +50,7 @@
 
     .dbnetsuite .form-container,
     .dbnetsuite .grid-container {
-        @apply m-1 p-1 relative;
+        @apply m-1 relative;
     }
 
     .dbnetsuite a {

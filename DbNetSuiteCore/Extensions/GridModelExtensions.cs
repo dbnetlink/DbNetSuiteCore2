@@ -266,5 +266,64 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
         }
+
+        public static CommandConfig BuildUpdate(this GridModel gridModel, int r, List<object> primaryKeyValues)
+        {
+            CommandConfig update = new CommandConfig(gridModel.DataSourceType);
+            update.Sql = $"update {gridModel.TableName}";
+
+            List<string> set = new List<string>();
+
+            foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
+            {
+                /*
+                if (gridColumn.ReadOnly|| gridColumn.Disabled)
+                {
+                    continue;
+                }
+                */
+
+                var columnName = gridColumn.ColumnName;
+
+                if (gridModel.FormValues.ContainsKey(columnName))
+                {
+                    var paramName = DbHelper.ParameterName(columnName, gridModel.DataSourceType);
+                    update.Params[paramName] = GetParamValue(gridModel, gridColumn, r);
+                    paramName = ComponentModelExtensions.UpdateParamName(paramName, gridColumn, gridModel.DataSourceType);
+
+                    set.Add($"{columnName} = {paramName}");
+                }
+            }
+
+            if (set.Any())
+            {
+                update.Sql += $" set {string.Join(",", set)}";
+            }
+            var primaryKeyColumn = gridModel.Columns.First(c => c.PrimaryKey);
+            update.Sql += $" where {primaryKeyColumn.ColumnName} = {DbHelper.ParameterName(primaryKeyColumn.ColumnName, gridModel.DataSourceType)}";
+            update.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(primaryKeyValues[r], primaryKeyColumn, gridModel.DataSourceType) ?? DBNull.Value;
+
+            return update;
+        }
+
+        public static object GetParamValue(GridModel gridModel, GridColumn gridColumn, int r)
+        {
+            string columnName = gridColumn.ColumnName;
+            string value = string.Empty;
+            
+            if (gridModel.FormValues.ContainsKey(columnName))
+            {
+                value = gridModel.FormValues[columnName][r];
+            }
+            else if (gridColumn.DataType != typeof(bool))
+            {
+                throw new Exception($"Form data missing for column => <b>{columnName}</b>");
+            }
+            else
+            {
+                value = "false";
+            }
+            return ComponentModelExtensions.ParamValue(value, gridColumn, gridModel.DataSourceType) ?? DBNull.Value;
+        }
     }
 }

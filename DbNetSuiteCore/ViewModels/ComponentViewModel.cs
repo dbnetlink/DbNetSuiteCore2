@@ -84,7 +84,8 @@ namespace DbNetSuiteCore.ViewModels
 
         protected string ButtonText(ResourceNames resourceName)
         {
-            return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
+            //    return $"{ResourceHelper.GetResourceString(resourceName)} {ResourceHelper.GetResourceString(ResourceNames.Record).ToLower()}";
+            return $"{ResourceHelper.GetResourceString(resourceName)}";
         }
     }
 }

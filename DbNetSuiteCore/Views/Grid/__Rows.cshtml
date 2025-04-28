@@ -8,9 +8,13 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 
-<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)">
+<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-messagetype="@Model.GridModel.MessageType">
+    @{
+        int rowIndex = -1;
+    }
     @foreach (DataRow row in Model.Rows)
     {
+        rowIndex++;
         <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>
             @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
@@ -70,8 +74,20 @@
 
                 @if (column.Editable && column.PrimaryKey == false && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
                 {
+                    if (column.LineInError.Count == Model.Rows.Count())
+                    {
+                        column.FormColumn.InError = column.LineInError[rowIndex];
+                    }
+
                     string dbValue = column.ToStringOrEmpty((dataColumn == null) ? string.Empty : column.FormatValue(row[dataColumn]));
-                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)> @column.FormColumn.RenderControl(dbValue, dbValue, Model.GridModel)</td>
+                    string value = dbValue;
+
+                    if (Model.GridModel.FormValues.ContainsKey(column.ColumnName))
+                    {
+                        value = Model.GridModel.FormValues[column.ColumnName][rowIndex];
+                    }
+                    
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)> @column.FormColumn.RenderControl(value, dbValue, Model.GridModel)</td>
                     continue;
                 }
 

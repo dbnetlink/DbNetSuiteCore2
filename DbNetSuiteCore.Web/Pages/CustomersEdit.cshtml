@@ -4,18 +4,18 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") {};
+    var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Caption = "Product Edit"};
     productGrid.Columns = new List<GridColumn>() {
         new GridColumn("ProductID","ID") { DataOnly = true},
-        new GridColumn("ProductName", "Name") { Editable = true, Required = true },
-        new GridColumn("SupplierID","Supplier") { Editable = true, Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
-        new GridColumn("CategoryID","Category") { Editable = true, Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
-        new GridColumn("QuantityPerUnit", "Qty"){ Editable = true },
-        new GridColumn("UnitPrice", "Price") {Editable = true,  Required = true, Format = "c" },
+        new GridColumn("ProductName", "Name") { Editable = true, Required = true, MinLength = 3, MaxLength = 50 },
+        new GridColumn("SupplierID","Supplier") { Editable = false, Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new GridColumn("CategoryID","Category") { Editable = false, Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
+        new GridColumn("QuantityPerUnit", "Qty"){ Editable = false },
+        new GridColumn("UnitPrice", "Price") {Editable = false,  Required = true, Format = "c" },
         new GridColumn("UnitsInStock", "Stock") {Editable = true, Required = true, MinValue = 0 },
         new GridColumn("UnitsOnOrder", "On Order") {Editable = true, Required = true },
         new GridColumn("ReorderLevel", "Re-order Level") {Editable = true, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
-        new GridColumn("Discontinued") {Editable = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
+        new GridColumn("Discontinued") {Editable = false, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
   
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(productGrid))

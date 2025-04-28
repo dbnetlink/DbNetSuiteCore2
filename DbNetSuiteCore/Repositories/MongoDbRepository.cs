@@ -45,6 +45,12 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
+        public async Task<List<object>> GetPrimaryKeyValues(GridModel gridModel)
+        {
+            await GetRecords(gridModel);
+            return gridModel.PrimaryKeyValues;
+        }
+
         public async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
             var database = GetDatabase(componentModel);
@@ -119,6 +125,20 @@ namespace DbNetSuiteCore.Repositories
             await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = false });
         }
 
+        public async Task UpdateRecords(GridModel gridModel)
+        {
+            var primaryKeysValues = await GetPrimaryKeyValues(gridModel);
+
+            for (var r = 0; r < gridModel.FormValues[gridModel.FirstEditableColumnName].Count; r++)
+            {
+                var database = GetDatabase(gridModel);
+                var collection = database.GetCollection<BsonDocument>(gridModel.TableName);
+                var filter = Builders<BsonDocument>.Filter.Eq(MongoDbRepository.PrimaryKeyName, primaryKeysValues[r]);
+                var update = new BsonDocument("$set", new BsonDocument(GetValueDictionary(gridModel,r)));
+                await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = false });
+            }
+        }
+
         public async Task InsertRecord(FormModel formModel)
         {
             CheckUpdateDisabled();
@@ -170,6 +190,32 @@ namespace DbNetSuiteCore.Repositories
                     }
                 }
               
+            }
+
+            return values;
+        }
+
+        private Dictionary<string, object> GetValueDictionary(GridModel gridModel, int r)
+        {
+            Dictionary<string, object> values = new Dictionary<string, object>();
+
+            foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
+            {
+                if (gridModel.FormValues.ContainsKey(gridColumn.ColumnName))
+                {
+                    if (gridColumn.DbDataType == nameof(BsonType.Array))
+                    {
+                        string splitToken = gridColumn.LookupOptions != null ? "," : "\n";
+                        BsonArray bsonArray = new BsonArray();
+                        gridModel.FormValues[gridColumn.ColumnName][r].Split(splitToken).ToList().ForEach(token => bsonArray.Add(token));
+                        values[gridColumn.Expression] = bsonArray;
+                    }
+                    else
+                    {
+                        values[gridColumn.Expression] = GridModelExtensions.GetParamValue(gridModel, gridColumn, r);
+                    }
+                }
+
             }
 
             return values;

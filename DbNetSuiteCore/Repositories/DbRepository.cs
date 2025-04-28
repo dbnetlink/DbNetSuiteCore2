@@ -78,6 +78,12 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
+        public async Task<List<object>> GetPrimaryKeyValues(GridModel gridModel)
+        {
+            await GetRecords(gridModel);
+            return gridModel.PrimaryKeyValues;
+        }
+
         private void ApplyLookups(ComponentModel componentModel)
         {
             if (componentModel is GridModel)
@@ -170,6 +176,20 @@ namespace DbNetSuiteCore.Repositories
             connection.Open();
             await ExecuteUpdate(update, connection);
             connection.Close();
+        }
+
+        public async Task UpdateRecords(GridModel gridModel)
+        {
+            var primaryKeysValues = await GetPrimaryKeyValues(gridModel);
+
+            for (var r = 0; r < gridModel.FormValues[gridModel.FirstEditableColumnName].Count; r++)
+            {
+                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues);
+                var connection = GetConnection(gridModel.ConnectionAlias);
+                connection.Open();
+                await ExecuteUpdate(update, connection);
+                connection.Close();
+            }
         }
 
         public async Task InsertRecord(FormModel formModel)

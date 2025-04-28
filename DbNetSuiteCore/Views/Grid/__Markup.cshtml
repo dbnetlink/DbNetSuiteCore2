@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="grid-container flex flex-col">
+<div class="grid-container flex flex-col gap-2">
     @if (string.IsNullOrEmpty(Model.GridModel.Caption) == false)
     {
         <div class="flex text-lg caption">@Model.GridModel.Caption</div>
@@ -17,10 +17,10 @@
         @await Html.PartialAsync("Grid/__Toolbar", Model)
         @if (Model.GridModel.IsEditable)
         {
-            <div id="form-message" class="border rounded border-slate-300 p-1 my-1">&nbsp;</div>
+            <div id="form-message" class="border rounded border-slate-300 p-1">&nbsp;</div>
         }
     }
-    <div class="flex mt-2">
+    <div class="flex">
         <table class="table-auto border-collapse grid-table" data-linkedgridids="@Model.LinkedGridIds" data-linkedcontrolids="@Model.LinkedControlIds">
             <colgroup>
                 @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)

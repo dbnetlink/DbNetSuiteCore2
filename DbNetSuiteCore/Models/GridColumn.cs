@@ -3,6 +3,7 @@ using DbNetSuiteCore.Helpers;
 using MongoDB.Bson;
 using System.ComponentModel;
 using System.Data;
+using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Models
 {
@@ -30,10 +31,11 @@ namespace DbNetSuiteCore.Models
         public Image? Image { get; set; }
         public int MaxChars { get; set; } = int.MaxValue;
         internal bool NoFormat => Editable && (MaxValue != null || MinValue != null);
-
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;
-
+        [JsonIgnore]
+        public List<bool> LineInError { get; set; } = new List<bool>();
+             
         public FormColumn FormColumn { get; set; } = new FormColumn();
      
 
