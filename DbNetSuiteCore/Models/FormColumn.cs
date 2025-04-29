@@ -340,7 +340,7 @@ namespace DbNetSuiteCore.Models
         string Classes(ComponentModel componentModel)
         {
             List<string> classes = new List<string>() { "fc-control w-full" };
-            if (IsNumeric && LookupOptions == null)
+            if (IsNumeric && (LookupOptions == null || string.IsNullOrEmpty(Lookup?.TableName)))
             {
                 classes.Add("text-right");
             }

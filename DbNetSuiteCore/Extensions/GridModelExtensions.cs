@@ -267,7 +267,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static CommandConfig BuildUpdate(this GridModel gridModel, int r, List<object> primaryKeyValues)
+        public static CommandConfig BuildUpdate(this GridModel gridModel, int r, List<object> primaryKeyValues, List<string> columns)
         {
             CommandConfig update = new CommandConfig(gridModel.DataSourceType);
             update.Sql = $"update {gridModel.TableName}";
@@ -284,6 +284,11 @@ namespace DbNetSuiteCore.Extensions
                 */
 
                 var columnName = gridColumn.ColumnName;
+
+                if (columns.Contains($"_{columnName}") == false)
+                {
+                    continue;
+                }
 
                 if (gridModel.FormValues.ContainsKey(columnName))
                 {

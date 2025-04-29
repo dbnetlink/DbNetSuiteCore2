@@ -366,6 +366,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
                 gridModel.FormValues = RequestHelper.GridFormColumnValues(_context);
                 gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
+                gridModel.RowsModified = JsonConvert.DeserializeObject<List<ModifiedRow>>(RequestHelper.FormValue("__modifiedrows", string.Empty, _context));
 
                 AssignParentKey(gridModel);
                 AssignSearchDialogFilter(gridModel);

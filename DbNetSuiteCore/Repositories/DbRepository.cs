@@ -182,9 +182,18 @@ namespace DbNetSuiteCore.Repositories
         {
             var primaryKeysValues = await GetPrimaryKeyValues(gridModel);
 
-            for (var r = 0; r < gridModel.FormValues[gridModel.FirstEditableColumnName].Count; r++)
+            var rowCount = gridModel.FormValues[gridModel.FirstEditableColumnName].Count;
+
+            for (var r = 0; r < rowCount; r++)
             {
-                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues);
+                if (gridModel.RowsModified != null && gridModel.RowsModified.Count == rowCount)
+                {
+                    if (gridModel.RowsModified[r].Modified == false)
+                    {
+                        continue;
+                    }
+                }
+                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues, gridModel.RowsModified[r].Columns);
                 var connection = GetConnection(gridModel.ConnectionAlias);
                 connection.Open();
                 await ExecuteUpdate(update, connection);

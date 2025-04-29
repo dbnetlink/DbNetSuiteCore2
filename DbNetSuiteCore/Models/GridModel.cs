@@ -4,6 +4,7 @@ using System.Data;
 using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System.Collections.Generic;
 
 namespace DbNetSuiteCore.Models
 {
@@ -60,6 +61,7 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
+        public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
 
         [JsonIgnore]
         public GridModel NestedGrid

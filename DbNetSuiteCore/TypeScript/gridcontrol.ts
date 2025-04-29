@@ -1,3 +1,8 @@
+interface RowModification {
+    modified: boolean;
+    columns: Array<string>
+}
+
 class GridControl extends ComponentControl {
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
@@ -164,6 +169,8 @@ class GridControl extends ComponentControl {
         this.assignSearchDialog();
 
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
+        document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev) });
+
         this.formMessage = this.controlElement("#form-message");
 
         this.invokeEventHandler('Initialised');
@@ -185,6 +192,28 @@ class GridControl extends ComponentControl {
         observer.observe(this.form);
     }
 
+    public configRequest(evt) {
+        if (this.isControlEvent(evt) == false) {
+            return;
+        }
+
+        switch (this.triggerName(evt)) {
+            case "apply":
+                evt.detail.parameters["__modifiedrows"] = this.getModifiedRows();
+                break;
+        }
+ /*
+        this.controlElements(".fc-control").forEach((el) => {
+            if (this.elementModified(el) == false) {
+                delete evt.detail.parameters[el.name];
+            }
+            else if (evt.detail.parameters[el.name] == undefined) {
+                evt.detail.parameters[el.name] = ''
+            }
+        });
+        */
+    }
+
 
     public beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
@@ -198,13 +227,15 @@ class GridControl extends ComponentControl {
             case "apply":
                 if (this.formModified() == false) {
                     evt.preventDefault();
+                    return;
                 }
                 /*
-                else if (this.form.checkValidity() == false) {
+                if (this.form.checkValidity() == false) {
                     this.form.reportValidity()
                     evt.preventDefault();
                 }
                 */
+                //this.storeModifiedRows();
                 return
             case "cancel":
             case "primarykey":
@@ -218,6 +249,22 @@ class GridControl extends ComponentControl {
             evt.preventDefault();
             this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
         }
+    }
+
+    protected getModifiedRows() {
+        let modifiedRows: Array<RowModification> = [];
+        this.controlElements("tr.grid-row").forEach((row) => {
+            let rowModification: RowModification = { modified: false, columns: [] };
+
+            row.querySelectorAll(".fc-control").forEach((el) => {
+                if (this.elementModified(el)) { rowModification.columns.push(el.name) }
+            });
+
+            rowModification.modified = rowModification.columns.length > 0;
+            modifiedRows.push(rowModification);
+        });
+       
+        return JSON.stringify(modifiedRows);
     }
 
     public columnSeriesData(columnName: string) {
