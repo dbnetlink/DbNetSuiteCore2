@@ -118,177 +118,177 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Added" xml:space="preserve">
-    <value>Record has been added</value>
+    <value>(記錄已新增</value>
   </data>
   <data name="Apply" xml:space="preserve">
-    <value>Apply</value>
+    <value>套用</value>
   </data>
   <data name="ApplyChanges" xml:space="preserve">
-    <value>Apply your changes</value>
+    <value>套用您的變更</value>
   </data>
   <data name="Between" xml:space="preserve">
-    <value>Between</value>
+    <value>介於</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>取消</value>
   </data>
   <data name="CancelChanges" xml:space="preserve">
-    <value>Cancel your changes</value>
+    <value>取消您的變更</value>
   </data>
   <data name="Clear" xml:space="preserve">
-    <value>Clear</value>
+    <value>清除</value>
   </data>
   <data name="ColumnFilterNoData" xml:space="preserve">
-    <value>No filter value supplied</value>
+    <value>未提供篩選值</value>
   </data>
   <data name="ConfirmDelete" xml:space="preserve">
-    <value>Please confirm deletion of current record</value>
+    <value>請確認刪除目前記錄</value>
   </data>
   <data name="Contains" xml:space="preserve">
-    <value>Contains</value>
+    <value>包含</value>
   </data>
   <data name="DataFormatError" xml:space="preserve">
-    <value>Format of entered data is not valid</value>
+    <value>輸入的資料格式無效</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>刪除</value>
   </data>
   <data name="Deleted" xml:space="preserve">
-    <value>Record has been deleted</value>
+    <value>記錄已刪除</value>
   </data>
   <data name="DoesNotContain" xml:space="preserve">
-    <value>Does not contain</value>
+    <value>不包含</value>
   </data>
   <data name="DoesNotEndWith" xml:space="preserve">
-    <value>Does not end with</value>
+    <value>結尾不為</value>
   </data>
   <data name="DoesNotStartWith" xml:space="preserve">
-    <value>Does not start with</value>
+    <value>開頭不為</value>
   </data>
   <data name="EndsWith" xml:space="preserve">
-    <value>Ends with</value>
+    <value>結尾為</value>
   </data>
   <data name="EqualTo" xml:space="preserve">
-    <value>Equal to</value>
+    <value>等於</value>
   </data>
   <data name="False" xml:space="preserve">
-    <value>False</value>
+    <value>假</value>
   </data>
   <data name="First" xml:space="preserve">
-    <value>First</value>
+    <value>第一頁</value>
   </data>
   <data name="GreaterThan" xml:space="preserve">
-    <value>Greater Than</value>
+    <value>大於</value>
   </data>
   <data name="In" xml:space="preserve">
-    <value>In</value>
+    <value>包含於</value>
   </data>
   <data name="Insert" xml:space="preserve">
-    <value>Add</value>
+    <value>新增</value>
   </data>
   <data name="IsEmpty" xml:space="preserve">
-    <value>Is empty</value>
+    <value>為空</value>
   </data>
   <data name="IsNotEmpty" xml:space="preserve">
-    <value>Is not empty</value>
+    <value>非空</value>
   </data>
   <data name="Last" xml:space="preserve">
-    <value>Last</value>
+    <value>最後</value>
   </data>
   <data name="LessThan" xml:space="preserve">
-    <value>Less than</value>
+    <value>小於</value>
   </data>
   <data name="MatchAll" xml:space="preserve">
-    <value>Match all the criteria</value>
+    <value>符合所有條件</value>
   </data>
   <data name="MatchAtLeastOne" xml:space="preserve">
-    <value>Match at leat one of the criteria</value>
+    <value>符合至少一項條件</value>
   </data>
   <data name="MaxCharsError" xml:space="preserve">
-    <value>A maximum of {0} characters must be entered</value>
+    <value>最多只能輸入 {0} 個字元</value>
   </data>
   <data name="MaxValueError" xml:space="preserve">
-    <value>{0} cannot be greater than {1}</value>
+    <value>0} 不可大於 {1}</value>
   </data>
   <data name="MinCharsError" xml:space="preserve">
-    <value>A minmum of {0} characters must be entered</value>
+    <value>至少需輸入 {0} 個字元</value>
   </data>
   <data name="MinValueError" xml:space="preserve">
-    <value>{0} cannot be less than {1}</value>
+    <value>{0} 不可小於 {1}</value>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>下一頁</value>
   </data>
   <data name="NoFilesFound" xml:space="preserve">
-    <value>No files found</value>
+    <value>找不到檔案</value>
   </data>
   <data name="NoRecordsFound" xml:space="preserve">
-    <value>No records found</value>
+    <value>找不到記錄</value>
   </data>
   <data name="NotBetween" xml:space="preserve">
-    <value>Not between</value>
+    <value>不在範圍內</value>
   </data>
   <data name="NotEqualTo" xml:space="preserve">
-    <value>Not equal to</value>
+    <value>不等於</value>
   </data>
   <data name="NotGreaterThan" xml:space="preserve">
-    <value>Not greater than</value>
+    <value>不大於</value>
   </data>
   <data name="NotIn" xml:space="preserve">
-    <value>Not in</value>
+    <value>不包含於</value>
   </data>
   <data name="NotLessThan" xml:space="preserve">
-    <value>Not less than</value>
+    <value>不小於</value>
   </data>
   <data name="Of" xml:space="preserve">
-    <value>of</value>
+    <value>的</value>
   </data>
   <data name="Page" xml:space="preserve">
-    <value>Page</value>
+    <value>頁</value>
   </data>
   <data name="PatternError" xml:space="preserve">
-    <value>Entered value does not match the required pattern</value>
+    <value>輸入值不符合要求的格式</value>
   </data>
   <data name="Previous" xml:space="preserve">
-    <value>Previous</value>
+    <value>上一頁</value>
   </data>
   <data name="PrimaryKeyExists" xml:space="preserve">
-    <value>A record with the entered primary key already exists</value>
+    <value>輸入的主鍵已存在記錄</value>
   </data>
   <data name="QueryLimited" xml:space="preserve">
-    <value>Query limited to {0} rows</value>
+    <value>查詢限制為 {0} 列</value>
   </data>
   <data name="RangeValueError" xml:space="preserve">
-    <value>Entered {0} must be between {1} and {2}</value>
+    <value>輸入的 {0} 必須介於 {1} 和 {2} 之間</value>
   </data>
   <data name="Record" xml:space="preserve">
-    <value>Record</value>
+    <value>記錄</value>
   </data>
   <data name="Required" xml:space="preserve">
-    <value>Highlighted fields are required</value>
+    <value>標示欄位為必填</value>
   </data>
   <data name="Rows" xml:space="preserve">
-    <value>Rows</value>
+    <value>列</value>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>搜尋</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Search</value>
+    <value>搜尋</value>
   </data>
   <data name="Select" xml:space="preserve">
-    <value>Select</value>
+    <value>選取</value>
   </data>
   <data name="StartsWith" xml:space="preserve">
-    <value>Starts with</value>
+    <value>開頭為</value>
   </data>
   <data name="True" xml:space="preserve">
-    <value>True</value>
+    <value>真</value>
   </data>
   <data name="UnappliedChanges" xml:space="preserve">
-    <value>You have unapplied changes. Please apply or cancel.</value>
+    <value>您有未套用的變更。請套用或取消。</value>
   </data>
   <data name="Updated" xml:space="preserve">
-    <value>Changes have been applied</value>
+    <value>變更已套用</value>
   </data>
 </root>

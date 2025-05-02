@@ -414,59 +414,6 @@ namespace DbNetSuiteCore.Services
             foreach (var column in gridModel.Columns.Where(c => c.Editable))
             {
                 column.FormColumn.SetLookupOptions(column);
-                if (column.DataType == typeof(string) && column.Style.Contains("width:") == false)
-                {
-                    int maxChars = 5;
-                    if (column.LookupOptions == null)
-                    {
-                        DataColumn? dataColumn = gridModel.GetDataColumn(column);
-
-                        if (dataColumn == null)
-                        {
-                            continue;
-                        }
-                        
-                        foreach (DataRow row in gridModel.Rows)
-                        {
-                            string value = row[dataColumn]?.ToString() ?? string.Empty;
-
-                            if (value.Length > maxChars)
-                            {
-                                maxChars = value.Length;
-                            }
-                        }
-
-                        if (maxChars > 20)
-                        {
-                            maxChars = Convert.ToInt16(maxChars * 0.5);
-                        }
-                    }
-                    else if (column.Filter == FilterType.None)
-                    {
-                        foreach (KeyValuePair<string,string> option in column.LookupOptions)
-                        {
-                            if (option.Value.Length > maxChars)
-                            {
-                                maxChars = option.Value.Length;
-                            }
-                        }
-
-                        if (maxChars > 20)
-                        {
-                            maxChars = Convert.ToInt16(maxChars * 0.6);
-                        }
-                    }
-
-                    var styles = new List<string>();
-                    
-                    if (string.IsNullOrEmpty(column.FormColumn.Style) == false)
-                    {
-                        styles = column.FormColumn.Style.Split(";").ToList();
-                    }
-                        
-                    styles.Add($"width:{maxChars}rem");
-                   // column.FormColumn.Style = string.Join(";",styles);
-                }
             }
         }
 

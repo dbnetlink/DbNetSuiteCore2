@@ -1,4 +1,5 @@
-.dbnetsuite-grid {
+.dbnetsuite-grid,
+.dbnetsuite-form {
     border: 1px solid gainsboro;
     border-radius: 5px;
 }
@@ -59,8 +60,6 @@
         }
 
 .dbnetsuite {
-    border: 1px solid gainsboro;
-    border-radius: 5px;
     --bg-error: rgb(254 205 211);
     --bg-warning: rgb(254 215 170);
     --bg-success: rgb(204 251 241);

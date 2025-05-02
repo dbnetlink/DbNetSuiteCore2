@@ -1,7 +1,9 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
+using System.Security.Cryptography.Xml;
 
 namespace DbNetSuiteCore.Helpers
 {
@@ -62,6 +64,21 @@ namespace DbNetSuiteCore.Helpers
         {
             var resourceHelper = new ResourceManager("DbNetSuiteCore.Resources.Text.Strings", Assembly.GetExecutingAssembly());
             return resourceHelper.GetString(name, CultureInfo.CurrentCulture) ?? name;
+        }
+
+        public static Dictionary<string,string> GetAllResourceStrings(string name)
+        {
+            var resourceHelper = new ResourceManager("DbNetSuiteCore.Resources.Text.Strings", Assembly.GetExecutingAssembly());
+            ResourceSet resourceSet = resourceHelper.GetResourceSet(CultureInfo.CurrentCulture, true, true) ?? new ResourceSet(string.Empty);
+
+            Dictionary<string, string> resourceStrings = new Dictionary<string, string>();
+
+            foreach (DictionaryEntry entry in resourceSet)
+            {
+                resourceStrings.Add(entry.Key?.ToString() ?? string.Empty, entry.Value?.ToString() ?? string.Empty);
+            }
+
+            return resourceStrings;
         }
     }
 }

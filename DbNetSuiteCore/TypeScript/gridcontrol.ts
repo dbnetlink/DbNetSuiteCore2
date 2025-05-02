@@ -725,30 +725,4 @@ class GridControl extends ComponentControl {
         document.body.removeChild(s);
         return width;
     }
-
-    private getInputWidth(select: HTMLSelectElement) {
-        const options = select.options;
-        let width = 0;
-
-        const s: HTMLSpanElement = document.createElement('span');
-        document.body.appendChild(s);
-
-        s.style.visibility = 'hidden';
-        s.style.position = 'absolute';
-        s.style.whiteSpace = 'nowrap';
-        s.style.font = window.getComputedStyle(select).font;
-
-        for (let i = 0; i < options.length; i++) {
-            s.textContent = options[i].text;
-            const w = s.offsetWidth;
-            if (w > width) {
-                width = w;
-            }
-        }
-
-        // Clean up the temporary span element
-        document.body.removeChild(s);
-
-        return width;
-    }
 }

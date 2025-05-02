@@ -14,6 +14,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseRequestLocalization("zh-Hant-TW");
+
 app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();

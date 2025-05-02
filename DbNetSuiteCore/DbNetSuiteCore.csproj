@@ -263,6 +263,12 @@
     <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Text\Strings.zh-Hant-TW.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <Target Name="Tailwind" BeforeTargets="Build">
     <Exec Command="npm run css:build" />
   </Target>
