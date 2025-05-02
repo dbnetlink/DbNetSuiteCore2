@@ -14,10 +14,8 @@ namespace DbNetSuiteCore.Helpers
                 foreach (Enum i in Enum.GetValues(enumType).Cast<Enum>())
                 {
                     var description = GetEnumDescription(i);
-                    var value = (dataType == typeof(String) && enumHasDescription) ? i.ToString() : Convert.ToInt32(i).ToString();
-                    {
-                        options.Add(new KeyValuePair<string, string>(value, description));
-                    }
+                    var value = dataType == typeof(String) ? GetEnumDescription(i) : Convert.ToInt32(i).ToString();
+                    options.Add(new KeyValuePair<string, string>(value, description));
                 }
             }
 

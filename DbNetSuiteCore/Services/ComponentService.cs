@@ -7,6 +7,7 @@ using System.Text;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
+using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {
@@ -76,6 +77,14 @@ namespace DbNetSuiteCore.Services
                     }
                 }
 
+                switch (componentModel.DataSourceType)
+                {
+                    case DataSourceType.JSON:
+                    case DataSourceType.FileSystem:
+                    case DataSourceType.Excel:
+                        gridModel.Columns.ForEach(c => c.Editable = false);
+                        break;
+                }
             }
 
             switch (componentModel.DataSourceType)

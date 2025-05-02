@@ -80,7 +80,7 @@
                                         @{
                                             if (Model.ControlType == typeof(GridModel))
                                             {
-                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000, DeferredLoad = true }))
+                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { OptimizeForLargeDataset = true, DeferredLoad = true }))
                                             }
                                             if (Model.ControlType == typeof(FormModel))
                                             {
@@ -98,13 +98,13 @@
                 {
                     if (Model.ControlType == typeof(GridModel))
                     {
-                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 2000 };
+                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, OptimizeForLargeDataset = true };
                         gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
                         @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(gridModel))
                     }
                     if (Model.ControlType == typeof(FormModel))
                     {
-                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 2000 };
+                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 1000 };
                         @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(formModel))
                     }
                 }

@@ -11,7 +11,7 @@ namespace DbNetSuiteCore.Models
     {
         private FilterType _Filter = FilterType.None;
         public bool Sortable => IsSortable();
-        public bool Editable { get; set; } = false;
+        public bool Editable { get; set; } = true;
         public bool Viewable { get; set; } = true;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
         public FilterType Filter

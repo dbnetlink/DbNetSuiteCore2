@@ -42,6 +42,11 @@ namespace DbNetSuiteCore.Helpers
             return connection;
         }
 
+        public static DataTable RunQuery(QueryCommandConfig query, IDbConnection connection )
+        {
+            return QueryToDataTable(query, connection);
+        }
+
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(connectionAlias);
@@ -339,11 +344,9 @@ namespace DbNetSuiteCore.Helpers
                     sql = "select table_name as name from user_tables union select view_name as name from user_views order by 1";
                     break;
             }
-            var command = ConfigureCommand(new QueryCommandConfig(dataSourceType) { Sql = sql }, connection);
-
-            DataTable schemaTable = new DataTable();
-            schemaTable.Load(command.ExecuteReader(CommandBehavior.Default));
-
+           
+            DataTable schemaTable = QueryToDataTable(new QueryCommandConfig() { Sql = sql },connection);
+ 
             foreach (DataRow dataRow in schemaTable.Rows)
             {
                 tables.Add($"{dataRow[0]}");
@@ -355,6 +358,14 @@ namespace DbNetSuiteCore.Helpers
             }
 
             return tables;
+        }
+
+        private static DataTable QueryToDataTable(QueryCommandConfig query, IDbConnection connection)
+        {
+            var command = ConfigureCommand(query, connection);
+            DataTable dataTable = new DataTable();
+            dataTable.Load(command.ExecuteReader(CommandBehavior.Default));
+            return dataTable;
         }
         private static void LoadMongoDBCollections(IMongoDatabase database, List<string> tables)
         {

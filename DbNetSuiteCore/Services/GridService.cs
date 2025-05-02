@@ -13,6 +13,7 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetSuiteCore.Services
 {
@@ -88,6 +89,11 @@ namespace DbNetSuiteCore.Services
             {
                 await ConfigureColumns(gridModel);
 
+                if (gridModel.IsEditable && gridModel.Columns.Any(c => c.PrimaryKey) == false)
+                {
+                    throw new Exception("At least one grid column must be designated as a primary key for it to be editable");
+                }
+
                 foreach (var column in gridModel.Columns.Where(c => c.Editable))
                 {
                     column.FormColumn = new FormColumn(column.Expression);
@@ -101,11 +107,8 @@ namespace DbNetSuiteCore.Services
                 ConfigureColumnsForStoredProcedure(gridModel);
             }
 
-            foreach (var column in gridModel.Columns.Where(c => c.Editable))
-            {
-                column.FormColumn.SetLookupOptions(column);
-            }
-
+            ConfigureFormColumns(gridModel);
+          
             if (gridModel.IncludeJsonData)
             {
                 gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
@@ -406,6 +409,66 @@ namespace DbNetSuiteCore.Services
             return 1;
         }
 
+        private void ConfigureFormColumns(GridModel gridModel)
+        {
+            foreach (var column in gridModel.Columns.Where(c => c.Editable))
+            {
+                column.FormColumn.SetLookupOptions(column);
+                if (column.DataType == typeof(string) && column.Style.Contains("width:") == false)
+                {
+                    int maxChars = 5;
+                    if (column.LookupOptions == null)
+                    {
+                        DataColumn? dataColumn = gridModel.GetDataColumn(column);
+
+                        if (dataColumn == null)
+                        {
+                            continue;
+                        }
+                        
+                        foreach (DataRow row in gridModel.Rows)
+                        {
+                            string value = row[dataColumn]?.ToString() ?? string.Empty;
+
+                            if (value.Length > maxChars)
+                            {
+                                maxChars = value.Length;
+                            }
+                        }
+
+                        if (maxChars > 20)
+                        {
+                            maxChars = Convert.ToInt16(maxChars * 0.5);
+                        }
+                    }
+                    else if (column.Filter == FilterType.None)
+                    {
+                        foreach (KeyValuePair<string,string> option in column.LookupOptions)
+                        {
+                            if (option.Value.Length > maxChars)
+                            {
+                                maxChars = option.Value.Length;
+                            }
+                        }
+
+                        if (maxChars > 20)
+                        {
+                            maxChars = Convert.ToInt16(maxChars * 0.6);
+                        }
+                    }
+
+                    var styles = new List<string>();
+                    
+                    if (string.IsNullOrEmpty(column.FormColumn.Style) == false)
+                    {
+                        styles = column.FormColumn.Style.Split(";").ToList();
+                    }
+                        
+                    styles.Add($"width:{maxChars}rem");
+                   // column.FormColumn.Style = string.Join(";",styles);
+                }
+            }
+        }
 
         private string GetMimeTypeForFileExtension(string extension)
         {

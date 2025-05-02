@@ -11,7 +11,7 @@ namespace DbNetSuiteCore.Web.Pages.mssql
         public MsSqlBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
             DataSourceType = DataSourceType.MSSQL;
-            Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("trusted_connection=true")).Select(c => c.Key).ToList();
+            Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("trusted_connection=true") || c.Value.ToLower().Contains("trustservercertificate=true") ).Select(c => c.Key).ToList();
         }
     }
 }

@@ -10,7 +10,7 @@ class GridControl extends ComponentControl {
     selectedRow: HTMLTableRowElement;
     jsonData: [any];
     deferredLoad: boolean = false;
-    constructor(gridId: string, deferredLoad:boolean) {
+    constructor(gridId: string, deferredLoad: boolean) {
         super(gridId)
         this.deferredLoad = deferredLoad;
         if (this.deferredLoad) {
@@ -126,8 +126,22 @@ class GridControl extends ComponentControl {
         if (this.formBody.dataset.message) {
             this.setMessage(this.formBody.dataset.message, this.formBody.dataset.messagetype)
         }
-       
+
         this.invokeEventHandler('PageLoaded', args);
+    }
+
+    private setTableWidth() {
+        const table: HTMLTableElement = this.controlElement("table");
+        let totalWidth = 0;
+        const headers = table.querySelectorAll("th")
+        headers.forEach(header => { totalWidth += header.offsetWidth });
+
+        var offsetLeft = table.getBoundingClientRect().left;
+
+        if (document.documentElement.clientWidth < totalWidth + offsetLeft) {
+            table.parentElement.style.width = `${document.documentElement.clientWidth - 30 - offsetLeft}px`;
+            table.parentElement.style.overflowX = 'auto';
+        }
     }
 
     private showTextTooltip(event: Event) {
@@ -170,9 +184,11 @@ class GridControl extends ComponentControl {
 
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
         document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev) });
+        document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev) });
 
         this.formMessage = this.controlElement("#form-message");
 
+        window.addEventListener('resize', ev => this.setTableWidth())
         this.invokeEventHandler('Initialised');
     }
 
@@ -202,18 +218,15 @@ class GridControl extends ComponentControl {
                 evt.detail.parameters["__modifiedrows"] = this.getModifiedRows();
                 break;
         }
- /*
-        this.controlElements(".fc-control").forEach((el) => {
-            if (this.elementModified(el) == false) {
-                delete evt.detail.parameters[el.name];
-            }
-            else if (evt.detail.parameters[el.name] == undefined) {
-                evt.detail.parameters[el.name] = ''
-            }
-        });
-        */
     }
 
+    public afterSettle(evt) {
+        if (this.isControlEvent(evt) == false) {
+            return;
+        }
+        this.configureFormControls();
+        this.setTableWidth();
+    }
 
     public beforeRequest(evt) {
         if (this.isControlEvent(evt) == false)
@@ -263,7 +276,7 @@ class GridControl extends ComponentControl {
             rowModification.modified = rowModification.columns.length > 0;
             modifiedRows.push(rowModification);
         });
-       
+
         return JSON.stringify(modifiedRows);
     }
 
@@ -293,7 +306,7 @@ class GridControl extends ComponentControl {
         return propName;
     }
 
-    public rowSeriesData(columnSeriesName: string, columnSeriesValue: string, columnNames:string[]) {
+    public rowSeriesData(columnSeriesName: string, columnSeriesValue: string, columnNames: string[]) {
         let series = [];
         if (this.jsonData.length) {
             let columnSeriesValues = this.columnSeriesData(columnSeriesName);
@@ -315,7 +328,7 @@ class GridControl extends ComponentControl {
         let selector = `#${this.controlId} input[name="refresh"]`;
         let pk = htmx.find(selector) as HTMLInputElement;
         let rowIndex = this.selectedRow ? this.selectedRow.rowIndex : 1;
-        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex  }));
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
         pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
         htmx.trigger(selector, "changed",);
     }
@@ -601,7 +614,7 @@ class GridControl extends ComponentControl {
         return this.controlContainer.children[1];
     }
 
-    private rowSelector(rowIndex: number|null = null) {
+    private rowSelector(rowIndex: number | null = null) {
         var tr = (rowIndex) ? `tr:nth-child(${rowIndex})` : 'tr.grid-row';
         return `#tbody${this.controlId} > ${tr}`
     }
@@ -658,5 +671,84 @@ class GridControl extends ComponentControl {
         }
         let cell = this.columnCell(columnName, row)
         return cell ? cell.dataset.value : null;
+    }
+
+    private configureFormControls() {
+        let firstRow: HTMLTableRowElement = this.controlElement("tr.grid-row:first-child")
+
+        if (!firstRow) {
+            return;
+        }
+
+        firstRow.querySelectorAll("select").forEach((select: HTMLSelectElement) => {
+            const textArray = [...select.options].map(opt => opt.text);
+            let width = this.getTextWidth(textArray, select);
+            if (width > select.offsetWidth && select.style.width == '') {
+                select.style.width = `${width+40}px`
+            }
+        });
+
+        firstRow.querySelectorAll("input[type='text']").forEach((input: HTMLInputElement) => {
+            const textArray = [];
+            let cell = input.parentElement as HTMLTableCellElement
+            this.controlElements(`tr.grid-row td:nth-child(${cell.cellIndex+1})`).forEach((c:HTMLTableCellElement) => {
+                if (c.children.length && c.children[0].tagName == "INPUT") {
+                    textArray.push((c.children[0] as HTMLInputElement).value)
+                }
+            });
+            let width = this.getTextWidth(textArray, input);
+            if (width > input.offsetWidth && input.style.width == '') {
+                input.style.width = `${width+10}px`
+            }
+        });
+    }
+
+    private getTextWidth(text:string[], element:HTMLElement) {
+        let width = 0;
+
+        const s:HTMLSpanElement = document.createElement('span');
+        document.body.appendChild(s);
+
+        s.style.visibility = 'hidden';
+        s.style.position = 'absolute';
+        s.style.whiteSpace = 'nowrap';
+        s.style.font = window.getComputedStyle(element).font;
+
+        for (let i = 0; i < text.length; i++) {
+            s.textContent = text[i];
+            const w = s.offsetWidth;
+            if (w > width) {
+                width = w;
+            }
+        }
+
+        document.body.removeChild(s);
+        return width;
+    }
+
+    private getInputWidth(select: HTMLSelectElement) {
+        const options = select.options;
+        let width = 0;
+
+        const s: HTMLSpanElement = document.createElement('span');
+        document.body.appendChild(s);
+
+        s.style.visibility = 'hidden';
+        s.style.position = 'absolute';
+        s.style.whiteSpace = 'nowrap';
+        s.style.font = window.getComputedStyle(select).font;
+
+        for (let i = 0; i < options.length; i++) {
+            s.textContent = options[i].text;
+            const w = s.offsetWidth;
+            if (w > width) {
+                width = w;
+            }
+        }
+
+        // Clean up the temporary span element
+        document.body.removeChild(s);
+
+        return width;
     }
 }

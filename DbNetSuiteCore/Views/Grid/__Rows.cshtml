@@ -79,7 +79,7 @@
                         column.FormColumn.InError = column.LineInError[rowIndex];
                     }
 
-                    string dbValue = column.ToStringOrEmpty((dataColumn == null) ? string.Empty : column.FormatValue(row[dataColumn]));
+                    string dbValue = column.ToStringOrEmpty((dataColumn == null) ? string.Empty : (column.Editable ? column.FormColumn.FormatValue(row[dataColumn]) : column.FormatValue(row[dataColumn])));
                     string value = dbValue;
 
                     if (Model.GridModel.FormValues.ContainsKey(column.ColumnName))

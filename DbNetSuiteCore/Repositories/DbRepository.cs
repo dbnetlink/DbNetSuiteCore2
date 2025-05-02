@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using System.Linq;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 
 namespace DbNetSuiteCore.Repositories
@@ -282,7 +283,7 @@ namespace DbNetSuiteCore.Repositories
 
                 if (string.IsNullOrEmpty(lookup.TableName))
                 {
-                    query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} order by 1"; ;
+                    query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} where {column.ColumnName} is not null order by 1"; ;
                 }
                 else
                 {
@@ -301,7 +302,7 @@ namespace DbNetSuiteCore.Repositories
                 throw new Exception("Error in column lookup configuration", ex);
             }
 
-            column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+            column.DbLookupOptions = lookupData.AsEnumerable().Where(row => string.IsNullOrEmpty(row[0]?.ToString()) == false).Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
         }
 
         private void BuildLookupOptionsFromDataTableQuery(ComponentModel componentModel, ColumnModel column, ref QueryCommandConfig query)

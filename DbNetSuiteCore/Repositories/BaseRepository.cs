@@ -18,6 +18,10 @@ namespace DbNetSuiteCore.Repositories
         public DataSourceType DataSourceType = DataSourceType.MSSQL;
         public Dictionary<string, object> Params = new Dictionary<string, object>();
 
+        public CommandConfig()
+        {
+        }
+
         public CommandConfig(DataSourceType dataSourceType)
         {
             DataSourceType = dataSourceType;
@@ -37,6 +41,9 @@ namespace DbNetSuiteCore.Repositories
     {
         public CommandBehavior Behavior = CommandBehavior.Default;
 
+        public QueryCommandConfig() : base()
+        {
+        }
         public QueryCommandConfig(DataSourceType dataSourceType)
             : base(dataSourceType)
         {
