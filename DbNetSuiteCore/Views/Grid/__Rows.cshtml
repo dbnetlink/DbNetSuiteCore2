@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text.Json
 
-<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-messagetype="@Model.GridModel.MessageType">
+<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-validationpassed="@Model.GridModel.ValidationPassed">
     @{
         int rowIndex = -1;
     }
@@ -72,7 +72,7 @@
                     classes.Add("text-center");
                 }
 
-                @if (column.Editable && column.PrimaryKey == false && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+                @if (column.Editable && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
                 {
                     if (column.LineInError.Count == Model.Rows.Count())
                     {

@@ -47,6 +47,7 @@ class ComponentControl {
     searchDialog: SearchDialog;
     formBody: HTMLElement;
     formMessage: HTMLDivElement;
+    currentValidationRow: HTMLTableRowElement;
 
     constructor(controlId) {
         this.controlId = controlId;
@@ -281,6 +282,58 @@ class ComponentControl {
         else {
             return el.dataset.value != el.value;
         }
+    }
+
+    protected errorHighlighted(container: HTMLElement) {
+        let controlsInError = Array.from(container.querySelectorAll(".fc-control")).filter((e: HTMLElement) => { return (e.dataset.error == 'true'); }).length;
+        return (controlsInError > 0);
+    }
+
+    protected triggerCommit() {
+        let applyBtn = this.getButton("apply");
+        htmx.trigger(applyBtn, "click");
+    }
+
+    public formControlValue(columnName: string, row: HTMLTableRowElement = null) {
+        return this.elementValue(columnName, false, row);
+    }
+
+    public formControlDbValue(columnName: string, row: HTMLTableRowElement = null) {
+        return this.elementValue(columnName, true,row);
+    }
+
+    private elementValue(columnName: string, db: boolean, row: HTMLTableRowElement = null) {
+        var el: HTMLFormElement = this.formControl(columnName, row);
+
+        if (!el) {
+            console.error(`Form control for column name ${columnName} not found`)
+        }
+        else {
+            if (el.tagName == 'INPUT' && el.type == 'checkbox') {
+                return db ? this.isBoolean(el.dataset.value) : el.checked
+            }
+            return db ? el.dataset.value : el.value;
+        }
+    }
+
+    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
+        var element: HTMLFormElement = this.formControl(columnName,row);
+        if (element) {
+            element.dataset.error = "true";
+        }
+    }
+
+    public formControl(columnName: string, row: HTMLTableRowElement = null) {
+        var element: HTMLFormElement = null;
+        var container = row ? row : ((this instanceof FormControl) ? this.form : this.currentValidationRow);
+        container.querySelectorAll(".fc-control").forEach((el:HTMLFormElement) => {
+            if (el.name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }
+        });
+
+        if (!element) {
+            alert(`Form control => ${columnName} not found`);
+        }
+        return element;
     }
 
     protected cleanString(value) {

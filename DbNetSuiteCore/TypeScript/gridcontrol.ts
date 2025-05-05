@@ -10,6 +10,7 @@ class GridControl extends ComponentControl {
     selectedRow: HTMLTableRowElement;
     jsonData: [any];
     deferredLoad: boolean = false;
+
     constructor(gridId: string, deferredLoad: boolean) {
         super(gridId)
         this.deferredLoad = deferredLoad;
@@ -132,6 +133,10 @@ class GridControl extends ComponentControl {
 
     private setTableWidth() {
         const table: HTMLTableElement = this.controlElement("table");
+
+        table.parentElement.style.width = '';
+        table.parentElement.style.overflowX = '';
+
         let totalWidth = 0;
         const headers = table.querySelectorAll("th")
         headers.forEach(header => { totalWidth += header.offsetWidth });
@@ -224,8 +229,48 @@ class GridControl extends ComponentControl {
         if (this.isControlEvent(evt) == false) {
             return;
         }
-        this.configureFormControls();
-        this.setTableWidth();
+        requestAnimationFrame(() => {
+            this.configureFormControls();
+        });
+        requestAnimationFrame(() => {
+            this.setTableWidth();
+        });
+
+        switch (this.triggerName(evt)) {
+            case "apply":
+                if (this.formBody.dataset.validationpassed == "True") {
+                    this.validateUpdate()
+                }
+                break;
+        }
+    }
+
+    private validateUpdate() {
+        let inError = false;
+        var modifiedRows:Array<HTMLTableRowElement> = [];
+        this.controlElements("tr.grid-row").forEach((row) => {
+            let rowModification = this.getRowModification(row)
+            if (rowModification.modified) {
+                modifiedRows.push(row);
+            }
+        });
+
+        for (const row of modifiedRows) {
+            let args = { row: row, message: '' }
+            this.currentValidationRow = row;
+            this.invokeEventHandler("ValidateUpdate", args);
+            inError = Boolean(args.message != '' || this.errorHighlighted(row));
+            if (inError) {
+                this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error', 'error')
+                break;
+            }
+        }
+
+        this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
+        
+        if (inError == false) {
+            this.triggerCommit()
+        }
     }
 
     public beforeRequest(evt) {
@@ -242,13 +287,10 @@ class GridControl extends ComponentControl {
                     evt.preventDefault();
                     return;
                 }
-                /*
                 if (this.form.checkValidity() == false) {
                     this.form.reportValidity()
                     evt.preventDefault();
                 }
-                */
-                //this.storeModifiedRows();
                 return
             case "cancel":
             case "primarykey":
@@ -264,20 +306,21 @@ class GridControl extends ComponentControl {
         }
     }
 
-    protected getModifiedRows() {
+    private getModifiedRows() {
         let modifiedRows: Array<RowModification> = [];
         this.controlElements("tr.grid-row").forEach((row) => {
-            let rowModification: RowModification = { modified: false, columns: [] };
-
-            row.querySelectorAll(".fc-control").forEach((el) => {
-                if (this.elementModified(el)) { rowModification.columns.push(el.name) }
-            });
-
-            rowModification.modified = rowModification.columns.length > 0;
-            modifiedRows.push(rowModification);
+            modifiedRows.push(this.getRowModification(row));
         });
-
         return JSON.stringify(modifiedRows);
+    }
+
+    private getRowModification(row: HTMLTableRowElement) {
+        let rowModification: RowModification = { modified: false, columns: [] };
+        row.querySelectorAll(".fc-control").forEach((el:HTMLFormElement) => {
+            if (this.elementModified(el)) { rowModification.columns.push(el.name) }
+        });
+        rowModification.modified = rowModification.columns.length > 0;
+        return rowModification;
     }
 
     public columnSeriesData(columnName: string) {
@@ -357,6 +400,11 @@ class GridControl extends ComponentControl {
             if (rowCount == 0) {
                 this.viewDialog.close();
             }
+        }
+
+        let applyBtn = this.getButton("apply");
+        if (applyBtn) {
+            applyBtn.disabled = (rowCount == 0)
         }
 
         if (this.toolbarExists()) {

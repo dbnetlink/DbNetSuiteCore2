@@ -370,6 +370,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.FormValues = RequestHelper.GridFormColumnValues(_context);
                 gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
                 gridModel.RowsModified = JsonConvert.DeserializeObject<List<ModifiedRow>>(RequestHelper.FormValue("__modifiedrows", string.Empty, _context));
+                gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
 
                 AssignParentKey(gridModel);
                 AssignSearchDialogFilter(gridModel);
@@ -433,14 +434,11 @@ namespace DbNetSuiteCore.Services
 
         private async Task<Byte[]> ApplyUpdate(GridModel gridModel)
         {
-            GridViewModel gridViewModel = new GridViewModel(gridModel);
-            var committed = false;
-
             if (gridModel.ClientEvents.Keys.Contains(GridClientEvent.ValidateUpdate) == false)
             {
                 if (await ValidateRecord(gridModel))
                 {
-                    await Commit();
+                    await CommitUpdate(gridModel);
                 }
             }
             else if (gridModel.ValidationPassed == false)
@@ -449,23 +447,12 @@ namespace DbNetSuiteCore.Services
             }
             else
             {
-                await Commit();
-            }
-
-            if (committed == false)
-            {
-                await GetRecords(gridModel);
-            }
-
-            return await View("Grid/__Rows", gridViewModel);
-
-            async Task Commit()
-            {
                 await CommitUpdate(gridModel);
-                await GetGridRecords(gridModel);
-                gridViewModel = new GridViewModel(gridModel);
-                committed = true;
             }
+
+            await GetGridRecords(gridModel);
+            GridViewModel gridViewModel = new GridViewModel(gridModel);
+            return await View("Grid/__Rows", gridViewModel);
         }
 
         private async Task CommitUpdate(GridModel gridModel)
@@ -475,7 +462,6 @@ namespace DbNetSuiteCore.Services
                 await UpdateRecords(gridModel);
                 gridModel.FormValues = new Dictionary<string, List<string>>();
                 gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
-
                 gridModel.MessageType = MessageType.Success;
             }
             catch (Exception ex)

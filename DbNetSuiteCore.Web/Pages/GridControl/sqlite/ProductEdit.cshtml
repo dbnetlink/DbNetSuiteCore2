@@ -18,5 +18,16 @@
         new GridColumn("Discontinued") {Editable = false, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
   
+    productGrid.Bind(GridClientEvent.ValidateUpdate, "validateReOrderLevel");
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(productGrid))
 }
+
+
+<script>
+    function validateReOrderLevel(gridControl, args) {
+        if (gridControl.columnValue("discontinued", args.row) && gridControl.formControlValue("ReorderLevel") > 0) {
+            gridControl.highlightError("ReorderLevel");
+            args.message = `Re-order level must be zero for discontinued products`;
+        }
+    }
+</script>

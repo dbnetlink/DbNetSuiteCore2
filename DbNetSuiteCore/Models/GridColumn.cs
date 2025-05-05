@@ -10,8 +10,16 @@ namespace DbNetSuiteCore.Models
     public class GridColumn : GridFormColumn
     {
         private FilterType _Filter = FilterType.None;
+        private bool _Editable = false;
         public bool Sortable => IsSortable();
-        public bool Editable { get; set; } = false;
+        public bool Editable
+        {
+            get { return _Editable && PrimaryKey == false && ForeignKey == false; }
+            set
+            {
+                _Editable = value;
+            }
+        }
         public bool Viewable { get; set; } = true;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
         public FilterType Filter

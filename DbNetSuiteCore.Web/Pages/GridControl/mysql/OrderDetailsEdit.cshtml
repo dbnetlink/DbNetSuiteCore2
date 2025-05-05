@@ -1,0 +1,58 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+
+    var orderColumns = new List<GridColumn>
+    {
+        new GridColumn("id") {PrimaryKey = true},
+        new GridColumn("employee_id","Employee"){ Lookup = new Lookup("employees", "id", "concat(last_name,', ',first_name)"),Editable = true},
+        new GridColumn("customer_id","Customer"){ Lookup = new Lookup("customers", "id", "company"),Editable = true},
+        new GridColumn("order_date") { Editable = true},
+        new GridColumn("shipped_date") { Editable = true},
+        new GridColumn("shipper_id"){ Lookup = new Lookup("shippers", "id", "company"),Editable = true},
+        new GridColumn("ship_name") { Editable = true},
+        new GridColumn("ship_address") { Editable = true},
+        new GridColumn("ship_city") { Editable = true},
+        new GridColumn("ship_state_province") { Editable = true},
+        new GridColumn("ship_zip_postal_code") { Editable = true},
+        new GridColumn("ship_country_region") { Editable = true},
+        new GridColumn("shipping_fee") { Format = "c",Editable = true},
+        new GridColumn("taxes") { Format = "c",Editable = true},
+        new GridColumn("payment_type") { Editable = true},
+        new GridColumn("paid_date") { Editable = true},
+        new GridColumn("notes") { Editable = true},
+        new GridColumn("tax_rate") { Format = "c",Editable = true},
+        new GridColumn("tax_status_id") { Editable = true},
+        new GridColumn("status_id"){ Lookup = new Lookup("orders_status", "id", "status_name"),Editable = true},
+    };
+
+    var orderDetailColumns = new List<GridColumn>
+    {
+        new GridColumn("id") {PrimaryKey = true},
+        new GridColumn("order_id") {ForeignKey = true,Editable = true},
+        new GridColumn("product_id") {Lookup = new Lookup("products","id","product_name"),Editable = true},
+        new GridColumn("Quantity") { Editable = true},
+        new GridColumn("Unit_Price") { Editable = true},
+        new GridColumn("Discount") { Editable = true},
+        new GridColumn("status_id"){ Lookup = new Lookup("order_details_status", "id", "status_name"),Editable = true},
+        new GridColumn("Date_Allocated") { Editable = true},
+        new GridColumn("Purchase_Order_Id") { Editable = true},
+        new GridColumn("Inventory_Id") { Editable = true}
+    };
+
+
+
+    var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5, ViewDialog =  new ViewDialog() };
+    orderDetailGrid.Columns = orderDetailColumns;
+
+    var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.orders") { PageSize = 5, ViewDialog =  new ViewDialog() };
+    ordersGrid.Columns = orderColumns;
+    ordersGrid.AddLinkedControl(orderDetailGrid);
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid));
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid));
+}

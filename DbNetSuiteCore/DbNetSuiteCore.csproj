@@ -264,7 +264,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\Text\Strings.zh-Hant-TW.resx">
+    <EmbeddedResource Update="Resources\Text\Strings.zh-TW.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

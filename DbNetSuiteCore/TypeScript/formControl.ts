@@ -94,16 +94,11 @@ class FormControl extends ComponentControl {
         }
     }
 
-    private triggerCommit() {
-        let applyBtn = this.getButton("apply");
-        htmx.trigger(applyBtn, "click");
-    }
-
     private validateUpdate() {
         let args = { mode: this.formBody.dataset.mode, message: '' }
         this.invokeEventHandler("ValidateUpdate", args);
 
-        var inError = Boolean(args.message != '' || this.errorHighlighted());
+        var inError = Boolean(args.message != '' || this.errorHighlighted(this.form));
         this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
         if (inError) {
             this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error', 'error')
@@ -119,7 +114,7 @@ class FormControl extends ComponentControl {
             return true;
         }
 
-        var inError = Boolean(args.message != '' || this.errorHighlighted());
+        var inError = Boolean(args.message != '' || this.errorHighlighted(this.form));
         if (inError) {
             this.setMessage(args.message != '' ? args.message : 'Deletion not allowed', 'error')
             return false;
@@ -216,12 +211,10 @@ class FormControl extends ComponentControl {
                 if (this.formModified() == false) {
                     evt.preventDefault();
                 }
-                /*
                 else if (this.form.checkValidity() == false) {
                     this.form.reportValidity()
                     evt.preventDefault();
                 }
-                */
                 return
             case "cancel":
             case "primarykey":
@@ -243,60 +236,14 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
     }
 
-    public formControlValue(columnName: string) {
-        return this.elementValue(columnName, false);
-    }
-
-    public formControlDbValue(columnName: string) {
-        return this.elementValue(columnName, true);
-    }
-
-    private elementValue(columnName: string, db: boolean) {
-        var el: HTMLInputElement = this.formControl(columnName);
-
-        if (!el) {
-            console.error(`Form control for column name ${columnName} not found`)
-        }
-        else {
-            if (el.tagName == 'INPUT' && el.type == 'checkbox') {
-                return db ? this.isBoolean(el.dataset.value) : el.checked
-            }
-            return db ? el.dataset.value : el.value;
-        }
-    }
-
-    public highlightError(columnName: string) {
-        var element: HTMLInputElement = this.formControl(columnName);
-        if (element) {
-            element.dataset.error = "true";
-        }
-    }
-
-    private errorHighlighted() {
-        let controlsInError = Array.from(this.controlElements(".fc-control")).filter((e) => { return (e.dataset.error == 'true'); }).length;
-        return (controlsInError > 0);
-    }
-
     private setFocus() {
-        var selector = this.errorHighlighted() ? ".fc-control[data-error='true']" : ".fc-control"
+        var selector = this.errorHighlighted(this.form) ? ".fc-control[data-error='true']" : ".fc-control"
         for (const el of this.controlElements(selector)) {
             if (el.readOnly == false && el.disabled == false) {
                 el.focus();
                 break;
             }
         }
-    }
-
-    public formControl(columnName: string) {
-        var element: HTMLInputElement = null;
-        this.controlElements(".fc-control").forEach((el) => {
-            if (el.name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }
-        });
-
-        if (!element) {
-            alert(`Form control => ${columnName} not found`);
-        }
-        return element;
     }
 
     private htmlEditorElements(): NodeListOf<HTMLTextAreaElement> {
