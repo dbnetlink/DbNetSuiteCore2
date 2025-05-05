@@ -106,7 +106,7 @@
                 }
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
-                    if (string.IsNullOrEmpty(column.Lookup?.TableName) && column.IsNumeric)
+                    if (string.IsNullOrEmpty(column.Lookup?.TableName) && column.IsNumeric && column.EnumOptions == null)
                     {
                         classes.Add("text-right");
                     }
