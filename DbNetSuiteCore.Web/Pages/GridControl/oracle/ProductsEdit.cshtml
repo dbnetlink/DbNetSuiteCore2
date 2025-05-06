@@ -7,15 +7,15 @@
 	var productsGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "PRODUCTS") { Search = true, ViewDialog = new ViewDialog() { LayoutColumns = 2 } };
 	productsGrid.Columns = new List<GridColumn>() {
 		new GridColumn("Product_ID") { PrimaryKey = true, Search = false },
-		new GridColumn("Product_Name") { Editable = true },
-		new GridColumn("Supplier_ID","Supplier") { Lookup = new Lookup("Suppliers", "Supplier_Id", "Company_Name"), Filter = FilterType.Default, Editable = true},
-		new GridColumn("Category_ID","Category") { Lookup = new Lookup("Categories", "Category_ID", "Category_Name"), Filter = FilterType.Default, Editable = true },
-		new GridColumn("Quantity_Per_Unit", "Qty.") { Editable = true },
-		new GridColumn("Unit_Price","Price") { Format = "c", Editable = true},
-		new GridColumn("Units_In_Stock", "Stock") { Editable = true },
-		new GridColumn("Units_On_Order","On Order") { Editable = true },
-		new GridColumn("Reorder_Level") { Search = false, Editable = true },
-		new GridColumn("Discontinued") { Filter = FilterType.Distinct, Editable = true}
+		new GridColumn("Product_Name") {Edit = true },
+		new GridColumn("Supplier_ID","Supplier") { Lookup = new Lookup("Suppliers", "Supplier_Id", "Company_Name"), Filter = FilterType.Default,Edit = true},
+		new GridColumn("Category_ID","Category") { Lookup = new Lookup("Categories", "Category_ID", "Category_Name"), Filter = FilterType.Default,Edit = true },
+		new GridColumn("Quantity_Per_Unit", "Qty.") {Edit = true },
+		new GridColumn("Unit_Price","Price") { Format = "c",Edit = true},
+		new GridColumn("Units_In_Stock", "Stock") {Edit = true },
+		new GridColumn("Units_On_Order","On Order") {Edit = true },
+		new GridColumn("Reorder_Level") { Search = false,Edit = true },
+		new GridColumn("Discontinued") { Filter = FilterType.Distinct,Edit = true}
 	};
 
 	productsGrid.FixedFilter = "Unit_Price > :unitprice";

@@ -10,18 +10,18 @@
     {
     new GridColumn("Orderid"),
     new GridColumn("Custid"),
-    new GridColumn("Empid") {Lookup = new Lookup("employee","empid", "concat_ws(', ', lastname, firstname)"), Editable = true},
-    new GridColumn("Orderdate") { Editable = true},
-    new GridColumn("Requireddate") { Editable = true},
-    new GridColumn("Shippeddate") { Editable = true},
-    new GridColumn("Shipperid") {Lookup = new Lookup("shipper","shipperid", "companyname"),Editable = true},
-    new GridColumn("Freight") { Editable = true},
-    new GridColumn("Shipname") { Editable = true},
-    new GridColumn("Shipaddress") { Editable = true},
-    new GridColumn("Shipcity") { Editable = true},
-    new GridColumn("Shipregion") { Editable = true},
-    new GridColumn("Shippostalcode") { Editable = true},
-    new GridColumn("Shipcountry") {Lookup = new Lookup(),Editable = true}
+    new GridColumn("Empid") {Lookup = new Lookup("employee","empid", "concat_ws(', ', lastname, firstname)"),Edit = true},
+    new GridColumn("Orderdate") {Edit = true},
+    new GridColumn("Requireddate") {Edit = true},
+    new GridColumn("Shippeddate") {Edit = true},
+    new GridColumn("Shipperid") {Lookup = new Lookup("shipper","shipperid", "companyname"),Edit = true},
+    new GridColumn("Freight") {Edit = true},
+    new GridColumn("Shipname") {Edit = true},
+    new GridColumn("Shipaddress") {Edit = true},
+    new GridColumn("Shipcity") {Edit = true},
+    new GridColumn("Shipregion") {Edit = true},
+    new GridColumn("Shippostalcode") {Edit = true},
+    new GridColumn("Shipcountry") {Lookup = new Lookup(),Edit = true}
     };
 
     columns.ForEach(c => c.Filter = FilterType.Default);

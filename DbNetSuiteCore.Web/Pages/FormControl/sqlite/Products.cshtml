@@ -21,12 +21,12 @@
     productForm.FixedFilter = "UnitPrice > @unitprice";
     productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
 
-    productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateUpdate";
+    productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateReorderLevel";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
 }
 
 <script>
-    function validateUpdate(formControl, args) {
+    function validateReorderLevel(formControl, args) {
         if (formControl.formControlValue("discontinued") && formControl.formControlValue("ReorderLevel") > 0) {
             formControl.highlightError("discontinued");
             formControl.highlightError("ReorderLevel");

@@ -7,14 +7,14 @@
     var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Caption = "Product Edit"};
     productGrid.Columns = new List<GridColumn>() {
         new GridColumn("ProductID","ID") { DataOnly = true},
-        new GridColumn("ProductName", "Name") { Editable = true, Required = true, MinLength = 3, MaxLength = 50 },
-        new GridColumn("SupplierID","Supplier") { Editable = true, Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
-        new GridColumn("CategoryID","Category") { Editable = true, Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
-        new GridColumn("QuantityPerUnit", "Qty"){ Editable = true },
-        new GridColumn("UnitPrice", "Price") {Editable = true,  Required = true, Format = "c" },
-        new GridColumn("UnitsInStock", "Stock") {Editable = true, Required = true, MinValue = 0 },
-        new GridColumn("UnitsOnOrder", "On Order") {Editable = true, Required = true },
-        new GridColumn("ReorderLevel", "Re-order Level") {Editable = true, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
+        new GridColumn("ProductName", "Name") {Edit = true, Required = true, MinLength = 3, MaxLength = 50 },
+        new GridColumn("SupplierID","Supplier") {Edit = false, Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new GridColumn("CategoryID","Category") {Edit = false, Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
+        new GridColumn("QuantityPerUnit", "Qty"){Edit = false },
+        new GridColumn("UnitPrice", "Price") {Edit = false,  Required = false, Format = "c" },
+        new GridColumn("UnitsInStock", "Stock") {Edit = false, Required = false, MinValue = 0 },
+        new GridColumn("UnitsOnOrder", "On Order") {Edit = false, Required = false },
+        new GridColumn("ReorderLevel", "Re-order Level") {Edit = false, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
         new GridColumn("Discontinued") {Editable = false, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
   

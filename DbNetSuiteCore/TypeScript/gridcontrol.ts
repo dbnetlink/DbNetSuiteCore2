@@ -266,6 +266,7 @@ class GridControl extends ComponentControl {
             }
         }
 
+        this.currentValidationRow = null;
         this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
         
         if (inError == false) {
@@ -708,9 +709,9 @@ class GridControl extends ComponentControl {
         return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
     }
 
-    public columnValue(columnName: string, row: HTMLTableRowElement) {
+    public columnValue(columnName: string, row: HTMLTableRowElement = null) {
         if (!row) {
-            row = this.selectedRow;
+            row = this.currentValidationRow ? this.currentValidationRow : this.selectedRow;
         }
 
         let datasetValue = row.dataset[columnName.toLowerCase()];

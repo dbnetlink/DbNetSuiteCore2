@@ -20,6 +20,14 @@ namespace DbNetSuiteCore.Models
                 _Editable = value;
             }
         }
+        public bool Edit
+        {
+            set
+            {
+                _Editable = value;
+            }
+        }
+
         public bool Viewable { get; set; } = true;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
         public FilterType Filter
