@@ -85,7 +85,8 @@
     background-color: var(--bg-warning);
 }
 
-.dbnetsuite .fc-control[data-error='true'] {
+.dbnetsuite .fc-control[data-error='true'],
+.dbnetsuite td[data-error='true'] {
     background-color: var(--bg-error);
 }
 

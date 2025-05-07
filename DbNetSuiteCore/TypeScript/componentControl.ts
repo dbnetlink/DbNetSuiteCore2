@@ -285,7 +285,14 @@ class ComponentControl {
     }
 
     protected errorHighlighted(container: HTMLElement) {
-        let controlsInError = Array.from(container.querySelectorAll(".fc-control")).filter((e: HTMLElement) => { return (e.dataset.error == 'true'); }).length;
+        let controlsInError = 0;
+        let selectors = [".fc-control"]
+
+        if (this instanceof GridControl) {
+            selectors.push("td")
+        }
+
+        selectors.forEach(s => { controlsInError += Array.from(container.querySelectorAll(s)).filter((e: HTMLElement) => { return (e.dataset.error == 'true'); }).length })
         return (controlsInError > 0);
     }
 
@@ -316,22 +323,19 @@ class ComponentControl {
         }
     }
 
-    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
-        var element: HTMLFormElement = this.formControl(columnName,row);
-        if (element) {
-            element.dataset.error = "true";
-        }
-    }
-
     public formControl(columnName: string, row: HTMLTableRowElement = null) {
         var element: HTMLFormElement = null;
         var container = row ? row : ((this instanceof FormControl) ? this.form : this.currentValidationRow);
-        container.querySelectorAll(".fc-control").forEach((el:HTMLFormElement) => {
-            if (el.name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }
+        container.querySelectorAll(".fc-control").forEach((el: HTMLFormElement) => {
+            let name = el.name;
+            if (el.attributes["type"].value == "checkbox") {
+                name = (el.nextElementSibling as HTMLFormElement).name
+            }
+            if (name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }
         });
 
         if (!element) {
-            alert(`Form control => ${columnName} not found`);
+            console.error(`Form control => ${columnName} not found`);
         }
         return element;
     }
@@ -354,5 +358,9 @@ class ComponentControl {
         this.formMessage.innerHTML = "&nbsp";
         delete this.formMessage.dataset.highlight;
         this.controlElements(`.fc-control`).forEach((el) => { el.dataset.modified = false; el.dataset.error = false });
+
+        if (this instanceof GridControl) {
+            this.controlElements(`td`).forEach((el) => { el.dataset.error = false });
+        }
     }
 }

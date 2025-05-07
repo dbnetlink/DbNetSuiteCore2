@@ -14,8 +14,8 @@
         new GridColumn("UnitPrice", "Price") {Edit = false,  Required = false, Format = "c" },
         new GridColumn("UnitsInStock", "Stock") {Edit = false, Required = false, MinValue = 0 },
         new GridColumn("UnitsOnOrder", "On Order") {Edit = false, Required = false },
-        new GridColumn("ReorderLevel", "Re-order Level") {Edit = false, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
-        new GridColumn("Discontinued") {Editable = false, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
+        new GridColumn("ReorderLevel", "Re-order Level") {Edit = true, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
+        new GridColumn("Discontinued") {Edit = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
   
     productGrid.Bind(GridClientEvent.ValidateUpdate, "validateReOrderLevel");
@@ -25,7 +25,7 @@
 
 <script>
     function validateReOrderLevel(gridControl, args) {
-        if (gridControl.columnValue("discontinued", args.row) && gridControl.formControlValue("ReorderLevel") > 0) {
+        if (gridControl.columnValue("discontinued", args.row) && gridControl.columnValue("ReorderLevel") > 0) {
             gridControl.highlightError("ReorderLevel");
             args.message = `Re-order level must be zero for discontinued products`;
         }

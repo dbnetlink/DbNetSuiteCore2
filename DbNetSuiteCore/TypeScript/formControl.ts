@@ -164,6 +164,13 @@ class FormControl extends ComponentControl {
         });
     }
 
+    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
+        var element: HTMLFormElement = this.formControl(columnName, row);
+        if (element) {
+            element.dataset.error = "true";
+        }
+    }
+
     public confirmRequest(evt) {
         if (this.isControlEvent(evt) == false || evt.target.hasAttribute('hx-confirm-dialog') == false) {
             return;

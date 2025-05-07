@@ -718,8 +718,41 @@ class GridControl extends ComponentControl {
         if (datasetValue) {
             return datasetValue;
         }
-        let cell = this.columnCell(columnName, row)
+        let cell:HTMLTableCellElement = this.columnCell(columnName, row)
+
+        if (this.hasFormControl(cell)) {
+            return this.formControlValue(columnName, row);
+        }
+
         return cell ? cell.dataset.value : null;
+    }
+
+    private hasFormControl(cell: HTMLTableCellElement) {
+        if (cell.childElementCount > 0) {
+            switch (cell.children[0].tagName) {
+                case 'INPUT':
+                case 'TEXTAREA':
+                case 'SELECT':
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
+        if (!row) {
+            row = this.currentValidationRow;
+        }
+        let cell: HTMLTableCellElement = this.columnCell(columnName, row)
+        let element:HTMLElement = cell;
+        if (this.hasFormControl(cell)) {
+            element = this.formControl(columnName, row);
+        }
+
+        if (element) {
+            element.dataset.error = "true";
+        }
     }
 
     private configureFormControls() {
