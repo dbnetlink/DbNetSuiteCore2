@@ -1,0 +1,82 @@
+﻿@page
+@{
+    Layout = null;
+}
+@model DbNetSuiteCoreSamples.Pages.ResourceModel
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Http
+@using System.Data
+@using System.Text.RegularExpressions
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Extensions
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @DbNetSuiteCore.Resources.StyleSheet()
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 mt-3 mb-3">
+                <div class="border border-1 rounded bg-light text-dark p-2">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <main role="main">
+                    <div style="padding:20px">
+                        <form method="post">
+                            <div class="d-flex flex-row align-items-center" style="gap:10px">
+                                <div>Culture</div>
+                                <div>
+                                    <select class="form-select" asp-for="@Model.Culture" asp-items="Model.Cultures" onchange="this.form.submit()"></select>
+                                </div>
+                                <div>
+                                    <button type="submit" name="update" class="btn btn-primary" asp-page-handler="UpdateResources">Update</button>
+                                </div>
+                                <div>
+                                    <button type="submit" name="download" class="btn btn-secondary" asp-page-handler="DownloadResx">Download Resource File</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div style="margin-top:10px">
+                            @{
+                                GridModel resourcesModel = new GridModel(DataSourceType.SQLite, DbNetSuiteCoreSamples.Pages.ResourceModel.ConnectionAlias, "resources") { PageSize = 100 };
+
+                                resourcesModel.Columns = new List<GridColumn>
+                                {
+                                new GridColumn("id") {DataOnly = true, PrimaryKey = true},
+                                new GridColumn("ResourceKey"),
+                                new GridColumn("EnglishText"),
+                                new GridColumn("CultureText") {Edit = true, Style = "width:600px"}
+                                };
+
+                                resourcesModel.FixedFilter = "CultureCode = @culturecode";
+                                resourcesModel.FixedFilterParameters.Add(new DbParameter("culturecode", Model.Culture));
+
+                                @(await new DbNetSuiteCore.Control(HttpContext).Render(resourcesModel))
+                            }
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+        <footer class="py-2">
+            <div class="d-flex flex-column flex-sm-row justify-content-between py-1 my-1 border-top">
+                <p>&copy; @DateTime.Today.ToString("yyyy") DbNetLink Limited</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+
