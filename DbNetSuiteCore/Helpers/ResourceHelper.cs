@@ -3,7 +3,6 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
-using System.Security.Cryptography.Xml;
 
 namespace DbNetSuiteCore.Helpers
 {
@@ -66,10 +65,15 @@ namespace DbNetSuiteCore.Helpers
             return resourceHelper.GetString(name, CultureInfo.CurrentCulture) ?? name;
         }
 
-        public static Dictionary<string,string> GetAllResourceStrings(string name)
+        public static Dictionary<string,string> GetAllResourceStrings(string name, string? culture = null)
         {
+            var cultureInfo = CultureInfo.CurrentCulture;
+            if (string.IsNullOrEmpty(culture) == false)
+            {
+                cultureInfo = new CultureInfo(culture);
+            }
             var resourceHelper = new ResourceManager("DbNetSuiteCore.Resources.Text.Strings", Assembly.GetExecutingAssembly());
-            ResourceSet resourceSet = resourceHelper.GetResourceSet(CultureInfo.CurrentCulture, true, true) ?? new ResourceSet(string.Empty);
+            ResourceSet resourceSet = resourceHelper.GetResourceSet(cultureInfo, true, true) ?? new ResourceSet(string.Empty);
 
             Dictionary<string, string> resourceStrings = new Dictionary<string, string>();
 

@@ -14,7 +14,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseRequestLocalization("zh");
+//app.UseRequestLocalization("zh");
 
 app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();
