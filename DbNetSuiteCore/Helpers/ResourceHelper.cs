@@ -65,7 +65,7 @@ namespace DbNetSuiteCore.Helpers
             return resourceHelper.GetString(name, CultureInfo.CurrentCulture) ?? name;
         }
 
-        public static Dictionary<string,string> GetAllResourceStrings(string name, string? culture = null)
+        public static Dictionary<string,string> GetAllResourceStrings(string? culture = null)
         {
             var cultureInfo = CultureInfo.CurrentCulture;
             if (string.IsNullOrEmpty(culture) == false)
