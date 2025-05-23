@@ -25,7 +25,7 @@ namespace DbNetSuiteCore.Models
         public bool OneToOne => IsLinked && Columns.Any(c => c.PrimaryKey && c.ForeignKey);
         public bool ReadOnly { get; set; } = false;
         public FormMode? CommitType { get; set; }
-        public object RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : string.Empty;
+        public List<object> RecordId => Mode == FormMode.Update ? (List<object>)PrimaryKeyValues[CurrentRecord - 1] : new List<object>();
         public int LayoutColumns { get; set; } = 4;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
         public FormModel() : base()

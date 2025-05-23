@@ -108,7 +108,7 @@ namespace DbNetSuiteCore.Services
             }
 
             ConfigureFormColumns(gridModel);
-          
+
             if (gridModel.IncludeJsonData)
             {
                 gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
@@ -457,18 +457,10 @@ namespace DbNetSuiteCore.Services
 
         private async Task CommitUpdate(GridModel gridModel)
         {
-            try
-            {
-                await UpdateRecords(gridModel);
-                gridModel.FormValues = new Dictionary<string, List<string>>();
-                gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
-                gridModel.MessageType = MessageType.Success;
-            }
-            catch (Exception ex)
-            {
-                gridModel.Message = ex.Message;
-                gridModel.MessageType = MessageType.Error;
-            }
+            await UpdateRecords(gridModel);
+            gridModel.FormValues = new Dictionary<string, List<string>>();
+            gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+            gridModel.MessageType = MessageType.Success;
         }
 
         protected async Task UpdateRecords(GridModel gridModel)

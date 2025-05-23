@@ -67,7 +67,7 @@ namespace DbNetSuiteCore.Services
                         throw new Exception("A parent control must have a column designated as a <b>PrimaryKey</b>");
                     }
                 }
-
+              
                 if (gridModel.GetLinkedControlIds().Any())
                 {
                     if (gridModel.RowSelection != RowSelection.Single)

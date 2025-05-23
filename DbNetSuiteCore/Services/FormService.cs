@@ -75,10 +75,12 @@ namespace DbNetSuiteCore.Services
                 throw new Exception("At least one form column must be designated as a primary key");
             }
 
-            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search || formModel.TriggerName == TriggerNames.ParentKey || formModel.TriggerName == TriggerNames.SearchDialog)
+            List<string> refreshTriggers = new List<string>() { TriggerNames.Search, TriggerNames.ParentKey, TriggerNames.SearchDialog };
+
+            if (formModel.PrimaryKeyValues.Any() == false || refreshTriggers.Contains(formModel.TriggerName))
             {
                 await GetRecords(formModel);
-                formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => PrimaryKeyValue(r.ItemArray[0])).ToList();
+                formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => PrimaryKeyValue(r)).ToList();
                 if (formModel.CurrentRecord > formModel.PrimaryKeyValues.Count)
                 {
                     formModel.CurrentRecord = formModel.PrimaryKeyValues.Count;
@@ -107,13 +109,26 @@ namespace DbNetSuiteCore.Services
             return formViewModel;
         }
 
-        private object PrimaryKeyValue(object value)
+        private object PrimaryKeyValue(DataRow dataRow)
         {
-            if (value is ObjectId)
+            List<object> primaryKeyValues = new List<object>();
+            foreach (object? value in (dataRow.ItemArray ?? new object[] { })) 
             {
-                value = ((ObjectId)value).ToString();
+                if (value == null)
+                {
+                    continue;
+                }
+                if (value is ObjectId)
+                {
+                    primaryKeyValues.Add(((ObjectId)value).ToString());
+                }
+                else
+                {
+                    primaryKeyValues.Add(value);
+                }
             }
-            return value;
+           
+            return primaryKeyValues;
         }
         private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {

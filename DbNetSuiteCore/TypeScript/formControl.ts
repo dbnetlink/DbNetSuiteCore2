@@ -229,7 +229,7 @@ class FormControl extends ComponentControl {
         }
 
         if (this.formMode() != "empty") {
-            this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el) });
+            this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el, true) });
             let modified = this.controlElements(".fc-control[data-modified='true']");
 
             if (modified.length) {

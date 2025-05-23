@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using System.Configuration;
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,7 +19,7 @@ namespace DbNetSuiteCore.Helpers
         {
             return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(text);
         }
-        public static string ObfuscateString(string input, IConfiguration configuration)
+        public static string ObfuscateString(string input, IConfiguration? configuration = null)
         {
             var encryptionConfig = GetEncryptionConfig(configuration);
 
@@ -29,7 +30,7 @@ namespace DbNetSuiteCore.Helpers
             return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
-        public static string DeobfuscateString(string input, IConfiguration configuration)
+        public static string DeobfuscateString(string input, IConfiguration? configuration = null)
         {
             var encryptionConfig = GetEncryptionConfig(configuration);
 
@@ -82,13 +83,20 @@ namespace DbNetSuiteCore.Helpers
             return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
         }
 
-        private static EncryptionConfig GetEncryptionConfig(IConfiguration configuration)
+        private static EncryptionConfig GetEncryptionConfig(IConfiguration? configuration = null)
         {
-            return new EncryptionConfig()
+            if (configuration == null)
             {
-                Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
-                Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt)
-            };
+                return new EncryptionConfig();
+            }
+            else
+            {
+                return new EncryptionConfig()
+                {
+                    Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
+                    Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt)
+                };
+            }
         }
 
         internal class EncryptionConfig

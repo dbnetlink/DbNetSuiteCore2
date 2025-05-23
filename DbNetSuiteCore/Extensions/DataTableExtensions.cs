@@ -31,8 +31,17 @@ namespace DbNetSuiteCore.Extensions
                     {
                         dataRow[newColumn] = gridColumnModel.GetLookupValue(dataRow[currentColumn]);
                     }
-                    dataTable.Columns.Remove(currentColumn);
-                    newColumn.ColumnName = currentColumn.ColumnName;
+                    if (gridColumnModel.PrimaryKey)
+                    {
+                        var columnName = currentColumn.ColumnName;
+                        currentColumn.ColumnName = $"{columnName}_value";
+                        newColumn.ColumnName = columnName;
+                    }
+                    else
+                    {
+                        dataTable.Columns.Remove(currentColumn);
+                        newColumn.ColumnName = currentColumn.ColumnName;
+                    }
                 }
             }
             else

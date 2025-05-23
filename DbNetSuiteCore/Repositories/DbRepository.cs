@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using System.Linq;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
 
 
 namespace DbNetSuiteCore.Repositories
@@ -102,7 +103,11 @@ namespace DbNetSuiteCore.Repositories
             object? primaryKeyValue = null;
             if (componentModel is FormModel)
             {
-                primaryKeyValue = ((FormModel)componentModel).RecordId;
+                primaryKeyValue = ((FormModel)componentModel).RecordId as List<object>;
+            }
+            else
+            {
+                primaryKeyValue = componentModel.GetParentKeyValues();
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
@@ -194,7 +199,7 @@ namespace DbNetSuiteCore.Repositories
                         continue;
                     }
                 }
-                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues, gridModel.RowsModified[r].Columns);
+                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues[r], gridModel.RowsModified[r].Columns);
                 var connection = GetConnection(gridModel.ConnectionAlias);
                 connection.Open();
                 await ExecuteUpdate(update, connection);
@@ -415,6 +420,7 @@ namespace DbNetSuiteCore.Repositories
                         dataTable.Load(dataReader);
                         await dataReader.DisposeAsync();
                         connection.Close();
+                        dataTable.Constraints.Clear();
                         return dataTable;
                     }
                     catch (Exception)
@@ -438,6 +444,7 @@ namespace DbNetSuiteCore.Repositories
                 }
 
                 connection.Close();
+                dataTable.Constraints.Clear();
                 return dataTable;
             }
         }
