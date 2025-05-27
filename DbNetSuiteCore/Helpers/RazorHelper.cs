@@ -1,8 +1,12 @@
 ﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Helpers;
 using Microsoft.AspNetCore.Html;
 using System.Data;
 using System.Text.Encodings.Web;
+using DocumentFormat.OpenXml.EMMA;
+using System.Configuration;
+using System.Text.Json;
 
 namespace DbNetSuiteCore.Helpers
 {
@@ -36,9 +40,9 @@ namespace DbNetSuiteCore.Helpers
 
             if (gridModel.PrimaryKeyValue(row) != null)
             {
-                dataAttributes.Add($"data-id=\"{gridModel.PrimaryKeyValue(row)}\"");
+                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonSerializer.Serialize(gridModel.PrimaryKeyValue(row)))}\"");
             }
-
+            
             foreach (var column in gridModel.DataOnlyColumns)
             {
                 dataAttributes.Add($"data-{column.ColumnName.ToLower()}=\"{row[column.ColumnName]}\"");

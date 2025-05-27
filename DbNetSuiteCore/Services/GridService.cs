@@ -11,9 +11,6 @@ using ClosedXML.Excel;
 using Newtonsoft.Json;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.ViewModels;
-using System.Linq;
-using System.Text.RegularExpressions;
-using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetSuiteCore.Services
 {
@@ -108,7 +105,7 @@ namespace DbNetSuiteCore.Services
             }
 
             ConfigureFormColumns(gridModel);
-          
+
             if (gridModel.IncludeJsonData)
             {
                 gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
@@ -140,7 +137,7 @@ namespace DbNetSuiteCore.Services
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
                     var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
-                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentKey}";
+                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{TextHelper.DeobfuscateKey<string>(nestedGrid.ParentKey)}";
                     nestedGrid._NestedGrids.Add(nestedChildGrid);
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
@@ -457,18 +454,10 @@ namespace DbNetSuiteCore.Services
 
         private async Task CommitUpdate(GridModel gridModel)
         {
-            try
-            {
-                await UpdateRecords(gridModel);
-                gridModel.FormValues = new Dictionary<string, List<string>>();
-                gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
-                gridModel.MessageType = MessageType.Success;
-            }
-            catch (Exception ex)
-            {
-                gridModel.Message = ex.Message;
-                gridModel.MessageType = MessageType.Error;
-            }
+            await UpdateRecords(gridModel);
+            gridModel.FormValues = new Dictionary<string, List<string>>();
+            gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+            gridModel.MessageType = MessageType.Success;
         }
 
         protected async Task UpdateRecords(GridModel gridModel)

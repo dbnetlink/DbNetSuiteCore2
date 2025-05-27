@@ -298,7 +298,7 @@ class GridControl extends ComponentControl {
                 return;
         }
 
-        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el) });
+        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el, true) });
         let modified = this.controlElements(".fc-control[data-modified='true']");
 
         if (modified.length) {
@@ -318,7 +318,9 @@ class GridControl extends ComponentControl {
     private getRowModification(row: HTMLTableRowElement) {
         let rowModification: RowModification = { modified: false, columns: [] };
         row.querySelectorAll(".fc-control").forEach((el:HTMLFormElement) => {
-            if (this.elementModified(el)) { rowModification.columns.push(el.name) }
+            if (this.elementModified(el)) {
+                rowModification.columns.push(this.getElementName(el));
+            }
         });
         rowModification.modified = rowModification.columns.length > 0;
         return rowModification;

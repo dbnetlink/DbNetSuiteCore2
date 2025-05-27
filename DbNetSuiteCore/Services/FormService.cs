@@ -11,6 +11,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
+using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {
@@ -75,10 +76,12 @@ namespace DbNetSuiteCore.Services
                 throw new Exception("At least one form column must be designated as a primary key");
             }
 
-            if (formModel.PrimaryKeyValues.Any() == false || formModel.TriggerName == TriggerNames.Search || formModel.TriggerName == TriggerNames.ParentKey || formModel.TriggerName == TriggerNames.SearchDialog)
+            List<string> refreshTriggers = new List<string>() { TriggerNames.Search, TriggerNames.ParentKey, TriggerNames.SearchDialog };
+
+            if (formModel.PrimaryKeyValues.Any() == false || refreshTriggers.Contains(formModel.TriggerName))
             {
                 await GetRecords(formModel);
-                formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => PrimaryKeyValue(r.ItemArray[0])).ToList();
+                formModel.PrimaryKeyValues = formModel.Data.AsEnumerable().Select(r => PrimaryKeyValue(r)).ToList();
                 if (formModel.CurrentRecord > formModel.PrimaryKeyValues.Count)
                 {
                     formModel.CurrentRecord = formModel.PrimaryKeyValues.Count;
@@ -107,13 +110,26 @@ namespace DbNetSuiteCore.Services
             return formViewModel;
         }
 
-        private object PrimaryKeyValue(object value)
+        private List<object> PrimaryKeyValue(DataRow dataRow)
         {
-            if (value is ObjectId)
+            List<object> primaryKeyValues = new List<object>();
+            foreach (object? value in (dataRow.ItemArray ?? new object[] { })) 
             {
-                value = ((ObjectId)value).ToString();
+                if (value == null)
+                {
+                    continue;
+                }
+                if (value is ObjectId)
+                {
+                    primaryKeyValues.Add(((ObjectId)value).ToString());
+                }
+                else
+                {
+                    primaryKeyValues.Add(value);
+                }
             }
-            return value;
+           
+            return primaryKeyValues;
         }
         private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {
@@ -165,7 +181,7 @@ namespace DbNetSuiteCore.Services
                 else
                 {
                     await InsertRecord(formModel);
-                    formModel.PrimaryKeyValues = new List<object>();
+                    formModel.PrimaryKeyValues = new List<List<object>>();
                     formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Added);
                 }
 
@@ -185,7 +201,7 @@ namespace DbNetSuiteCore.Services
             try
             {
                 await DeleteRecord(formModel);
-                formModel.PrimaryKeyValues = new List<object>();
+                formModel.PrimaryKeyValues = new List<List<object>>();
                 formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Deleted);
                 formModel.MessageType = MessageType.Success;
             }
@@ -239,20 +255,14 @@ namespace DbNetSuiteCore.Services
 
         private async Task<bool> ValidatePrimaryKey(FormModel formModel)
         {
-            if (formModel.Mode == FormMode.Update)
+            if (formModel.Mode == FormMode.Update || formModel.Columns.Any(c => c.PrimaryKeyRequired) == false)
             {
                 return true;
             }
 
-            FormColumn? primaryKeyColumn = formModel.Columns.FirstOrDefault(c => c.PrimaryKeyRequired);
-            if (primaryKeyColumn == null)
+            if (await RecordExists(formModel))
             {
-                return true;
-            }
-
-            if (await RecordExists(formModel, formModel.FormValues[primaryKeyColumn.ColumnName]))
-            {
-                primaryKeyColumn.InError = true;
+                formModel.Columns.Where(c => c.PrimaryKeyRequired).ForEach(c => c.InError = true);
                 formModel.Message = ResourceHelper.GetResourceString(ResourceNames.PrimaryKeyExists);
                 formModel.MessageType = MessageType.Error;
                 return false;
@@ -324,7 +334,7 @@ namespace DbNetSuiteCore.Services
 
                 return formModel;
             }
-            catch
+            catch (Exception ex)
             {
                 return new FormModel();
             }

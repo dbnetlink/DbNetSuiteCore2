@@ -187,15 +187,26 @@ namespace DbNetSuiteCore.Models
             }
             else
             {
-                var primaryKeyColumn = Columns.FirstOrDefault(c => c.PrimaryKey);
-                if (primaryKeyColumn != null)
+                List<object> primaryKeyValues = new List<object>();
+
+                foreach (var primaryKeyColumn in Columns.Where(c => c.PrimaryKey))
                 {
-                    var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == primaryKeyColumn.Name || primaryKeyColumn.Name.Split(".").Last() == c.ColumnName);
+                    string columnName = primaryKeyColumn.ColumnName;
+                    if (primaryKeyColumn.Lookup != null)
+                    {
+                        columnName = $"{primaryKeyColumn.ColumnName}_value";
+                    }
+                    var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == columnName || columnName.Split(".").Last() == c.ColumnName);
 
                     if (dataColumn != null)
                     {
-                        return dataRow[dataColumn];
+                        primaryKeyValues.Add(dataRow[dataColumn]);
                     }
+                }
+
+                if (primaryKeyValues.Any())
+                {
+                    return primaryKeyValues;
                 }
 
                 return null;

@@ -259,14 +259,14 @@ class ComponentControl {
         return modified.length > 0;
     }
 
-    protected elementModified(el: HTMLFormElement) {
+    protected elementModified(el: HTMLFormElement, unappliedCheck:boolean = false) {
         if (el.dataset.dbdatatype == "XmlType") {
             return false;
         }
         if (el.tagName == 'INPUT' && el.type == 'checkbox') {
-            return this.isBoolean(el.dataset.value) != el.checked;
+            return this.wasChecked(el.dataset.value) != el.checked;
         }
-        else if (el.type == 'select-multiple') {
+        if (el.type == 'select-multiple') {
             var selectedValues = Array.from(el.selectedOptions).map(({ value }) => value);
 
             if (el.dataset.dbdatatype = 'Array') {
@@ -276,7 +276,12 @@ class ComponentControl {
                 return el.dataset.value != selectedValues.join(',');
             }
         }
-        else if (el.tagName == 'TEXTAREA') {
+
+        if (unappliedCheck) {
+            return this.cleanString(el.dataset.value) != this.cleanString(el.value);;
+        }
+
+        if (el.tagName == 'TEXTAREA') {
             return this.cleanString(el.dataset.value) != this.cleanString(el.value);
         }
         else {
@@ -317,7 +322,7 @@ class ComponentControl {
         }
         else {
             if (el.tagName == 'INPUT' && el.type == 'checkbox') {
-                return db ? this.isBoolean(el.dataset.value) : el.checked
+                return db ? this.wasChecked(el.dataset.value) : el.checked
             }
             return db ? el.dataset.value : el.value;
         }
@@ -327,10 +332,7 @@ class ComponentControl {
         var element: HTMLFormElement = null;
         var container = row ? row : ((this instanceof FormControl) ? this.form : this.currentValidationRow);
         container.querySelectorAll(".fc-control").forEach((el: HTMLFormElement) => {
-            let name = el.name;
-            if (el.attributes["type"].value == "checkbox") {
-                name = (el.nextElementSibling as HTMLFormElement).name
-            }
+            let name = this.getElementName(el);
             if (name.toLowerCase() == `_${columnName.toLowerCase()}`) { element = el; }
         });
 
@@ -340,11 +342,20 @@ class ComponentControl {
         return element;
     }
 
+    protected getElementName(el: HTMLFormElement):string {
+        let name = el.name;
+        if (el.attributes["type"].value == "checkbox") {
+            name = (el.nextElementSibling as HTMLFormElement).name
+        }
+
+        return name;
+    }
+
     protected cleanString(value) {
         return value.replace("&amp;#xA;", "").replace(/[^a-z0-9\.]+/gi, "").trim()
     }
 
-    protected isBoolean(value: string) {
+    protected wasChecked(value: string) {
         return value == "1" || value.toLowerCase() == "true"
     }
 

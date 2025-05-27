@@ -65,7 +65,9 @@ namespace DbNetSuiteCore.Repositories
 
             if (string.IsNullOrEmpty(gridModel.ParentKey) == false)
             {
-                urlParts = urlParts.Append(gridModel.ParentKey).ToArray();
+                var url = TextHelper.DeobfuscateKey<string>(gridModel.ParentKey) ?? string.Empty;
+                urlParts = urlParts.Append(url).ToArray();
+
                 gridModel.Url = string.Join(folderSeparator, urlParts.ToArray());
                 gridModel.ParentKey = string.Empty;
             }

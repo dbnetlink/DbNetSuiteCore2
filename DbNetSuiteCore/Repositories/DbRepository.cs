@@ -5,10 +5,6 @@ using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Data.SqlClient;
-using System.Linq;
-using DocumentFormat.OpenXml.Spreadsheet;
 
 
 namespace DbNetSuiteCore.Repositories
@@ -102,7 +98,11 @@ namespace DbNetSuiteCore.Repositories
             object? primaryKeyValue = null;
             if (componentModel is FormModel)
             {
-                primaryKeyValue = ((FormModel)componentModel).RecordId;
+                primaryKeyValue = ((FormModel)componentModel).RecordId as List<object> ?? new List<object>();
+            }
+            else
+            {
+                primaryKeyValue = componentModel.GetParentKeyValues();
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
             componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
@@ -110,9 +110,17 @@ namespace DbNetSuiteCore.Repositories
             ApplyLookups(componentModel);
         }
 
-        public async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
+        public async Task<bool> RecordExists(ComponentModel componentModel)
         {
-            QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
+            var formModel = (FormModel)componentModel;
+            List<object> primaryKeyValues = new List<object>();
+
+            foreach(var pkColumn in formModel.GetColumns().Where(c => c.PrimaryKey))
+            {
+                primaryKeyValues.Add(formModel.FormValues[pkColumn.ColumnName]);
+            }
+            
+            QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValues);
             var connection = GetConnection(componentModel.ConnectionAlias);
             connection.Open();
             var reader = await ExecuteQuery(query, connection);
@@ -194,7 +202,7 @@ namespace DbNetSuiteCore.Repositories
                         continue;
                     }
                 }
-                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues, gridModel.RowsModified[r].Columns);
+                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues[r], gridModel.RowsModified[r].Columns);
                 var connection = GetConnection(gridModel.ConnectionAlias);
                 connection.Open();
                 await ExecuteUpdate(update, connection);
@@ -415,6 +423,7 @@ namespace DbNetSuiteCore.Repositories
                         dataTable.Load(dataReader);
                         await dataReader.DisposeAsync();
                         connection.Close();
+                        dataTable.Constraints.Clear();
                         return dataTable;
                     }
                     catch (Exception)
@@ -438,6 +447,7 @@ namespace DbNetSuiteCore.Repositories
                 }
 
                 connection.Close();
+                dataTable.Constraints.Clear();
                 return dataTable;
             }
         }

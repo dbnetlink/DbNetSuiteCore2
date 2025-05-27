@@ -7,8 +7,8 @@
 @{
     var employeeColumns = new List<GridColumn>
     {
-        new GridColumn("ParentEmployeeKey", "Id") {PrimaryKey = true},
-        new GridColumn("EmployeeNationalIDAlternateKey", "National Id"),
+        new GridColumn("ParentEmployeeKey", "Id"),
+        new GridColumn("EmployeeNationalIDAlternateKey", "National Id") {PrimaryKey = true},
         new GridColumn("SalesTerritoryKey", "Sales Territory"),
         new GridColumn("FirstName", "Forename"),
         new GridColumn("MiddleName", "Middle Name"),

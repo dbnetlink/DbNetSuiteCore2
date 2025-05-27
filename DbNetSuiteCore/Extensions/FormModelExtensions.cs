@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Extensions
 
             var initialSortColumn = formModel.Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue);
 
-            if (initialSortColumn != null) 
+            if (initialSortColumn != null)
             {
                 columnName = initialSortColumn.ColumnName;
                 sequence = initialSortColumn.InitialSortOrder.ToString()?.ToLower();
@@ -68,15 +68,16 @@ namespace DbNetSuiteCore.Extensions
                 if (formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled)
                 {
                     continue;
-                };
-               
+                }
+                ;
+
                 if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
                     var columnName = formColumn.ColumnName;
                     var paramName = DbHelper.ParameterName(columnName, formModel.DataSourceType);
                     update.Params[paramName] = GetParamValue(formModel, formColumn);
                     paramName = ComponentModelExtensions.UpdateParamName(paramName, formColumn, formModel.DataSourceType);
-                 
+
                     set.Add($"{columnName} = {paramName}");
                 }
             }
@@ -85,11 +86,25 @@ namespace DbNetSuiteCore.Extensions
             {
                 update.Sql += $" set {string.Join(",", set)}";
             }
-            var primaryKeyColumn = formModel.Columns.First(c => c.PrimaryKey);
-            update.Sql += $" where {primaryKeyColumn.ColumnName} = {DbHelper.ParameterName(primaryKeyColumn.ColumnName, formModel.DataSourceType)}";
-            update.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
+
+            formModel.AddWhereClause(update);
 
             return update;
+        }
+
+        private static void AddWhereClause(this FormModel formModel, CommandConfig commandConfig)
+        {
+            List<string> where = new List<string>();
+
+            var recordId = formModel.RecordId as List<object> ?? new List<object>();
+
+            foreach (var item in formModel.Columns.Where(c => c.PrimaryKey).Select((value, index) => new { value = value, index = index }))
+            {
+                where.Add($"{item.value.ColumnName} = {DbHelper.ParameterName(item.value.ColumnName, formModel.DataSourceType)}");
+                commandConfig.Params[item.value.ColumnName] = ComponentModelExtensions.ParamValue(recordId[item.index], item.value, formModel.DataSourceType) ?? DBNull.Value;
+            }
+
+            commandConfig.Sql += $" where {string.Join(" and ", where)}";
         }
 
         public static CommandConfig BuildInsert(this FormModel formModel)
@@ -104,8 +119,9 @@ namespace DbNetSuiteCore.Extensions
                 if ((formColumn.IsReadOnly(formModel.Mode) || formColumn.Disabled) && string.IsNullOrEmpty(formColumn.SequenceName))
                 {
                     continue;
-                };
-  
+                }
+                ;
+
                 if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
                     var paramName = DbHelper.ParameterName(formColumn.ColumnName, formModel.DataSourceType);
@@ -113,11 +129,11 @@ namespace DbNetSuiteCore.Extensions
                     columnNames.Add(formColumn.ColumnName);
                     paramName = ComponentModelExtensions.UpdateParamName(paramName, formColumn, formModel.DataSourceType);
                     paramNames.Add(paramName);
-                  
+
                 }
             }
 
-            insert.Sql = $"insert into {formModel.TableName} ({string.Join(",",columnNames)}) values ({string.Join(",", paramNames)})";
+            insert.Sql = $"insert into {formModel.TableName} ({string.Join(",", columnNames)}) values ({string.Join(",", paramNames)})";
             return insert;
         }
 
@@ -148,9 +164,8 @@ namespace DbNetSuiteCore.Extensions
         public static CommandConfig BuildDelete(this FormModel formModel)
         {
             CommandConfig delete = new CommandConfig(formModel.DataSourceType);
-            var primaryKeyColumn = formModel.Columns.First(c => c.PrimaryKey);
-            delete.Sql = $"delete from {formModel.TableName} where { primaryKeyColumn.ColumnName} = { DbHelper.ParameterName(primaryKeyColumn.ColumnName, formModel.DataSourceType)}";
-            delete.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId, primaryKeyColumn, formModel.DataSourceType) ?? DBNull.Value;
+            delete.Sql = $"delete from {formModel.TableName}";
+            formModel.AddWhereClause(delete);
             return delete;
         }
     }

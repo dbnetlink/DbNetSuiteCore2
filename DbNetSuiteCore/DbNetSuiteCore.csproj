@@ -217,17 +217,17 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
     <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
-    <PackageReference Include="ClosedXML" Version="0.104.1" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.15" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.15" />
     <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RazorEngineCore" Version="2022.1.2" />
-    <PackageReference Include="System.Data.OleDb" Version="7.0.0" />
+    <PackageReference Include="System.Data.OleDb" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
@@ -261,12 +261,6 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\Text\Strings.zh-TW.resx">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Build">

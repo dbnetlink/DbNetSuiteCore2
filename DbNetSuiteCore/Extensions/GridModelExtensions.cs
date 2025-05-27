@@ -3,6 +3,9 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
 using System.Data;
 using DbNetSuiteCore.Helpers;
+using Amazon.Runtime.Internal.Util;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Reflection.Metadata;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -267,7 +270,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static CommandConfig BuildUpdate(this GridModel gridModel, int r, List<object> primaryKeyValues, List<string> columns)
+        public static CommandConfig BuildUpdate(this GridModel gridModel, int r, object primaryKeyObject, List<string> columns)
         {
             CommandConfig update = new CommandConfig(gridModel.DataSourceType);
             update.Sql = $"update {gridModel.TableName}";
@@ -304,10 +307,26 @@ namespace DbNetSuiteCore.Extensions
             {
                 update.Sql += $" set {string.Join(",", set)}";
             }
-            var primaryKeyColumn = gridModel.Columns.First(c => c.PrimaryKey);
-            update.Sql += $" where {primaryKeyColumn.ColumnName} = {DbHelper.ParameterName(primaryKeyColumn.ColumnName, gridModel.DataSourceType)}";
-            update.Params[primaryKeyColumn.ColumnName] = ComponentModelExtensions.ParamValue(primaryKeyValues[r], primaryKeyColumn, gridModel.DataSourceType) ?? DBNull.Value;
 
+            List<object> primaryKeyValues = new List<object>();
+            if (primaryKeyObject is not List<object>)
+            {
+                primaryKeyValues = new List<object>() { primaryKeyObject };
+            }
+            else
+            {
+                primaryKeyValues = primaryKeyObject as List<object> ?? new List<object>();
+            }
+
+            List<string> where = new List<string>();
+
+            foreach (var item in gridModel.Columns.Where(c => c.PrimaryKey).Select((value,index) => new {value = value, index = index}))
+            {
+                where.Add($"{item.value.ColumnName} = {DbHelper.ParameterName(item.value.ColumnName, gridModel.DataSourceType)}");
+                update.Params[item.value.ColumnName] = ComponentModelExtensions.ParamValue(primaryKeyValues[item.index], item.value, gridModel.DataSourceType) ?? DBNull.Value;
+            }
+
+            update.Sql += $" where {string.Join(" and ", where)}";
             return update;
         }
 

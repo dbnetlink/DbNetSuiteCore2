@@ -67,7 +67,7 @@ namespace DbNetSuiteCore.Services
                         throw new Exception("A parent control must have a column designated as a <b>PrimaryKey</b>");
                     }
                 }
-
+              
                 if (gridModel.GetLinkedControlIds().Any())
                 {
                     if (gridModel.RowSelection != RowSelection.Single)
@@ -377,23 +377,21 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected async Task<bool> RecordExists(ComponentModel componentModel, object primaryKeyValue)
+        protected async Task<bool> RecordExists(ComponentModel componentModel)
         {
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.SQLite:
-                    return await _sqliteRepository.RecordExists(componentModel, primaryKeyValue);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.RecordExists(componentModel, primaryKeyValue);
+                    return await _sqliteRepository.RecordExists(componentModel);
                 case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.RecordExists(componentModel, primaryKeyValue);
+                    return await _postgreSqlRepository.RecordExists(componentModel);
                 case DataSourceType.Oracle:
-                    return await _oracleRepository.RecordExists(componentModel, primaryKeyValue);
+                    return await _oracleRepository.RecordExists(componentModel);
                 case DataSourceType.Excel:
                 case DataSourceType.MongoDB:
                     break;
                 default:
-                    return await _msSqlRepository.RecordExists(componentModel, primaryKeyValue);
+                    return await _msSqlRepository.RecordExists(componentModel);
             }
 
             return false;

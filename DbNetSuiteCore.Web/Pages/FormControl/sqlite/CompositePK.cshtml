@@ -1,0 +1,18 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var orderItemsForm = new FormModel(DataSourceType.SQLite, "Sales(sqlite)", "OrderItems") { Insert = true, Delete = true };
+
+    orderItemsForm.Columns = new List<FormColumn>
+    {
+        new FormColumn("Order_id", "Order ID"),
+        new FormColumn("product_id", "Product") {Lookup = new Lookup("Products", "product_id","product_name")},
+        new FormColumn("quantity") {},
+        new FormColumn("unit_price") {}
+   };
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderItemsForm))
+}

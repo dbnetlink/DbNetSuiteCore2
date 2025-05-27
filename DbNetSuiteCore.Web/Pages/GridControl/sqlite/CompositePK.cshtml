@@ -1,0 +1,19 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var orderItemsGrid = new GridModel(DataSourceType.SQLite, "Sales(sqlite)", "OrderItems") { ViewDialog = new ViewDialog() };
+
+    orderItemsGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("Order_id", "Order ID"),
+        new GridColumn("product_id", "Product") {Lookup = new Lookup("Products", "product_id","product_name"), Edit = true},
+        new GridColumn("quantity") {Edit = true},
+        new GridColumn("unit_price") {Edit = true},
+        new GridColumn("unit_price * quantity", "Total Price") {DataType = typeof(Decimal)},
+   };
+
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderItemsGrid))
+}

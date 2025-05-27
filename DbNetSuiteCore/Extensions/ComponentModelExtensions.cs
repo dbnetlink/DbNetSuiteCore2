@@ -68,7 +68,7 @@ namespace DbNetSuiteCore.Extensions
                 DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType),
                 DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType)
             };
-            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {string.Join(",",columns)} from {componentModel.TableName} order by 1" };
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {string.Join(",", columns)} from {componentModel.TableName} order by 1" };
             var gridModel = (GridModel)componentModel;
             gridModel.AddFilterPart(query);
             return query;
@@ -153,7 +153,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 case SearchOperator.In:
                 case SearchOperator.NotIn:
-                    foreach(string paramValue in searchDialogFilter.Value1.Split(","))
+                    foreach (string paramValue in searchDialogFilter.Value1.Split(","))
                     {
                         parameterNames.Add(ParameterName(searchDialogFilter.ColumnKey, parameterNames.Count));
                         query.Params[parameterNames.Last()] = ParamValue(paramValue, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
@@ -166,7 +166,7 @@ namespace DbNetSuiteCore.Extensions
                 case SearchOperator.NotBetween:
                     object value1 = ParamValue(searchDialogFilter.Value1, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
                     object value2 = ParamValue(searchDialogFilter.Value2, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
-                    foreach ( int i in Enumerable.Range(0,2))
+                    foreach (int i in Enumerable.Range(0, 2))
                     {
                         parameterNames.Add(ParameterName(searchDialogFilter.ColumnKey, parameterNames.Count));
                         query.Params[parameterNames.Last()] = (i == 0 ? value1 : value2) ?? string.Empty;
@@ -232,13 +232,13 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
-            switch (col.DataTypeName) 
+            switch (col.DataTypeName)
             {
                 case nameof(DateTime):
                     switch (componentModel.DataSourceType)
                     {
                         case DataSourceType.MSSQL:
-                            if (col.DbDataType != nameof(MSSQLDataTypes.Date)) 
+                            if (col.DbDataType != nameof(MSSQLDataTypes.Date))
                             {
                                 columnExpression = $"CONVERT(DATE,{columnExpression})";
                             }
@@ -268,27 +268,36 @@ namespace DbNetSuiteCore.Extensions
 
         private static void AddPrimaryKeyFilterPart(ComponentModel componentModel, CommandConfig query, object primaryKeyValue)
         {
-            var primaryKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.PrimaryKey);
-            var paramName = DbHelper.ParameterName(primaryKeyColumn.ParamName, componentModel.DataSourceType);
-            query.Sql += $" where {primaryKeyColumn.Expression} = {paramName}";
-            query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(primaryKeyColumn, primaryKeyValue) ?? string.Empty;
+            if (primaryKeyValue is not List<object>)
+            {
+                primaryKeyValue = new List<object>() { primaryKeyValue };
+            }
+
+            List<string> where = new List<string>();
+            foreach (var item in componentModel.GetColumns().Where(c => c.PrimaryKey).Select((value, index) => new { value, index }))
+            {
+                var paramName = DbHelper.ParameterName(item.value.ParamName, componentModel.DataSourceType);
+                where.Add($"{item.value.Expression} = {paramName}");
+                query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(item.value, (primaryKeyValue as List<object>)[item.index]) ?? string.Empty;
+            }
+            query.Sql += $" where {string.Join(" and ", where)}";
         }
 
         public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)
         {
-            if (!string.IsNullOrEmpty(componentModel.ParentKey))
-            {
-                var foreignKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.ForeignKey);
-                if (foreignKeyColumn != null)
-                {
-                    var paramName = DbHelper.ParameterName(foreignKeyColumn.ParamName, componentModel.DataSourceType);
-                    filterParts.Add($"({DbHelper.StripColumnRename(foreignKeyColumn.Expression)} = {paramName})");
-                    query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(foreignKeyColumn, componentModel.ParentKey) ?? string.Empty;
-                }
-            }
-            else
+            if (string.IsNullOrEmpty(componentModel.ParentKey))
             {
                 filterParts.Add($"(1=2)");
+                return;
+            }
+
+            List<object> parentKeyValues = componentModel.GetParentKeyValues();
+
+            foreach (var item in componentModel.GetColumns().Where(c => c.ForeignKey).Select((value, index) => new { value = value, index = index }))
+            {
+                var paramName = DbHelper.ParameterName(item.value.ParamName, componentModel.DataSourceType);
+                filterParts.Add($"({DbHelper.StripColumnRename(item.value.Expression)} = {paramName})");
+                query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(item.value, parentKeyValues[item.index]) ?? string.Empty;
             }
         }
 

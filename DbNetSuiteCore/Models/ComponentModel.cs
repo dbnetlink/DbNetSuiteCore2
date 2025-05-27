@@ -2,6 +2,8 @@
 using System.Data;
 using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
+using DbNetSuiteCore.Helpers;
+using System.Text.Json;
 
 namespace DbNetSuiteCore.Models
 {
@@ -145,6 +147,10 @@ namespace DbNetSuiteCore.Models
             return LinkedControlIds.ContainsKey(typeName) ? LinkedControlIds[typeName] : new List<string>();
         }
 
+        public List<object> GetParentKeyValues()
+        {
+            return TextHelper.DeobfuscateKey<List<object>>(ParentKey) ?? new List<object>();
+        }
 
         public List<string> GetLinkedControlIds()
         {

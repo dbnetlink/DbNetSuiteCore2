@@ -10,7 +10,8 @@
             AllowConnectionString,
             UpdateDisabled,
             LicenseKey,
-            LicenseId
+            LicenseId,
+            Locale
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)
