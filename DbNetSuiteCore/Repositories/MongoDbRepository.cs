@@ -106,12 +106,13 @@ namespace DbNetSuiteCore.Repositories
 
         private BsonValue PrimaryKeyValue(FormModel formModel)
         {
+            var recordId = (formModel.RecordId as List<object>)?.FirstOrDefault() ?? string.Empty;
             switch (formModel.PrimaryKeyColumn!.DbDataType)
             {
                 case nameof(BsonType.ObjectId):
-                    return ObjectId.Parse(formModel.RecordId.ToString());
+                    return ObjectId.Parse(recordId.ToString());
                 default:
-                    return formModel.RecordId?.ToString() ?? string.Empty;
+                    return recordId.ToString();
             }
         }
 

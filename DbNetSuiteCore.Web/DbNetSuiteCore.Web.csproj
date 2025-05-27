@@ -161,6 +161,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
     <PackageReference Include="Net.IBM.Data.Db2" Version="7.0.0.400" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

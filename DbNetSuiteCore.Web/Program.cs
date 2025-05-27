@@ -1,5 +1,9 @@
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
+using Microsoft.AspNetCore.Localization;
+using System.Configuration;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
@@ -13,8 +17,19 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+string? locale = builder.Configuration.ConfigValue(ConfigurationHelper.AppSetting.Locale);
 
-//app.UseRequestLocalization("zh");
+if (string.IsNullOrEmpty(locale) == false)
+{
+    RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
+    {
+        SupportedCultures = new List<CultureInfo> { new CultureInfo(locale) },
+        SupportedUICultures = new List<CultureInfo> { new CultureInfo(locale) },
+        DefaultRequestCulture = new RequestCulture(locale)
+    };
+
+    app.UseRequestLocalization(localizationOptions);
+}
 
 app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();

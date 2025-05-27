@@ -1,105 +1,105 @@
 ﻿<root>
   <data name="Between" xml:space="preserve">
-    <value>介於</value>
+    <value>介于</value>
   </data>
   <data name="DoesNotContain" xml:space="preserve">
     <value>不包含</value>
   </data>
   <data name="NotLessThan" xml:space="preserve">
-    <value>不小於</value>
+    <value>不小于</value>
   </data>
   <data name="IsNotEmpty" xml:space="preserve">
-    <value>不為空</value>
+    <value>不为空</value>
   </data>
   <data name="ApplyChanges" xml:space="preserve">
-    <value>套用改變</value>
+    <value>套用改变</value>
   </data>
   <data name="NotEqualTo" xml:space="preserve">
-    <value>不等於</value>
+    <value>不等于</value>
   </data>
   <data name="Updated" xml:space="preserve">
-    <value>變更已套用</value>
+    <value>变更已套用</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>刪除</value>
+    <value>删除</value>
   </data>
   <data name="MinValueError" xml:space="preserve">
-    <value>{0} 不能小於 {1}</value>
+    <value>{0} 不能小于 {1}</value>
   </data>
   <data name="Previous" xml:space="preserve">
-    <value>上一頁</value>
+    <value>上一页</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>取消</value>
   </data>
   <data name="IsEmpty" xml:space="preserve">
-    <value>為空</value>
+    <value>为空</value>
   </data>
   <data name="Insert" xml:space="preserve">
     <value>添加</value>
   </data>
   <data name="StartsWith" xml:space="preserve">
-    <value>開頭為</value>
+    <value>开头为</value>
   </data>
   <data name="RangeValueError" xml:space="preserve">
-    <value>輸入的 {0} 必須介於 {1} 與 {2} 之間</value>
+    <value>输入的 {0} 必须介于 {1} 与 {2} 之间</value>
   </data>
   <data name="DoesNotStartWith" xml:space="preserve">
-    <value>開頭不為</value>
+    <value>开头不为</value>
   </data>
   <data name="MaxCharsError" xml:space="preserve">
-    <value>最多只能輸入 {0} 個字元</value>
+    <value>最多只能输入 {0} 个字元</value>
   </data>
   <data name="QueryLimited" xml:space="preserve">
-    <value>查詢結果已限制為 {0} 筆</value>
+    <value>查询结果已限制为 {0} 笔</value>
   </data>
   <data name="Record" xml:space="preserve">
-    <value>記錄</value>
+    <value>记录</value>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>搜尋</value>
+    <value>搜寻</value>
   </data>
   <data name="Select" xml:space="preserve">
-    <value>選取</value>
+    <value>选取</value>
   </data>
   <data name="DataFormatError" xml:space="preserve">
-    <value>輸入的資料格式無效</value>
+    <value>输入的资料格式无效</value>
   </data>
   <data name="NotGreaterThan" xml:space="preserve">
-    <value>不大於</value>
+    <value>不大于</value>
   </data>
   <data name="EndsWith" xml:space="preserve">
-    <value>結尾為</value>
+    <value>结尾为</value>
   </data>
   <data name="Deleted" xml:space="preserve">
-    <value>記錄已刪除</value>
+    <value>记录已删除</value>
   </data>
   <data name="MaxValueError" xml:space="preserve">
-    <value>{0} 不能大於 {1}</value>
+    <value>{0} 不能大于 {1}</value>
   </data>
   <data name="DoesNotEndWith" xml:space="preserve">
-    <value>結尾不為</value>
+    <value>结尾不为</value>
   </data>
   <data name="Required" xml:space="preserve">
-    <value>標示欄位為必填</value>
+    <value>标示栏位为必填</value>
   </data>
   <data name="In" xml:space="preserve">
-    <value>包含於</value>
+    <value>包含于</value>
   </data>
   <data name="Of" xml:space="preserve">
     <value>共</value>
   </data>
   <data name="NoFilesFound" xml:space="preserve">
-    <value>找不到檔案</value>
+    <value>找不到档案</value>
   </data>
   <data name="EqualTo" xml:space="preserve">
-    <value>等於</value>
+    <value>等于</value>
   </data>
   <data name="GreaterThan" xml:space="preserve">
-    <value>大於</value>
+    <value>大于</value>
   </data>
   <data name="Added" xml:space="preserve">
-    <value>記錄已添加</value>
+    <value>记录已添加</value>
   </data>
   <data name="Apply" xml:space="preserve">
     <value>套用</value>
@@ -108,58 +108,58 @@
     <value>否</value>
   </data>
   <data name="First" xml:space="preserve">
-    <value>第一頁</value>
+    <value>第一页</value>
   </data>
   <data name="Clear" xml:space="preserve">
     <value>清除</value>
   </data>
   <data name="NotIn" xml:space="preserve">
-    <value>不包含於</value>
+    <value>不包含于</value>
   </data>
   <data name="ConfirmDelete" xml:space="preserve">
-    <value>請確認是否要刪除當前記錄</value>
+    <value>请确认是否要删除当前记录</value>
   </data>
   <data name="Contains" xml:space="preserve">
     <value>包含</value>
   </data>
   <data name="CancelChanges" xml:space="preserve">
-    <value>取消改變</value>
+    <value>取消改变</value>
   </data>
   <data name="ColumnFilterNoData" xml:space="preserve">
-    <value>篩選條件無符合項目</value>
+    <value>筛选条件无符合项目</value>
   </data>
   <data name="MatchAll" xml:space="preserve">
-    <value>符合所有條件</value>
+    <value>符合所有条件</value>
   </data>
   <data name="LessThan" xml:space="preserve">
-    <value>小於</value>
+    <value>小于</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>搜尋</value>
+    <value>搜寻</value>
   </data>
   <data name="NotBetween" xml:space="preserve">
-    <value>不介於</value>
+    <value>不介于</value>
   </data>
   <data name="UnappliedChanges" xml:space="preserve">
-    <value>您有未套用的變更。請套用或取消。</value>
+    <value>您有未套用的变更。请套用或取消。</value>
   </data>
   <data name="NoRecordsFound" xml:space="preserve">
-    <value>找不到記錄</value>
+    <value>找不到记录</value>
   </data>
   <data name="MatchAtLeastOne" xml:space="preserve">
-    <value>符合至少一個條件</value>
+    <value>符合至少一个条件</value>
   </data>
   <data name="MinCharsError" xml:space="preserve">
-    <value>最少必須輸入 {0} 個字元</value>
+    <value>最少必须输入 {0} 个字元</value>
   </data>
   <data name="PrimaryKeyExists" xml:space="preserve">
-    <value>已存在具有相同主鍵的記錄</value>
+    <value>已存在具有相同主键的记录</value>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>下一個</value>
+    <value>下一个</value>
   </data>
   <data name="Last" xml:space="preserve">
-    <value>最後一頁</value>
+    <value>最后一页</value>
   </data>
   <data name="True" xml:space="preserve">
     <value>真</value>
@@ -168,9 +168,9 @@
     <value>列</value>
   </data>
   <data name="Page" xml:space="preserve">
-    <value>頁</value>
+    <value>页</value>
   </data>
   <data name="PatternError" xml:space="preserve">
-    <value>輸入的值與所需模式不符</value>
+    <value>输入的值与所需模式不符</value>
   </data>
 </root>
