@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var orderItemsForm = new FormModel(DataSourceType.SQLite, "Sales(sqlite)", "OrderItems") {  };
+    var orderItemsForm = new FormModel(DataSourceType.SQLite, "Sales(sqlite)", "OrderItems") { Insert = true, Delete = true };
 
     orderItemsForm.Columns = new List<FormColumn>
     {

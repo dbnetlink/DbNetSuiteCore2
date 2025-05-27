@@ -96,10 +96,12 @@ namespace DbNetSuiteCore.Extensions
         {
             List<string> where = new List<string>();
 
+            var recordId = formModel.RecordId as List<object> ?? new List<object>();
+
             foreach (var item in formModel.Columns.Where(c => c.PrimaryKey).Select((value, index) => new { value = value, index = index }))
             {
                 where.Add($"{item.value.ColumnName} = {DbHelper.ParameterName(item.value.ColumnName, formModel.DataSourceType)}");
-                commandConfig.Params[item.value.ColumnName] = ComponentModelExtensions.ParamValue(formModel.RecordId[item.index], item.value, formModel.DataSourceType) ?? DBNull.Value;
+                commandConfig.Params[item.value.ColumnName] = ComponentModelExtensions.ParamValue(recordId[item.index], item.value, formModel.DataSourceType) ?? DBNull.Value;
             }
 
             commandConfig.Sql += $" where {string.Join(" and ", where)}";

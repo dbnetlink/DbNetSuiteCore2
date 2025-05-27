@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.Models
         internal override SortOrder? SortSequence { get; set; }
         public int CurrentRecord { get; set; } = 1;
         public ToolbarPosition ToolbarPosition { get; set; } = ToolbarPosition.Bottom;
-        public List<object> PrimaryKeyValues { get; set; } = new List<object>();
+        public List<List<object>> PrimaryKeyValues { get; set; } = new List<List<object>>();
         [JsonIgnore]
         public Dictionary<string, string> FormValues = new Dictionary<string, string>();
         public bool Insert { get; set; } = false;
@@ -25,9 +25,10 @@ namespace DbNetSuiteCore.Models
         public bool OneToOne => IsLinked && Columns.Any(c => c.PrimaryKey && c.ForeignKey);
         public bool ReadOnly { get; set; } = false;
         public FormMode? CommitType { get; set; }
-        public List<object> RecordId => Mode == FormMode.Update ? (List<object>)PrimaryKeyValues[CurrentRecord - 1] : new List<object>();
+        public object? RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : null;
         public int LayoutColumns { get; set; } = 4;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
+
         public FormModel() : base()
         {
         }

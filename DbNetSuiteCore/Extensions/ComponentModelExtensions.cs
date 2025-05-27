@@ -293,13 +293,13 @@ namespace DbNetSuiteCore.Extensions
 
             List<object> parentKeyValues = new List<object>();
 
-            if (componentModel is GridModel)
+            if (componentModel is SelectModel)
             {
-                parentKeyValues = componentModel.GetParentKeyValues();
+                parentKeyValues.Add(componentModel.ParentKey);
             }
             else
             {
-                parentKeyValues.Add(componentModel.ParentKey);
+                parentKeyValues = componentModel.GetParentKeyValues();
             }
 
             foreach (var item in componentModel.GetColumns().Where(c => c.ForeignKey).Select((value, index) => new { value = value, index = index }))

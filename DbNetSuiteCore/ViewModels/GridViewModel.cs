@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Html;
 using System.Data;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Constants;
+using System.Text.Json;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -83,12 +84,13 @@ namespace DbNetSuiteCore.ViewModels
             html.Add(RazorHelper.Attribute($"hx-target", "closest tr"));
             html.Add(RazorHelper.Attribute($"hx-indicator", "next .htmx-indicator"));
             html.Add(RazorHelper.Attribute($"hx-swap", "afterend"));
-            html.Add(RazorHelper.Attribute($"hx-vals", $"{{\"primaryKey\":\"{GridModel.PrimaryKeyValue(row)}\"}}"));
+            html.Add(RazorHelper.Attribute($"hx-vals", $"{{\"primaryKey\":\"{TextHelper.ObfuscateString(JsonSerializer.Serialize(GridModel.PrimaryKeyValue(row)))}\"}}"));
             html.Add(RazorHelper.Attribute($"hx-trigger", "click once"));
             html.Add(RazorHelper.Attribute($"style", "display:none"));
             return new HtmlString(string.Join(" ", html));
         }
 
+        
         public HtmlString RenderColumnFilterError(GridColumn gridColumn)
         {
             return new HtmlString($"<span data-key=\"{gridColumn.Key}\">{gridColumn.FilterError}</span>");
