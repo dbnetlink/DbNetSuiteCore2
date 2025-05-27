@@ -137,7 +137,7 @@ namespace DbNetSuiteCore.Services
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
                     var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
-                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentKey}";
+                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{TextHelper.DeobfuscateKey<string>(nestedGrid.ParentKey)}";
                     nestedGrid._NestedGrids.Add(nestedChildGrid);
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)

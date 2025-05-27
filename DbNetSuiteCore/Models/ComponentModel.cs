@@ -149,10 +149,8 @@ namespace DbNetSuiteCore.Models
 
         public List<object> GetParentKeyValues()
         {
-            string json = TextHelper.DeobfuscateString(ParentKey);
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<List<object>>(json) ?? new List<object>();
+            return TextHelper.DeobfuscateKey<List<object>>(ParentKey) ?? new List<object>();
         }
-
 
         public List<string> GetLinkedControlIds()
         {

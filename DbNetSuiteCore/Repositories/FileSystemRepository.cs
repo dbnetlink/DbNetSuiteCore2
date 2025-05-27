@@ -65,8 +65,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (string.IsNullOrEmpty(gridModel.ParentKey) == false)
             {
-                var json = TextHelper.DeobfuscateString(gridModel.ParentKey);
-                var url = Newtonsoft.Json.JsonConvert.DeserializeObject<string>(json) ?? string.Empty;
+                var url = TextHelper.DeobfuscateKey<string>(gridModel.ParentKey) ?? string.Empty;
                 urlParts = urlParts.Append(url).ToArray();
 
                 gridModel.Url = string.Join(folderSeparator, urlParts.ToArray());

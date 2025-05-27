@@ -41,6 +41,11 @@ namespace DbNetSuiteCore.Helpers
             return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
+        public static T? DeobfuscateKey<T>(string input)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(TextHelper.DeobfuscateString(input));
+        }
+
         public static string DelimitColumn(string columnName, DataSourceType dataSourceType)
         {
             switch (dataSourceType)

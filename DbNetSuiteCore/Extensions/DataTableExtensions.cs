@@ -162,11 +162,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 if (!string.IsNullOrEmpty(gridModel.ParentKey))
                 {
-                    var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
-                    if (foreignKeyColumn != null)
-                    {
-                        filterParts.Add($"({TextHelper.DelimitColumn(foreignKeyColumn.Name, gridModel.DataSourceType)} = {Quoted(foreignKeyColumn)}{gridModel.ParentKey}{Quoted(foreignKeyColumn)})");
-                    }
+                    filterParts.Add(KeyFilter(gridModel, gridModel.GetColumns().Where(c => c.ForeignKey).ToList()));
                 }
                 else
                 {
@@ -229,7 +225,7 @@ namespace DbNetSuiteCore.Extensions
                 case SearchOperator.NotBetween:
                     return $"({columnName} < {quotedValue1} or {columnName} > {quotedValue2})";
                 default:
-                    return $"{columnName} {template.Replace("{0}", QuotedValue(WildcardValue(searchDialogFilter.Operator,quotedValue1.Replace("'",""))))}";
+                    return $"{columnName} {template.Replace("{0}", QuotedValue(WildcardValue(searchDialogFilter.Operator, quotedValue1.Replace("'", ""))))}";
             }
 
             string QuotedValue(string value)
@@ -309,9 +305,24 @@ namespace DbNetSuiteCore.Extensions
 
         private static string AddPrimaryKeyFilter(ComponentModel componentModel)
         {
-            var primaryKeyColumn = componentModel.GetColumns().FirstOrDefault(c => c.PrimaryKey);
-            return $"({primaryKeyColumn.Name} = {Quoted(primaryKeyColumn)}{componentModel.ParentKey}{Quoted(primaryKeyColumn)})";
+            return KeyFilter(componentModel, componentModel.GetColumns().Where(c => c.PrimaryKey).ToList());
         }
+
+        private static string KeyFilter(ComponentModel componentModel, List<ColumnModel> keyColumns)
+        {
+            List<string> primaryKeyFilter = new List<string>();
+            List<object> primaryKeyValues = TextHelper.DeobfuscateKey<List<object>>(componentModel.ParentKey) ?? new List<object>();
+            if (primaryKeyValues.Count() == keyColumns.Count())
+            {
+                foreach (var item in keyColumns.Select((value, index) => new { value = value, index = index }))
+                {
+                    primaryKeyFilter.Add($"({item.value.Name} = {Quoted(item.value)}{primaryKeyValues[item.index]}{Quoted(item.value)})");
+                }
+            }
+            return string.Join(" and ", primaryKeyFilter);
+        }
+
+
 
         public static string AddOrder(GridModel gridModel)
         {
