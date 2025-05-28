@@ -5,6 +5,10 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Services;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Enums;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetSuiteCore.Middleware
 {
@@ -75,8 +79,20 @@ namespace DbNetSuiteCore.Middleware
 
     public static class DbNetSuiteCoreExtensions
     {
-        public static IApplicationBuilder UseDbNetSuiteCore(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDbNetSuiteCore(this IApplicationBuilder builder, Culture? culture = null)
         {
+            if (culture.HasValue)
+            {
+                string locale = culture.Value.ToString().Replace("_", "-");
+                RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
+                {
+                    SupportedCultures = new List<CultureInfo> { new CultureInfo(locale) },
+                    SupportedUICultures = new List<CultureInfo> { new CultureInfo(locale) },
+                    DefaultRequestCulture = new RequestCulture(locale)
+                };
+
+                builder.UseRequestLocalization(localizationOptions);
+            }
             return builder.UseMiddleware<DbNetSuiteCore>();
         }
 
