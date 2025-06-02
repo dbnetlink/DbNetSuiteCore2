@@ -46,10 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DbNetSuiteCore\DbNetSuiteCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="Pages\Emp.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -161,6 +157,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DbNetSuiteCore" Version="2.0.47" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
     <PackageReference Include="Net.IBM.Data.Db2" Version="7.0.0.400" />
