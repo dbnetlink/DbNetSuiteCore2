@@ -45,7 +45,10 @@ namespace DbNetSuiteCore.Helpers
         MatchAtLeastOne,
         Search,
         Clear,
-        Select
+        Select,
+        Copy,
+        Export,
+        ExportFormat
     }
     public static class ResourceHelper
     {

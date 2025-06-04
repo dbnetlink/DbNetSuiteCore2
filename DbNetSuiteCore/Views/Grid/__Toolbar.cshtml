@@ -28,24 +28,24 @@
     </div>
     <div id="navigation" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
         @{
-            @Model.RenderNavButton(TriggerNames.First, IconHelper.First(), "First page")
-            @Model.RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), "Previous page")
+            @Model.RenderNavButton(TriggerNames.First, IconHelper.First(), ResourceHelper.GetResourceString(ResourceNames.First))
+            @Model.RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), ResourceHelper.GetResourceString(ResourceNames.Previous))
             <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Page)</span>
             @Model.RenderPageNumber(Model.GridModel.CurrentPage, Model.TotalPages)
             <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
             @Model.RenderTotalPages(Model.TotalPages)
             <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Rows)</span>
             @Model.RenderRowCount(Model.RowCount)
-            @Model.RenderNavButton(TriggerNames.Next, IconHelper.Next(), "Next page")
-            @Model.RenderNavButton(TriggerNames.Last, IconHelper.Last(), "Last page")
+            @Model.RenderNavButton(TriggerNames.Next, IconHelper.Next(), ResourceHelper.GetResourceString(ResourceNames.Next))
+            @Model.RenderNavButton(TriggerNames.Last, IconHelper.Last(), ResourceHelper.GetResourceString(ResourceNames.Last))
         }
     </div>
 
     @await Html.PartialAsync("__QueryLimitWarning", Model.GridModel)
 
     <div id="export" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
-        <button button-type="copy" type="button" title="Copy">@IconHelper.Copy()</button>
-        <button button-type="export" type="button" title="Export">@IconHelper.Download()</button>
+        <button button-type="copy" type="button" title="@ResourceHelper.GetResourceString(ResourceNames.Copy)">@IconHelper.Copy()</button>
+        <button button-type="export" type="button" title="@ResourceHelper.GetResourceString(ResourceNames.Export)">@IconHelper.Download()</button>
         @{
             @Model.RenderExportOptions()
         }
