@@ -5,6 +5,7 @@ using System.Data;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Constants;
 using System.Text.Json;
+using DocumentFormat.OpenXml.Office.CoverPageProps;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -65,6 +66,10 @@ namespace DbNetSuiteCore.ViewModels
             return _GetColumnInfo(column, _gridModel.Columns.Cast<ColumnModel>()) as GridColumn;
         }
 
+        public string ObfuscateColumnName(GridColumn gridColumn)
+        {
+            return GridModel.ObfuscateColumnName(gridColumn);
+        }
 
         public int SelectWidth(List<KeyValuePair<string, string>> options)
         {

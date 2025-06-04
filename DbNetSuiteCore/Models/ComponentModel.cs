@@ -36,6 +36,7 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
+        public bool ObfuscateColumnNames { get; set; } = false;
 
         public string Url
         {
@@ -140,6 +141,16 @@ namespace DbNetSuiteCore.Models
         public void SetId()
         {
             Id = GeneratedId();
+        }
+
+        public string ObfuscateColumnName(ColumnModel column)
+        {
+            string columnName = column.ColumnName;
+            if (!ObfuscateColumnNames && column is GridColumn)
+            {
+                columnName = columnName.ToLower();
+            }
+            return ObfuscateColumnNames && DataSourceType != DataSourceType.FileSystem ? TextHelper.ObfuscateString(columnName) : columnName;
         }
 
         public List<string> GetLinkedControlIds(string typeName)

@@ -28,7 +28,7 @@
 
                 <div style="display:grid;grid-column:span @(formColumn.ColSpan);grid-row:span @(formColumn.RowSpan);" class="content-start">
                     @{
-                        @formColumn.RenderLabel()
+                        @formColumn.RenderLabel(Model.FormModel)
                         @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
                     }
                 </div>
