@@ -190,19 +190,11 @@ namespace DbNetSuiteCore.Repositories
         public async Task UpdateRecords(GridModel gridModel)
         {
             var primaryKeysValues = await GetPrimaryKeyValues(gridModel);
+            var modifiedRows = gridModel.ModifiedRows();
 
-            var rowCount = gridModel.FormValues[gridModel.FirstEditableColumnName].Count;
-
-            for (var r = 0; r < rowCount; r++)
+            foreach (var row in modifiedRows.Keys)
             {
-                if (gridModel.RowsModified != null && gridModel.RowsModified.Count == rowCount)
-                {
-                    if (gridModel.RowsModified[r].Modified == false)
-                    {
-                        continue;
-                    }
-                }
-                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues[r], gridModel.RowsModified[r].Columns);
+                CommandConfig update = gridModel.BuildUpdate(row, primaryKeysValues[row], modifiedRows[row].Columns);
                 var connection = GetConnection(gridModel.ConnectionAlias);
                 connection.Open();
                 await ExecuteUpdate(update, connection);

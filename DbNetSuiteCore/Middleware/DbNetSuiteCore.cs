@@ -12,7 +12,8 @@ using Microsoft.Extensions.Options;
 
 namespace DbNetSuiteCore.Middleware
 {
-    public delegate Task<bool> CustomValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
+    public delegate Task<bool> FormValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
+    public delegate Task<bool> GridValidationDelegate(GridModel gridModel, HttpContext context, IConfiguration configuration);
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
@@ -49,7 +50,7 @@ namespace DbNetSuiteCore.Middleware
             switch(page.ToLower())
             {
                 case "gridcontrol":
-                    response = await gridService.Process(context, page);
+                    response = await gridService.Process(context, page, options);
                     break;
                 case "selectcontrol":
                     response = await selectService.Process(context, page);
@@ -80,9 +81,10 @@ namespace DbNetSuiteCore.Middleware
 
     public class DbNetSuiteCoreOptions
     {
-        public CustomValidationDelegate? UpdateValidationDelegate { get; set; }
-        public CustomValidationDelegate? InsertValidationDelegate { get; set; }
-        public CustomValidationDelegate? DeleteValidationDelegate { get; set; }
+        public FormValidationDelegate? FormUpdateValidationDelegate { get; set; }
+        public GridValidationDelegate? GridUpdateValidationDelegate { get; set; }
+        public FormValidationDelegate? FormInsertValidationDelegate { get; set; }
+        public FormValidationDelegate? FormDeleteValidationDelegate { get; set; }
     }
 
     public static class DbNetSuiteCoreExtensions

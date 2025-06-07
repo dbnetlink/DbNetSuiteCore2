@@ -10,8 +10,6 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using MongoDB.Bson;
-using System.Text.RegularExpressions;
-using NUglify.Helpers;
 using Microsoft.Extensions.Options;
 using DbNetSuiteCore.Middleware;
 
@@ -202,7 +200,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                if (await CustomDelegateValidation(options.Value.DeleteValidationDelegate, formModel))
+                if (await CustomDelegateValidation(options.Value.FormDeleteValidationDelegate, formModel))
                 {
                     await DeleteRecord(formModel);
                     formModel.PrimaryKeyValues = new List<List<object>>();
@@ -253,7 +251,7 @@ namespace DbNetSuiteCore.Services
                 return false;
             }
 
-            CustomValidationDelegate? validationDelegate = formModel.Mode == FormMode.Update ? options?.Value.UpdateValidationDelegate : options?.Value.InsertValidationDelegate;
+            FormValidationDelegate? validationDelegate = formModel.Mode == FormMode.Update ? options?.Value.FormUpdateValidationDelegate : options?.Value.FormInsertValidationDelegate;
             return await CustomDelegateValidation(validationDelegate, formModel);
         }
 
@@ -277,7 +275,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<bool> CustomDelegateValidation(CustomValidationDelegate? validationDelegate, FormModel formModel)
+        private async Task<bool> CustomDelegateValidation(FormValidationDelegate? validationDelegate, FormModel formModel)
         {
             if (validationDelegate == null)
             {
@@ -306,7 +304,7 @@ namespace DbNetSuiteCore.Services
 
             if (await RecordExists(formModel))
             {
-                formModel.Columns.Where(c => c.PrimaryKeyRequired).ForEach(c => c.InError = true);
+                formModel.Columns.Where(c => c.PrimaryKeyRequired).ToList().ForEach(c => c.InError = true);
                 formModel.Message = ResourceHelper.GetResourceString(ResourceNames.PrimaryKeyExists);
                 formModel.MessageType = MessageType.Error;
                 return false;
@@ -366,7 +364,7 @@ namespace DbNetSuiteCore.Services
                 formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
                 formModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
-                formModel.FormValues = RequestHelper.FormColumnValues(_context);
+                formModel.FormValues = RequestHelper.FormColumnValues(_context, formModel.ObfuscateColumnNames);
                 formModel.Columns.ToList().ForEach(column => column.InError = false);
                 formModel.Message = string.Empty;
                 formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));

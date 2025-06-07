@@ -86,8 +86,8 @@
                     {
                         value = Model.GridModel.FormValues[column.ColumnName][rowIndex];
                     }
-                    
-                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)> @column.FormColumn.RenderControl(value, dbValue, Model.GridModel)</td>
+
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)> @column.FormColumn.RenderControl(value, dbValue, Model.GridModel, rowIndex)</td>
                     continue;
                 }
 

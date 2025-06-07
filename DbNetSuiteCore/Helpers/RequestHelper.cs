@@ -1,6 +1,8 @@
 ﻿using Azure.Core;
 using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Models;
 using DocumentFormat.OpenXml.InkML;
+using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
 using static DbNetSuiteCore.Helpers.ConfigurationHelper;
@@ -16,7 +18,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static string FormValue(string key, string defaultValue, HttpContext httpContext)
         {
-            return FormValue(key,defaultValue, httpContext.Request.Form);
+            return FormValue(key, defaultValue, httpContext.Request.Form);
         }
 
         public static string FormValue(string key, string defaultValue, IFormCollection form)
@@ -25,53 +27,80 @@ namespace DbNetSuiteCore.Helpers
             {
                 return form.ContainsKey(key) ? form[key].ToString() : defaultValue;
             }
-            catch {
+            catch
+            {
                 return string.Empty;
             }
         }
 
-        public static Dictionary<string,string> FormColumnValues(HttpContext httpContext)
+        public static Dictionary<string, string> FormColumnValues(HttpContext httpContext, bool obfuscated)
         {
             Dictionary<string, string> formValues = new Dictionary<string, string>();
             foreach (string key in httpContext.Request.Form.Keys)
             {
                 if (key.StartsWith("_"))
                 {
-                    formValues[key.Substring(1)] = httpContext.Request.Form[key];
+                    string columnName = obfuscated ? TextHelper.DeobfuscateString(key.Substring(1)) : key.Substring(1);
+                    formValues[columnName] = httpContext.Request.Form[key];
                 }
             }
 
             return formValues;
         }
 
-        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext)
+        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext, bool obfuscated)
         {
             Dictionary<string, List<string>> formValues = new Dictionary<string, List<string>>();
             foreach (string key in httpContext.Request.Form.Keys)
             {
-                if (key.StartsWith("_"))
+                if (key.StartsWith("_") && key.StartsWith("__") == false)
                 {
-                    formValues[key.Substring(1)] = FormValueList(key, httpContext).Select(f => f.Trim()).ToList();
+                    string columnName = obfuscated ? TextHelper.DeobfuscateString(key.Substring(1)) : key.Substring(1);
+                    formValues[columnName] = FormValueList(key, httpContext).Select(f => f.Trim()).ToList();
                 }
             }
 
             return formValues;
         }
 
+
+        public static List<ModifiedRow> GetModifiedRows(HttpContext httpContext, bool obfuscated)
+        {
+            var modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("__modifiedrows", string.Empty, httpContext));
+
+            if (modifiedRows == null)
+            {
+                return new List<ModifiedRow>();
+            }
+
+            foreach (var modifiedRow in modifiedRows)
+            {
+                List<string> columns = new List<string>();
+                foreach (var column in modifiedRow.Columns)
+                {
+                    columns.Add(obfuscated ? TextHelper.DeobfuscateString(column.Substring(1)) : column.Substring(1));
+                }
+
+                modifiedRow.Columns = columns;
+            }
+
+            return modifiedRows;
+        }
+
         public static List<string> FormValueList(string key, HttpContext httpContext)
         {
-        #if NET8_0
+#if NET8_0
             return [.. httpContext.Request.Form[key]];
-        #else
+#else
             return httpContext.Request.Form[key].ToList();
-        #endif
+#endif
         }
 
         public static string TriggerName(HttpContext httpContext)
         {
-            foreach(string key in httpContext.Request.Headers.Keys)
+            foreach (string key in httpContext.Request.Headers.Keys)
             {
-                if (key.ToLower() == HeaderNames.HxTriggerName.ToLower()) 
+                if (key.ToLower() == HeaderNames.HxTriggerName.ToLower())
                 {
                     return httpContext.Request.Headers[key].ToString();
                 }
@@ -101,10 +130,10 @@ namespace DbNetSuiteCore.Helpers
             {
                 foreach (var form in httpContext.Request.Form.OrderBy(f => f.Key))
                 {
-                    switch(form.Key)
+                    switch (form.Key)
                     {
                         case "model":
-                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value,configuration)}");
+                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value, configuration)}");
                             break;
                         default:
                             diagnostics.Add($"{form.Key}: {string.Join(", ", form.Value)}");
@@ -140,7 +169,7 @@ namespace DbNetSuiteCore.Helpers
 
             // Environment Information
             diagnostics.Add("<b>=== Settings ===</b>");
-            foreach(AppSetting appSetting in Enum.GetValues<AppSetting>())
+            foreach (AppSetting appSetting in Enum.GetValues<AppSetting>())
             {
                 diagnostics.Add($"{appSetting}: {configuration.ConfigValue(appSetting)}");
             }

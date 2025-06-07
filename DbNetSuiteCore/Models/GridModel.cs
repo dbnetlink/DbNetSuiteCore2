@@ -213,6 +213,25 @@ namespace DbNetSuiteCore.Models
             }
         }
 
+        public Dictionary<int, ModifiedRow> ModifiedRows()
+        {
+            var modifiedRows = new Dictionary<int, ModifiedRow>();
+            var rowCount = FormValues[FirstEditableColumnName].Count;
+
+            for (var r = 0; r < rowCount; r++)
+            {
+                if (RowsModified != null && RowsModified.Count == rowCount)
+                {
+                    if (RowsModified[r].Modified)
+                    {
+                        modifiedRows[r] = RowsModified[r];
+                    }
+                }
+            }
+
+            return modifiedRows;
+        }
+
 
         public void Bind(GridClientEvent clientEvent, string functionName)
         {

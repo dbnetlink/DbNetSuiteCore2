@@ -12,6 +12,7 @@ namespace DbNetSuiteCore.Models
         protected RowSelection _RowSelection = RowSelection.Single;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
         public DataTable Data { get; set; } = new DataTable();

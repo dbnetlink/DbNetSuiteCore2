@@ -22,7 +22,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-        public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions>? options = null)
+        public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions> options)
         {
             if (context.Request.Method != "POST")
             {
@@ -35,7 +35,7 @@ namespace DbNetSuiteCore.Services
                 switch (page.ToLower())
                 {
                     case "gridcontrol":
-                        return await GridView();
+                        return await GridView(options);
                     default:
                         return new byte[0];
                 }
@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<Byte[]> GridView()
+        private async Task<Byte[]> GridView(IOptions<DbNetSuiteCoreOptions> options)
         {
             GridModel gridModel = GetGridModel() ?? new GridModel();
             gridModel.TriggerName = RequestHelper.TriggerName(_context);
@@ -59,7 +59,7 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.Apply:
-                    return await ApplyUpdate(gridModel);
+                    return await ApplyUpdate(gridModel,options);
                 case TriggerNames.NestedGrid:
                     return await View("Grid/__Nested", ConfigureNestedGrid(gridModel));
                 case TriggerNames.ViewDialogContent:
@@ -366,9 +366,9 @@ namespace DbNetSuiteCore.Services
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
-                gridModel.FormValues = RequestHelper.GridFormColumnValues(_context);
+                gridModel.FormValues = RequestHelper.GridFormColumnValues(_context, gridModel.ObfuscateColumnNames);
                 gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
-                gridModel.RowsModified = JsonConvert.DeserializeObject<List<ModifiedRow>>(RequestHelper.FormValue("__modifiedrows", string.Empty, _context));
+                gridModel.RowsModified = RequestHelper.GetModifiedRows(_context, gridModel.ObfuscateColumnNames);
                 gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
 
                 AssignParentKey(gridModel);
@@ -431,18 +431,18 @@ namespace DbNetSuiteCore.Services
             return contentType;
         }
 
-        private async Task<Byte[]> ApplyUpdate(GridModel gridModel)
+        private async Task<Byte[]> ApplyUpdate(GridModel gridModel, IOptions<DbNetSuiteCoreOptions> options)
         {
             if (gridModel.ClientEvents.Keys.Contains(GridClientEvent.ValidateUpdate) == false)
             {
-                if (await ValidateRecord(gridModel))
+                if (ValidateRecord(gridModel, options))
                 {
                     await CommitUpdate(gridModel);
                 }
             }
             else if (gridModel.ValidationPassed == false)
             {
-                gridModel.ValidationPassed = await ValidateRecord(gridModel);
+                gridModel.ValidationPassed = ValidateRecord(gridModel, options);
             }
             else
             {
@@ -487,29 +487,35 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<bool> ValidateRecord(GridModel gridModel)
+        private bool ValidateRecord(GridModel gridModel, IOptions<DbNetSuiteCoreOptions> options)
         {
-            if (ValidateErrorType(gridModel, ResourceNames.Required))
+            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError };
+
+            foreach (var validationType in validationTypes)
             {
-                if (ValidateErrorType(gridModel, ResourceNames.DataFormatError))
+                if (ValidateErrorType(gridModel, validationType) == false)
                 {
-                    if (ValidateErrorType(gridModel, ResourceNames.MinCharsError))
-                    {
-                        if (ValidateErrorType(gridModel, ResourceNames.MaxCharsError))
-                        {
-                            if (ValidateErrorType(gridModel, ResourceNames.MinValueError))
-                            {
-                                if (ValidateErrorType(gridModel, ResourceNames.PatternError))
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
+                    return false;
                 }
             }
 
-            return false;
+            if (options.Value.GridUpdateValidationDelegate == null)
+            {
+                return true;
+            }
+
+            bool result = Task.Run<bool>(async () => await options.Value.GridUpdateValidationDelegate(gridModel, _context!, _configuration)).Result; 
+
+            if (result == false)
+            {
+                if (string.IsNullOrEmpty(gridModel.Message))
+                {
+                    gridModel.Message = "Custom validation failed";
+                }
+                gridModel.MessageType = MessageType.Error;
+            }
+
+            return result;
         }
 
         private bool ValidateErrorType(GridModel gridModel, ResourceNames resourceName)

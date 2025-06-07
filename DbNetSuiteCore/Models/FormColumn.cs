@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Models
             return new HtmlString($"<label for=\"{formModel.Id}_{formModel.ObfuscateColumnName(this)}\" class=\"font-bold text-slate-800\">{Label}</label>");
         }
 
-        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel)
+        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex )
         {
             GridFormControl = componentModel is GridModel;
 
@@ -128,11 +128,12 @@ namespace DbNetSuiteCore.Models
                     break;
             }
 
-            if (GridFormControl == false)
+            var id = $"{componentModel.Id}_{componentModel.ObfuscateColumnName(this)}";
+            if (rowIndex != null)
             {
-                attributes["id"] = $"{componentModel.Id}_{componentModel.ObfuscateColumnName(this)}";
+                id = $"{id}_{rowIndex}";
             }
-            
+            attributes["id"] = id;
             attributes["name"] = $"_{componentModel.ObfuscateColumnName(this)}";
             attributes["data-value"] = $"{dbValue}";
             attributes["value"] = $"{value}";
@@ -324,6 +325,8 @@ namespace DbNetSuiteCore.Models
                 }
             }
 
+            string name = attributes["name"];
+
             if (GridFormControl)
             {
                 attributes.Remove("name");
@@ -335,7 +338,7 @@ namespace DbNetSuiteCore.Models
 
             if (GridFormControl)
             {
-                checkbox.Add($"<input type=\"hidden\" name=\"_{ColumnName}\"/>");
+                checkbox.Add($"<input type=\"hidden\" name=\"{name}\"/>");
             }
 
             return new HtmlString(string.Join("",checkbox));
