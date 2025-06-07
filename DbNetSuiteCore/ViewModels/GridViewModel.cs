@@ -174,7 +174,7 @@ namespace DbNetSuiteCore.ViewModels
             var options = new List<string>() { "CSV", "Excel", "HTML", "JSON" };
 
             List<HtmlString> html = new List<HtmlString>();
-            html.Add(new HtmlString($"<select class=\"\" name=\"exportformat\" style=\"width:5rem\">"));
+            html.Add(new HtmlString($"<select class=\"\" name=\"exportformat\" style=\"width:5rem\" title=\"{ResourceHelper.GetResourceString(ResourceNames.ExportFormat)}\">"));
 
             foreach (var option in options)
             {

@@ -147,6 +147,9 @@
   <data name="Contains" xml:space="preserve">
     <value>Contains</value>
   </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy to clipboard</value>
+  </data>
   <data name="DataFormatError" xml:space="preserve">
     <value>Format of entered data is not valid</value>
   </data>
@@ -170,6 +173,12 @@
   </data>
   <data name="EqualTo" xml:space="preserve">
     <value>Equal to</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ExportFormat" xml:space="preserve">
+    <value>Select export format</value>
   </data>
   <data name="False" xml:space="preserve">
     <value>False</value>

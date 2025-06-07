@@ -17,21 +17,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-string? locale = builder.Configuration.ConfigValue(ConfigurationHelper.AppSetting.Locale);
 
-if (string.IsNullOrEmpty(locale) == false)
-{
-    RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
-    {
-        SupportedCultures = new List<CultureInfo> { new CultureInfo(locale) },
-        SupportedUICultures = new List<CultureInfo> { new CultureInfo(locale) },
-        DefaultRequestCulture = new RequestCulture(locale)
-    };
-
-    app.UseRequestLocalization(localizationOptions);
-}
-
-app.UseDbNetSuiteCore(); // configure web application middleware
+app.UseDbNetSuiteCore(DbNetSuiteCore.Enums.Culture.zh_Hans); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

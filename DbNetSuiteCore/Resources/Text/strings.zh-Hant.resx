@@ -173,4 +173,13 @@
   <data name="PatternError" xml:space="preserve">
     <value>輸入的值與所需模式不符</value>
   </data>
+  <data name="Copy" xml:space="preserve">
+    <value>複製到剪貼簿</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>匯出</value>
+  </data>
+  <data name="ExportFormat" xml:space="preserve">
+    <value>選擇匯出的格式</value>
+  </data>
 </root>
