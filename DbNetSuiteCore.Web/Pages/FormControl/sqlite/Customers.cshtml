@@ -5,8 +5,8 @@
 
 @{
     var customerForm = new FormModel(DataSourceType.SQLite, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.SQLite), "Customers") { Insert = true, Delete = true, Caption = "Customer Form" };
-
-//    customerForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
+    customerForm.ObfuscateColumnNames = true;
+    //    customerForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
 }
 

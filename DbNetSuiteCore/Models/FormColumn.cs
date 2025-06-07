@@ -87,9 +87,9 @@ namespace DbNetSuiteCore.Models
         }
 
 
-        public HtmlString RenderLabel()
+        public HtmlString RenderLabel(FormModel formModel)
         {
-            return new HtmlString($"<label for=\"{ColumnName}\" class=\"font-bold text-slate-800\">{Label}</label>");
+            return new HtmlString($"<label for=\"{formModel.Id}_{formModel.ObfuscateColumnName(this)}\" class=\"font-bold text-slate-800\">{Label}</label>");
         }
 
         public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel)
@@ -128,8 +128,12 @@ namespace DbNetSuiteCore.Models
                     break;
             }
 
-            attributes["id"] = $"{componentModel.Id}_{ColumnName}";
-            attributes["name"] = $"_{ColumnName}";
+            if (GridFormControl == false)
+            {
+                attributes["id"] = $"{componentModel.Id}_{componentModel.ObfuscateColumnName(this)}";
+            }
+            
+            attributes["name"] = $"_{componentModel.ObfuscateColumnName(this)}";
             attributes["data-value"] = $"{dbValue}";
             attributes["value"] = $"{value}";
             attributes["data-datatype"] = DataTypeName;

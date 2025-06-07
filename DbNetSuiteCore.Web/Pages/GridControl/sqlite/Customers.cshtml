@@ -7,6 +7,7 @@
     var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers");
 
     customerGrid.Caption = "Northwind Customers";
+    customerGrid.ObfuscateColumnNames = true;
 
     customerGrid.Columns = new List<GridColumn>
     {

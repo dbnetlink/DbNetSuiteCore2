@@ -703,7 +703,7 @@ class GridControl extends ComponentControl {
     }
 
     public heading(columnName): HTMLTableCellElement {
-        return this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
+        return this.controlElement(`th[data-columnname='${columnName}']`)  ?? this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
     }
 
     public columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement {
@@ -716,7 +716,7 @@ class GridControl extends ComponentControl {
             row = this.currentValidationRow ? this.currentValidationRow : this.selectedRow;
         }
 
-        let datasetValue = row.dataset[columnName.toLowerCase()];
+        let datasetValue = row.dataset[columnName] ?? row.dataset[columnName.toLowerCase()];
         if (datasetValue) {
             return datasetValue;
         }
