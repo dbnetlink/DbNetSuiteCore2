@@ -4,14 +4,15 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Services;
-using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Enums;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
-using Microsoft.IdentityModel.Tokens;
+using DbNetSuiteCore.Models;
+using Microsoft.Extensions.Options;
 
 namespace DbNetSuiteCore.Middleware
 {
+    public delegate Task<bool> CustomValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
@@ -24,11 +25,11 @@ namespace DbNetSuiteCore.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
+        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService, IOptions<DbNetSuiteCoreOptions> options)
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
-                await GenerateResponse(context, resourceService, gridService, selectService, formService);
+                await GenerateResponse(context, resourceService, gridService, selectService, formService, options);
             }
             else
             {
@@ -36,7 +37,7 @@ namespace DbNetSuiteCore.Middleware
             }
         }
 
-        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
+        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService, IOptions<DbNetSuiteCoreOptions> options)
         {
             var request = context.Request;
             var resp = context.Response;
@@ -54,7 +55,7 @@ namespace DbNetSuiteCore.Middleware
                     response = await selectService.Process(context, page);
                     break;
                 case "formcontrol":
-                    response = await formService.Process(context, page);
+                    response = await formService.Process(context, page, options);
                     break;
                 default:
                     response = resourceService.Process(context, page);
@@ -75,6 +76,13 @@ namespace DbNetSuiteCore.Middleware
                 await resp.WriteAsync(response.ToString());
             }
         }
+    }
+
+    public class DbNetSuiteCoreOptions
+    {
+        public CustomValidationDelegate? UpdateValidationDelegate { get; set; }
+        public CustomValidationDelegate? InsertValidationDelegate { get; set; }
+        public CustomValidationDelegate? DeleteValidationDelegate { get; set; }
     }
 
     public static class DbNetSuiteCoreExtensions

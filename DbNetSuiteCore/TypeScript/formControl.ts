@@ -3,6 +3,7 @@ class FormControl extends ComponentControl {
     formContainer: HTMLElement;
     confirmDialog: ConfirmDialog | null;
     cachedMessage: string | null;
+    cachedMessageType: string | null;
     htmlEditorArray: Dictionary<HtmlEditor> = {};
     htmlEditorMissing = false;
     constructor(formId) {
@@ -42,7 +43,7 @@ class FormControl extends ComponentControl {
         }
 
         if (this.cachedMessage) {
-            this.setMessage(this.cachedMessage);
+            this.setMessage(this.cachedMessage, this.cachedMessageType);
         }
 
         this.updateLinkedChildControls(this.formBody.dataset.id)
@@ -89,6 +90,7 @@ class FormControl extends ComponentControl {
         if (this.parentControl) {
             if (this.parentControl instanceof GridControl) {
                 this.cachedMessage = this.formMessage.innerText;
+                this.cachedMessageType = this.formMessage.dataset.highlight;
                 this.parentControl.refreshPage()
             }
         }

@@ -42,9 +42,19 @@ namespace DbNetSuiteCore.Helpers
             return connection;
         }
 
-        public static DataTable RunQuery(QueryCommandConfig query, IDbConnection connection )
+        public static DataTable RunQuery(QueryCommandConfig query, IDbConnection connection)
         {
             return QueryToDataTable(query, connection);
+        }
+
+        public static bool RecordExists(QueryCommandConfig query, string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration)
+        {
+            using (var connection = GetConnection(connectionAlias, dataSourceType, configuration))
+            {
+                connection.Open();
+                DataTable dataTable = DbHelper.RunQuery(query, connection);
+                return (dataTable.Rows.Count > 0);
+            }
         }
 
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)

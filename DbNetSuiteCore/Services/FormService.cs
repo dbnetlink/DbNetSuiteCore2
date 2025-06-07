@@ -12,6 +12,8 @@ using DbNetSuiteCore.Extensions;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
 using NUglify.Helpers;
+using Microsoft.Extensions.Options;
+using DbNetSuiteCore.Middleware;
 
 namespace DbNetSuiteCore.Services
 {
@@ -21,7 +23,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-        public async Task<Byte[]> Process(HttpContext context, string page)
+        public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions> options)
         {
             try
             {
@@ -29,7 +31,7 @@ namespace DbNetSuiteCore.Services
                 switch (page.ToLower())
                 {
                     case "formcontrol":
-                        return await FormView();
+                        return await FormView(options);
                     default:
                         return new byte[0];
                 }
@@ -41,7 +43,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<Byte[]> FormView()
+        private async Task<Byte[]> FormView(IOptions<DbNetSuiteCoreOptions> options)
         {
             FormModel formModel = GetFormModel();
             formModel.TriggerName = RequestHelper.TriggerName(_context);
@@ -51,11 +53,11 @@ namespace DbNetSuiteCore.Services
             switch (formModel.TriggerName)
             {
                 case TriggerNames.Apply:
-                    return await ApplyUpdate(formModel);
+                    return await ApplyUpdate(formModel, options);
                 case TriggerNames.Toolbar:
                     return await Toolbar(formModel);
                 case TriggerNames.Delete:
-                    return await ApplyDelete(formModel);
+                    return await ApplyDelete(formModel, options);
                 case TriggerNames.Insert:
                     return await InitialiseInsert(formModel);
                 default:
@@ -113,7 +115,7 @@ namespace DbNetSuiteCore.Services
         private List<object> PrimaryKeyValue(DataRow dataRow)
         {
             List<object> primaryKeyValues = new List<object>();
-            foreach (object? value in (dataRow.ItemArray ?? new object[] { })) 
+            foreach (object? value in (dataRow.ItemArray ?? new object[] { }))
             {
                 if (value == null)
                 {
@@ -128,17 +130,17 @@ namespace DbNetSuiteCore.Services
                     primaryKeyValues.Add(value);
                 }
             }
-           
+
             return primaryKeyValues;
         }
-        private async Task<Byte[]> ApplyUpdate(FormModel formModel)
+        private async Task<Byte[]> ApplyUpdate(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
         {
             FormViewModel formViewModel = new FormViewModel(formModel);
             var committed = false;
 
             if (formModel.ClientEvents.Keys.Contains(FormClientEvent.ValidateUpdate) == false)
             {
-                if (await ValidateRecord(formModel))
+                if (await ValidateRecord(formModel, options))
                 {
                     await Commit();
                 }
@@ -146,7 +148,7 @@ namespace DbNetSuiteCore.Services
             }
             else if (formModel.ValidationPassed == false)
             {
-                formModel.ValidationPassed = await ValidateRecord(formModel);
+                formModel.ValidationPassed = await ValidateRecord(formModel, options);
             }
             else
             {
@@ -196,14 +198,21 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<Byte[]> ApplyDelete(FormModel formModel)
+        private async Task<Byte[]> ApplyDelete(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
         {
             try
             {
-                await DeleteRecord(formModel);
-                formModel.PrimaryKeyValues = new List<List<object>>();
-                formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Deleted);
-                formModel.MessageType = MessageType.Success;
+                if (await CustomDelegateValidation(options.Value.DeleteValidationDelegate, formModel))
+                {
+                    await DeleteRecord(formModel);
+                    formModel.PrimaryKeyValues = new List<List<object>>();
+                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Deleted);
+                    formModel.MessageType = MessageType.Success;
+                }
+                else
+                {
+                    throw new Exception(formModel.Message);
+                }
             }
             catch (Exception ex)
             {
@@ -225,32 +234,67 @@ namespace DbNetSuiteCore.Services
             return await View("Form/__Form", new FormViewModel(formModel));
         }
 
-        private async Task<bool> ValidateRecord(FormModel formModel)
+        private async Task<bool> ValidateRecord(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
         {
-            if (ValidateErrorType(formModel, ResourceNames.Required))
+            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError };
+
+            PopulateGuidPrimaryKey(formModel);
+
+            foreach (var validationType in validationTypes)
             {
-                if (ValidateErrorType(formModel, ResourceNames.DataFormatError))
+                if (ValidateErrorType(formModel, validationType) == false)
                 {
-                    if (ValidateErrorType(formModel, ResourceNames.MinCharsError))
-                    {
-                        if (ValidateErrorType(formModel, ResourceNames.MaxCharsError))
-                        {
-                            if (ValidateErrorType(formModel, ResourceNames.MinValueError))
-                            {
-                                if (ValidateErrorType(formModel, ResourceNames.PatternError))
-                                {
-                                    if (await ValidatePrimaryKey(formModel))
-                                    {
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    return false;
                 }
             }
 
-            return false;
+            if (await ValidatePrimaryKey(formModel) == false)
+            {
+                return false;
+            }
+
+            CustomValidationDelegate? validationDelegate = formModel.Mode == FormMode.Update ? options?.Value.UpdateValidationDelegate : options?.Value.InsertValidationDelegate;
+            return await CustomDelegateValidation(validationDelegate, formModel);
+        }
+
+        private void PopulateGuidPrimaryKey(FormModel formModel)
+        {
+            if (formModel.Mode == FormMode.Update)
+            {
+                return;
+            }
+
+            foreach (FormColumn? formColumn in formModel.Columns.Where(c => c.PrimaryKeyRequired && c.DataType == typeof(Guid)))
+            {
+                var columnName = formColumn.ColumnName;
+
+                var value = string.Empty;
+
+                if (formModel.FormValues.ContainsKey(columnName) == false || string.IsNullOrEmpty(formModel.FormValues[columnName]))
+                {
+                    formModel.FormValues[columnName] = Guid.NewGuid().ToString();
+                }
+            }
+        }
+
+        private async Task<bool> CustomDelegateValidation(CustomValidationDelegate? validationDelegate, FormModel formModel)
+        {
+            if (validationDelegate == null)
+            {
+                return true;
+            }
+            bool result = await validationDelegate(formModel, _context!, _configuration);
+
+            if (result == false)
+            {
+                if (string.IsNullOrEmpty(formModel.Message))
+                {
+                    formModel.Message = "Custom validation failed";
+                }
+                formModel.MessageType = MessageType.Error;
+            }
+
+            return result;
         }
 
         private async Task<bool> ValidatePrimaryKey(FormModel formModel)
