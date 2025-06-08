@@ -2,6 +2,7 @@
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Web.Enums
 @using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
 @using DbNetSuiteCore.Models
 @{
     var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Caption = "Product Edit"};
@@ -18,7 +19,7 @@
         new GridColumn("Discontinued") {Edit = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
 
-    productGrid.Name = "ProductEditGrid";
+    productGrid.Name = ValidationHelper.ProductEditGrid;
     productGrid.ObfuscateColumnNames = true;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(productGrid))
 }

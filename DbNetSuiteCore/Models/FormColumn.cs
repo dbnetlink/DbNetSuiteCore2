@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Models
             return new HtmlString($"<label for=\"{formModel.Id}_{formModel.ObfuscateColumnName(this)}\" class=\"font-bold text-slate-800\">{Label}</label>");
         }
 
-        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex )
+        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex = null )
         {
             GridFormControl = componentModel is GridModel;
 

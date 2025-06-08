@@ -281,6 +281,12 @@ namespace DbNetSuiteCore.Services
             {
                 return true;
             }
+
+            if (formModel.Mode != FormMode.Insert)
+            {
+                await GetRecord(formModel);
+            }
+
             bool result = await validationDelegate(formModel, _context!, _configuration);
 
             if (result == false)

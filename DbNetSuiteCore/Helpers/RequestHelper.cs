@@ -35,7 +35,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static Dictionary<string, string> FormColumnValues(HttpContext httpContext, bool obfuscated)
         {
-            Dictionary<string, string> formValues = new Dictionary<string, string>();
+            Dictionary<string, string> formValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (string key in httpContext.Request.Form.Keys)
             {
                 if (key.StartsWith("_"))
@@ -50,7 +50,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext, bool obfuscated)
         {
-            Dictionary<string, List<string>> formValues = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> formValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             foreach (string key in httpContext.Request.Form.Keys)
             {
                 if (key.StartsWith("_") && key.StartsWith("__") == false)

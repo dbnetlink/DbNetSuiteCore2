@@ -1,29 +1,26 @@
 ﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace DbNetSuiteCore.Web.Helpers
 {
     public static class ValidationHelper
     {
+        public const string ProductEditGrid = "ProductEditGrid";
+        public const string ProductEditForm = "ProductEditForm";
         public static bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             switch (formModel.Name)
             {
-                case "AspNetRoles":
-                    if (formModel.FormValues.ContainsKey("Name"))
-                    {
-                        QueryCommandConfig query = new QueryCommandConfig(formModel.DataSourceType) { Sql = "select id from AspNetRoles where name = @name and id != @id" };
-                        query.Params["name"] = formModel.FormValues["Name"];
-                        query.Params["id"] = formModel.RecordId;
+                case ProductEditForm:
+                    var reorderLevel = Convert.ToInt32(formModel.FormValue("reorderlevel"));
+                    var discontinued = Boolean.Parse(formModel.FormValue("discontinued").ToString());
 
-                        if (DbHelper.RecordExists(query, formModel.ConnectionAlias, formModel.DataSourceType, configuration))
-                        {
-                            formModel.Message = "A role already exists with this name";
-                            return false;
-                        }
+                    if (discontinued && reorderLevel > 0)
+                    {
+                        formModel.Message = "Re-order level must be zero for discontinued products";
+                        return false;
                     }
                     break;
             }
@@ -63,13 +60,11 @@ namespace DbNetSuiteCore.Web.Helpers
         {
             switch (gridModel.Name)
             {
-                case "ProductEditGrid":
+                case ProductEditGrid:
                     foreach (var row in gridModel.ModifiedRows().Keys)
                     {
-                        var modifiedRow = gridModel.ModifiedRows()[row];
-
-                        var reorderLevel = Convert.ToInt32(gridModel.FormValues["ReorderLevel"][row]);
-                        var discontinued = Convert.ToBoolean(gridModel.FormValues["Discontinued"][row]);
+                        var reorderLevel = Convert.ToInt32(gridModel.FormValues["reorderlevel"][row]);
+                        var discontinued = Convert.ToBoolean(gridModel.FormValues["discontinued"][row]);
 
                         if (discontinued && reorderLevel > 0)
                         {

@@ -35,7 +35,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseDbNetSuiteCore(DbNetSuiteCore.Enums.Culture.zh_Hans); // configure web application middleware
+app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
