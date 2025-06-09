@@ -8,7 +8,7 @@
 
     customerForm.Columns = new List<FormColumn>() {
         new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase,  MinLength = 5, MaxLength = 5},
-        new FormColumn("CompanyName", "Name", "CorpName") {Required = true},
+        new FormColumn("CompanyName", "Name") {Required = true},
         new FormColumn("ContactName"),
         new FormColumn("ContactTitle"),
         new FormColumn("Address"),

@@ -356,7 +356,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
             foreach (string columnName in values.Keys)
             {
-                ILocator input = Page.Locator($"[name=\"_{columnName}\"]");
+                ILocator input = Page.Locator($"[name=\"_{columnName.ToLower()}\"]");
                 await input.FillAsync(values[columnName]);
             }
 
