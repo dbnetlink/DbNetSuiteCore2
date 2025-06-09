@@ -6,6 +6,8 @@ using System.Data;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
+using Microsoft.Extensions.Options;
+using DbNetSuiteCore.Middleware;
 
 namespace DbNetSuiteCore.Services
 {
@@ -15,7 +17,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-    public async Task<Byte[]> Process(HttpContext context, string page)
+    public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions>? options = null)
         {
             try
             {

@@ -74,6 +74,10 @@ namespace DbNetSuiteCore.Models
         {
         }
 
+        public FormColumn(string expression, string label, string alias) : base(expression, label, alias)
+        {
+        }
+
         internal FormColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
         {
         }
@@ -87,12 +91,12 @@ namespace DbNetSuiteCore.Models
         }
 
 
-        public HtmlString RenderLabel()
+        public HtmlString RenderLabel(FormModel formModel)
         {
-            return new HtmlString($"<label for=\"{ColumnName}\" class=\"font-bold text-slate-800\">{Label}</label>");
+            return new HtmlString($"<label for=\"{formModel.Id}_{formModel.ObfuscateColumnName(this)}\" class=\"font-bold text-slate-800\">{Label}</label>");
         }
 
-        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel)
+        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex = null )
         {
             GridFormControl = componentModel is GridModel;
 
@@ -128,8 +132,13 @@ namespace DbNetSuiteCore.Models
                     break;
             }
 
-            attributes["id"] = $"{componentModel.Id}_{ColumnName}";
-            attributes["name"] = $"_{ColumnName}";
+            var id = $"{componentModel.Id}_{componentModel.ObfuscateColumnName(this)}";
+            if (rowIndex != null)
+            {
+                id = $"{id}_{rowIndex}";
+            }
+            attributes["id"] = id;
+            attributes["name"] = $"_{componentModel.ObfuscateColumnName(this)}";
             attributes["data-value"] = $"{dbValue}";
             attributes["value"] = $"{value}";
             attributes["data-datatype"] = DataTypeName;
@@ -320,20 +329,14 @@ namespace DbNetSuiteCore.Models
                 }
             }
 
-            if (GridFormControl)
-            {
-                attributes.Remove("name");
-            }
+            string name = attributes["name"];
+            attributes.Remove("name");
 
             bool boolValue = ComponentModelExtensions.ParseBoolean(value);
 
             List<string> checkbox = new List<string>() { $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(componentModel, boolValue)}/>{HelpTextElement()}" };
 
-            if (GridFormControl)
-            {
-                checkbox.Add($"<input type=\"hidden\" name=\"_{ColumnName}\"/>");
-            }
-
+            checkbox.Add($"<input type=\"hidden\" name=\"{name}\"/>");
             return new HtmlString(string.Join("",checkbox));
         }
 

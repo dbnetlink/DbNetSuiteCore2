@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Repositories;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Data;
 using System.Text.Json.Serialization;
 
@@ -28,7 +29,7 @@ namespace DbNetSuiteCore.Models
         public object? RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : null;
         public int LayoutColumns { get; set; } = 4;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
-
+        public ModifiedRow Modified { get; set; } = new ModifiedRow();
         public FormModel() : base()
         {
         }
@@ -65,6 +66,11 @@ namespace DbNetSuiteCore.Models
         public override ColumnModel NewColumn(BsonElement element)
         {
             return new FormColumn(element) { Autoincrement = element.Name == MongoDbRepository.PrimaryKeyName };
+        }
+
+        public object FormValue(string columnName)
+        {
+            return FormValues.ContainsKey(columnName) ? FormValues[columnName] : Data.Rows[0][columnName];
         }
 
         public void Bind(FormClientEvent clientEvent, string functionName)

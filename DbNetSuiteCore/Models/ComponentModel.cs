@@ -12,6 +12,7 @@ namespace DbNetSuiteCore.Models
         protected RowSelection _RowSelection = RowSelection.Single;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
         public DataTable Data { get; set; } = new DataTable();
@@ -36,6 +37,7 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
+        public Dictionary<string,string> ColumnAliasLookup { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public string Url
         {
@@ -142,6 +144,11 @@ namespace DbNetSuiteCore.Models
             Id = GeneratedId();
         }
 
+        public string ObfuscateColumnName(ColumnModel column)
+        {
+            return (string.IsNullOrEmpty(column.Alias) ? column.ColumnName : column.Alias).ToLower();
+        }
+
         public List<string> GetLinkedControlIds(string typeName)
         {
             return LinkedControlIds.ContainsKey(typeName) ? LinkedControlIds[typeName] : new List<string>();
@@ -185,6 +192,11 @@ namespace DbNetSuiteCore.Models
                 child.ConnectionAlias = parent.ConnectionAlias;
                 child.DataSourceType = parent.DataSourceType;
             }
+        }
+
+        internal string LookupColumnName (string columnName)
+        {
+            return GetColumns().FirstOrDefault(c => c.Alias.ToLower() == columnName.ToLower())?.ColumnName ?? columnName;
         }
 
         public abstract IEnumerable<ColumnModel> GetColumns();

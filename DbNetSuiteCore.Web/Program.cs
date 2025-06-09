@@ -1,14 +1,31 @@
-using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
-using Microsoft.AspNetCore.Localization;
-using System.Configuration;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+builder.Services.Configure<DbNetSuiteCoreOptions>(options =>
+{
+    options.FormUpdateValidationDelegate = async (formModel, httpContext, configuration) =>
+    {
+        return ValidationHelper.ValidateFormUpdate(formModel, httpContext, configuration);
+    };
+    options.FormInsertValidationDelegate = async (formModel, httpContext, configuration) =>
+    {
+        return ValidationHelper.ValidateFormInsert(formModel, httpContext, configuration);
+    };
+    options.FormDeleteValidationDelegate = async (formModel, httpContext, configuration) =>
+    {
+        return ValidationHelper.ValidateFormDelete(formModel, httpContext, configuration);
+    };
+    options.GridUpdateValidationDelegate = async (gridModel, httpContext, configuration) =>
+    {
+        return ValidationHelper.ValidateGridUpdate(gridModel, httpContext, configuration);
+    };
+});
+
 
 var app = builder.Build();
 
@@ -18,7 +35,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseDbNetSuiteCore(DbNetSuiteCore.Enums.Culture.zh_Hans); // configure web application middleware
+app.UseDbNetSuiteCore(); // configure web application middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

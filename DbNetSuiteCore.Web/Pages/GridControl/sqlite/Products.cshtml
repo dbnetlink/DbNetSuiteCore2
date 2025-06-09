@@ -27,6 +27,13 @@
 	@(await new DbNetSuiteCore.GridControl(HttpContext).Render(productsGrid))
 }
 <script>
+	//var unitsInStockName = "H4sIAAAAAAAACivNyywpzswrLslPzgYAxGA4xgwAAAA="
+	//var reorderLevelName = "H4sIAAAAAAAACitKzS9KSS3KSS1LzQEAFw2T+wwAAAA="
+	//var discontinuedName = "H4sIAAAAAAAACkvJLE7OzyvJzCtNTQEAM3XNDgwAAAA="
+	var unitsInStockName = "UnitsInStock"
+	var reorderLevelName = "ReorderLevel"
+	var discontinuedName = "Discontinued"
+
 	function highlightGridLowStock(gridControl, args) {
 		highlightLowStock(gridControl, args.row);
 		highlightDiscontinued(gridControl, args.row);
@@ -37,15 +44,15 @@
 	}
 
 	function highlightLowStock(control, row) {
-		var unitsInStock = parseInt(control.columnValue("UnitsInStock", row));
-		var reorderLevel = parseInt(control.columnValue("ReorderLevel", row));
+		var unitsInStock = parseInt(control.columnValue(unitsInStockName, row));
+		var reorderLevel = parseInt(control.columnValue(reorderLevelName, row));
 
 		if (unitsInStock < reorderLevel) {
 			if (row) {
 				row.style.fontWeight = "bold";
 			}
-			let unitsInStockCell = control.columnCell("UnitsInStock", row);
-			let reorderLevelCell = control.columnCell("ReorderLevel", row);
+			let unitsInStockCell = control.columnCell(unitsInStockName, row);
+			let reorderLevelCell = control.columnCell(reorderLevelName, row);
 
 			unitsInStockCell.style.backgroundColor = "#CD6155"
 			unitsInStockCell.style.color = "#F2D7D5";
@@ -57,11 +64,11 @@
 
 	function highlightDiscontinued(gridControl, row) {
 
-		if (gridControl.columnValue("Discontinued", row) == "Active") {
+		if (gridControl.columnValue(discontinuedName, row) == "Active") {
 			return
 		}
 
-		console.log(gridControl.columnValue("Discontinued", row))
+		console.log(gridControl.columnValue(discontinuedName, row))
 
 		row.style.backgroundColor = "whitesmoke";
 		row.style.color = "gainsboro";

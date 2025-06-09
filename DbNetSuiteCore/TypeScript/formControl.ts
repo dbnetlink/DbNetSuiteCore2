@@ -3,6 +3,7 @@ class FormControl extends ComponentControl {
     formContainer: HTMLElement;
     confirmDialog: ConfirmDialog | null;
     cachedMessage: string | null;
+    cachedMessageType: string | null;
     htmlEditorArray: Dictionary<HtmlEditor> = {};
     htmlEditorMissing = false;
     constructor(formId) {
@@ -42,7 +43,7 @@ class FormControl extends ComponentControl {
         }
 
         if (this.cachedMessage) {
-            this.setMessage(this.cachedMessage);
+            this.setMessage(this.cachedMessage, this.cachedMessageType);
         }
 
         this.updateLinkedChildControls(this.formBody.dataset.id)
@@ -51,6 +52,7 @@ class FormControl extends ComponentControl {
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el) });
         this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el) });
+        this.reassignFormCheckboxValue();
 
         this.configureHtmlEditors();
 
@@ -89,6 +91,7 @@ class FormControl extends ComponentControl {
         if (this.parentControl) {
             if (this.parentControl instanceof GridControl) {
                 this.cachedMessage = this.formMessage.innerText;
+                this.cachedMessageType = this.formMessage.dataset.highlight;
                 this.parentControl.refreshPage()
             }
         }
@@ -195,11 +198,10 @@ class FormControl extends ComponentControl {
         }
         this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].assignContent(evt) });
 
+        evt.detail.parameters["modifiedform"] = JSON.stringify(this.getFormModification(this.formBody));
+
         this.controlElements(".fc-control").forEach((el) => {
-            if (this.elementModified(el) == false) {
-                delete evt.detail.parameters[el.name];
-            }
-            else if (evt.detail.parameters[el.name] == undefined) {
+            if (evt.detail.parameters[el.name] == undefined) {
                 evt.detail.parameters[el.name] = ''
             }
         });

@@ -78,6 +78,7 @@ namespace DbNetSuiteCore.Models
         public string EnumName { get; set; } = string.Empty;
         public bool AllowDBNull { get; set; } = true;
         public bool Search { get; set; } = true;
+        public string Alias { get; set; } = string.Empty;
         public bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType() && ForeignKey == false;
         public SearchControlType SearchControlType
         {
@@ -140,6 +141,13 @@ namespace DbNetSuiteCore.Models
         {
             Expression = expression;
             Label = label;
+        }
+
+        public ColumnModel(string expression, string label, string alias) : this()
+        {
+            Expression = expression;
+            Label = label;
+            Alias = alias;
         }
 
         public ColumnModel(string expression) : this()

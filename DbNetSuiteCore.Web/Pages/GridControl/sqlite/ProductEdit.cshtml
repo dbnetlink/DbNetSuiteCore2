@@ -2,32 +2,24 @@
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Web.Enums
 @using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
 @using DbNetSuiteCore.Models
 @{
     var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Caption = "Product Edit"};
     productGrid.Columns = new List<GridColumn>() {
         new GridColumn("ProductID","ID") { DataOnly = true},
-        new GridColumn("ProductName", "Name") {Edit = true, Required = true, MinLength = 3, MaxLength = 50 },
+        new GridColumn("ProductName", "Name", "Name") {Edit = true, Required = true, MinLength = 3, MaxLength = 50 },
         new GridColumn("SupplierID","Supplier") {Edit = false, Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
         new GridColumn("CategoryID","Category") {Edit = false, Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
         new GridColumn("QuantityPerUnit", "Qty"){Edit = false },
         new GridColumn("UnitPrice", "Price") {Edit = false,  Required = false, Format = "c" },
         new GridColumn("UnitsInStock", "Stock") {Edit = false, Required = false, MinValue = 0 },
         new GridColumn("UnitsOnOrder", "On Order") {Edit = false, Required = false },
-        new GridColumn("ReorderLevel", "Re-order Level") {Edit = true, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
-        new GridColumn("Discontinued") {Edit = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
+        new GridColumn("ReorderLevel", "Re-order Level", "Level") {Edit = true, Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
+        new GridColumn("Discontinued","", "NotActive") {Edit = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
-  
-    productGrid.Bind(GridClientEvent.ValidateUpdate, "validateReOrderLevel");
+
+    productGrid.Name = ValidationHelper.ProductEditGrid;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(productGrid))
 }
 
-
-<script>
-    function validateReOrderLevel(gridControl, args) {
-        if (gridControl.columnValue("discontinued", args.row) && gridControl.columnValue("ReorderLevel") > 0) {
-            gridControl.highlightError("ReorderLevel");
-            args.message = `Re-order level must be zero for discontinued products`;
-        }
-    }
-</script>

@@ -5,7 +5,7 @@
 var DbNetSuiteCore: any = {};
 var controlArray: Dictionary<ComponentControl> = {}
 DbNetSuiteCore.controlArray = controlArray;
-DbNetSuiteCore.createClientControl = function(controlId: string, clientEvents:object, deferredLoad:boolean = false) {
+DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents: object, deferredLoad: boolean = false) {
     document.addEventListener('htmx:afterRequest', function (evt) {
         DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
         DbNetSuiteCore.controlArray[controlId].afterRequest(evt);
@@ -69,7 +69,7 @@ class ComponentControl {
     }
 
     protected invokeEventHandler(eventName, args = {}) {
-      //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
+        //  window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.controlId }));
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return false;
         }
@@ -114,12 +114,12 @@ class ComponentControl {
         return this.form.querySelector(selector);
     }
 
-    protected triggerName(evt:any) {
+    protected triggerName(evt: any) {
         let headers = evt.detail.headers ? evt.detail.headers : evt.detail.requestConfig.headers;
         return headers["HX-Trigger-Name"] ? headers["HX-Trigger-Name"].toLowerCase() : "";
     }
 
-    protected triggerElement(evt: any):HTMLElement {
+    protected triggerElement(evt: any): HTMLElement {
         return evt.detail.requestConfig.elt;
     }
 
@@ -146,8 +146,7 @@ class ComponentControl {
     }
 
     public childLoaded(records: boolean) {
-        if (this instanceof FormControl)
-        {
+        if (this instanceof FormControl) {
             let deleteButton = this.getButton("delete")
             if (deleteButton) {
                 deleteButton.disabled = records;
@@ -259,7 +258,7 @@ class ComponentControl {
         return modified.length > 0;
     }
 
-    protected elementModified(el: HTMLFormElement, unappliedCheck:boolean = false) {
+    protected elementModified(el: HTMLFormElement, unappliedCheck: boolean = false) {
         if (el.dataset.dbdatatype == "XmlType") {
             return false;
         }
@@ -311,7 +310,7 @@ class ComponentControl {
     }
 
     public formControlDbValue(columnName: string, row: HTMLTableRowElement = null) {
-        return this.elementValue(columnName, true,row);
+        return this.elementValue(columnName, true, row);
     }
 
     private elementValue(columnName: string, db: boolean, row: HTMLTableRowElement = null) {
@@ -342,10 +341,10 @@ class ComponentControl {
         return element;
     }
 
-    protected getElementName(el: HTMLFormElement):string {
+    protected getElementName(el: HTMLFormElement): string {
         let name = el.name;
         if (el.attributes["type"].value == "checkbox") {
-            name = (el.nextElementSibling as HTMLFormElement).name
+            name = this.nextInputElement(el).name
         }
 
         return name;
@@ -373,5 +372,36 @@ class ComponentControl {
         if (this instanceof GridControl) {
             this.controlElements(`td`).forEach((el) => { el.dataset.error = false });
         }
+    }
+
+    protected reassignFormCheckboxValue() {
+        this.controlElements('input[type="checkbox"].fc-control').forEach((cb: HTMLFormElement) => {
+            this.nextInputElement(cb).value = cb.checked.toString();
+            cb.addEventListener('change', (ev) => {
+                let cb = ev.target as HTMLFormElement;
+                this.nextInputElement(cb).value = cb.checked.toString();
+            });
+        });
+    }
+    private nextInputElement(cb: HTMLFormElement): HTMLInputElement {
+        let element = cb.nextElementSibling;
+        while (element) {
+            if (element.nodeName === "INPUT") {
+                return element as HTMLInputElement;
+            }
+            element = element.nextElementSibling;
+        }
+        return null;
+    }
+
+    protected getFormModification(container: HTMLElement) {
+        let rowModification: RowModification = { modified: false, columns: [] };
+        container.querySelectorAll(".fc-control").forEach((el: HTMLFormElement) => {
+            if (this.elementModified(el)) {
+                rowModification.columns.push(this.getElementName(el));
+            }
+        });
+        rowModification.modified = rowModification.columns.length > 0;
+        return rowModification;
     }
 }

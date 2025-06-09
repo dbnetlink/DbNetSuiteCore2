@@ -22,20 +22,20 @@
     <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-mode="@Model.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.CommitType" data-id="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model.RecordId))">
 
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
-            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == false))
+            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == false && c.Autoincrement == false))
             {
                 var columnValues = Model.GetColumnValues(formColumn);
 
                 <div style="display:grid;grid-column:span @(formColumn.ColSpan);grid-row:span @(formColumn.RowSpan);" class="content-start">
                     @{
-                        @formColumn.RenderLabel()
+                        @formColumn.RenderLabel(Model.FormModel)
                         @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
                     }
                 </div>
             }
         </div>
         <div>
-            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == true))
+            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == true && c.Autoincrement == false))
             {
                 var columnValues = Model.GetColumnValues(formColumn);
                 @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)

@@ -95,6 +95,13 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecord(ComponentModel componentModel)
         {
+            componentModel.Data = await GetRecordDataTable(componentModel);
+            await GetLookupOptions(componentModel);
+            ApplyLookups(componentModel);
+        }
+
+        public async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
+        {
             object? primaryKeyValue = null;
             if (componentModel is FormModel)
             {
@@ -105,9 +112,7 @@ namespace DbNetSuiteCore.Repositories
                 primaryKeyValue = componentModel.GetParentKeyValues();
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
-            await GetLookupOptions(componentModel);
-            ApplyLookups(componentModel);
+            return await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
         }
 
         public async Task<bool> RecordExists(ComponentModel componentModel)
@@ -190,19 +195,11 @@ namespace DbNetSuiteCore.Repositories
         public async Task UpdateRecords(GridModel gridModel)
         {
             var primaryKeysValues = await GetPrimaryKeyValues(gridModel);
+            var modifiedRows = gridModel.ModifiedRows();
 
-            var rowCount = gridModel.FormValues[gridModel.FirstEditableColumnName].Count;
-
-            for (var r = 0; r < rowCount; r++)
+            foreach (var row in modifiedRows.Keys)
             {
-                if (gridModel.RowsModified != null && gridModel.RowsModified.Count == rowCount)
-                {
-                    if (gridModel.RowsModified[r].Modified == false)
-                    {
-                        continue;
-                    }
-                }
-                CommandConfig update = gridModel.BuildUpdate(r, primaryKeysValues[r], gridModel.RowsModified[r].Columns);
+                CommandConfig update = gridModel.BuildUpdate(row, primaryKeysValues[row], modifiedRows[row].Columns);
                 var connection = GetConnection(gridModel.ConnectionAlias);
                 connection.Open();
                 await ExecuteUpdate(update, connection);

@@ -50,20 +50,21 @@ namespace DbNetSuiteCore.ViewModels
             object? value = null;
             object? dbValue = null;
 
-            if (FormModel.Mode == FormMode.Update)
+            switch (FormModel.Mode)
             {
-                DataColumn? dataColumn = GetDataColumn(formColumn);
-                dbValue = (dataColumn == null) ? string.Empty : formColumn.FormatValue(Record[dataColumn]);
-                value = dbValue;
-            }
-
-            if (FormModel.Mode == FormMode.Insert)
-            {
-                if (formColumn.PrimaryKey == false)
-                {
-                    value = formColumn.GetInitialValue();
-                }
-                dbValue = "";
+                case FormMode.Update:
+                    DataColumn? dataColumn = GetDataColumn(formColumn);
+                    dbValue = (dataColumn == null) ? string.Empty : formColumn.FormatValue(Record[dataColumn]);
+                    value = dbValue;
+                    break;
+                case FormMode.Insert:
+                    if (formColumn.PrimaryKey == false)
+                    {
+                        value = formColumn.GetInitialValue();
+                    }
+                    dbValue = "";
+                    value = dbValue;
+                    break;
             }
 
             if (FormModel.FormValues.Keys.Contains(formColumn.ColumnName))

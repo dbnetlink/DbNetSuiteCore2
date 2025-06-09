@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using System.Reflection.Metadata.Ecma335;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -69,9 +70,13 @@ namespace DbNetSuiteCore.Extensions
                 {
                     continue;
                 }
-                ;
 
-                if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
+                if (formModel.Modified.Columns.Contains(formColumn.ColumnName, StringComparer.CurrentCultureIgnoreCase) == false)
+                {
+                    continue;
+                }
+
+                if (formModel.FormValues.Keys.Contains(formColumn.ColumnName, StringComparer.CurrentCultureIgnoreCase))
                 {
                     var columnName = formColumn.ColumnName;
                     var paramName = DbHelper.ParameterName(columnName, formModel.DataSourceType);

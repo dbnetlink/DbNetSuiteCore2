@@ -66,6 +66,10 @@ namespace DbNetSuiteCore.Models
         {
         }
 
+        public GridColumn(string expression, string label, string alias) : base(expression, label, alias)
+        {
+        }
+
         internal GridColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
         {
         }

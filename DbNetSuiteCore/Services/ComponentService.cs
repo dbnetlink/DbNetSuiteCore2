@@ -377,6 +377,23 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        internal async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.GetRecordDataTable(componentModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.GetRecordDataTable(componentModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.GetRecordDataTable(componentModel);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.GetRecordDataTable(componentModel);
+                default:
+                    return await _msSqlRepository.GetRecordDataTable(componentModel);
+            }
+        }
+
         protected async Task<bool> RecordExists(ComponentModel componentModel)
         {
             switch (componentModel.DataSourceType)

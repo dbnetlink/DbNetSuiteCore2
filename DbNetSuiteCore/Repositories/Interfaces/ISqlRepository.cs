@@ -8,6 +8,7 @@ namespace DbNetSuiteCore.Repositories
         public Task GetRecords(ComponentModel componentModel);
         public Task<DataTable> GetColumns(ComponentModel componentModel);
         public Task GetRecord(ComponentModel gridModel);
+        public Task<DataTable> GetRecordDataTable(ComponentModel gridModel);
         public Task <bool>RecordExists(ComponentModel gridModel);
         public Task GetLookupOptions(ComponentModel gridModel);
         public Task UpdateRecord(FormModel formModel);
