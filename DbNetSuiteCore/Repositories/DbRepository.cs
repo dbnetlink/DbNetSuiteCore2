@@ -95,6 +95,13 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetRecord(ComponentModel componentModel)
         {
+            componentModel.Data = await GetRecordDataTable(componentModel);
+            await GetLookupOptions(componentModel);
+            ApplyLookups(componentModel);
+        }
+
+        public async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
+        {
             object? primaryKeyValue = null;
             if (componentModel is FormModel)
             {
@@ -105,9 +112,7 @@ namespace DbNetSuiteCore.Repositories
                 primaryKeyValue = componentModel.GetParentKeyValues();
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
-            await GetLookupOptions(componentModel);
-            ApplyLookups(componentModel);
+            return await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
         }
 
         public async Task<bool> RecordExists(ComponentModel componentModel)

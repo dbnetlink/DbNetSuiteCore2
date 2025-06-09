@@ -12,6 +12,7 @@ using DbNetSuiteCore.Extensions;
 using MongoDB.Bson;
 using Microsoft.Extensions.Options;
 using DbNetSuiteCore.Middleware;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace DbNetSuiteCore.Services
 {
@@ -228,6 +229,7 @@ namespace DbNetSuiteCore.Services
         private async Task<Byte[]> InitialiseInsert(FormModel formModel)
         {
             formModel.Mode = FormMode.Insert;
+            formModel.FormValues = new Dictionary<string, string>();
             await GetLookupOptions(formModel);
             return await View("Form/__Form", new FormViewModel(formModel));
         }
@@ -282,11 +284,6 @@ namespace DbNetSuiteCore.Services
                 return true;
             }
 
-            if (formModel.Mode != FormMode.Insert)
-            {
-                await GetRecord(formModel);
-            }
-
             bool result = await validationDelegate(formModel, _context!, _configuration);
 
             if (result == false)
@@ -323,6 +320,11 @@ namespace DbNetSuiteCore.Services
         {
             foreach (FormColumn? formColumn in formModel.Columns)
             {
+                if (formModel.Mode == FormMode.Update || formColumn.Required == false || formColumn.PrimaryKey)
+                {
+                    continue;
+                }
+
                 var columnName = formColumn.ColumnName;
 
                 var value = string.Empty;
@@ -334,10 +336,6 @@ namespace DbNetSuiteCore.Services
                 else if (formModel.Mode == FormMode.Insert && formColumn.PrimaryKeyRequired)
                 {
                     value = string.Empty;
-                }
-                else if (formModel.Mode == FormMode.Update || formColumn.Required == false || formColumn.PrimaryKey)
-                {
-                    continue;
                 }
 
                 ValidateFormValue(formColumn, value, resourceName, formModel);

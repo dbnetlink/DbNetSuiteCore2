@@ -1,5 +1,8 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MongoDB.Driver;
@@ -57,6 +60,12 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
+        public static DataTable GetRecord(FormModel formModel, HttpContext httpContext)
+        {
+            FormService? formService = httpContext.RequestServices.GetService<FormService>(); ;
+            return formService.GetRecordDataTable(formModel).Result;
+        }
+  
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(connectionAlias);

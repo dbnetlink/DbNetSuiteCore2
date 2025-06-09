@@ -9,6 +9,7 @@ namespace DbNetSuiteCore.Web.Helpers
     {
         public const string ProductEditGrid = "ProductEditGrid";
         public const string ProductEditForm = "ProductEditForm";
+        public const string CustomerEditForm = "CustomerEditForm";
         public static bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             switch (formModel.Name)
@@ -47,11 +48,18 @@ namespace DbNetSuiteCore.Web.Helpers
 
         public static bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
-            switch (formModel.TableName)
+            switch (formModel.Name)
             {
-                case "AspNetUsers":
-                    formModel.Message = "Cannot delete User";
-                    return false;
+                case CustomerEditForm:
+                    var dataTable = DbHelper.GetRecord(formModel, httpContext);
+
+                    if (dataTable.Rows[0]["CompanyName"].ToString() != "DbNetLink Limited")
+                    {
+                        formModel.Message = "Company Name must be 'DbNetLink Limited' to be deleted";
+                        return false;
+                    }
+                    break;
+                    
             }
             return true;
         }
