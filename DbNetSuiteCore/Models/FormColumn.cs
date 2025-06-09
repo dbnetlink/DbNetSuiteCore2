@@ -74,6 +74,10 @@ namespace DbNetSuiteCore.Models
         {
         }
 
+        public FormColumn(string expression, string label, string alias) : base(expression, label, alias)
+        {
+        }
+
         internal FormColumn(DataColumn dataColumn, DataSourceType dataSourceType) : base(dataColumn, dataSourceType)
         {
         }
@@ -326,21 +330,13 @@ namespace DbNetSuiteCore.Models
             }
 
             string name = attributes["name"];
-
-            if (GridFormControl)
-            {
-                attributes.Remove("name");
-            }
+            attributes.Remove("name");
 
             bool boolValue = ComponentModelExtensions.ParseBoolean(value);
 
             List<string> checkbox = new List<string>() { $"<input type=\"checkbox\" {RazorHelper.Attributes(attributes)} {CheckboxAttributes(componentModel, boolValue)}/>{HelpTextElement()}" };
 
-            if (GridFormControl)
-            {
-                checkbox.Add($"<input type=\"hidden\" name=\"{name}\"/>");
-            }
-
+            checkbox.Add($"<input type=\"hidden\" name=\"{name}\"/>");
             return new HtmlString(string.Join("",checkbox));
         }
 

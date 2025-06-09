@@ -29,7 +29,7 @@ namespace DbNetSuiteCore.Models
         public object? RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : null;
         public int LayoutColumns { get; set; } = 4;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
-
+        public ModifiedRow Modified { get; set; } = new ModifiedRow();
         public FormModel() : base()
         {
         }

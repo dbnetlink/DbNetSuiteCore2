@@ -5,15 +5,28 @@
 
 @{
     var customerForm = new FormModel(DataSourceType.SQLite, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.SQLite), "Customers") { Insert = true, Delete = true, Caption = "Customer Form" };
-    customerForm.ObfuscateColumnNames = true;
-    //    customerForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
+ 
+    customerForm.Columns = new List<FormColumn>() {
+        new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase,  MinLength = 5, MaxLength = 5},
+        new FormColumn("CompanyName", "Name", "CorpName") {Required = true},
+        new FormColumn("ContactName"),
+        new FormColumn("ContactTitle"),
+        new FormColumn("Address"),
+        new FormColumn("City") {InitialSortOrder =  SortOrder.Asc},
+        new FormColumn("Region"),
+        new FormColumn("PostalCode"),
+        new FormColumn("Country"),
+        new FormColumn("Phone") { Pattern = "^(?:\\+1)?\\s?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}$", HelpText = "Please enter a valid US phone number"},
+        new FormColumn("Fax") };
+
+    customerForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
 }
 
 <script>
     function validateDelete(formControl, args) {
-        if (formControl.formControlDbValue("companyname") != "DbNetLink Limited") {
-            formControl.highlightError("companyname");
+        if (formControl.formControlDbValue("CorpName") != "DbNetLink Limited") {
+            formControl.highlightError("CorpName");
             args.message = `Only customers with a name of DbNetLink Limited can be deleted`;
         }
     }

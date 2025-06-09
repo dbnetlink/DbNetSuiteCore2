@@ -33,14 +33,14 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static Dictionary<string, string> FormColumnValues(HttpContext httpContext, bool obfuscated)
+        public static Dictionary<string, string> FormColumnValues(HttpContext httpContext, FormModel formModel)
         {
             Dictionary<string, string> formValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (string key in httpContext.Request.Form.Keys)
             {
                 if (key.StartsWith("_"))
                 {
-                    string columnName = obfuscated ? TextHelper.DeobfuscateString(key.Substring(1)) : key.Substring(1);
+                    string columnName = formModel.LookupColumnName(key.Substring(1));
                     formValues[columnName] = httpContext.Request.Form[key];
                 }
             }
@@ -48,14 +48,14 @@ namespace DbNetSuiteCore.Helpers
             return formValues;
         }
 
-        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext, bool obfuscated)
+        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext, GridModel gridModel)
         {
             Dictionary<string, List<string>> formValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             foreach (string key in httpContext.Request.Form.Keys)
             {
                 if (key.StartsWith("_") && key.StartsWith("__") == false)
                 {
-                    string columnName = obfuscated ? TextHelper.DeobfuscateString(key.Substring(1)) : key.Substring(1);
+                    string columnName = gridModel.LookupColumnName(key.Substring(1));
                     formValues[columnName] = FormValueList(key, httpContext).Select(f => f.Trim()).ToList();
                 }
             }
@@ -64,9 +64,9 @@ namespace DbNetSuiteCore.Helpers
         }
 
 
-        public static List<ModifiedRow> GetModifiedRows(HttpContext httpContext, bool obfuscated)
+        public static List<ModifiedRow> GetModifiedRows(HttpContext httpContext, GridModel gridModel)
         {
-            var modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("__modifiedrows", string.Empty, httpContext));
+            var modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("modifiedrows", string.Empty, httpContext));
 
             if (modifiedRows == null)
             {
@@ -75,16 +75,34 @@ namespace DbNetSuiteCore.Helpers
 
             foreach (var modifiedRow in modifiedRows)
             {
-                List<string> columns = new List<string>();
-                foreach (var column in modifiedRow.Columns)
-                {
-                    columns.Add(obfuscated ? TextHelper.DeobfuscateString(column.Substring(1)) : column.Substring(1));
-                }
-
-                modifiedRow.Columns = columns;
+                ConvertColumnNames(modifiedRow, gridModel);
             }
 
             return modifiedRows;
+        }   
+
+        public static ModifiedRow GetModified(HttpContext httpContext, FormModel formModel)
+        {
+            var modifiedRow = JsonConvert.DeserializeObject<ModifiedRow>(FormValue("modifiedform", string.Empty, httpContext));
+
+            if (modifiedRow == null)
+            {
+                return new ModifiedRow();
+            }
+
+            ConvertColumnNames(modifiedRow, formModel);
+            return modifiedRow;
+        }
+
+        private static void ConvertColumnNames(ModifiedRow modifiedRow, ComponentModel componentModel)
+        {
+            List<string> columns = new List<string>();
+            foreach (var column in modifiedRow.Columns)
+            {
+                columns.Add(componentModel.LookupColumnName(column.Substring(1)));
+            }
+
+            modifiedRow.Columns = columns;
         }
 
         public static List<string> FormValueList(string key, HttpContext httpContext)

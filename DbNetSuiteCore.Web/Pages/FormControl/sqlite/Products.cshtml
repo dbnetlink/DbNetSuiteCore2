@@ -23,7 +23,7 @@
     productForm.FixedFilter = "UnitPrice > @unitprice";
     productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
 
-    productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateReorderLevel";
+   // productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateReorderLevel";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
 }
 

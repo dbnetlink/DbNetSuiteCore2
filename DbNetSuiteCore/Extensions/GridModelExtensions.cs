@@ -288,7 +288,7 @@ namespace DbNetSuiteCore.Extensions
 
                 var columnName = gridColumn.ColumnName;
 
-                if (columns.Contains($"{columnName}") == false)
+                if (columns.Contains(columnName, StringComparer.CurrentCultureIgnoreCase) == false)
                 {
                     continue;
                 }

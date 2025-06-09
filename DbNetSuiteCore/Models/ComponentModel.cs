@@ -37,7 +37,7 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
-        public bool ObfuscateColumnNames { get; set; } = false;
+        public Dictionary<string,string> ColumnAliasLookup { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public string Url
         {
@@ -146,12 +146,7 @@ namespace DbNetSuiteCore.Models
 
         public string ObfuscateColumnName(ColumnModel column)
         {
-            string columnName = column.ColumnName;
-            if (!ObfuscateColumnNames && column is GridColumn)
-            {
-                columnName = columnName.ToLower();
-            }
-            return ObfuscateColumnNames && DataSourceType != DataSourceType.FileSystem ? TextHelper.ObfuscateString(columnName) : columnName;
+            return (string.IsNullOrEmpty(column.Alias) ? column.ColumnName : column.Alias).ToLower();
         }
 
         public List<string> GetLinkedControlIds(string typeName)
@@ -197,6 +192,11 @@ namespace DbNetSuiteCore.Models
                 child.ConnectionAlias = parent.ConnectionAlias;
                 child.DataSourceType = parent.DataSourceType;
             }
+        }
+
+        internal string LookupColumnName (string columnName)
+        {
+            return GetColumns().FirstOrDefault(c => c.Alias.ToLower() == columnName.ToLower())?.ColumnName ?? columnName;
         }
 
         public abstract IEnumerable<ColumnModel> GetColumns();

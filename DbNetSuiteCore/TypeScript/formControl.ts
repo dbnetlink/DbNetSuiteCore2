@@ -52,6 +52,7 @@ class FormControl extends ComponentControl {
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
         this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el) });
         this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el) });
+        this.reassignFormCheckboxValue();
 
         this.configureHtmlEditors();
 
@@ -197,11 +198,10 @@ class FormControl extends ComponentControl {
         }
         this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].assignContent(evt) });
 
+        evt.detail.parameters["modifiedform"] = JSON.stringify(this.getFormModification(this.formBody));
+
         this.controlElements(".fc-control").forEach((el) => {
-            if (this.elementModified(el) == false) {
-                delete evt.detail.parameters[el.name];
-            }
-            else if (evt.detail.parameters[el.name] == undefined) {
+            if (evt.detail.parameters[el.name] == undefined) {
                 evt.detail.parameters[el.name] = ''
             }
         });

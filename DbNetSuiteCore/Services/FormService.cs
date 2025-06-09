@@ -370,9 +370,10 @@ namespace DbNetSuiteCore.Services
                 formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
                 formModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
-                formModel.FormValues = RequestHelper.FormColumnValues(_context, formModel.ObfuscateColumnNames);
-                formModel.Columns.ToList().ForEach(column => column.InError = false);
+                formModel.FormValues = RequestHelper.FormColumnValues(_context, formModel);
+                formModel.Columns.ToList().ForEach(column => column.InError = false);   
                 formModel.Message = string.Empty;
+                formModel.Modified = RequestHelper.GetModified(_context, formModel); ;
                 formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
                 formModel.CommitType = null;
                 formModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();

@@ -58,13 +58,7 @@ class GridControl extends ComponentControl {
 
         this.controlElements("tr.grid-row").forEach((row: HTMLTableRowElement) => { this.invokeEventHandler('RowTransform', { row: row }) });
         this.controlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellTransform(cell) });
-        this.controlElements('input[type="checkbox"].fc-control').forEach((cb: HTMLInputElement) => {
-            (cb.nextElementSibling as HTMLInputElement).value = cb.checked.toString();
-            cb.addEventListener('change', function (ev) {
-                let cb = ev.target as HTMLInputElement;
-                (cb.nextElementSibling as HTMLInputElement).value = cb.checked.toString();
-            });
-        });
+        this.reassignFormCheckboxValue();
 
         this.controlElements("tbody a").forEach((e) => {
             e.classList.remove("selected");
@@ -220,7 +214,7 @@ class GridControl extends ComponentControl {
 
         switch (this.triggerName(evt)) {
             case "apply":
-                evt.detail.parameters["__modifiedrows"] = this.getModifiedRows();
+                evt.detail.parameters["modifiedrows"] = this.getModifiedRows();
                 break;
         }
     }
@@ -249,7 +243,7 @@ class GridControl extends ComponentControl {
         let inError = false;
         var modifiedRows:Array<HTMLTableRowElement> = [];
         this.controlElements("tr.grid-row").forEach((row) => {
-            let rowModification = this.getRowModification(row)
+            let rowModification = this.getFormModification(row)
             if (rowModification.modified) {
                 modifiedRows.push(row);
             }
@@ -310,20 +304,9 @@ class GridControl extends ComponentControl {
     private getModifiedRows() {
         let modifiedRows: Array<RowModification> = [];
         this.controlElements("tr.grid-row").forEach((row) => {
-            modifiedRows.push(this.getRowModification(row));
+            modifiedRows.push(this.getFormModification(row));
         });
         return JSON.stringify(modifiedRows);
-    }
-
-    private getRowModification(row: HTMLTableRowElement) {
-        let rowModification: RowModification = { modified: false, columns: [] };
-        row.querySelectorAll(".fc-control").forEach((el:HTMLFormElement) => {
-            if (this.elementModified(el)) {
-                rowModification.columns.push(this.getElementName(el));
-            }
-        });
-        rowModification.modified = rowModification.columns.length > 0;
-        return rowModification;
     }
 
     public columnSeriesData(columnName: string) {
