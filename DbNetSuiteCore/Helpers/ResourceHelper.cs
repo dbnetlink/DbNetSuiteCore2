@@ -48,7 +48,8 @@ namespace DbNetSuiteCore.Helpers
         Select,
         Copy,
         Export,
-        ExportFormat
+        ExportFormat,
+        NotUnique
     }
     public static class ResourceHelper
     {

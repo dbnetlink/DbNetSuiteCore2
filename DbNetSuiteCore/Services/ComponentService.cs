@@ -346,6 +346,44 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.MSSQL:
+                    return await _msSqlRepository.PrimaryKeyExists(componentModel);
+            }
+
+            return false;
+        }
+
+        protected async Task<bool> ValueIsUnique(FormModel formModel, GridFormColumn column)
+        {
+            switch (formModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.ValueIsUnique(formModel, column);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.ValueIsUnique(formModel, column);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.ValueIsUnique(formModel, column);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.ValueIsUnique(formModel, column);
+                case DataSourceType.MSSQL:
+                    return await _msSqlRepository.ValueIsUnique(formModel, column);
+                default:
+                    return true;
+            }
+        }
+
         protected async Task GetRecord(ComponentModel componentModel)
         {
             switch (componentModel.DataSourceType)
@@ -394,25 +432,6 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected async Task<bool> RecordExists(ComponentModel componentModel)
-        {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.RecordExists(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.RecordExists(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.RecordExists(componentModel);
-                case DataSourceType.Excel:
-                case DataSourceType.MongoDB:
-                    break;
-                default:
-                    return await _msSqlRepository.RecordExists(componentModel);
-            }
-
-            return false;
-        }
 
         protected async Task GetLookupOptions(ComponentModel componentModel)
         {
@@ -598,6 +617,17 @@ namespace DbNetSuiteCore.Services
                         componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
                     }
                     break;
+                case ResourceNames.NotUnique:
+                    if (formColumn.Unique)
+                    {
+                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+                        if (paramValue == null)
+                        {
+                            break;
+                        }
+                        CheckForUniqueness(resourceName, paramValue, formColumn, componentModel as FormModel);
+                    }
+                    break;
             }
         }
 
@@ -612,6 +642,16 @@ namespace DbNetSuiteCore.Services
                     gridFormColumn.InError = true;
                     componentModel.MessageType = MessageType.Error;
                 }
+            }
+        }
+
+        protected void CheckForUniqueness(ResourceNames resourceName, object? paramValue, GridFormColumn gridFormColumn, FormModel formModel)
+        {
+            if (ValueIsUnique(formModel, gridFormColumn).Result == false)
+            {
+                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", gridFormColumn.Label);
+                gridFormColumn.InError = true;
+                formModel.MessageType = MessageType.Error;
             }
         }
 

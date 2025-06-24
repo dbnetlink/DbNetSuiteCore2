@@ -115,24 +115,38 @@ namespace DbNetSuiteCore.Repositories
             return await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
         }
 
-        public async Task<bool> RecordExists(ComponentModel componentModel)
+        public async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
         {
             var formModel = (FormModel)componentModel;
             List<object> primaryKeyValues = new List<object>();
 
-            foreach(var pkColumn in formModel.GetColumns().Where(c => c.PrimaryKey))
+            foreach (var pkColumn in formModel.GetColumns().Where(c => c.PrimaryKey))
             {
                 primaryKeyValues.Add(formModel.FormValues[pkColumn.ColumnName]);
             }
-            
+
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValues);
-            var connection = GetConnection(componentModel.ConnectionAlias);
-            connection.Open();
-            var reader = await ExecuteQuery(query, connection);
-            var recordExists = reader.HasRows;
-            await reader.DisposeAsync();
-            connection.Close();
-            return recordExists;
+            using (var connection = GetConnection(componentModel.ConnectionAlias))
+            {
+                connection.Open();
+                var reader = await ExecuteQuery(query, connection);
+                var recordExists = reader.HasRows;
+                await reader.DisposeAsync();
+                connection.Close();
+                return recordExists;
+            }
+        }
+
+        public async Task<bool> ValueIsUnique(FormModel formModel, GridFormColumn column)
+        {
+            QueryCommandConfig query = formModel.BuildUniqueQuery(column);
+            using (var connection = GetConnection(formModel.ConnectionAlias))
+            {
+                connection.Open();
+                int? count = (int?)await ExecuteScalar(query, formModel);
+                connection.Close();
+                return (count ?? 0) == 0;
+            }
         }
 
         public async Task GetLookupOptions(ComponentModel componentModel)

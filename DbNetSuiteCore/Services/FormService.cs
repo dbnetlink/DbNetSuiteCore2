@@ -236,7 +236,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task<bool> ValidateRecord(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
         {
-            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError };
+            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError, ResourceNames.NotUnique };
 
             PopulateGuidPrimaryKey(formModel);
 
@@ -305,7 +305,7 @@ namespace DbNetSuiteCore.Services
                 return true;
             }
 
-            if (await RecordExists(formModel))
+            if (await PrimaryKeyExists(formModel))
             {
                 formModel.Columns.Where(c => c.PrimaryKeyRequired).ToList().ForEach(c => c.InError = true);
                 formModel.Message = ResourceHelper.GetResourceString(ResourceNames.PrimaryKeyExists);
@@ -320,7 +320,7 @@ namespace DbNetSuiteCore.Services
         {
             foreach (FormColumn? formColumn in formModel.Columns)
             {
-                if (formModel.Mode == FormMode.Update || formColumn.Required == false || formColumn.PrimaryKey)
+                if (formModel.Mode == FormMode.Update && formColumn.PrimaryKey)
                 {
                     continue;
                 }

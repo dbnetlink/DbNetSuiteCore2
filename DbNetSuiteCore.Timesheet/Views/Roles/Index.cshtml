@@ -1,0 +1,30 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Timesheet.Constants
+@{
+    ViewData["Title"] = "Users";
+}
+
+@{
+
+    GridModel aspNetRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetRoles");
+    aspNetRolesGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("Id") {DataOnly = true},
+        new GridColumn("Name")
+    };
+    aspNetRolesGrid.Caption = "Roles";
+
+    FormModel aspNetRolesForm = new FormModel("AspNetRoles") { Insert = true, Delete = true };
+    aspNetRolesForm.Columns = new List<FormColumn>
+    {
+        new FormColumn("Id") {DataOnly = true, ForeignKey = true, DataType = typeof(Guid)},
+        new FormColumn("Name") {Required = true, Unique = true}
+    };
+    aspNetRolesGrid.LinkedControl = aspNetRolesForm;
+
+    <div class="flex flex-column gap-3">
+        <div> @(await new DbNetSuiteCore.Control(Context).Render(aspNetRolesGrid))</div>
+        <div> @(await new DbNetSuiteCore.Control(Context).Render(aspNetRolesForm))</div>
+    </div>
+}

@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.InkML;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MongoDB.Driver;
+using System.Configuration;
 using System.Data;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -50,6 +51,12 @@ namespace DbNetSuiteCore.Helpers
             return QueryToDataTable(query, connection);
         }
 
+        public static DataTable GetRecord(FormModel formModel, HttpContext httpContext)
+        {
+            FormService? formService = httpContext.RequestServices.GetService<FormService>(); ;
+            return formService.GetRecordDataTable(formModel).Result;
+        }
+
         public static bool RecordExists(QueryCommandConfig query, string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration)
         {
             using (var connection = GetConnection(connectionAlias, dataSourceType, configuration))
@@ -60,12 +67,7 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static DataTable GetRecord(FormModel formModel, HttpContext httpContext)
-        {
-            FormService? formService = httpContext.RequestServices.GetService<FormService>(); ;
-            return formService.GetRecordDataTable(formModel).Result;
-        }
-  
+
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(connectionAlias);

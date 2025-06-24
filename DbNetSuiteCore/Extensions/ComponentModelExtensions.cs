@@ -90,6 +90,21 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
+        public static QueryCommandConfig BuildUniqueQuery(this FormModel formModel, GridFormColumn column)
+        {
+            string sql = $"select count(*) from {formModel.TableName}";
+            QueryCommandConfig query = new QueryCommandConfig(formModel.DataSourceType) { Sql = sql };
+
+            if (formModel.Mode == FormMode.Update)
+            {
+                AddPrimaryKeyFilterPart(formModel, query, formModel.RecordId ?? new List<object>(), "<>");
+            }
+            query.Sql += $" {(formModel.Mode == FormMode.Update ? "and" : "where")} {column.Expression} = @{column.Name}";
+            query.Params[column.Name] = formModel.FormValues[column.Name];
+
+            return query;
+        }
+
         public static string AddSearchInputFilterPart(this ComponentModel componentModel, QueryCommandConfig query)
         {
             List<string> filterParts = new List<string>();
@@ -266,7 +281,7 @@ namespace DbNetSuiteCore.Extensions
             return columnExpression;
         }
 
-        private static void AddPrimaryKeyFilterPart(ComponentModel componentModel, CommandConfig query, object primaryKeyValue)
+        private static void AddPrimaryKeyFilterPart(ComponentModel componentModel, CommandConfig query, object primaryKeyValue, string oper = "=")
         {
             if (primaryKeyValue is not List<object>)
             {
@@ -277,10 +292,10 @@ namespace DbNetSuiteCore.Extensions
             foreach (var item in componentModel.GetColumns().Where(c => c.PrimaryKey).Select((value, index) => new { value, index }))
             {
                 var paramName = DbHelper.ParameterName(item.value.ParamName, componentModel.DataSourceType);
-                where.Add($"{item.value.Expression} = {paramName}");
+                where.Add($"{item.value.Expression} {oper} {paramName}");
                 query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(item.value, (primaryKeyValue as List<object>)[item.index]) ?? string.Empty;
             }
-            query.Sql += $" where {string.Join(" and ", where)}";
+            query.Sql += $" where ({string.Join(" and ", where)})";
         }
 
         public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)

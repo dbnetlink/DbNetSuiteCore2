@@ -1,7 +1,6 @@
 ﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace DbNetSuiteCore.Web.Helpers
 {
@@ -28,23 +27,7 @@ namespace DbNetSuiteCore.Web.Helpers
             return true;
         }
 
-        public static bool ValidateFormInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
-        {
-            switch (formModel.TableName)
-            {
-                case "AspNetRoles":
-                    QueryCommandConfig query = new QueryCommandConfig(formModel.DataSourceType) { Sql = "select id from AspNetRoles where name = @name" };
-                    query.Params["name"] = formModel.FormValues["Name"];
-
-                    if (DbHelper.RecordExists(query, formModel.ConnectionAlias, formModel.DataSourceType, configuration))
-                    {
-                        formModel.Message = "A role already exists with this name";
-                        return false;
-                    }
-                    break;
-            }
-            return true;
-        }
+        
 
         public static bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {

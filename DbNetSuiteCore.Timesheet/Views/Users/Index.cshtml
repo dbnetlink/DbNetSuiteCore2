@@ -1,0 +1,84 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Timesheet.Constants
+@{
+    ViewData["Title"] = "Users";
+}
+
+@{
+    GridModel aspNetUsersGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUsers");
+    aspNetUsersGrid.Caption = "Users";
+    aspNetUsersGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn("Id") {DataOnly = true},
+        new GridColumn("UserName"),
+        //new GridColumn("NormalizedUserName"),
+        new GridColumn("Email"),
+        //new GridColumn("NormalizedEmail"),
+        new GridColumn("EmailConfirmed"),
+        //new GridColumn("PasswordHash"),
+        //new GridColumn("SecurityStamp"),
+        //new GridColumn("ConcurrencyStamp"),
+        new GridColumn("PhoneNumber"),
+        new GridColumn("PhoneNumberConfirmed"),
+        new GridColumn("TwoFactorEnabled"),
+        new GridColumn("LockoutEnabled"),
+        new GridColumn("AccessFailedCount")
+    };
+
+    GridModel aspNetUserRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUserRoles");
+    aspNetUserRolesGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("RoleId") {DataOnly = true, Lookup = new Lookup("AspNetRoles", "Id", "Name")},
+        new GridColumn("UserId") {PrimaryKey = true, ForeignKey = true, DataOnly = true}
+    };
+    aspNetUserRolesGrid.Caption = "User Roles";
+
+    FormModel aspNetUsersForm = new FormModel("AspNetUsers") { LayoutColumns = 4, Delete = true };
+    aspNetUsersForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("Id") {DataOnly = true, ForeignKey = true},
+        new FormColumn("UserName"),
+        new FormColumn("Email")
+    };
+
+    FormModel aspNetUserRolesForm = new FormModel("AspNetUserRoles") { LayoutColumns = 4, Insert = true, Delete = true };
+    aspNetUserRolesForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("RoleId") {Lookup = new Lookup("AspNetRoles", "Id", "Name")},
+        new FormColumn("UserId") {ForeignKey = true, DataOnly = false}
+    };
+    aspNetUserRolesForm.Bind(FormClientEvent.RecordLoaded, "recordLoaded");
+
+    aspNetUsersGrid.LinkedControl = aspNetUsersForm;
+    aspNetUsersGrid.LinkedControl = aspNetUserRolesGrid;
+    aspNetUserRolesGrid.LinkedControl = aspNetUserRolesForm;
+
+    <div class="flex flex-column gap-3">
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUsersGrid))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUsersForm))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUserRolesGrid))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUserRolesForm))</div>
+    </div>
+
+}
+
+
+
+<script>
+    var userId = ''
+    function recordLoaded(formControl, args) {
+        switch (formControl.formMode())
+        {
+            case "empty":
+                if (userId == '')
+                {
+                    userId = formControl.formBody.dataset.parentkey
+                }
+                break;
+            case "insert":
+                formControl.formControl("userid").value = userId;
+                break;
+        }
+    }
+</script>
