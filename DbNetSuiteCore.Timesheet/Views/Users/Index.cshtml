@@ -6,9 +6,9 @@
 }
 
 @{
-    GridModel aspNetUsersGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUsers");
-    aspNetUsersGrid.Caption = "Users";
-    aspNetUsersGrid.Columns = new List<GridColumn>()
+    GridModel usersGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUsers");
+    usersGrid.Caption = "Users";
+    usersGrid.Columns = new List<GridColumn>()
     {
         new GridColumn("Id") {DataOnly = true},
         new GridColumn("UserName"),
@@ -26,59 +26,37 @@
         new GridColumn("AccessFailedCount")
     };
 
-    GridModel aspNetUserRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUserRoles");
-    aspNetUserRolesGrid.Columns = new List<GridColumn>
-    {
-        new GridColumn("RoleId") {DataOnly = true, Lookup = new Lookup("AspNetRoles", "Id", "Name")},
-        new GridColumn("UserId") {PrimaryKey = true, ForeignKey = true, DataOnly = true}
-    };
-    aspNetUserRolesGrid.Caption = "User Roles";
 
-    FormModel aspNetUsersForm = new FormModel("AspNetUsers") { LayoutColumns = 4, Delete = true };
-    aspNetUsersForm.Columns = new List<FormColumn>()
+    FormModel usersForm = new FormModel("AspNetUsers") { LayoutColumns = 4, Delete = true };
+    usersForm.Columns = new List<FormColumn>()
     {
         new FormColumn("Id") {DataOnly = true, ForeignKey = true},
         new FormColumn("UserName"),
         new FormColumn("Email")
     };
+    usersForm.Bind(FormClientEvent.RecordLoaded, "userControl.userSelected");
 
-    FormModel aspNetUserRolesForm = new FormModel("AspNetUserRoles") { LayoutColumns = 4, Insert = true, Delete = true };
-    aspNetUserRolesForm.Columns = new List<FormColumn>()
+    var userRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetRoles") { };
+    userRolesGrid.Columns = new List<GridColumn>()
     {
-        new FormColumn("RoleId") {Lookup = new Lookup("AspNetRoles", "Id", "Name")},
-        new FormColumn("UserId") {ForeignKey = true, DataOnly = false}
+        new GridColumn("Name"),
+        new GridColumn("Id"){ DataOnly = true}
     };
-    aspNetUserRolesForm.Bind(FormClientEvent.RecordLoaded, "recordLoaded");
+    userRolesGrid.ToolbarPosition = ToolbarPosition.Hidden;
+    userRolesGrid.Caption = "User Roles";
+    userRolesGrid.HeadingMode = HeadingMode.Hidden;
+    userRolesGrid.RowSelection = RowSelection.Multiple;
+    userRolesGrid.MultiRowSelectLocation = MultiRowSelectLocation.Right;
+    userRolesGrid.Bind(GridClientEvent.Initialised, "userControl.saveGridReference");
+    userRolesGrid.Bind(GridClientEvent.RowSelected, "userControl.userRoleUpdated");
 
-    aspNetUsersGrid.LinkedControl = aspNetUsersForm;
-    aspNetUsersGrid.LinkedControl = aspNetUserRolesGrid;
-    aspNetUserRolesGrid.LinkedControl = aspNetUserRolesForm;
+    usersGrid.LinkedControl = usersForm;
 
     <div class="flex flex-column gap-3">
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUsersGrid))</div>
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUsersForm))</div>
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUserRolesGrid))</div>
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(aspNetUserRolesForm))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(usersGrid))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(usersForm))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(userRolesGrid))</div>
     </div>
 
 }
-
-
-
-<script>
-    var userId = ''
-    function recordLoaded(formControl, args) {
-        switch (formControl.formMode())
-        {
-            case "empty":
-                if (userId == '')
-                {
-                    userId = formControl.formBody.dataset.parentkey
-                }
-                break;
-            case "insert":
-                formControl.formControl("userid").value = userId;
-                break;
-        }
-    }
-</script>
+<script src="js/users.js"></script>

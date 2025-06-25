@@ -111,7 +111,7 @@ class FormControl extends ComponentControl {
         }
     }
 
-    private validateDelete() {
+    private async validateDelete() {
         let args = { message: '' }
         if (this.invokeEventHandler("ValidateDelete", args) == false) {
             return true;
