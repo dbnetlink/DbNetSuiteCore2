@@ -82,6 +82,12 @@ class GridControl extends ComponentControl {
             }
         }
 
+        var rowCount = document.querySelectorAll(this.rowSelector()).length;
+
+        if (rowIndex > rowCount) {
+            rowIndex = rowCount;
+        }
+
         let row: HTMLElement = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null));
         if (row) {
             row.click();

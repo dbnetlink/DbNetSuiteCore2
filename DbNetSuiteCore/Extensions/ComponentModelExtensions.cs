@@ -100,6 +100,16 @@ namespace DbNetSuiteCore.Extensions
                 AddPrimaryKeyFilterPart(formModel, query, formModel.RecordId ?? new List<object>(), "<>");
             }
             query.Sql += $" {(formModel.Mode == FormMode.Update ? "and" : "where")} {column.Expression} = @{column.Name}";
+
+            if (formModel.Columns.Any(c => c.ForeignKey))
+            {
+                var foreignKeyColumn = formModel.Columns.First(c => c.ForeignKey);
+                if (formModel.Mode == FormMode.Insert && foreignKeyColumn.InitialValue != null)
+                {
+                    query.Sql += $" and {foreignKeyColumn.Expression} = @{foreignKeyColumn.Name}";
+                    query.Params[foreignKeyColumn.Name] = foreignKeyColumn.InitialValue;
+                }
+            }
             query.Params[column.Name] = formModel.FormValues[column.Name];
 
             return query;
@@ -308,7 +318,9 @@ namespace DbNetSuiteCore.Extensions
 
             List<object> parentKeyValues = componentModel.GetParentKeyValues();
 
-            foreach (var item in componentModel.GetColumns().Where(c => c.ForeignKey).Select((value, index) => new { value = value, index = index }))
+            IEnumerable<ColumnModel> keyColumns = ((componentModel as FormModel)?.OneToOne ?? false) ? componentModel.GetColumns().Where(c => c.PrimaryKey) : componentModel.GetColumns().Where(c => c.ForeignKey);
+
+            foreach (var item in keyColumns.Select((value, index) => new { value = value, index = index }))
             {
                 var paramName = DbHelper.ParameterName(item.value.ParamName, componentModel.DataSourceType);
                 filterParts.Add($"({DbHelper.StripColumnRename(item.value.Expression)} = {paramName})");

@@ -1,27 +1,22 @@
+using DbNetSuiteCore.Timesheet.Constants;
+using DbNetSuiteCore.Timesheet.Data.Models;
 using DbNetSuiteCore.Timesheet.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace DbNetSuiteCore.Timesheet.Controllers
 {
-    public class RolesController : Controller
+    public class RolesController : BaseController
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public RolesController(ILogger<HomeController> logger)
+        public RolesController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager) : base(logger, userManager)
         {
-            _logger = logger;
         }
-
+        [Authorize(Roles = Roles.Administrator)]
         public IActionResult Index()
         {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(BaseViewModel);
         }
     }
 }

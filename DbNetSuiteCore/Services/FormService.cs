@@ -61,7 +61,8 @@ namespace DbNetSuiteCore.Services
                     return await InitialiseInsert(formModel);
                 default:
                     string viewName = formModel.Uninitialised ? "Form/__Markup" : "Form/__Form";
-                    return await View(viewName, await GetFormViewModel(formModel));
+                    var formViewModel = await GetFormViewModel(formModel); 
+                    return await View(viewName, formViewModel);
             }
         }
 
@@ -318,7 +319,7 @@ namespace DbNetSuiteCore.Services
 
         private bool ValidateErrorType(FormModel formModel, ResourceNames resourceName)
         {
-            foreach (FormColumn? formColumn in formModel.Columns)
+            foreach (FormColumn? formColumn in formModel.Columns.Where(c => c.DataOnly == false))
             {
                 if (formModel.Mode == FormMode.Update && formColumn.PrimaryKey)
                 {

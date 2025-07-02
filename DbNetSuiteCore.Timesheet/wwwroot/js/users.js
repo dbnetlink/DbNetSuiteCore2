@@ -1,11 +1,15 @@
 "use strict";
 class UsersControl {
+    constructor() {
+        this.usersRolesGrid = undefined;
+        this.currentUserId = undefined;
+    }
     saveGridReference(gridControl, args) {
         this.usersRolesGrid = gridControl;
     }
     userSelected(formControl, args) {
         this.currentUserId = formControl.formBody.dataset.id;
-        const url = `/api/user/getuserroles?id=${formControl.formBody.dataset.id}`;
+        const url = `/api/user/getuserroles?id=${this.currentUserId}`;
         fetch(url)
             .then(response => {
             if (!response.ok) {
@@ -19,7 +23,7 @@ class UsersControl {
     selectRoles(roleIds) {
         this.usersRolesGrid.form.querySelectorAll("input.multi-select").forEach(e => { e.checked = false; e.replaceWith(e.cloneNode(true)); });
         roleIds.forEach(id => this.checkRole(id));
-        this.usersRolesGrid.form.querySelectorAll("input.multi-select").forEach(e => { e.addEventListener('click', this.roleUpdated); });
+        this.usersRolesGrid.form.querySelectorAll("input.multi-select").forEach(e => { e.addEventListener('click', (e) => this.roleUpdated(e)); });
     }
     checkRole(id) {
         var row = this.usersRolesGrid.form.querySelector(`tr[data-id='${id}']`);
@@ -36,7 +40,7 @@ class UsersControl {
         };
         fetch(url, requestOptions)
             .then(response => response.json())
-            .then(data => console.log(data.id))
+            .then(data => this.selectRoles(data))
             .catch(error => console.error('Error:', error));
     }
 }

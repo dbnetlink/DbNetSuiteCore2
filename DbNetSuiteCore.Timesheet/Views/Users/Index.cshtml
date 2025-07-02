@@ -1,6 +1,7 @@
 ﻿@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Timesheet.Constants
+@model DbNetSuiteCore.Timesheet.ViewModels.BaseViewModel
 @{
     ViewData["Title"] = "Users";
 }
@@ -48,7 +49,6 @@
     userRolesGrid.RowSelection = RowSelection.Multiple;
     userRolesGrid.MultiRowSelectLocation = MultiRowSelectLocation.Right;
     userRolesGrid.Bind(GridClientEvent.Initialised, "userControl.saveGridReference");
-    userRolesGrid.Bind(GridClientEvent.RowSelected, "userControl.userRoleUpdated");
 
     usersGrid.LinkedControl = usersForm;
 

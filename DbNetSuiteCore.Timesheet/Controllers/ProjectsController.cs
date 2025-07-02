@@ -8,13 +8,13 @@ using System.Diagnostics;
 
 namespace DbNetSuiteCore.Timesheet.Controllers
 {
-    public class UsersController : BaseController
+    public class ProjectsController : BaseController
     {
-        public UsersController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager) : base(logger, userManager)
+        public ProjectsController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager) : base(logger, userManager)
         {
         }
 
-        [Authorize(Roles = Roles.Administrator)]
+        [Authorize(Roles = Roles.Administrator)]   
         public IActionResult Index()
         {
             return View(BaseViewModel);

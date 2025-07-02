@@ -361,7 +361,6 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
 
             await Page.GetByTestId("apply").ClickAsync();
-
             await TestRowCount(92, "record");
         }
 

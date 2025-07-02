@@ -1,10 +1,13 @@
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Timesheet.Constants;
 using DbNetSuiteCore.Timesheet.Data;
+using DbNetSuiteCore.Timesheet.Data.Models;
 using DbNetSuiteCore.Timesheet.Helpers;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +17,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>()
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
+    options.SignIn.RequireConfirmedAccount = true;
+}).AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/";
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbNetSuiteCore();
 
@@ -35,6 +46,7 @@ else
     app.UseHsts();
 }
 
+app.UseStatusCodePagesWithReExecute("/",string.Empty);
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

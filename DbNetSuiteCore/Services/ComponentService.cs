@@ -7,6 +7,7 @@ using System.Text;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DbNetSuiteCore.Services
 {
@@ -116,7 +117,7 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.FileSystem:
                     break;
                 default:
-                    if (componentModel.IsLinked && componentModel.GetColumns().Any(c => c.ForeignKey) == false)
+                    if (componentModel.IsLinked && componentModel.GetColumns().Any(c => c.ForeignKey) == false && ((componentModel as FormModel)?.OneToOne ?? false == false) == false)
                     {
                         throw new Exception("A linked control must have a column designated as a <b>ForeignKey</b>");
                     }
@@ -127,21 +128,47 @@ namespace DbNetSuiteCore.Services
         protected void AssignParentKey(ComponentModel componentModel)
         {
             var primaryKey = RequestHelper.FormValue("primaryKey", componentModel.ParentKey, _context);
+            var foreignKey = RequestHelper.FormValue("foreignKey", null, _context);
+
             if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)
             {
-                componentModel.Url = primaryKey;
+                componentModel.Url = primaryKey ?? string.Empty;
             }
             else
             {
-                componentModel.ParentKey = primaryKey;
+                componentModel.ParentKey = primaryKey ?? string.Empty;
             }
 
             if (componentModel.IsLinked && componentModel is FormModel)
             {
-                var foreignKeyColumn = (componentModel as FormModel).Columns.FirstOrDefault(c => c.ForeignKey);
+                var formModel = (componentModel as FormModel)!;
+                var foreignKeyColumn = formModel.Columns.FirstOrDefault(c => c.ForeignKey);
                 if (foreignKeyColumn != null)
                 {
-                    foreignKeyColumn.InitialValue = primaryKey;
+                    switch (componentModel.TriggerName)
+                    {
+                        case TriggerNames.Apply:
+                        case TriggerNames.Insert:
+                            if (formModel.Mode == FormMode.Insert)
+                            {
+                                if (foreignKeyColumn.InitialValue != null)
+                                {
+                                    formModel.FormValues[foreignKeyColumn.ColumnName] = foreignKeyColumn.InitialValue?.ToString() ?? string.Empty;
+                                }
+                            }
+                            break;
+                        default:
+                            if (foreignKey != null)
+                            {
+                                var foreignKeyValue = TextHelper.DeobfuscateKey<List<string>>(foreignKey ?? string.Empty);
+
+                                if ((foreignKeyValue ?? new List<string>()).Any())
+                                {
+                                    foreignKeyColumn.InitialValue = foreignKeyValue!.First();
+                                }
+                            }
+                            break;
+                    }
                 }
             }
         }
@@ -542,7 +569,12 @@ namespace DbNetSuiteCore.Services
                     if (formColumn.DataType != typeof(Boolean))
                     {
                         bool primaryKeyRequired = (formColumn is FormColumn) ? ((FormColumn)formColumn).PrimaryKeyRequired : false;
-                        formColumn.InError = string.IsNullOrEmpty(value) && (formColumn.Required || primaryKeyRequired);
+
+                        if (formColumn.PrimaryKey && primaryKeyRequired == false)
+                        {
+                            break;
+                        }
+                        formColumn.InError = string.IsNullOrEmpty(value) && formColumn.Required;
                     }
                     break;
                 case ResourceNames.DataFormatError:
@@ -649,7 +681,7 @@ namespace DbNetSuiteCore.Services
         {
             if (ValueIsUnique(formModel, gridFormColumn).Result == false)
             {
-                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", gridFormColumn.Label);
+                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", $"&nbsp;<b>{gridFormColumn.Label}</b>&nbsp;");
                 gridFormColumn.InError = true;
                 formModel.MessageType = MessageType.Error;
             }
