@@ -171,6 +171,14 @@ namespace DbNetSuiteCore.Models
 
             var typeName = componentModel.GetType().Name;
 
+            if (this.GetType().Name == nameof(GridModel) && componentModel.GetType().Name ==  nameof(FormModel))
+            {
+                if (this.TableName.Equals(componentModel.TableName,StringComparison.InvariantCultureIgnoreCase))
+                {
+                    (componentModel as FormModel)!.OneToOne = true;
+                }
+            }
+
             if (LinkedControlIds.ContainsKey(typeName) == false)
             {
                 LinkedControlIds[typeName] = new List<string>();

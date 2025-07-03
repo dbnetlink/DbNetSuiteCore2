@@ -21,6 +21,10 @@ namespace DbNetSuiteCore.Helpers
         }
         public static string ObfuscateString(string input, IConfiguration? configuration = null)
         {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
             var encryptionConfig = GetEncryptionConfig(configuration);
 
             if (encryptionConfig.IsValid == false)
@@ -28,10 +32,14 @@ namespace DbNetSuiteCore.Helpers
                 return Compress(input);
             }
             return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
-        }
+                                                 }
 
         public static string DeobfuscateString(string input, IConfiguration? configuration = null)
         {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
             var encryptionConfig = GetEncryptionConfig(configuration);
 
             if (encryptionConfig.IsValid == false)

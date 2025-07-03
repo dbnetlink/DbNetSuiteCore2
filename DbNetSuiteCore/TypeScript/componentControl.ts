@@ -31,21 +31,33 @@ DbNetSuiteCore.assignClientControl = function (controlId: string, clientEvents: 
             clientControl = new FormControl(controlId);
         }
         for (const [key, value] of Object.entries(clientEvents)) {
-            (clientControl as ComponentControl).eventHandlers[key] = window[value.toString()]
+            const functionNameParts: Array<String> = value.toString().split('.') as Array<string>;
+            if (functionNameParts.length > 1) {
+                (clientControl as ComponentControl).eventHandlers[key] = {
+                    type: window[functionNameParts[0].toString()][functionNameParts[1].toString()],
+                    name: value.toString()
+                }
+            }
+            else {
+                (clientControl as ComponentControl).eventHandlers[key] = {
+                    type: window[functionNameParts[0].toString()],
+                    name: value.toString()
+                }
+            }
         }
         DbNetSuiteCore.controlArray[controlId] = clientControl;
     }
 }
 
 class ComponentControl {
-    controlId: string = "";
-    form: HTMLFormElement;
+    public controlId: string = "";
+    public form: HTMLFormElement;
     parentControl: ComponentControl;
     childControls: Dictionary<ComponentControl> = {};
     controlContainer: HTMLElement;
     eventHandlers = {};
     searchDialog: SearchDialog;
-    formBody: HTMLElement;
+    public formBody: HTMLElement;
     formMessage: HTMLDivElement;
     currentValidationRow: HTMLTableRowElement;
 
@@ -73,8 +85,14 @@ class ComponentControl {
         if (this.eventHandlers.hasOwnProperty(eventName) == false) {
             return false;
         }
-        if (typeof this.eventHandlers[eventName] === 'function') {
-            this.eventHandlers[eventName](this, args);
+        if (typeof this.eventHandlers[eventName].type === 'function') {
+            const functionNameParts: Array<String> = this.eventHandlers[eventName].name.split('.') as Array<string>;
+            if (functionNameParts.length > 1) {
+                (window as any)[functionNameParts[0].toString()][functionNameParts[1].toString()](this, args);
+            }
+            else {
+                (window as any)[functionNameParts[0].toString()](this, args);
+            }
         }
         else {
             this.toast(`Javascript function for event type '${eventName}' is not defined`, 'error', 3);

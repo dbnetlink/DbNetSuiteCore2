@@ -61,7 +61,8 @@ namespace DbNetSuiteCore.Services
                     return await InitialiseInsert(formModel);
                 default:
                     string viewName = formModel.Uninitialised ? "Form/__Markup" : "Form/__Form";
-                    return await View(viewName, await GetFormViewModel(formModel));
+                    var formViewModel = await GetFormViewModel(formModel); 
+                    return await View(viewName, formViewModel);
             }
         }
 
@@ -236,7 +237,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task<bool> ValidateRecord(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
         {
-            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError };
+            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError, ResourceNames.NotUnique };
 
             PopulateGuidPrimaryKey(formModel);
 
@@ -305,7 +306,7 @@ namespace DbNetSuiteCore.Services
                 return true;
             }
 
-            if (await RecordExists(formModel))
+            if (await PrimaryKeyExists(formModel))
             {
                 formModel.Columns.Where(c => c.PrimaryKeyRequired).ToList().ForEach(c => c.InError = true);
                 formModel.Message = ResourceHelper.GetResourceString(ResourceNames.PrimaryKeyExists);
@@ -318,9 +319,9 @@ namespace DbNetSuiteCore.Services
 
         private bool ValidateErrorType(FormModel formModel, ResourceNames resourceName)
         {
-            foreach (FormColumn? formColumn in formModel.Columns)
+            foreach (FormColumn? formColumn in formModel.Columns.Where(c => c.DataOnly == false))
             {
-                if (formModel.Mode == FormMode.Update || formColumn.Required == false || formColumn.PrimaryKey)
+                if (formModel.Mode == FormMode.Update && formColumn.PrimaryKey)
                 {
                     continue;
                 }

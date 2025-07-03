@@ -12,10 +12,6 @@ builder.Services.Configure<DbNetSuiteCoreOptions>(options =>
     {
         return ValidationHelper.ValidateFormUpdate(formModel, httpContext, configuration);
     };
-    options.FormInsertValidationDelegate = async (formModel, httpContext, configuration) =>
-    {
-        return ValidationHelper.ValidateFormInsert(formModel, httpContext, configuration);
-    };
     options.FormDeleteValidationDelegate = async (formModel, httpContext, configuration) =>
     {
         return ValidationHelper.ValidateFormDelete(formModel, httpContext, configuration);

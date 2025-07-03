@@ -249,6 +249,9 @@
   <data name="NotLessThan" xml:space="preserve">
     <value>Not less than</value>
   </data>
+  <data name="NotUnique" xml:space="preserve">
+    <value>The value entered for {0} already exists</value>
+  </data>
   <data name="Of" xml:space="preserve">
     <value>of</value>
   </data>

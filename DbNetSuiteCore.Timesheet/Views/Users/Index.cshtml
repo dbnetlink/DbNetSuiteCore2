@@ -1,0 +1,62 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Timesheet.Constants
+@model DbNetSuiteCore.Timesheet.ViewModels.BaseViewModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+@{
+    GridModel usersGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUsers");
+    usersGrid.Caption = "Users";
+    usersGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn("Id") {DataOnly = true},
+        new GridColumn("UserName"),
+        //new GridColumn("NormalizedUserName"),
+        new GridColumn("Email"),
+        //new GridColumn("NormalizedEmail"),
+        new GridColumn("EmailConfirmed"),
+        //new GridColumn("PasswordHash"),
+        //new GridColumn("SecurityStamp"),
+        //new GridColumn("ConcurrencyStamp"),
+        new GridColumn("PhoneNumber"),
+        new GridColumn("PhoneNumberConfirmed"),
+        new GridColumn("TwoFactorEnabled"),
+        new GridColumn("LockoutEnabled"),
+        new GridColumn("AccessFailedCount")
+    };
+
+
+    FormModel usersForm = new FormModel("AspNetUsers") { LayoutColumns = 4, Delete = true };
+    usersForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("Id") {DataOnly = true, ForeignKey = true},
+        new FormColumn("UserName"),
+        new FormColumn("Email")
+    };
+    usersForm.Bind(FormClientEvent.RecordLoaded, "userControl.userSelected");
+
+    var userRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetRoles") { };
+    userRolesGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn("Name"),
+        new GridColumn("Id"){ DataOnly = true}
+    };
+    userRolesGrid.ToolbarPosition = ToolbarPosition.Hidden;
+    userRolesGrid.Caption = "User Roles";
+    userRolesGrid.HeadingMode = HeadingMode.Hidden;
+    userRolesGrid.RowSelection = RowSelection.Multiple;
+    userRolesGrid.MultiRowSelectLocation = MultiRowSelectLocation.Right;
+    userRolesGrid.Bind(GridClientEvent.Initialised, "userControl.saveGridReference");
+
+    usersGrid.LinkedControl = usersForm;
+
+    <div class="flex flex-column gap-3">
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(usersGrid))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(usersForm))</div>
+        <div>@(await new DbNetSuiteCore.Control(Context).Render(userRolesGrid))</div>
+    </div>
+
+}
+<script src="js/users.js"></script>
