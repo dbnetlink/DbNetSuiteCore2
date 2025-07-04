@@ -1,94 +1,109 @@
 ﻿using DbNetSuiteCore.Models;
 using System.Data;
 using DbNetSuiteCore.Extensions;
-using System.Data.OleDb;
-using CsvHelper;
 using System.Globalization;
 using CsvHelper.Configuration;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
+using Sylvan.Data.Excel;
+using Sylvan.Data.Csv;
+using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class ExcelRepository : IExcelRepository
+    public class ExcelRepository : FileRepository, IExcelRepository
     {
         private readonly IWebHostEnvironment _env;
+        private readonly IMemoryCache _memoryCache;
 
-        public ExcelRepository(IWebHostEnvironment env)
+        public ExcelRepository(IWebHostEnvironment env, IMemoryCache memoryCache)
         {
             _env = env;
+            _memoryCache = memoryCache;
         }
         public async Task GetRecords(ComponentModel componentModel)
         {
-            QueryCommandConfig query = componentModel.BuildQuery();
-            componentModel.Data = await BuildDataTable(componentModel, query);
+            var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : await BuildDataTable(componentModel);
             if (componentModel is GridModel)
             {
                 var gridModel = (GridModel)componentModel;
+                dataTable.FilterAndSort(gridModel);
                 gridModel.ConvertEnumLookups();
                 gridModel.GetDistinctLookups();
+            }
+
+            if (componentModel is SelectModel)
+            {
+                var selectModel = (SelectModel)componentModel;
+                if (selectModel.Distinct)
+                {
+                    var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
+                    dataTable = dataTable.DefaultView.ToTable(true, columnNames);
+                }
+                dataTable.FilterAndSort(selectModel);
+                selectModel.ConvertEnumLookups();
             }
         }
 
         public async Task GetRecord(ComponentModel componentModel)
         {
-            QueryCommandConfig query = componentModel.BuildRecordQuery();
-            componentModel.Data = await BuildDataTable(componentModel, query);
+            var dataTable = await BuildDataTable(componentModel);
+            dataTable.FilterWithPrimaryKey(componentModel);
             componentModel.ConvertEnumLookups();
         }
 
         public async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            if (string.IsNullOrEmpty(componentModel.TableName))
+              return await BuildDataTable(componentModel);
+        }
+
+        private async Task<DataTable> BuildDataTable(ComponentModel componentModel)
+        {
+            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable dataTable))
             {
-                AssignTableName(componentModel);
+                return dataTable;
+            }
+            else
+            {
+                if (ComponentModelExtensions.IsCsvFile(componentModel))
+                {
+                    dataTable = CsvToDataTable(componentModel);
+                }
+                else
+                {
+                    dataTable = LoadSpreadsheet(componentModel);
+                }
             }
 
-            componentModel.TableName = TextHelper.DelimitColumn(componentModel.TableName, DataSourceType.Excel);
+            if (componentModel.GetColumns().Any())
+            {
+                string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression).ToArray();
+                dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
+            }
 
-            QueryCommandConfig query = componentModel.BuildEmptyQuery();
+            if (componentModel.Cache)
+            {
+                _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
+            }
 
-            return await BuildDataTable(componentModel, query);
+            return dataTable;
         }
 
-
-        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, QueryCommandConfig query)
+        private  DataTable LoadSpreadsheet(ComponentModel componentModel)
         {
-            return await LoadSpreadsheet(componentModel, query);
-        }
-
-        private async Task<DataTable> LoadSpreadsheet(ComponentModel componentModel, QueryCommandConfig query)
-        {
-            DataTable dataTable;
+            DataTable dataTable = new DataTable();
             try
             {
-                using (OleDbConnection connection = GetConnection(componentModel.Url))
+                using ExcelDataReader edr = ExcelDataReader.Create(FilePath(componentModel.Url));
                 {
-                    connection.Open();
-
-                    dataTable = new DataTable();
-
-                    string columns = componentModel.GetColumns().Any() ? String.Join(",", componentModel.GetColumns().Select(c => c.Expression)) : "*";
-
-                    OleDbCommand command = new OleDbCommand(query.Sql, connection);
-                    DbHelper.AddCommandParameters(command, query);
-                    dataTable.Load(await command.ExecuteReaderAsync());
-                    connection.Close();
+                      dataTable.Load(edr);
                 }
             }
             catch (Exception ex)
             {
-                /*
-            if (gridModel.Url.ToLower().EndsWith(".csv"))
-            {
-                dataTable = CsvToDataTable(gridModel);
-            }
-            else
-            {
-                throw new Exception($"Unable too read the Excel file {gridModel.TableName}");
-            }
-            */
-                throw new Exception($"Unable to read the Excel file {componentModel.TableName}", ex);
+                throw new Exception($"Unable to read the Excel file {componentModel.Url}");
             }
 
             return dataTable;
@@ -96,47 +111,13 @@ namespace DbNetSuiteCore.Repositories
 
         private DataTable CsvToDataTable(ComponentModel componentModel)
         {
-            DataTable dt = new DataTable();
-            List<string> badData = new List<string>();
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            DataTable dataTable = new DataTable();
+            using CsvDataReader cdr = CsvDataReader.Create(FilePath(componentModel.Url));
             {
-                BadDataFound = null
-            };
-            using (var reader = new StreamReader(FilePath(componentModel.Url)))
-            using (var csv = new CsvReader(reader, config))
-            {
-                using (var dr = new CsvDataReader(csv))
-                {
-                    dt.Load(dr);
-                }
+                dataTable.Load(cdr);
             }
 
-            badData.Clear();
-
-            return dt;
-        }
-
-        private async Task AssignTableName(ComponentModel componentModel)
-        {
-            if (componentModel.Url.ToLower().EndsWith(".csv"))
-            {
-                componentModel.TableName = FilePath(componentModel.Url).Split("\\").Last();
-            }
-            else
-            {
-                using (OleDbConnection connection = GetConnection(componentModel.Url))
-                {
-                    connection.Open();
-                    DataTable tables = connection.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-                    componentModel.TableName = tables.Rows[0]["TABLE_NAME"].ToString();
-                    connection.Close();
-                }
-            }
-        }
-
-        public OleDbConnection GetConnection(string filePath)
-        {
-            return new OleDbConnection(ExcelConnectionString(filePath));
+            return dataTable;
         }
 
         private string FilePath(string filePath)
@@ -147,21 +128,6 @@ namespace DbNetSuiteCore.Repositories
 
             }
             return $"{_env.WebRootPath}{filePath.Replace("/", "\\")}".Replace("//", "/");
-        }
-
-        private string ExcelConnectionString(string filePath)
-        {
-            string properties = filePath.ToLower().EndsWith(".csv") ? "Text;FORMAT=Delimited;" : "Excel 12.0;";
-            properties = $"{properties}HDR=Yes;characterset=65001";
-
-            filePath = FilePath(filePath);
-
-            if (filePath.ToLower().EndsWith(".csv"))
-            {
-                string separator = "\\";
-                filePath = string.Join(separator, filePath.Split(separator).Reverse().Skip(1).Reverse().ToArray());
-            }
-            return $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={filePath};Extended Properties=\"{properties}\";";
         }
     }
 }

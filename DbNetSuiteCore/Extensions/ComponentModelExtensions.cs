@@ -423,7 +423,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static bool IsCsvFile(ComponentModel componentModel)
         {
-            return componentModel.DataSourceType == DataSourceType.Excel && componentModel.TableName.ToLower().Replace("]", string.Empty).EndsWith(".csv");
+            return componentModel.DataSourceType == DataSourceType.Excel && componentModel.Url.ToLower().Replace("]", string.Empty).EndsWith(".csv");
         }
         public static string Top(ComponentModel componentModel)
         {
