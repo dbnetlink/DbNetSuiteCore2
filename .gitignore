@@ -383,3 +383,6 @@ FodyWeavers.xsd
 /DbNetSuiteCore.Web/Pages/CorrosionRepairOrder.cshtml
 /DbNetSuiteCore.Web/Pages/DispatchOrders.cshtml
 /DbNetSuiteCore.Web/wwwroot/Data/sqlite/new_northwind.db
+*.js
+*.js
+/DbNetSuiteCore/Resources/CSS/output.css
