@@ -9,32 +9,30 @@
 @{
     var columns = new List<GridColumn>
     {
-        new GridColumn("[Row ID]"){ Filter = FilterType.Default },
-        new GridColumn("[Order ID]"){ Filter = FilterType.Default },
-        new GridColumn("[Order Date]"){ Filter = FilterType.Default },
-        new GridColumn("[Ship Date]"),
-        new GridColumn("[Ship Mode]") { Filter = FilterType.Distinct},
-        new GridColumn("[Customer ID]"),
-        new GridColumn("[Customer Name]"),
+        new GridColumn("Row ID"){ Filter = FilterType.Default, DataType = typeof(int) },
+        new GridColumn("Order ID"){ Filter = FilterType.Default },
+        new GridColumn("Order Date"){ Filter = FilterType.Default, DataType = typeof(DateTime) },
+        new GridColumn("Ship Date"){ DataType = typeof(DateTime) },
+        new GridColumn("Ship Mode") { Filter = FilterType.Distinct},
+        new GridColumn("Customer ID"),
+        new GridColumn("Customer Name"),
         new GridColumn("Segment"){ Filter = FilterType.Distinct},
         new GridColumn("Country"){ Filter = FilterType.Distinct},
         new GridColumn("City"){ Filter = FilterType.Distinct},
         new GridColumn("State"){ Filter = FilterType.Distinct},
-        new GridColumn("[Postal Code]"),
+        new GridColumn("Postal Code"),
         new GridColumn("Region"){ Filter = FilterType.Distinct},
-        new GridColumn("[Product ID]"),
+        new GridColumn("Product ID"),
         new GridColumn("Category"){ Filter = FilterType.Distinct},
-        new GridColumn("[Sub-Category]"){ Filter = FilterType.Distinct},
-        new GridColumn("[Product Name]"),
-        new GridColumn("Sales") { Format = "c",Filter = FilterType.Default},
-        new GridColumn("Quantity") { Filter = FilterType.Distinct},
-        new GridColumn("Discount") { Format = "p", Filter = FilterType.Default},
-        new GridColumn("Profit") { Format = "c", Filter = FilterType.Default}
+        new GridColumn("Sub-Category"){ Filter = FilterType.Distinct},
+        new GridColumn("Product Name"),
+        new GridColumn("Sales") { Format = "c",Filter = FilterType.Default,DataType = typeof(Decimal) },
+        new GridColumn("Quantity") { Filter = FilterType.Distinct, DataType = typeof(int)},
+        new GridColumn("Discount") { Format = "p", Filter = FilterType.Default,DataType = typeof(Decimal)},
+        new GridColumn("Profit") { Format = "c", Filter = FilterType.Default,DataType = typeof(Decimal)}
     };
 
-    var ext = Request.Query["ext"] == StringValues.Empty ? new StringValues("xlsx") : Request.Query["ext"];
-    string fileName = $"superstore.{ext}";
-    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/{fileName}") { Columns = columns, Cache = true, Caption = fileName };
+    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Columns = columns, Cache = true };
 }
 
 @(await new DbNetSuiteCore.GridControl(HttpContext).Render(superstoreGrid))

@@ -3,6 +3,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 
 namespace DbNetSuiteCore.Extensions
@@ -51,6 +52,28 @@ namespace DbNetSuiteCore.Extensions
                 {
                     dataRow[currentColumn] = gridColumnModel.GetLookupValue(dataRow[currentColumn]);
                 }
+            }
+        }
+
+        public static void UpdateColumnDataType(this DataTable dt, string colName, Type dataType)
+        {
+            DataColumn? dataColumn = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == colName.ToLower());
+            if (dataColumn == null)
+            {
+                return;
+            }
+            var columnName = dataColumn.ColumnName;
+            using (DataColumn dc = new DataColumn($"{columnName}_new", dataType))
+            {
+                int ordinal = dataColumn.Ordinal;
+                dt.Columns.Add(dc);
+                dc.SetOrdinal(ordinal);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    dr[dc.ColumnName] = dr[columnName] == DBNull.Value ? DBNull.Value : Convert.ChangeType(dr[columnName], dataType);
+                }
+                dt.Columns.Remove(columnName);
+                dc.ColumnName = columnName;
             }
         }
 

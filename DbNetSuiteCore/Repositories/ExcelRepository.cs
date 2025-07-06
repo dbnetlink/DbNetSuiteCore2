@@ -1,14 +1,9 @@
 ﻿using DbNetSuiteCore.Models;
 using System.Data;
 using DbNetSuiteCore.Extensions;
-using System.Globalization;
-using CsvHelper.Configuration;
-using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using Sylvan.Data.Excel;
 using Sylvan.Data.Csv;
-using Microsoft.AspNetCore.Http;
-using System.Net.Http;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace DbNetSuiteCore.Repositories
@@ -79,7 +74,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (componentModel.GetColumns().Any())
             {
-                string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression).ToArray();
+                string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression.Replace("[", string.Empty).Replace("]", string.Empty)).ToArray();
                 dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
             }
 
@@ -100,6 +95,13 @@ namespace DbNetSuiteCore.Repositories
                 {
                       dataTable.Load(edr);
                 }
+                foreach (ColumnModel column in componentModel.GetColumns())
+                {
+                    if (column.DataType != typeof(string))
+                    {
+                        dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -115,6 +117,14 @@ namespace DbNetSuiteCore.Repositories
             using CsvDataReader cdr = CsvDataReader.Create(FilePath(componentModel.Url));
             {
                 dataTable.Load(cdr);
+            }
+
+            foreach (ColumnModel column in componentModel.GetColumns())
+            {
+                if (column.DataType != typeof(string))
+                {
+                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                }
             }
 
             return dataTable;

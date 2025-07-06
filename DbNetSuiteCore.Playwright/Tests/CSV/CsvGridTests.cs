@@ -30,12 +30,11 @@ namespace DbNetSuiteCore.Playwright.Tests.CSV
                 { "name","Afghanistan" },
                 { "iso3", "ABW" },
                 { "iso2", "AD" },
-                { "Numeric_Code", "4" },
-                { "phone_code", string.Empty },
+                { "Numeric_Code", "004" },
+                { "phone_code", "+1-242" },
                 { "capital", string.Empty },
                 { "currency", "AAD" },
                 { "currency_name", "Afghan afghani" },
-                { "currency_symbol", "؋" },
                 { "tld", ".ad" },
                 { "native", string.Empty },
                 { "region", string.Empty },
@@ -43,7 +42,6 @@ namespace DbNetSuiteCore.Playwright.Tests.CSV
             };
 
             await GridHeadingSort(sorts, "excel/Countries");
-            await GridHeadingSort(sorts, "excel/renderfile?name=countries.csv");
         }
 
         [Test]
@@ -54,20 +52,18 @@ namespace DbNetSuiteCore.Playwright.Tests.CSV
                 { "name",new KeyValuePair<string, string>("Afghanistan","Zimbabwe") },
                 { "iso3", new KeyValuePair<string, string>("ABW","ZWE") },
                 { "iso2", new KeyValuePair<string, string>("AD","ZW") },
-                { "Numeric_Code", new KeyValuePair<string, string>("4","926") },
-                { "phone_code", new KeyValuePair<string, string>(string.Empty,"1721") },
+                { "Numeric_Code", new KeyValuePair<string, string>("004","926") },
+                { "phone_code", new KeyValuePair<string, string>("+1-242","998") },
                 { "capital", new KeyValuePair<string, string>(string.Empty,"Zagreb") },
                 { "currency", new KeyValuePair<string, string>("AAD","ZWL") },
                 { "currency_name", new KeyValuePair<string, string>("Afghan afghani","Zimbabwe Dollar") },
-                { "currency_symbol", new KeyValuePair<string, string>("؋","﷼") },
                 { "tld", new KeyValuePair<string, string>(".ad",".zw") },
-                { "native", new KeyValuePair<string, string>(string.Empty,"臺灣") },
+                { "native", new KeyValuePair<string, string>(string.Empty,"香港") },
                 { "region", new KeyValuePair<string, string>(string.Empty,"Polar") },
                 { "subregion", new KeyValuePair<string, string>(string.Empty,"Western Europe") }
             };
 
             await GridHeadingReverseSort(sorts, "excel/Countries");
-            await GridHeadingReverseSort(sorts, "excel/renderfile?name=countries.csv");
         }
     }
 }

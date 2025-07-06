@@ -7,7 +7,7 @@
 @{
     var countriesGrid = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv");
     countriesGrid.Columns = new List<GridColumn>() {
-        new GridColumn("Id") { Filter = FilterType.Default },
+        new GridColumn("Id") { Filter = FilterType.Default, DataType = typeof(Int32) },
         new GridColumn("Name") { Filter = FilterType.Default },
         new GridColumn("Iso3") { Filter = FilterType.Default },
         new GridColumn("Iso2") { Filter = FilterType.Default },

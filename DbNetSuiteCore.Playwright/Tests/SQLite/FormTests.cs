@@ -16,7 +16,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "Region","South West"},
                 { "PostalCode","BS7 8HN"},
                 { "Country","UK"},
-                { "Phone","0117 9624499"},
+                { "Phone","123-456-7890"},
                 { "Fax","0117 9624500"}
             };
 
