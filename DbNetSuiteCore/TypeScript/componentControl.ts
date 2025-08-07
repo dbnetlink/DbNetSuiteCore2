@@ -141,7 +141,7 @@ class ComponentControl {
         return evt.detail.requestConfig.elt;
     }
 
-    protected updateLinkedControls(linkedIds: string, primaryKey: string, url: string = null) {
+    protected updateLinkedControls(linkedIds: string, selectedIndex: string = null, url: string = null) {
         var linkedIdArray = linkedIds.split(",");
 
         linkedIdArray.forEach(linkedId => {
@@ -149,10 +149,20 @@ class ComponentControl {
                 var linkedControl = DbNetSuiteCore.controlArray[linkedId];
                 linkedControl.parentControl = this;
                 this.childControls[linkedId] = linkedControl;
-                if (url != null && linkedControl.dataSourceIsFileSystem()) {
-                    primaryKey = url;
+                var summaryModel = null;
+                var rowIndex = null;
+                summaryModel = this.controlElement("input[name='summarymodel']").value;
+                if (this instanceof GridControl)
+                {   
+                    var gridControl = this as GridControl;
+                    if (gridControl.selectedRow) {
+                        rowIndex = gridControl.selectedRow.dataset.idx;
+                     }
                 }
-                linkedControl.loadFromParent(primaryKey);
+                if (this instanceof SelectControl) {
+                    rowIndex = selectedIndex;
+                }
+                linkedControl.loadFromParent(summaryModel, rowIndex, url);
             });
         });
     }
@@ -176,11 +186,11 @@ class ComponentControl {
         return this.form.dataset.datasourcetype == "FileSystem";
     }
 
-    protected loadFromParent(primaryKey: string) {
+    protected loadFromParent(parentModel: string, rowIndex: string, url: string) {
         let selector = `#${this.controlId} input[name="primaryKey"]`;
         let pk = htmx.find(selector) as HTMLInputElement;
 
-        this.form.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }));
+        this.form.setAttribute("hx-vals", JSON.stringify({ url: url ?? '', parentModel: parentModel, rowIndex: rowIndex ?? '' }));
 
         if (pk) {
             htmx.trigger(selector, "changed");

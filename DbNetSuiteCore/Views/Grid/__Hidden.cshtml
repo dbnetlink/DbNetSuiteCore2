@@ -1,10 +1,15 @@
-﻿@model DbNetSuiteCore.Models.GridModel
+﻿@model GridModel
 @inject IConfiguration Configuration
 @using Microsoft.Extensions.Configuration
-@using System.Text.Json
+@using Newtonsoft.Json
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-<input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonSerializer.Serialize(Model),Configuration)" />
+@using DbNetSuiteCore.Models
+<input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonConvert.SerializeObject(Model), Configuration)" />
+@if (Model.IsParent || Model._NestedGrids.Any())
+{
+    <input type="hidden" name="summarymodel" value="@TextHelper.ObfuscateString(JsonConvert.SerializeObject(Model.SummaryModel), Configuration)" />
+}
 <input type="hidden" name="validationPassed" value="@Model.ValidationPassed" />
 @if (string.IsNullOrEmpty(Model.JSON) == false)
 {

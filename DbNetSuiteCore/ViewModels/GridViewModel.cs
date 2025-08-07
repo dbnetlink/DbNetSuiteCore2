@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Html;
 using System.Data;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Constants;
-using System.Text.Json;
 using DocumentFormat.OpenXml.Office.CoverPageProps;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -84,12 +84,16 @@ namespace DbNetSuiteCore.ViewModels
             html.Add(new HtmlString($"<span>{openIcon}</span>"));
             html.Add(new HtmlString($"<span style=\"display:none\">{closedIcon}</span>"));
             html.Add(new HtmlString($"<span "));
+            if (DataSourceType == DataSourceType.FileSystem)
+            {
+                html.Add(RazorHelper.Attribute($"data-foldername", Convert.ToString(GridModel.RowValue(row, "Name", false)) ?? string.Empty ));            
+            }
             html.Add(RazorHelper.Attribute($"name", TriggerNames.NestedGrid));
             html.Add(RazorHelper.Attribute($"hx-post", SubmitUrl));
             html.Add(RazorHelper.Attribute($"hx-target", "closest tr"));
             html.Add(RazorHelper.Attribute($"hx-indicator", "next .htmx-indicator"));
             html.Add(RazorHelper.Attribute($"hx-swap", "afterend"));
-            html.Add(RazorHelper.Attribute($"hx-vals", $"{{\"primaryKey\":\"{TextHelper.ObfuscateString(JsonSerializer.Serialize(GridModel.PrimaryKeyValue(row)))}\"}}"));
+            html.Add(RazorHelper.Attribute($"hx-vals", $"{{\"primaryKey\":\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(GridModel.PrimaryKeyValue(row)))}\"}}"));
             html.Add(RazorHelper.Attribute($"hx-trigger", "click once"));
             html.Add(RazorHelper.Attribute($"style", "display:none"));
             return new HtmlString(string.Join(" ", html));

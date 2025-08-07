@@ -2,13 +2,14 @@
 using System.Net;
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Hosting;
+using Newtonsoft.Json;
 namespace DbNetSuiteCore.Helpers
 {
     public static class LicenseHelper
     {
         public static string GenerateLicenseKey(LicenseInfo licenseInfo)
         {
-            var licenseJson = System.Text.Json.JsonSerializer.Serialize(licenseInfo);
+            var licenseJson = JsonConvert.SerializeObject(licenseInfo);
             return EncryptionHelper.Encrypt(licenseJson, licenseInfo.Id, Microsoft.VisualBasic.Strings.StrReverse(licenseInfo.Id));
         }
 
@@ -30,7 +31,7 @@ namespace DbNetSuiteCore.Helpers
                         try
                         {
                             var decryptedJson = EncryptionHelper.Decrypt(licenseKey, licenseId, Microsoft.VisualBasic.Strings.StrReverse(licenseId));
-                            licenseInfo = System.Text.Json.JsonSerializer.Deserialize<LicenseInfo>(decryptedJson);
+                            licenseInfo = JsonConvert.DeserializeObject<LicenseInfo>(decryptedJson);
                         }
                         catch
                         {

@@ -1,0 +1,65 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var columns = new List<string>() { "OBJECTID", "ENTITYID", "DISTRIBUTIONMAINENTITYID", "SERVICEENTITYID", "GLOG", "ADDRESS", "CURRENTLEAKCLASS", "DATEREPORTED", "LEAKPIPETYPE", "ORIGINALLEAKCLASS", "NEXTCHECKDATE", "LASTUSER", "DATEMODIFIED", "LEAKID", "CLOSEDDATE", "CLOSEDSTATUS", "REPORTEDBY", "DOTREPORTEDINDICATOR", "POLITICALDISTRICT", "FEDERALLANDINDICATOR", "LASTCHECKDATE", "LEAKSURVEYTYPE", "SOILTYPE", "SURFACETYPE", "ASSIGNMENTTYPE", "DISTRIBUTIONMAINOBJECTID", "SERVICEOBJECTID", "SYMBOLROTATION", "ENABLED", "CREATIONUSER", "DATECREATED", "GLOBALID", "CITYSTATE", "ZIPCODE", "SKETCHXML", "MOBILELINK", "LINK", "HYPERLINK", "OPERATINGDISTRICT", "BH1LOCATION", "BH2LOCATION", "BH3LOCATION", "BH4LOCATION", "BH5LOCATION", "BH6LOCATION", "BH7LOCATION", "BH8LOCATION", "BH9LOCATION", "BH10LOCATION", "BH11LOCATION", "BH12LOCATION", "BH13LOCATION", "BH14LOCATION", "BH15LOCATION", "BH16LOCATION", "BH17LOCATION", "BH18LOCATION", "BH19LOCATION", "BH20LOCATION", "ASSET_ID", "ATTACHJGW", "ATTACHJPG", "COMMENTS", "TAXALLOCATION", "STOCKCODE", "CHGESTANDARD", "AUDMODEL" };
+    GridModel leakReport = new GridModel(DataSourceType.Oracle, "OracleConnection", "LEAKREPORT") { OptimizeForLargeDataset = true, Caption = "Leak Report (GIS)", PageSize = 5 };
+
+    var gridColumns = new List<GridColumn>();
+
+    foreach (string column in columns)
+    {
+        var gridColumn = new GridColumn(column);
+
+        switch (column)
+        {
+            case "GLOG":
+                gridColumn.Filter = FilterType.Default;
+                gridColumn.ForeignKey = true;
+                gridColumn.ForeignKeyParentColumn = "GLOG";
+                gridColumn.DataType = typeof(string);
+                break;
+        }
+
+        gridColumns.Add(gridColumn);
+    }
+
+    leakReport.Columns = gridColumns;
+
+    GridModel ar20Grid = new GridModel(DataSourceType.MSSQL, "InspectionManager", "AR_ASSET_DATA_20") { OptimizeForLargeDataset = true, Caption = "AR20 (IM)", PageSize = 5 };
+    // ar20Grid.Name = OptionsHelper.LeakReportGrid;
+    var ar20Columns = new List<string> { "ASSET_ID", "POLITICALDISTRICT", "BH10LOCATION", "BH2READ", "BH12LOCATION", "BH15LOCATION", "BH16LOCATION", "BH19LOCATION", "BH17LOCATION", "BH4READ", "BH6READ", "ORIGINALLEAKCLASS", "GLOG", "REPORTCODE", "BH11LOCATION", "BH13LOCATION", "BH14LOCATION", "BH20LOCATION", "BH18LOCATION", "BH3READ", "BH5READ", "ADDRESS", "CITYSTATE", "DATEREPORTED", "FIRMNAME", "EMPLOYEEID", "CURRENTLEAKCLASS", "PAVEMENT", "DIGIN", "LEAKPIPETYPE", "PRESSURESYSTEM", "PIPEMATERIAL", "MAINPROTECTED", "ACTION_TAKEN", "BH7READ", "BH8READ", "BH9READ", "BH10READ", "BH11READ", "BH12READ", "BH13READ", "BH14READ", "BH15READ", "BH16READ", "BH17READ", "BH18READ", "BH19READ", "BH20READ", "DISTRIBUTIONMAINENTITYID", "STATIONSERIESEVENTID", "SKETCHNAME", "ATTACHJPG", "ATTACHJGW", "BH1READ", "ATTACHXML", "XCOORDINATE", "YCOORDINATE", "APPROVALSTATUS", "GISUPDATE", "OPERATINGDISTRICT", "COMMENTS", "BH4LOCATION", "BH5LOCATION", "BH6LOCATION", "BH7LOCATION", "BH8LOCATION", "BH9LOCATION", "AR_LASTSKETCHDATE", "AR_REPAIRDATE", "AR_LEAKCAUSE", "AR_LEAKPIPETYPE", "AR_PIPEMATERIAL", "PIPEENTITYID", "PIPEOBJECTID", "FROSTPERIOD", "OLDG_NO", "ISTHISANUPDATETOEXISTINGLEAK" };
+    var ar20GridColumns = new List<GridColumn>();
+
+    foreach (string column in ar20Columns)
+    {
+        var gridColumn = new GridColumn(column);
+
+        switch (column)
+        {
+            case "GLOG":
+                gridColumn.Filter = FilterType.Default;
+                break;
+        }
+
+        ar20GridColumns.Add(gridColumn);
+    }
+    ar20Grid.Columns = ar20GridColumns;
+    ar20Grid.LinkedControl = leakReport;
+    ar20Grid.ViewDialog = new ViewDialog() { LayoutColumns = 3 };
+
+    <div style="display:flex;flex-direction:column;gap-4">
+        <div>
+            @(await new DbNetSuiteCore.Control(HttpContext).Render(ar20Grid))
+        </div>
+        <div>
+            @(await new DbNetSuiteCore.Control(HttpContext).Render(leakReport))
+        </div>
+        <div>
+            @*   @(await new DbNetSuiteCore.Control(HttpContext).Render(genEventReadGrid))*@
+        </div>
+    </div>
+}

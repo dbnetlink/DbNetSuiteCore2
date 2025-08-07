@@ -85,6 +85,7 @@ namespace DbNetSuiteCore.Middleware
         public GridValidationDelegate? GridUpdateValidationDelegate { get; set; }
         public FormValidationDelegate? FormInsertValidationDelegate { get; set; }
         public FormValidationDelegate? FormDeleteValidationDelegate { get; set; }
+        public GridValidationDelegate? GridInitialisationDelegate { get; set; }
     }
 
     public static class DbNetSuiteCoreExtensions

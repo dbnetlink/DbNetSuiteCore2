@@ -4,7 +4,6 @@ using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using DbNetSuiteCore.Helpers;
 using DocumentFormat.OpenXml.EMMA;
-using System.Text.Json;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -21,7 +20,7 @@ namespace DbNetSuiteCore.ViewModels
         public string HxTarget => $"next div.target";
         public string Value(DataRow dataRow) 
         {
-            return TextHelper.ObfuscateString(JsonSerializer.Serialize(new List<object>() { RowValue(dataRow, GetDataColumn(SelectModel.ValueColumn)) }));
+            return RowValue(dataRow, GetDataColumn(SelectModel.ValueColumn));
         }
         public string Description(DataRow dataRow)
         {

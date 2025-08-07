@@ -6,22 +6,7 @@ builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web app
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-builder.Services.Configure<DbNetSuiteCoreOptions>(options =>
-{
-    options.FormUpdateValidationDelegate = async (formModel, httpContext, configuration) =>
-    {
-        return ValidationHelper.ValidateFormUpdate(formModel, httpContext, configuration);
-    };
-    options.FormDeleteValidationDelegate = async (formModel, httpContext, configuration) =>
-    {
-        return ValidationHelper.ValidateFormDelete(formModel, httpContext, configuration);
-    };
-    options.GridUpdateValidationDelegate = async (gridModel, httpContext, configuration) =>
-    {
-        return ValidationHelper.ValidateGridUpdate(gridModel, httpContext, configuration);
-    };
-});
-
+builder.Services.Configure<DbNetSuiteCoreOptions>(options => OptionsHelper.AssignOptions(options));
 
 var app = builder.Build();
 

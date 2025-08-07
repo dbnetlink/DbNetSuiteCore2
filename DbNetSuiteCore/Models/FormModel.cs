@@ -1,9 +1,12 @@
-﻿using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
+using DocumentFormat.OpenXml.Spreadsheet;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System.Data;
-using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Models
 {
@@ -30,6 +33,8 @@ namespace DbNetSuiteCore.Models
         public int LayoutColumns { get; set; } = 4;
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
         public ModifiedRow Modified { get; set; } = new ModifiedRow();
+        public Dictionary<string, object[]> RecordData => Data.Columns.Cast<DataColumn>().Where(c => c.DataType != typeof(Byte[])).ToDictionary(c => c.ColumnName, c => Data.Rows.Cast<DataRow>().AsEnumerable().Select(r => r[c]).ToArray());
+
         public FormModel() : base()
         {
         }

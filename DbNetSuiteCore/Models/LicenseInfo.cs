@@ -1,5 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Models
 {

@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Services
         }
 
     public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions>? options = null)
-        {
+    {
             try
             {
                 _context = context;
@@ -64,14 +64,16 @@ namespace DbNetSuiteCore.Services
                 ConfigureColumnsForStoredProcedure(selectModel);
             }
 
-            var gridViewModel = new SelectViewModel(selectModel);
+            var selectViewModel = new SelectViewModel(selectModel);
 
             if (selectModel.DiagnosticsMode)
             {
-                gridViewModel.Diagnostics = RequestHelper.Diagnostics(_context, _configuration, _webHostEnvironment);
+                selectViewModel.Diagnostics = RequestHelper.Diagnostics(_context, _configuration, _webHostEnvironment);
             }
 
-            return gridViewModel;
+            selectModel.SummaryModel = new SummaryModel(selectModel);
+
+            return selectViewModel;
         }
  
         private SelectModel GetSelectModel()
@@ -81,11 +83,11 @@ namespace DbNetSuiteCore.Services
                 var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context),_configuration);
                 SelectModel selectModel = JsonConvert.DeserializeObject<SelectModel>(model) ?? new SelectModel();
                 selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
-                AssignParentKey(selectModel);
+                AssignParentModel(selectModel);
                 selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 return selectModel;
             }
-            catch
+            catch(Exception ex)
             {
                 return new SelectModel();
             }

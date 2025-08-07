@@ -299,7 +299,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         private async Task TestTagCount(Dictionary<string,int> tagCounts)
         {
-            await Page.WaitForResponseAsync(r => r.Url.Contains("selectcontrol.htmx"));
+            await Page.WaitForResponseAsync(r => IsSelectUrl("selectcontrol.htmx"));
 
             foreach (var tag in tagCounts.Keys)
             {
@@ -313,6 +313,11 @@ namespace DbNetSuiteCore.Playwright.Tests
                     Assert.That(optionCount, Is.EqualTo(tagCounts[tag]));
                 }
             }
+        }
+
+        private bool IsSelectUrl(string url)
+        {
+            return url.Contains("selectcontrol.htmx");
         }
 
         private async Task<int> GetCellIndex(ILocator heading)

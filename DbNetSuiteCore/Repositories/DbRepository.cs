@@ -44,8 +44,14 @@ namespace DbNetSuiteCore.Repositories
                 gridModel.TotalRows = Convert.ToInt32(await ExecuteScalar(query, componentModel));
             }
 
+            componentModel.SummaryModel = new SummaryModel(componentModel);
+
             if (componentModel.Data.Rows.Count > 0)
             {
+                foreach (var column in componentModel.GetColumns().Where(c => c.DbLookupOptions != null))
+                {
+                    column.DbLookupOptions = null;
+                }
                 foreach (var column in componentModel.GetColumns().Where(c => c.LookupNotPopulated))
                 {
                     await GetLookupOptions(componentModel, column);
@@ -83,10 +89,14 @@ namespace DbNetSuiteCore.Repositories
 
         private void ApplyLookups(ComponentModel componentModel)
         {
-            if (componentModel is GridModel)
+            if (componentModel is GridModel || componentModel is SelectModel)
             {
-                foreach (var column in componentModel.GetColumns().Cast<GridColumn>().Where(c => c.Lookup != null && c.Editable == false))
+                foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null))
                 {
+                    if (column is GridColumn gridColumn && gridColumn.Editable)
+                    {
+                        continue;
+                    }
                     DataColumn? dataColumn = componentModel.GetDataColumn(column);
                     componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
                 }
@@ -96,6 +106,7 @@ namespace DbNetSuiteCore.Repositories
         public async Task GetRecord(ComponentModel componentModel)
         {
             componentModel.Data = await GetRecordDataTable(componentModel);
+            componentModel.SummaryModel = new SummaryModel(componentModel);
             await GetLookupOptions(componentModel);
             ApplyLookups(componentModel);
         }
@@ -298,15 +309,22 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                var lookup = column.Lookup!;
-
-                if (string.IsNullOrEmpty(lookup.TableName))
+                if (componentModel.IsLinked)
                 {
-                    query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} where {column.ColumnName} is not null order by 1"; ;
+                    BuildLookupOptionsFromDataTableQuery(componentModel, column, ref query);
                 }
                 else
                 {
-                    query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+                    var lookup = column.Lookup!;
+
+                    if (string.IsNullOrEmpty(lookup.TableName))
+                    {
+                        query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} where {column.ColumnName} is not null order by 1"; ;
+                    }
+                    else
+                    {
+                        query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+                    }
                 }
             }
 

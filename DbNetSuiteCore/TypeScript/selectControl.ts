@@ -38,13 +38,13 @@ class SelectControl extends ComponentControl {
             var dataset = target.selectedOptions[0].dataset
             url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : ''
         }
-        this.updateLinkedChildControls(target.value, url);
+        this.updateLinkedChildControls(target.selectedIndex.toString(), url);
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
 
-    private updateLinkedChildControls(primaryKey: string, url:string) {
+    private updateLinkedChildControls(selectedIndex: string, url:string) {
         if (this.select.dataset.linkedcontrolids) {
-            this.updateLinkedControls(this.select.dataset.linkedcontrolids, primaryKey, url)
+            this.updateLinkedControls(this.select.dataset.linkedcontrolids, selectedIndex, url)
         }
     }
 

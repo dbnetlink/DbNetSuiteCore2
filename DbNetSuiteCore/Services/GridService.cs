@@ -1,18 +1,21 @@
-﻿using DbNetSuiteCore.Services.Interfaces;
-using DbNetSuiteCore.Repositories;
-using System.Text;
-using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Extensions;
-using System.Data;
-using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Enums;
-using Microsoft.AspNetCore.StaticFiles;
-using ClosedXML.Excel;
-using Newtonsoft.Json;
+﻿using ClosedXML.Excel;
 using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.ViewModels;
-using Microsoft.Extensions.Options;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Middleware;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services.Interfaces;
+using DbNetSuiteCore.ViewModels;
+using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Data;
+using System.Text;
 
 namespace DbNetSuiteCore.Services
 {
@@ -66,18 +69,17 @@ namespace DbNetSuiteCore.Services
                     return await View("Grid/__ViewDialogContent", await ViewDialogContent(gridModel));
                 default:
                     string viewName = gridModel.Uninitialised ? "Grid/__Markup" : "Grid/__Rows";
-                    return await View(viewName, await GetGridViewModel(gridModel));
+                    return await View(viewName, await GetGridViewModel(gridModel,options));
             }
         }
 
         private async Task<GridViewDialogViewModel> ViewDialogContent(GridModel gridModel)
         {
-            gridModel.ParentKey = RequestHelper.FormValue(TriggerNames.ViewDialogContent, "", _context);
             await GetRecord(gridModel);
             return new GridViewDialogViewModel(gridModel);
         }
 
-        private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
+        private async Task<GridViewModel> GetGridViewModel(GridModel gridModel, IOptions<DbNetSuiteCoreOptions>? options = null)
         {
             if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentKey) == false)
             {
@@ -98,6 +100,11 @@ namespace DbNetSuiteCore.Services
                     column.FormColumn = new FormColumn(column.Expression);
                     ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
                 }
+
+                if (options?.Value.GridInitialisationDelegate != null)
+                {
+                    await options.Value.GridInitialisationDelegate(gridModel, _context!, _configuration);
+                }
             }
 
             await GetGridRecords(gridModel);
@@ -117,13 +124,18 @@ namespace DbNetSuiteCore.Services
             gridModel.FormValues.Clear();
             gridModel.Columns.ToList().ForEach(c => c.LineInError.Clear());
 
+            if (gridModel.SummaryModel == null)
+            {
+                gridModel.SummaryModel = new SummaryModel(gridModel);
+            }
+
             var gridViewModel = new GridViewModel(gridModel);
 
             if (gridModel.DiagnosticsMode)
             {
                 gridViewModel.Diagnostics = RequestHelper.Diagnostics(_context, _configuration, _webHostEnvironment);
             }
-
+           
             return gridViewModel;
         }
 
@@ -134,12 +146,13 @@ namespace DbNetSuiteCore.Services
                 nestedGrid.IsNested = true;
                 nestedGrid.Caption = string.Empty;
                 nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
+                nestedGrid.AssignParentModel(_context, _configuration, "summarymodel");
                 nestedGrid.SetId();
 
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
                     var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
-                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{TextHelper.DeobfuscateKey<string>(nestedGrid.ParentKey)}";
+                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentKey}";
                     nestedGrid._NestedGrids.Add(nestedChildGrid);
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
@@ -371,14 +384,14 @@ namespace DbNetSuiteCore.Services
                 gridModel.RowsModified = RequestHelper.GetModifiedRows(_context, gridModel);
                 gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
 
-                AssignParentKey(gridModel);
+                AssignParentModel(gridModel);
                 AssignSearchDialogFilter(gridModel);
 
                 gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
 
                 return gridModel;
             }
-            catch
+            catch(Exception ex)
             {
                 return new GridModel();
             }

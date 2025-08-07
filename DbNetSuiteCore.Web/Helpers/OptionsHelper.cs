@@ -1,14 +1,38 @@
 ﻿using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Middleware;
+using System;
 
 namespace DbNetSuiteCore.Web.Helpers
 {
-    public static class ValidationHelper
+    public static class OptionsHelper
     {
         public const string ProductEditGrid = "ProductEditGrid";
         public const string ProductEditForm = "ProductEditForm";
         public const string CustomerEditForm = "CustomerEditForm";
+        public const string LeakReportGrid = "LeakReportGrid";
+
+        public static void AssignOptions(DbNetSuiteCoreOptions options)
+        {
+            options.FormUpdateValidationDelegate = async (formModel, httpContext, configuration) =>
+            {
+                return ValidateFormUpdate(formModel, httpContext, configuration);
+            };
+            options.FormDeleteValidationDelegate = async (formModel, httpContext, configuration) =>
+            {
+                return ValidateFormDelete(formModel, httpContext, configuration);
+            };
+            options.GridUpdateValidationDelegate = async (formModel, httpContext, configuration) =>
+            {
+                return ValidateGridUpdate(formModel, httpContext, configuration);
+            };
+            options.GridInitialisationDelegate = async (formModel, httpContext, configuration) =>
+            {
+                return GridInitialisation(formModel, httpContext, configuration);
+            };
+        }
+
         public static bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             switch (formModel.Name)
@@ -26,8 +50,6 @@ namespace DbNetSuiteCore.Web.Helpers
             }
             return true;
         }
-
-        
 
         public static bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
@@ -64,6 +86,17 @@ namespace DbNetSuiteCore.Web.Helpers
                         }
                     }
 
+                    break;
+            }
+            return true;
+        }
+
+        public static bool GridInitialisation(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        {
+            switch (gridModel.Name)
+            {
+                case LeakReportGrid:
+                    gridModel.Columns.First(c => c.Name == "ASSET_ID").PrimaryKey = false;
                     break;
             }
             return true;

@@ -192,7 +192,7 @@ namespace DbNetSuiteCore.Helpers
                 diagnostics.Add($"{appSetting}: {configuration.ConfigValue(appSetting)}");
             }
             diagnostics.Add("<b>=== License ===</b>");
-            diagnostics.Add($"License: {System.Text.Json.JsonSerializer.Serialize(LicenseHelper.ValidateLicense(configuration, httpContext, webHostEnvironment))}");
+            diagnostics.Add($"License: {JsonConvert.SerializeObject(LicenseHelper.ValidateLicense(configuration, httpContext, webHostEnvironment))}");
 
             return string.Join("</br>", diagnostics);
         }

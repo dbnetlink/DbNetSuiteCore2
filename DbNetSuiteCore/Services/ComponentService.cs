@@ -8,6 +8,8 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {
@@ -68,7 +70,7 @@ namespace DbNetSuiteCore.Services
                         throw new Exception("A parent control must have a column designated as a <b>PrimaryKey</b>");
                     }
                 }
-              
+
                 if (gridModel.GetLinkedControlIds().Any())
                 {
                     if (gridModel.RowSelection != RowSelection.Single)
@@ -125,10 +127,20 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected void AssignParentKey(ComponentModel componentModel)
+        protected void AssignParentModel(ComponentModel componentModel)
         {
             var primaryKey = RequestHelper.FormValue("primaryKey", componentModel.ParentKey, _context);
             var foreignKey = RequestHelper.FormValue("foreignKey", null, _context);
+
+            try
+            {
+                componentModel.AssignParentModel(_context, _configuration);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error parsing page data: {ex.Message}", ex);
+            }
+
 
             if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)
             {

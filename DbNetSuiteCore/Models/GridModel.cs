@@ -1,14 +1,16 @@
 ﻿using DbNetSuiteCore.Enums;
-using System.Text.Json.Serialization;
 using System.Data;
 using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using DbNetSuiteCore.Helpers;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Models
 {
-    public class    GridModel : ComponentModel
+    public class GridModel : ComponentModel
     {
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
@@ -62,6 +64,7 @@ namespace DbNetSuiteCore.Models
         public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
+       
 
         [JsonIgnore]
         public GridModel NestedGrid
@@ -237,6 +240,6 @@ namespace DbNetSuiteCore.Models
         {
             ClientEvents[clientEvent] = functionName;
         }
-
+     
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace DbNetSuiteCore.Models
+﻿namespace DbNetSuiteCore.Models
 {
     public class ModifiedRow
     {

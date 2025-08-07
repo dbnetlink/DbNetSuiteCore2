@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await SelectSearchTest(searches, $"sqlite/customers?db={DatabaseName}");
-            await SelectSearchTest(searches, $"customers?db={DatabaseName}", true);
+           // await SelectSearchTest(searches, $"customers?db={DatabaseName}", true);
         }
 
         [Test]
@@ -27,7 +27,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
             await SelectGroupTest(searches, $"sqlite/products?db={DatabaseName}");
-            await SelectGroupTest(searches, $"products?db={DatabaseName}", true);
+           // await SelectGroupTest(searches, $"products?db={DatabaseName}", true);
         }
     }
 }

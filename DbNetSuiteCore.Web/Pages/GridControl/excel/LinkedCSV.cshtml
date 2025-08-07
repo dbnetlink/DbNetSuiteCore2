@@ -17,8 +17,6 @@
         new GridColumn("country_name"),
         new GridColumn("latitude"),
         new GridColumn("longitude"),
-        new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
-
         new GridColumn("wikiDataId") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
     };
 
@@ -39,8 +37,7 @@
          new GridColumn("region"),
          new GridColumn("subregion"),
          new GridColumn("latitude"),
-         new GridColumn("longitude"),
-         new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"}
+         new GridColumn("longitude")
     };
 
     var stateColumns = new List<GridColumn>
@@ -51,8 +48,7 @@
         new GridColumn("state_code"),
         new GridColumn("type"),
         new GridColumn("latitude"),
-        new GridColumn("longitude"),
-        new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
+        new GridColumn("longitude")
     };
 
     var countryModel = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv") { Columns = countryColumns, ViewDialog =  new ViewDialog(), PageSize = 5, Caption = "Countries" };

@@ -20,7 +20,7 @@ class ViewDialog extends Dialog {
 
     getRecord() {
         let input = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
-        input.value = this.gridControl.selectedRow.dataset.id;
+        input.value = this.gridControl.selectedRow.dataset.idx;
         htmx.trigger(input, "changed");
     }
 

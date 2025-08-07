@@ -19,7 +19,7 @@
         new GridColumn("Discontinued","", "NotActive") {Edit = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
 
-    productGrid.Name = ValidationHelper.ProductEditGrid;
+    productGrid.Name = OptionsHelper.ProductEditGrid;
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(productGrid))
 }
 

@@ -6,7 +6,7 @@ using System.Data;
 using System.Text.Encodings.Web;
 using DocumentFormat.OpenXml.EMMA;
 using System.Configuration;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Helpers
 {
@@ -40,9 +40,8 @@ namespace DbNetSuiteCore.Helpers
 
             if (gridModel.PrimaryKeyValue(row) != null)
             {
-                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonSerializer.Serialize(gridModel.PrimaryKeyValue(row)))}\"");
+                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(gridModel.PrimaryKeyValue(row)))}\"");
             }
-            
             foreach (var column in gridModel.DataOnlyColumns)
             {
                 dataAttributes.Add($"data-{column.ColumnName.ToLower()}=\"{row[column.ColumnName]}\"");

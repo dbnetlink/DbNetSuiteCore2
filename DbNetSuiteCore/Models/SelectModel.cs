@@ -1,9 +1,8 @@
 ﻿using DbNetSuiteCore.Enums;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using MongoDB.Bson;
+using Newtonsoft.Json;
 using System.Data;
-using System.Text.Json.Serialization;
-
 namespace DbNetSuiteCore.Models
 {
     public class SelectModel : ComponentModel

@@ -282,7 +282,7 @@ class GridControl extends ComponentControl {
             return;
         }
 
-        switch (this.triggerName(evt)) {
+        switch (this.triggerName(evt).toLowerCase()) {
             case "apply":
                 if (this.formModified() == false) {
                     evt.preventDefault();
@@ -466,7 +466,9 @@ class GridControl extends ComponentControl {
             siblingRow.style.display = show ? null : "none"
         }
         else if (show) {
-            htmx.trigger(icons[2], "click")
+            let span = icons[2]
+            span.setAttribute("hx-vals", JSON.stringify({ rowIndex: span.closest("tr").dataset.idx, primaryKey: span.dataset.foldername }));
+            htmx.trigger(span, "click")
         }
 
         icons[0].style.display = show ? "none" : "block"
@@ -510,7 +512,7 @@ class GridControl extends ComponentControl {
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
         tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder] svg,td > div.nested-icons svg").forEach(e => e.setAttribute("fill", "#ffffff"));
 
-        this.updateLinkedGrids(tr.dataset.id);
+        this.updateLinkedGrids(tr.dataset.idx);
         this.selectedRow = tr;
 
         if (this.viewDialog) {
@@ -528,11 +530,11 @@ class GridControl extends ComponentControl {
         this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
     }
 
-    private updateLinkedGrids(primaryKey: string) {
+    private updateLinkedGrids(rowIdx: string) {
         let table = this.controlElement("table") as HTMLElement;
 
         if (table.dataset.linkedcontrolids) {
-            this.updateLinkedControls(table.dataset.linkedcontrolids, primaryKey)
+            this.updateLinkedControls(table.dataset.linkedcontrolids, rowIdx)
         }
     }
 
@@ -678,7 +680,7 @@ class GridControl extends ComponentControl {
                 let tr = checkbox.closest("tr") as HTMLTableRowElement;
 
                 if (tr.dataset.id) {
-                    selectedValues.push(tr.dataset.id)
+                    selectedValues.push(tr.dataset.idx)
                 }
             }
         })

@@ -4,8 +4,8 @@ using DbNetSuiteCore.Repositories;
 using Microsoft.AspNetCore.Html;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
+using Newtonsoft.Json;
 using System.Data;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Models
@@ -72,6 +72,7 @@ namespace DbNetSuiteCore.Models
         public bool DataOnly { get; set; } = false;
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
+        public string ForeignKeyParentColumn { get; set; } = string.Empty;
         internal bool StringSearchable => (DataType == typeof(string) && DbDataType != "xml");
         public SortOrder? InitialSortOrder { get; set; } = null;
         public bool LookupNotPopulated => (Lookup != null && LookupOptions == null);

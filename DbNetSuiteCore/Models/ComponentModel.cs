@@ -1,9 +1,9 @@
-﻿using System.Text.Json.Serialization;
-using System.Data;
+﻿using System.Data;
 using DbNetSuiteCore.Enums;
 using MongoDB.Bson;
 using DbNetSuiteCore.Helpers;
-using System.Text.Json;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Models
 {
@@ -37,7 +37,9 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
-        public Dictionary<string,string> ColumnAliasLookup { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ColumnAliasLookup { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public SummaryModel? ParentModel { get; set; }
+        public SummaryModel? SummaryModel { get; set; }
 
         public string Url
         {
@@ -84,6 +86,7 @@ namespace DbNetSuiteCore.Models
         internal string SearchDialogConjunction { get; set; } = "and";
         public string Message = string.Empty;
         public MessageType MessageType = MessageType.None;
+        public bool IsParent => LinkedControlIds.Any();
         public ComponentModel()
         {
             Id = GeneratedId();
@@ -156,7 +159,13 @@ namespace DbNetSuiteCore.Models
 
         public List<object> GetParentKeyValues()
         {
-            return TextHelper.DeobfuscateKey<List<object>>(ParentKey) ?? new List<object>();
+            var primaryKeyValues = new List<object>();
+            foreach (var column in ParentModel!.Columns.Where(c => c.PrimaryKey))
+            {
+                primaryKeyValues.Add(ParentModel!.ParentRow[column.Name]);
+            }
+
+            return primaryKeyValues;
         }
 
         public List<string> GetLinkedControlIds()
@@ -171,9 +180,9 @@ namespace DbNetSuiteCore.Models
 
             var typeName = componentModel.GetType().Name;
 
-            if (this.GetType().Name == nameof(GridModel) && componentModel.GetType().Name ==  nameof(FormModel))
+            if (this.GetType().Name == nameof(GridModel) && componentModel.GetType().Name == nameof(FormModel))
             {
-                if (this.TableName.Equals(componentModel.TableName,StringComparison.InvariantCultureIgnoreCase))
+                if (this.TableName.Equals(componentModel.TableName, StringComparison.InvariantCultureIgnoreCase))
                 {
                     (componentModel as FormModel)!.OneToOne = true;
                 }
@@ -202,7 +211,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        internal string LookupColumnName (string columnName)
+        internal string LookupColumnName(string columnName)
         {
             return GetColumns().FirstOrDefault(c => c.Alias.ToLower() == columnName.ToLower())?.ColumnName ?? columnName;
         }

@@ -55,7 +55,7 @@ class FormControl extends ComponentControl {
             this.setMessage(this.cachedMessage, this.cachedMessageType);
         }
 
-        this.updateLinkedChildControls(this.formBody.dataset.id)
+        this.updateLinkedChildControls()
 
         window.setTimeout(() => { this.clearErrorMessage() }, 3000)
         this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
@@ -152,9 +152,9 @@ class FormControl extends ComponentControl {
         });
     }
 
-    private updateLinkedChildControls(primaryKey: string) {
+    private updateLinkedChildControls() {
         if (this.formContainer.dataset.linkedcontrolids) {
-            this.updateLinkedControls(this.formContainer.dataset.linkedcontrolids, primaryKey)
+            this.updateLinkedControls(this.formContainer.dataset.linkedcontrolids)
         }
     }
 

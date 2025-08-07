@@ -377,7 +377,7 @@ namespace DbNetSuiteCore.Services
                 formModel.CommitType = null;
                 formModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
 
-                AssignParentKey(formModel);
+                AssignParentModel(formModel);
                 AssignSearchDialogFilter(formModel);
 
                 return formModel;

@@ -6,7 +6,6 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
-@using System.Text.Json
 
 <tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-messagetype="@Model.GridModel.MessageType" data-validationpassed="@Model.GridModel.ValidationPassed">
     @{
@@ -15,7 +14,7 @@
     @foreach (DataRow row in Model.Rows)
     {
         rowIndex++;
-        <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel)>
+        <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
             @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
                 if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)

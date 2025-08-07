@@ -3,10 +3,12 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
-using System.Text.Json;
 using System.Data;
 using System.Globalization;
 using DbNetSuiteCore.Attributes;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -310,7 +312,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)
         {
-            if (string.IsNullOrEmpty(componentModel.ParentKey))
+            if (componentModel.ParentModel.RowIdx < 0)
             {
                 filterParts.Add($"(1=2)");
                 return;
@@ -319,6 +321,16 @@ namespace DbNetSuiteCore.Extensions
             List<object> parentKeyValues = componentModel.GetParentKeyValues();
 
             IEnumerable<ColumnModel> keyColumns = ((componentModel as FormModel)?.OneToOne ?? false) ? componentModel.GetColumns().Where(c => c.PrimaryKey) : componentModel.GetColumns().Where(c => c.ForeignKey);
+
+            IEnumerable<ColumnModel> foreignKeyColumns = ((componentModel as FormModel)?.OneToOne ?? false) ? new List<ColumnModel>() : componentModel.GetColumns().Where(c => c.ForeignKey);
+
+            foreach (var item in foreignKeyColumns.Select((value, index) => new { value = value, index = index }))
+            {
+                if (string.IsNullOrEmpty(item.value.ForeignKeyParentColumn) == false)
+                {
+                    parentKeyValues[item.index] = componentModel.ParentModel!.ParentRow[item.value.ForeignKeyParentColumn];
+                }
+            }
 
             foreach (var item in keyColumns.Select((value, index) => new { value = value, index = index }))
             {
@@ -339,9 +351,9 @@ namespace DbNetSuiteCore.Extensions
         {
             foreach (var parameter in parameters)
             {
-                if (parameter.Value is JsonElement)
+                if (parameter.Value is System.Text.Json.JsonElement)
                 {
-                    parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
+                    parameter.Value = JsonElementExtension.Value((System.Text.Json.JsonElement)parameter.Value);
                 }
                 query.Params[DbHelper.ParameterName(parameter.Name, query.DataSourceType)] = ColumnModelHelper.TypedValue(parameter.TypeName, parameter.Value);
             }
@@ -439,6 +451,26 @@ namespace DbNetSuiteCore.Extensions
         public static string Distinct(ComponentModel componentModel)
         {
             return componentModel.Distinct ? "distinct " : string.Empty;
+        }
+
+        public static void AssignParentModel(this ComponentModel componentModel, HttpContext context, IConfiguration configuration, string key = "parentModel")
+        {
+            string parentModel = RequestHelper.FormValue(key, string.Empty, context);
+            if (string.IsNullOrEmpty(parentModel) == false)
+            {
+                string json = TextHelper.DeobfuscateString(parentModel, configuration);
+                if (string.IsNullOrEmpty(json) == false)
+                {
+                    componentModel.ParentModel = JsonConvert.DeserializeObject<SummaryModel>(json);
+
+                    string rowIndex = RequestHelper.FormValue("rowindex", string.Empty, context);
+
+                    if (string.IsNullOrEmpty(rowIndex) == false)
+                    {
+                        componentModel.ParentModel.RowIdx = int.Parse(rowIndex);
+                    }
+                }
+            }
         }
 
         public static object? ParamValue(object value, ColumnModel column, DataSourceType dataSourceType, bool gridColumnFilter = false)

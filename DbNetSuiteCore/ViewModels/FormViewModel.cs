@@ -21,7 +21,7 @@ namespace DbNetSuiteCore.ViewModels
         public object RecordId => FormModel.RecordId;
         public string HxTarget => "closest div.form-and-toolbar";
         public string SearchInput => FormModel.SearchInput;
-        public bool HideToolbar => FormModel.IsLinked && string.IsNullOrEmpty(FormModel.ParentKey) && FormModel.OneToOne == false;
+        public bool HideToolbar => FormModel.IsLinked && FormModel.ParentModel.RowCount == 0 && FormModel.OneToOne == false;
         public FormMode Mode => FormModel.Mode;
         public bool ReadOnly => FormModel.ReadOnly;
         public bool RenderInsert => FormModel.Insert && Mode != FormMode.Insert && ReadOnly == false;
