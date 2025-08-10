@@ -386,3 +386,16 @@ FodyWeavers.xsd
 *.js
 *.js
 /DbNetSuiteCore/Resources/CSS/output.css
+/DbNetSuiteCore/Resources/JS/*.d.ts
+
+/DbNetSuiteCore/Resources/JS/componentControl.d.ts
+/DbNetSuiteCore/Resources/JS/confirmDialog.d.ts
+/DbNetSuiteCore/Resources/JS/dialog.d.ts
+/DbNetSuiteCore/Resources/JS/draggableDialog.d.ts
+/DbNetSuiteCore/Resources/JS/formControl.d.ts
+/DbNetSuiteCore/Resources/JS/gridcontrol.d.ts
+/DbNetSuiteCore/Resources/JS/htmlEditor.d.ts
+/DbNetSuiteCore/Resources/JS/lookupDialog.d.ts
+/DbNetSuiteCore/Resources/JS/searchDialog.d.ts
+/DbNetSuiteCore/Resources/JS/selectControl.d.ts
+/DbNetSuiteCore/Resources/JS/viewDialog.d.ts
