@@ -70,9 +70,10 @@ namespace DbNetSuiteCore.Extensions
                 DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType),
                 DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType)
             };
-            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {string.Join(",", columns)} from {componentModel.TableName} order by 1" };
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {string.Join(",", columns)} from {componentModel.TableName}" };
             var gridModel = (GridModel)componentModel;
             gridModel.AddFilterPart(query);
+            query.Sql += " order by 1";
             return query;
         }
 
