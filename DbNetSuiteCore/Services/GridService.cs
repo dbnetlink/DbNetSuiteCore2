@@ -81,7 +81,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task<GridViewModel> GetGridViewModel(GridModel gridModel, IOptions<DbNetSuiteCoreOptions>? options = null)
         {
-            if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentKey) == false)
+            if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentModel?.Name) == false)
             {
                 FileSystemRepository.UpdateUrl(gridModel);
             }
@@ -145,14 +145,14 @@ namespace DbNetSuiteCore.Services
             {
                 nestedGrid.IsNested = true;
                 nestedGrid.Caption = string.Empty;
-                nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
+                //nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
                 nestedGrid.AssignParentModel(_context, _configuration, "summarymodel");
                 nestedGrid.SetId();
 
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
                     var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
-                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentKey}";
+                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentModel!.Name}";
                     nestedGrid._NestedGrids.Add(nestedChildGrid);
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)

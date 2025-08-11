@@ -181,6 +181,7 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
+            /*
             if (gridModel.IsNested || gridModel.IsLinked)
             {
                 if (!string.IsNullOrEmpty(gridModel.ParentKey))
@@ -192,6 +193,7 @@ namespace DbNetSuiteCore.Extensions
                     filterParts.Add("(1=2)");
                 }
             }
+            */
 
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
@@ -302,6 +304,7 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
+            /*
             if (selectModel.IsLinked)
             {
                 if (!string.IsNullOrEmpty(selectModel.ParentKey))
@@ -317,6 +320,7 @@ namespace DbNetSuiteCore.Extensions
                     filterParts.Add("(1=2)");
                 }
             }
+            */
 
             if (!string.IsNullOrEmpty(selectModel.FixedFilter))
             {
@@ -334,6 +338,7 @@ namespace DbNetSuiteCore.Extensions
         private static string KeyFilter(ComponentModel componentModel, List<ColumnModel> keyColumns)
         {
             List<string> primaryKeyFilter = new List<string>();
+            /*
             List<object> primaryKeyValues = TextHelper.DeobfuscateKey<List<object>>(componentModel.ParentKey) ?? new List<object>();
             if (primaryKeyValues.Count() == keyColumns.Count())
             {
@@ -342,6 +347,7 @@ namespace DbNetSuiteCore.Extensions
                     primaryKeyFilter.Add($"({item.value.Name} = {Quoted(item.value)}{primaryKeyValues[item.index]}{Quoted(item.value)})");
                 }
             }
+            */
             return string.Join(" and ", primaryKeyFilter);
         }
 

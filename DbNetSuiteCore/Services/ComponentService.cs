@@ -129,7 +129,7 @@ namespace DbNetSuiteCore.Services
 
         protected void AssignParentModel(ComponentModel componentModel)
         {
-            var primaryKey = RequestHelper.FormValue("primaryKey", componentModel.ParentKey, _context);
+            var primaryKey = RequestHelper.FormValue("primaryKey", null, _context);
             var foreignKey = RequestHelper.FormValue("foreignKey", null, _context);
 
             try
@@ -148,7 +148,7 @@ namespace DbNetSuiteCore.Services
             }
             else
             {
-                componentModel.ParentKey = primaryKey ?? string.Empty;
+            //    componentModel.ParentKey = primaryKey ?? string.Empty;
             }
 
             if (componentModel.IsLinked && componentModel is FormModel)

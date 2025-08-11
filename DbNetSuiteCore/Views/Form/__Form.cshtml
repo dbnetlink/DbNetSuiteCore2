@@ -43,7 +43,7 @@
         @await Html.PartialAsync("Form/__Hidden", Model.FormModel)
         @if (Model.FormModel.IsLinked)
         {
-            <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" value="@Model.FormModel.ParentKey" />
+            <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" />
         }
        
     </div>

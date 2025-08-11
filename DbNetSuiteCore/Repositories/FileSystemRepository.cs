@@ -63,13 +63,13 @@ namespace DbNetSuiteCore.Repositories
 
             var urlParts = gridModel.Url.Split(folderSeparator);
 
-            if (string.IsNullOrEmpty(gridModel.ParentKey) == false)
+            if (string.IsNullOrEmpty(gridModel.ParentModel?.Name) == false)
             {
-                var url = gridModel.ParentKey ?? string.Empty;
+                var url = gridModel.ParentModel?.Name ?? string.Empty;
                 urlParts = urlParts.Append(url).ToArray();
 
                 gridModel.Url = string.Join(folderSeparator, urlParts.ToArray());
-                gridModel.ParentKey = string.Empty;
+              //  gridModel.ParentKey = string.Empty;
             }
         }
 

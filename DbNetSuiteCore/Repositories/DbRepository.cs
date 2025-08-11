@@ -309,12 +309,14 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
+                /*
                 if (componentModel.IsLinked)
                 {
                     BuildLookupOptionsFromDataTableQuery(componentModel, column, ref query);
                 }
                 else
                 {
+                */
                     var lookup = column.Lookup!;
 
                     if (string.IsNullOrEmpty(lookup.TableName))
@@ -325,7 +327,7 @@ namespace DbNetSuiteCore.Repositories
                     {
                         query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
                     }
-                }
+               // }
             }
 
             DataTable lookupData;

@@ -15,8 +15,8 @@ namespace DbNetSuiteCore.Models
         } 
         public int RowCount { get; set; } = 0;
         public bool HasEmptyOption { get; set; } = false;
-        public Dictionary<string,object> ParentRow => RowIdx < 0 ? new Dictionary<string, object>() : Data.Keys.ToDictionary(k => k, k => Data[k][RowIdx]);
-
+        public Dictionary<string,object> ParentRow => RowIdx < 0 ? new Dictionary<string, object>() : Data.Keys.ToDictionary(k => k, k => Data[k][RowIdx],StringComparer.CurrentCultureIgnoreCase);
+        public string Name => ParentRow.Keys.Contains("name") ? ParentRow["name"]?.ToString() ?? string.Empty : string.Empty;
         public SummaryModel()
         {
         }
