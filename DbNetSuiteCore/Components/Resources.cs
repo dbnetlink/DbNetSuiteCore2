@@ -4,14 +4,17 @@ namespace DbNetSuiteCore
 {
     public static class Resources
     {
+        public const string ClientScriptHtml = "<script src=\"js.htmx\"></script>";
+        public const string ClientStyleHtml = "<link rel=\"stylesheet\" href=\"css.htmx\" />";
+    
         public static HtmlString ClientScript()
         {
-            return new HtmlString("<script src=\"js.htmx\"></script>");
+            return new HtmlString(ClientScriptHtml);
         }
 
         public static HtmlString StyleSheet()
         {
-            return new HtmlString("<link rel=\"stylesheet\" href=\"css.htmx\" />");
+            return new HtmlString(ClientStyleHtml);
         }
     }
 }

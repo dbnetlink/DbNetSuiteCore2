@@ -40,6 +40,7 @@ namespace DbNetSuiteCore.Models
         public Dictionary<string, string> ColumnAliasLookup { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public SummaryModel? ParentModel { get; set; }
         public SummaryModel? SummaryModel { get; set; }
+        public bool IsBlazor { get; set; } = false;
 
         public string Url
         {

@@ -1,0 +1,15 @@
+﻿@page "/weather"
+@attribute [StreamRendering]
+@using DbNetSuiteCore.Models
+@inject IHttpContextAccessor httpContextAccessor
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Obselete Licenses</PageTitle>
+
+<h1>Obselete Licenses</h1>
+@{
+    GridModel gridModel = new GridModel(DbNetSuiteCore.Enums.DataSourceType.JSON, "https://api.opensource.org/licenses/obsolete");
+    MarkupString html = new DbNetSuiteCore.Blazor.Control(httpContextAccessor.HttpContext).Render(gridModel).Result;
+}
+@(html)
+

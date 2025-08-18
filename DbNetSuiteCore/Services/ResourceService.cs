@@ -46,6 +46,11 @@ namespace DbNetSuiteCore.Services
                     break;
                 case "js":
                     resources = new string[] { "htmx.min", "bundle" };
+
+                    if (_context?.Request.Query.ContainsKey("mode") == true && _context.Request.Query["mode"].ToString() == "blazor")
+                    {
+                        resources = resources.Append("blazor").ToArray();
+                    }
                     break;
             }
 

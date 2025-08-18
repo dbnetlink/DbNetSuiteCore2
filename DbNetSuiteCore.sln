@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbNetSuiteCore.UnitTests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbNetSuiteCore.Timesheet", "DbNetSuiteCore.Timesheet\DbNetSuiteCore.Timesheet.csproj", "{06023FC3-2518-9E4F-EA1B-A69510E4BA92}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbNetSuiteCore.Blazor", "DbNetSuiteCore.Blazor\DbNetSuiteCore.Blazor\DbNetSuiteCore.Blazor.csproj", "{6693460C-3A80-4CCD-83BE-A5767B80A25E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbNetSuiteCore.Blazor.Client", "DbNetSuiteCore.Blazor\DbNetSuiteCore.Blazor.Client\DbNetSuiteCore.Blazor.Client.csproj", "{04A0CFC1-80FF-47F2-BE99-53F64845406C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{06023FC3-2518-9E4F-EA1B-A69510E4BA92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06023FC3-2518-9E4F-EA1B-A69510E4BA92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06023FC3-2518-9E4F-EA1B-A69510E4BA92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6693460C-3A80-4CCD-83BE-A5767B80A25E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6693460C-3A80-4CCD-83BE-A5767B80A25E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6693460C-3A80-4CCD-83BE-A5767B80A25E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6693460C-3A80-4CCD-83BE-A5767B80A25E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04A0CFC1-80FF-47F2-BE99-53F64845406C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A0CFC1-80FF-47F2-BE99-53F64845406C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A0CFC1-80FF-47F2-BE99-53F64845406C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A0CFC1-80FF-47F2-BE99-53F64845406C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

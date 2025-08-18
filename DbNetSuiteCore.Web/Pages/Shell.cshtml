@@ -4,73 +4,73 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-        GridModel shellGrid = new GridModel(DataSourceType.MSSQL, "InspectionManager", "Shell") { OptimizeForLargeDataset = true, Caption = "Shell", PageSize = 10 };
-        shellGrid.Columns = new List<GridColumn>()
+    GridModel shellGrid = new GridModel(DataSourceType.MSSQL, "InspectionManager", "Shell") { OptimizeForLargeDataset = true, Caption = "Shell", PageSize = 10 };
+    shellGrid.Columns = new List<GridColumn>()
         {
-            new GridColumn("SHELLID") {Filter = FilterType.Default},
-            new GridColumn("ASSOCIATEDTABLEID"),
-            new GridColumn("STATUS"),
-            new GridColumn("KEY1"),
-            new GridColumn("KEY2"),
-            new GridColumn("KEY3"),
-            new GridColumn("KEY4"),
-            new GridColumn("KEY5"),
-            new GridColumn("MASTERSHELLID"),
-            new GridColumn("EXTERNALID"),
-            new GridColumn("DATEOFORIGIN"),
-            new GridColumn("PROCESSPLANID"),
-            new GridColumn("GPSLAT"),
-            new GridColumn("GPSLONG"),
-            new GridColumn("SYNCEDWORKGROUPID"),
-            new GridColumn("CREATEDDATE"),
-            new GridColumn("CREATEDBY"),
-            new GridColumn("MODIFIEDDATE"),
-            new GridColumn("MODIFIEDBY")
+            new GridColumn("SHELLID","Id") {Filter = FilterType.Default},
+            new GridColumn("ASSOCIATEDTABLEID","Table") {Lookup = new Lookup("ASSOCIATEDTABLES","ASSOCIATEDTABLEID","OBJECTTITLE"),Filter = FilterType.Default },
+            new GridColumn("STATUS","Status"),
+            new GridColumn("KEY1","Key 1"),
+            new GridColumn("KEY2","Key 2"),
+            new GridColumn("KEY3","Key 3"),
+            new GridColumn("KEY4","Key 4"),
+            new GridColumn("KEY5","Key 5"),
+           // new GridColumn("MASTERSHELLID"),
+           // new GridColumn("EXTERNALID"),
+            new GridColumn("DATEOFORIGIN","Date Of Origin"),
+            new GridColumn("PROCESSPLANID","Process Plan") {Lookup = new Lookup("PROCESSPLANS","ID","DESCRIPTION"),Filter = FilterType.Default },
+           // new GridColumn("GPSLAT"),
+            //new GridColumn("GPSLONG"),
+          //  new GridColumn("SYNCEDWORKGROUPID"),
+            new GridColumn("CREATEDDATE","Created"),
+            new GridColumn("CREATEDBY","By"),
+            new GridColumn("MODIFIEDDATE","Last Modified"),
+            new GridColumn("MODIFIEDBY","By")
         };
 
-        GridModel genEventGrid = new GridModel(DataSourceType.MSSQL, "InspectionManager", "GenEvent") { OptimizeForLargeDataset = true, Caption = "GenEvent", PageSize = 10 };
-        genEventGrid.Columns = new List<GridColumn>()
+    GridModel genEventGrid = new GridModel(DataSourceType.MSSQL, "InspectionManager", "GenEvent") { OptimizeForLargeDataset = true, Caption = "GenEvent", PageSize = 10 };
+    genEventGrid.Columns = new List<GridColumn>()
         {
             new GridColumn("ID") {Filter = FilterType.Default},
-            new GridColumn("SHELLID") {ForeignKey = true},
-            new GridColumn("SCHEDULEID"),
-            new GridColumn("ORIGIN"),
-            new GridColumn("USERID"),
-            new GridColumn("FIELDDEVICEID"),
-            new GridColumn("ADDDATE"),
-            new GridColumn("INSPECTIONTYPEID"),
-            new GridColumn("EVENTTYPE"),
-            new GridColumn("EVENTEXTRA"),
-            new GridColumn("STARTDATE"),
-            new GridColumn("ENDDATE"),
-            new GridColumn("COMMENTS"),
-            new GridColumn("REGBODY"),
-            new GridColumn("WORKORDERID"),
-            new GridColumn("STATUS"),
+            new GridColumn("SHELLID") {ForeignKey = true, DataOnly = true},
+        //    new GridColumn("SCHEDULEID"),
+        //    new GridColumn("ORIGIN"),
+            new GridColumn("USERID","User") {Lookup = new Lookup("USERS","ID","USERNAME")},
+            new GridColumn("FIELDDEVICEID", "Field Device") {Lookup = new Lookup("FIELDDEVICE","FIELDDEVICEID","DESCRIPTION")},
+            new GridColumn("ADDDATE","Added"),
+            new GridColumn("INSPECTIONTYPEID","Inspection Type") {Lookup = new Lookup("INSPECTIONTYPE","ID","DESCRIPTION"),Filter = FilterType.Default },
+         //   new GridColumn("EVENTTYPE"),
+         //   new GridColumn("EVENTEXTRA"),
+            new GridColumn("STARTDATE","Start"),
+            new GridColumn("ENDDATE","End"),
+            new GridColumn("COMMENTS","Comments"),
+         //   new GridColumn("REGBODY"),
+         //   new GridColumn("WORKORDERID"),
+            new GridColumn("Status"),
             new GridColumn("FOLLOWUP"),
             new GridColumn("MASTERINSTANCECOUNT"),
             new GridColumn("ALERTSEVERITY"),
             new GridColumn("EVENTREFERENCE"),
             new GridColumn("COMPLIANCEDATE"),
             new GridColumn("ITFGID"),
-            new GridColumn("MAINTENANCETASKID"),
-            new GridColumn("WORKFLAG"),
-            new GridColumn("ASSIGNEDDATE"),
-            new GridColumn("SCHEDULEDDATE"),
-            new GridColumn("PROCESSPLANID"),
+            new GridColumn("MAINTENANCETASKID","Maintenance Task"){Lookup = new Lookup("MAINTENANCETASK","MAINTENANCETASKID","DESCRIPTION"),Filter = FilterType.Default }, //[]
+            new GridColumn("WORKFLAG"), 
+            new GridColumn("ASSIGNEDDATE","Assigned"),
+            new GridColumn("SCHEDULEDDATE","Scheduled")
+     /*       new GridColumn("PROCESSPLANID"),
             new GridColumn("GPS"),
             new GridColumn("GPSLATITUDE"),
             new GridColumn("GPSLONGITUDE"),
             new GridColumn("GPSTIMESTAMP"),
-            new GridColumn("MASTERSCHEDULEID")
+            new GridColumn("MASTERSCHEDULEID")*/
         };
 
         GridModel genEventReadGrid = new GridModel(DataSourceType.MSSQL, "InspectionManager", "GenEventRead") { OptimizeForLargeDataset = true, Caption = "GenEventRead", PageSize = 10 };
         genEventReadGrid.Columns = new List<GridColumn>()
         {
-            new GridColumn("ReadID"),
-            new GridColumn("GenEventID") {ForeignKey = true},
-            new GridColumn("FieldDefID"),
+            new GridColumn("ReadID","Id"),
+            new GridColumn("GenEventID") {ForeignKey = true, DataOnly = true},
+            new GridColumn("FieldDefID", "Field Definition") {Lookup = new Lookup("FIELDDEFS","FIELDDEFID","DESCRIPTION"),Filter = FilterType.Default },
             new GridColumn("Data")
         };
 

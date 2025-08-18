@@ -71,6 +71,7 @@
     <None Remove="Resources\CSS\tailwind.css" />
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
+    <None Remove="Resources\JS\blazor.js" />
     <None Remove="Resources\JS\bundle.js" />
     <None Remove="Resources\JS\bundle.min.js" />
     <None Remove="Resources\JS\componentControl.js" />
@@ -106,6 +107,7 @@
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
+    <EmbeddedResource Include="Resources\JS\blazor.js" />
     <EmbeddedResource Include="Resources\JS\bundle.js" />
     <EmbeddedResource Include="Resources\JS\bundle.min.js" />
     <EmbeddedResource Include="Resources\JS\componentControl.js" />
@@ -259,6 +261,10 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Blazor\" />
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Build">
