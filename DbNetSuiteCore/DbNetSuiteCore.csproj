@@ -117,6 +117,7 @@
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
+    <EmbeddedResource Include="TypeScript\blazor.ts" />
     <EmbeddedResource Include="TypeScript\formControl.ts" />
     <EmbeddedResource Include="TypeScript\dialog.ts" />
     <EmbeddedResource Include="TypeScript\lookupDialog.ts" />
