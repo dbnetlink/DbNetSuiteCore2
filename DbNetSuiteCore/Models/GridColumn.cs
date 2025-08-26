@@ -53,7 +53,8 @@ namespace DbNetSuiteCore.Models
         public List<bool> LineInError { get; set; } = new List<bool>();
              
         public FormColumn FormColumn { get; set; } = new FormColumn();
-     
+        public string ParseFormat { get; set; } = string.Empty;
+
 
         public GridColumn()
         {

@@ -5,6 +5,7 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Globalization;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -54,6 +55,37 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
         }
+
+        public static void ParseColumnDataType(this DataTable dataTable, DataColumn? dataColumn, GridColumn gridColumn, GridModel gridModel)
+        {
+            var columnName = dataColumn.ColumnName;
+            using (DataColumn dc = new DataColumn($"{columnName}_new", gridColumn.DataType))
+            {
+                int ordinal = dataColumn.Ordinal;
+                dataTable.Columns.Add(dc);
+                dc.SetOrdinal(ordinal);
+
+                foreach (DataRow dr in dataTable.Rows)
+                {
+                    switch(gridColumn.DataTypeName)
+                    {
+                        case nameof(DateTime):
+                            try
+                            {
+                                dr[dc.ColumnName] = DateTime.ParseExact(dr[columnName].ToString(), gridColumn.ParseFormat, CultureInfo.InvariantCulture);
+                            }
+                            catch
+                            {
+                                dr[dc.ColumnName] = DBNull.Value;
+                            }       
+                            continue;
+                    }
+                }
+                dataTable.Columns.Remove(columnName);
+                dc.ColumnName = columnName;
+            }
+        }
+
 
         public static void UpdateColumnDataType(this DataTable dt, string colName, Type dataType)
         {

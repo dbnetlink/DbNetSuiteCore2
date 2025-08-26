@@ -1,0 +1,31 @@
+﻿@page "/Licenses"
+@attribute [StreamRendering]
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@inject IHttpContextAccessor httpContextAccessor
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Open Source License Types</PageTitle>
+
+<p data-summary>Sample using public JSON api listing open source license types</p>
+@{
+    GridModel gridModel = new GridModel(DbNetSuiteCore.Enums.DataSourceType.JSON, "https://opensource.org/api/license") { Cache = true, Caption = "Open Source License Types" };
+
+    gridModel.Columns = new List<GridColumn>()
+    {
+        new GridColumn("Id"),
+        new GridColumn("Name"),
+        new GridColumn("Spdx_Id", "SPDX"),
+        new GridColumn("Version"),
+        new GridColumn("Submission_Date") {DataType = typeof(DateTime), ParseFormat="yyyyMMdd"},
+        new GridColumn("Submission_Url"){Format = FormatType.Url},
+        new GridColumn("Submitter_Name"),
+        new GridColumn("Approved"),
+        new GridColumn("Approval_Date") {DataType = typeof(DateTime), ParseFormat="yyyyMMdd"},
+        new GridColumn("License_Steward_Version"),
+        new GridColumn("License_Steward_Url"){Format = FormatType.Url},
+        new GridColumn("Board_Minutes") {Format = FormatType.Url}
+    };
+}
+@(new DbNetSuiteCore.Blazor.Control(httpContextAccessor.HttpContext).Render(gridModel).Result)
+

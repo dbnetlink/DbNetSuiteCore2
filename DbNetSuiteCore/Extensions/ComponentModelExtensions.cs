@@ -432,6 +432,15 @@ namespace DbNetSuiteCore.Extensions
                 DataColumn? dataColumn = componentModel.GetDataColumn(column);
                 componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
             }
+
+            if (componentModel is GridModel gridModel)
+            {
+                foreach (var column in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.ParseFormat) == false))
+                {
+                    DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                    componentModel.Data.ParseColumnDataType(dataColumn, column, gridModel);
+                }
+            }
         }
 
         public static bool IsCsvFile(ComponentModel componentModel)
