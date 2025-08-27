@@ -64,7 +64,8 @@ namespace DbNetSuiteCore.Models
         public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
-       
+        public Dictionary<string,string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
+        public string JsonArrayProperty { get; set; } = string.Empty;
 
         [JsonIgnore]
         public GridModel NestedGrid

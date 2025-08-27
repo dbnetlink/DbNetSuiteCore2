@@ -1,0 +1,79 @@
+﻿@page
+@model FoodStandardsApiModel
+@using DbNetSuiteCore.Web.Pages.GridControl.Json
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Models
+@using System.Net.Http
+
+@{
+    <div style="padding:20px">
+        <form method="post">
+            <div class="d-flex flex-row align-items-center" style="gap:10px">
+                <div>End-Point</div>
+                <div>
+                    <select class="form-select" name="EndPoint" onchange="this.form.submit()" value="@Model.EndPoint">
+                        <option value="">Select end-point</option>
+                        @foreach (string endpoint in Model.EndPoints.Keys)
+                        {
+                            var selected = (Model.EndPoints[endpoint] == Model.EndPoint);
+                            <option value="@Model.EndPoints[endpoint]" selected="@selected">@endpoint</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+    <hr />
+
+    if (string.IsNullOrEmpty(Model.EndPoint) == false)
+    {
+        var gridModel = new GridModel(DataSourceType.JSON, $"https://api.ratings.food.gov.uk/{Model.EndPoint}");
+
+        gridModel.ApiRequestHeaders["x-api-version"] = "2";
+     //   gridModel.JsonArrayProperty = "establishments";
+
+        switch (Model.EndPointName)
+        {
+            case "Establishments":
+                gridModel.Columns = new List<GridColumn>()
+                {
+                    new GridColumn("FHRSID"),
+                    new GridColumn("LocalAuthorityBusinessID"),
+                    new GridColumn("BusinessName"),
+                    new GridColumn("BusinessType") {Filter = FilterType.Distinct},
+                    new GridColumn("RatingValue") {Filter = FilterType.Distinct},
+                    new GridColumn("RatingDate"),
+                    new GridColumn("Links")
+                };
+
+                break;
+            case "BusinessTypes":
+                break;
+        };
+       
+        gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
+
+        gridModel.Cache = true;
+
+        @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel))
+    };
+
+}
+
+
+<script>
+    function transformLinks(sender, args)
+    {
+        if (args.columnName.toLowerCase() == "links")
+        {
+            var links = JSON.parse(args.cell.innerText);
+            if (links.length)
+            {
+                args.cell.innerHTML = `<a target='_blank' href=${links[0].href}>Link</a>`;
+            }
+        }
+    }
+</script>

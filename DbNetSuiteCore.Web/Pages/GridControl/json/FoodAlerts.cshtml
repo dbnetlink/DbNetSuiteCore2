@@ -1,0 +1,94 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var gridModel = new GridModel(DataSourceType.JSON, "https://data.food.gov.uk/food-alerts/id?_limit=100")
+    {
+        Caption = "Food Alerts"
+    };
+ //   gridModel.Columns = new List<GridColumn>() { new GridColumn("country") };
+    gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
+    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
+}
+
+
+<script>
+    function transformLinks(sender, args)
+    {
+        let names = [];
+        switch (args.columnName.toLowerCase())
+        {
+            case "type":
+                let types = JSON.parse(args.cell.innerText);
+                let links = [];
+                types.forEach((t) => 
+                    {
+                        links.push(`<a target='_blank' href=${t}>${t.split('/')[t.split('/').length-1]}</a>`)
+                    }
+                )
+                args.cell.innerHTML = links.join(', ');
+                break;
+            case "problem":
+                let problem = JSON.parse(args.cell.innerText);
+                if (problem.length)
+                {
+                    args.cell.innerHTML = objectProperty(problem[0],'riskStatement');
+                }
+                break;
+            case "status":
+                if (isJsonString(args.cell.innerText))
+                {
+                    args.cell.innerHTML = objectProperty(JSON.parse(args.cell.innerText),'label');
+                }
+                break;
+            case "reportingbusiness":
+                if (isJsonString(args.cell.innerText))
+                {
+                    args.cell.innerHTML = objectProperty(JSON.parse(args.cell.innerText),'commonName');
+                }
+                break;
+            case "productdetails":
+                let products = JSON.parse(args.cell.innerText);
+                products.forEach((p) =>
+                    {
+                        names.push(p.productName)
+                    }
+                )
+                args.cell.innerHTML = names.join(', ');
+                break;
+            case "country":
+                if (isJsonString(args.cell.innerText))
+                {
+                    let countries = JSON.parse(args.cell.innerText);
+               
+                    countries.forEach((c) =>
+                        {
+                            names.push(c.label[0])
+                        }
+                    )
+                    args.cell.innerHTML = names.join(', ');
+                    break;
+                }
+       } 
+    }
+
+    function isJsonString(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+
+    function objectProperty(obj, name)
+    {
+        if (obj && obj[name]) {
+            return obj[name];
+        }
+        return '';
+    }
+</script>

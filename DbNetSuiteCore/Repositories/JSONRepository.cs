@@ -1,10 +1,11 @@
-﻿using DbNetSuiteCore.Models;
-using Newtonsoft.Json;
-using System.Data;
-using DbNetSuiteCore.Extensions;
-using Newtonsoft.Json.Linq;
-using Microsoft.Extensions.Caching.Memory;
+﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using Microsoft.Extensions.Caching.Memory;
+using MongoDB.Bson;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Data;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -105,9 +106,19 @@ namespace DbNetSuiteCore.Repositories
 
                     string token = string.Empty;
 
+                    _httpClient.DefaultRequestHeaders.Clear();
+
                     if (!string.IsNullOrEmpty(token))
                     {
                         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                    }
+
+                    if (componentModel is GridModel gridModel)
+                    {
+                        foreach (var key in gridModel.ApiRequestHeaders.Keys)
+                        {
+                            _httpClient.DefaultRequestHeaders.Add(key, gridModel.ApiRequestHeaders[key]);
+                        }
                     }
 
                     json = await _httpClient.GetStringAsync(url);
@@ -122,7 +133,7 @@ namespace DbNetSuiteCore.Repositories
 
             try
             {
-                dataTable = Tabulate(json);
+                dataTable = Tabulate(json, componentModel);
             }
             catch (Exception ex)
             {
@@ -138,25 +149,51 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private DataTable Tabulate(string json)
+        private DataTable Tabulate(string json, ComponentModel componentModel)
         {
-            JArray srcArray = JArray.Parse(json);
-            JArray trgArray = new JArray();
-            foreach (JObject row in srcArray.Children<JObject>())
-            {
-                var cleanRow = new JObject();
-                foreach (JProperty column in row.Properties())
-                {
-                    if (column.Value is JValue)
-                    {
-                        cleanRow.Add(column.Name, column.Value);
-                    }
-                }
+            JToken? jToken = JToken.Parse(json);
 
-                trgArray.Add(cleanRow);
+            if (componentModel is GridModel gridModel && string.IsNullOrEmpty(gridModel.JsonArrayProperty) == false)
+            {
+                jToken = jToken.SelectToken(gridModel.JsonArrayProperty);
             }
 
-            return JsonConvert.DeserializeObject<DataTable>(trgArray.ToString());
+            if (jToken is not JArray)
+            {
+                foreach (JToken child in jToken.Children())
+                {
+                    if (child.First is JArray)
+                    {
+                        jToken = child.First;
+                        break;
+                    }   
+                }
+            }
+
+            if (jToken is JArray srcArray)
+            {
+                JArray trgArray = new JArray();
+                foreach (JObject row in srcArray.Children<JObject>())
+                {
+                    var cleanRow = new JObject();
+                    foreach (JProperty column in row.Properties())
+                    {
+                        if (column.Value is JValue)
+                        {
+                            cleanRow.Add(column.Name, column.Value);
+                        }
+                        else
+                        {
+                            cleanRow.Add(column.Name, column.Value.ToString(Formatting.None));
+                        }
+                    }
+
+                    trgArray.Add(cleanRow);
+                }
+                return JsonConvert.DeserializeObject<DataTable>(trgArray.ToString());
+            }
+
+            return new DataTable();
         }
     }
 }
