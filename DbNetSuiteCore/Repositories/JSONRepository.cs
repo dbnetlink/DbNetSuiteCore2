@@ -6,6 +6,7 @@ using MongoDB.Bson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
+using System.Text.Json;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -170,6 +171,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
+            Dictionary<string,Type> DataTypes = new Dictionary<string, Type>();
             if (jToken is JArray srcArray)
             {
                 JArray trgArray = new JArray();
@@ -185,12 +187,24 @@ namespace DbNetSuiteCore.Repositories
                         else
                         {
                             cleanRow.Add(column.Name, column.Value.ToString(Formatting.None));
+                            DataTypes[column.Name] = typeof(JsonDocument);
                         }
                     }
 
                     trgArray.Add(cleanRow);
                 }
-                return JsonConvert.DeserializeObject<DataTable>(trgArray.ToString());
+
+                DataTable datatable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString()) ?? new DataTable();
+
+                foreach (string columnName in DataTypes.Keys)
+                {
+                    if (datatable.Columns.Contains(columnName))
+                    {
+                        datatable.Columns[columnName]!.ExtendedProperties.Add("DataType", DataTypes[columnName]);
+                    }
+                }
+
+                return datatable;
             }
 
             return new DataTable();

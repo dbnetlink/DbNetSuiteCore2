@@ -129,6 +129,11 @@ namespace DbNetSuiteCore.Models
         {
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName);
             Expression = dataColumn.ColumnName;
+
+            if (dataColumn.ExtendedProperties.Contains("DataType"))
+            {
+                DataType = (Type)dataColumn.ExtendedProperties["DataType"];
+            }
             this.Update(dataColumn, dataSourceType);
         }
 

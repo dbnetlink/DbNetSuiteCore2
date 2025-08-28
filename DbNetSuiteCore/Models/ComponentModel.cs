@@ -126,6 +126,11 @@ namespace DbNetSuiteCore.Models
             return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower() || c.ColumnName.ToLower() == column.Expression.ToLower());
         }
 
+        public ColumnModel? GetColumn(string columnName)
+        {
+            return GetColumns().FirstOrDefault(c => c.ColumnName.ToLower() == columnName.ToLower() || c.Name.ToLower() == columnName.ToLower() || c.Expression.ToLower() == columnName.ToLower());
+        }
+
         public object RowValue(DataRow dataRow, string columnName, object defaultValue)
         {
             var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == columnName);
