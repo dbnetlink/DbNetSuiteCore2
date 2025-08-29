@@ -31,9 +31,7 @@
     if (string.IsNullOrEmpty(Model.EndPoint) == false)
     {
         var gridModel = new GridModel(DataSourceType.JSON, $"https://api.ratings.food.gov.uk/{Model.EndPoint}");
-
         gridModel.ApiRequestHeaders["x-api-version"] = "2";
-     //   gridModel.JsonArrayProperty = "establishments";
 
         switch (Model.EndPointName)
         {
@@ -55,7 +53,6 @@
         };
        
         gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
-
         gridModel.Cache = true;
 
         @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel))

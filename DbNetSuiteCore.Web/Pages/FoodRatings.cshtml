@@ -1,0 +1,201 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>ArcGIS Street Map of the UK</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row; /* Arranges the divs side-by-side */
+            height: 100vh; /* Ensures the container fills the viewport height */
+            width: 100vw; /* Ensures the container fills the viewport width */
+        }
+
+        .left-half {
+            flex: 1; /* This div will take up one part of the available space */
+        }
+
+        .right-half {
+            flex: 1; /* This div will also take up one part, creating an equal split */
+            overflow:hidden;
+        }
+
+        .content {
+            display: inline-flex;
+            gap: 10px;
+        }
+
+
+    </style>
+
+    <script src="https://js.arcgis.com/4.28/"></script>
+    <script>
+            require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/Graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/geometry/Circle"
+        ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, Circle) {
+
+            // Set the ArcGIS API key for accessing services
+            esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurLGmz8Xa_xil726lBBYQxOOosl3feoCQCyUhcbJcnIfVCUzCe2Fx_wa2KVqJWkulhcep7S_VN5v9dgZingl8MPgKcWDSY-egzsFANDNzPo5GXpFdHKxy16fTbXsFoIieUlGlNjh_gGgcrNvtcrfKlOQeutcQ6BB04HcDFCO1eWEBHgUCzIQRor5GivTW1WI8P3MurAx8R_4ue3xDwSY0g-c.AT1_z0JxEzxl";
+
+            // Create a new GraphicsLayer to hold the circle graphic
+            const graphicsLayer = new GraphicsLayer();
+
+            // Create a new Map instance with the graphics layer
+            const map = new Map({
+                basemap: "arcgis-streets",
+                layers: [graphicsLayer] // Add the graphics layer to the map
+            });
+
+            // Create a MapView to display the map
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-2.0, 54.0],
+                zoom: 6
+            });
+
+            // Add a click event handler to the view
+            view.on("click", function(event) {
+                // Clear any existing graphics before adding the new one
+                graphicsLayer.removeAll();
+
+                // The point of the click
+                const point = event.mapPoint;
+
+                // Define a symbol for the circle
+                const circleSymbol = {
+                    type: "simple-fill",
+                    color: [51, 153, 255, 0.5], // Light blue with transparency
+                    outline: {
+                        color: [255, 255, 255],
+                        width: 1
+                    }
+                };
+
+                // Create a Circle geometry
+                const circleGeometry = new Circle({
+                    center: point,
+                    geodesic: true,
+                    radius: 10,
+                    radiusUnit: "miles"
+                });
+
+                // Create a Graphic from the geometry and symbol
+                // The Graphic class can accept a Circle geometry directly.
+                const circleGraphic = new Graphic({
+                    geometry: circleGeometry,
+                    symbol: circleSymbol
+                });
+
+                // Add the graphic to the graphics layer to display it on the map
+                graphicsLayer.add(circleGraphic);
+
+                console.log("Circle drawn at: ", point.longitude, point.latitude);
+
+                window.updateParams(point.longitude, point.latitude);
+            });
+        });
+
+
+
+    </script>
+</head>
+<body>
+    @{
+        var gridModel = new GridModel(DataSourceType.JSON, $"https://api.ratings.food.gov.uk/Establishments");
+
+        gridModel.Columns = new List<GridColumn>
+        {
+            new GridColumn("BusinessName"),
+            new GridColumn("AddressLine2"),
+            new GridColumn("AddressLine3"),
+            new GridColumn("AddressLine4"),
+            new GridColumn("PostCode"),
+            new GridColumn("BusinessType"),
+            new GridColumn("Distance"),
+            new GridColumn("FHRSID"),
+            new GridColumn("LocalAuthorityEmailAddress"),
+            new GridColumn("LocalAuthorityName"),
+            new GridColumn("LocalAuthorityWebSite"),
+            new GridColumn("NewRatingPending"),
+            new GridColumn("Phone"),
+            new GridColumn("RatingDate"),
+            new GridColumn("RatingKey"),
+            new GridColumn("RatingValue"),
+            new GridColumn("RightToReply"),
+            new GridColumn("SchemeType"),
+            new GridColumn("geocode"),
+            new GridColumn("scores")
+        };
+
+        gridModel.Caption = "Food establishment ratings";
+        gridModel.ApiRequestHeaders["x-api-version"] = "2";
+        gridModel.ApiRequestParameters["name"] = "xxxxxxxxx";
+        gridModel.ApiRequestParameters["latitude"] = "";
+        gridModel.ApiRequestParameters["longitude"] = "";
+        gridModel.ApiRequestParameters["maxDistanceLimit"] = "10";
+
+        gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
+        gridModel.ClientEvents[GridClientEvent.Initialised] = "saveGridRef";
+     //   gridModel.Cache = true;
+    }
+    <div class="container">
+        <div class="left-half" id="viewDiv"></div>
+        <div class="right-half">
+            <div class="content">
+                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel))
+            </div>
+        </div>
+    </div>
+    @DbNetSuiteCore.Resources.ClientScript()
+    <script>
+        function updateParams(longitude,latitude)
+        {
+            var params = {}
+            params.latitude = latitude;
+            params.longitude = longitude;
+            params.name = '';
+            window.foodRatingsGrid.updateApiRequestParameters(params);
+        }
+
+        function saveGridRef(sender, args)
+        {
+            window.foodRatingsGrid = sender;
+        }
+
+        function transformLinks(sender, args)
+        {
+            if (args.columnName.toLowerCase() == "links")
+            {
+                if (args.json && args.json.length)
+                {
+                    args.cell.innerHTML = `<a target='_blank' href=${args.json[0].href}>Link</a>`;
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -370,7 +370,13 @@ class GridControl extends ComponentControl {
 
     private invokeCellTransform(cell: HTMLTableCellElement) {
         var columnName = (this.controlElement("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
+        var userDataType = (this.controlElement("colgroup").children[cell.cellIndex] as HTMLTableColElement).dataset.userdatatype
+
         var args = { cell: cell, columnName: columnName }
+
+        if (userDataType == "JsonDocument") {
+            try {args['json'] = JSON.parse(cell.innerText);} catch {}
+        }
         this.invokeEventHandler('CellTransform', args)
     }
 
@@ -745,6 +751,18 @@ class GridControl extends ComponentControl {
 
         if (element) {
             element.dataset.error = "true";
+        }
+    }
+
+    public updateApiRequestParameters(params: any) {
+        let input = this.controlElement('input[name="apiRequestParameters"]') as HTMLInputElement;
+        if (input) {
+            input.value = JSON.stringify(params);
+
+            if (this.controlElement('th') == null) {
+                input.attributes["hx-target"].value = "closest div.grid-container";
+            }
+            htmx.trigger(input, "changed",);
         }
     }
 

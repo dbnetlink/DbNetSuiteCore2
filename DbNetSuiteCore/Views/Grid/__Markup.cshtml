@@ -34,7 +34,7 @@
                 {
                     if (Model.GetDataColumn(gridColumn) != null)
                     {
-                        <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" />
+                        <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" data-userdatatype="@gridColumn.UserDataType" />
                     }
                 }
                 @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)

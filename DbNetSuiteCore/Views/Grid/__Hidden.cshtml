@@ -5,6 +5,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Enums
 <input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonConvert.SerializeObject(Model), Configuration)" />
 @if (Model.IsParent || Model._NestedGrids.Any())
 {
@@ -15,3 +16,7 @@
 {
     <input type="hidden" name="json" value="@TextHelper.Compress(Model.JSON)" />
 }
+@if (Model.DataSourceType == DataSourceType.JSON)
+{   
+    <input type="hidden" name="@TriggerNames.ApiRequestParameters" value="" hx-post="@Model.PostUrl" hx-trigger="changed" hx-target="closest tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML"/>
+}   

@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.Extensions.Caching.Memory;
 using MongoDB.Bson;
 using Newtonsoft.Json;
@@ -25,18 +26,21 @@ namespace DbNetSuiteCore.Repositories
         }
         public async Task GetRecords(ComponentModel componentModel, HttpContext httpContext)
         {
-            var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : await BuildDataTable(componentModel, httpContext);
-            if (componentModel is GridModel)
+            componentModel.Data = await BuildDataTable(componentModel, httpContext);
+
+            var dataTable = componentModel.Data;
+            if (componentModel is GridModel gridModel)
             {
-                var gridModel = (GridModel)componentModel;
-                dataTable.FilterAndSort(gridModel);
-                gridModel.ConvertEnumLookups();
-                gridModel.GetDistinctLookups();
+                if (gridModel.Data.Rows.Count > 0)
+                {
+                    dataTable.FilterAndSort(gridModel);
+                    gridModel.ConvertEnumLookups();
+                    gridModel.GetDistinctLookups();
+                }
             }
 
-            if (componentModel is SelectModel)
+            if (componentModel is SelectModel selectModel)
             {
-                var selectModel = (SelectModel)componentModel;
                 if (selectModel.Distinct)
                 {
                     var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
@@ -57,6 +61,20 @@ namespace DbNetSuiteCore.Repositories
         {
             componentModel.Data = await BuildDataTable(componentModel, httpContext);
             return componentModel.Data;
+        }
+
+
+        public void UpdateApiRequestParameters(GridModel gridModel, HttpContext? context)
+        {
+            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context)) ?? new Dictionary<string, string>();
+            apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
+            foreach (string key in gridModel.ApiRequestParameters.Keys)
+            {
+                if (apiRequestParameters.ContainsKey(key))
+                {
+                    gridModel.ApiRequestParameters[key] = apiRequestParameters[key];
+                }
+            }
         }
 
         private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext httpContext)
@@ -116,6 +134,25 @@ namespace DbNetSuiteCore.Repositories
 
                     if (componentModel is GridModel gridModel)
                     {
+                        var parameters = new List<string>();
+                        if (url.Split("?").Length > 1)
+                        {
+                            parameters = url.Split("?").Last().Split("&").ToList();
+                        }
+                        
+                        foreach (var key in gridModel.ApiRequestParameters.Keys)
+                        {
+                            if (string.IsNullOrEmpty(gridModel.ApiRequestParameters[key]) == false)
+                            {
+                                parameters.Add($"{key}={gridModel.ApiRequestParameters[key]}");
+                            }
+                        }
+
+                        if (parameters.Count > 0)
+                        {
+                            url = $"{url.Split("?").First()}?{string.Join("&", parameters)}";
+                        }   
+
                         foreach (var key in gridModel.ApiRequestHeaders.Keys)
                         {
                             _httpClient.DefaultRequestHeaders.Add(key, gridModel.ApiRequestHeaders[key]);
@@ -139,12 +176,6 @@ namespace DbNetSuiteCore.Repositories
             catch (Exception ex)
             {
                 throw new Exception("Unable to convert JSON to a table. Please ensure root element is an array", ex);
-            }
-
-            if (componentModel.GetColumns().Any())
-            {
-                string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression).ToArray();
-                dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
             }
 
             return dataTable;
@@ -171,7 +202,9 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            Dictionary<string,Type> DataTypes = new Dictionary<string, Type>();
+            Dictionary<string,Type> dataTypes = new Dictionary<string, Type>();
+            List<string> dataColumnNames = new List<string>();
+
             if (jToken is JArray srcArray)
             {
                 JArray trgArray = new JArray();
@@ -187,24 +220,43 @@ namespace DbNetSuiteCore.Repositories
                         else
                         {
                             cleanRow.Add(column.Name, column.Value.ToString(Formatting.None));
-                            DataTypes[column.Name] = typeof(JsonDocument);
+                            dataTypes[column.Name] = typeof(JsonDocument);
+                        }
+
+                        if (!dataColumnNames.Contains(column.Name))
+                        {
+                            dataColumnNames.Add(column.Name);
                         }
                     }
 
                     trgArray.Add(cleanRow);
                 }
 
-                DataTable datatable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString()) ?? new DataTable();
+                DataTable dataTable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString()) ?? new DataTable();
 
-                foreach (string columnName in DataTypes.Keys)
+                foreach (string columnName in dataTypes.Keys)
                 {
-                    if (datatable.Columns.Contains(columnName))
+                    if (dataTable.Columns.Contains(columnName))
                     {
-                        datatable.Columns[columnName]!.ExtendedProperties.Add("DataType", DataTypes[columnName]);
+                        dataTable.Columns[columnName]!.ExtendedProperties.Add("DataType", dataTypes[columnName]);
                     }
                 }
 
-                return datatable;
+                if (componentModel.GetColumns().Any())
+                {
+                    List<string> columnNames = componentModel.GetColumns().Select(c => c.Expression).ToList();
+                    List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c) == false).ToList();
+
+                    foreach (string columnName in missingColumnNames)
+                    {
+                        DataColumn Col = dataTable.Columns.Add(columnName, typeof(string));
+                        Col.SetOrdinal(columnNames.IndexOf(columnName));
+                    }
+
+                    dataTable = new DataView(dataTable).ToTable(false, columnNames.ToArray());
+                }
+
+                return dataTable;
             }
 
             return new DataTable();

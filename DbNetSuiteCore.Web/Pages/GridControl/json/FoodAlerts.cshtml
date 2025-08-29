@@ -4,27 +4,50 @@
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Web.Enums
 
+<select id="alertType">
+    <option value="xxxxxxxxx">All</option>
+    <option value="AA">Allergy Alert</option>
+    <option value="PRIN">Product Recall Information Notice</option>
+    <option value="FAFA">Food Alert For Action</option>
+</select>
+
 @{
-    var gridModel = new GridModel(DataSourceType.JSON, "https://data.food.gov.uk/food-alerts/id?_limit=100")
+    var gridModel = new GridModel(DataSourceType.JSON, "https://data.food.gov.uk/food-alerts/id")
     {
-        Caption = "Food Alerts"
+        Caption = "Food Alerts in last 30 days"
     };
- //   gridModel.Columns = new List<GridColumn>() { new GridColumn("country") };
+    gridModel.ApiRequestParameters["_limit"] = "100";
+    gridModel.ApiRequestParameters["since"] = DateTime.Now.AddDays(-30).ToString("yyyy-MM-ddTHH:mm:ssZ");
+    gridModel.ApiRequestParameters["type"] = "xxxxxxxxxxxxx";
+
     gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
+    gridModel.ClientEvents[GridClientEvent.Initialised] = "saveGridRef";
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel));
 }
 
 
 <script>
+    function updateParams(event)
+    {       
+        var params = {}
+        params.type = event.target.value;
+        window.foodAlertsGrid.updateApiRequestParameters(params);
+    }
+
+    function saveGridRef(sender, args)
+    {
+        document.querySelector("#alertType").addEventListener("change", updateParams);
+        window.foodAlertsGrid = sender;
+    }
+
     function transformLinks(sender, args)
     {
         let names = [];
         switch (args.columnName.toLowerCase())
         {
             case "type":
-                let types = JSON.parse(args.cell.innerText);
                 let links = [];
-                types.forEach((t) => 
+                args.json.forEach((t) =>
                     {
                         links.push(`<a target='_blank' href=${t}>${t.split('/')[t.split('/').length-1]}</a>`)
                     }
@@ -32,39 +55,38 @@
                 args.cell.innerHTML = links.join(', ');
                 break;
             case "problem":
-                let problem = JSON.parse(args.cell.innerText);
-                if (problem.length)
+                if (args.json && args.json.length)
                 {
-                    args.cell.innerHTML = objectProperty(problem[0],'riskStatement');
+                    args.cell.innerHTML = args.json[0].riskStatement;
                 }
                 break;
             case "status":
-                if (isJsonString(args.cell.innerText))
+                if (args.json)
                 {
-                    args.cell.innerHTML = objectProperty(JSON.parse(args.cell.innerText),'label');
+                    args.cell.innerHTML = args.json.label;
                 }
                 break;
             case "reportingbusiness":
-                if (isJsonString(args.cell.innerText))
+                if (args.json)
                 {
-                    args.cell.innerHTML = objectProperty(JSON.parse(args.cell.innerText),'commonName');
+                    args.cell.innerHTML = args.json.commonName;
                 }
                 break;
             case "productdetails":
-                let products = JSON.parse(args.cell.innerText);
-                products.forEach((p) =>
-                    {
-                        names.push(p.productName)
-                    }
-                )
-                args.cell.innerHTML = names.join(', ');
+                if (args.json && args.json.length)
+                {
+                    args.json.forEach((p) =>
+                        {
+                            names.push(p.productName)
+                        }
+                    )
+                    args.cell.innerHTML = names.join(', ');
+                }
                 break;
             case "country":
-                if (isJsonString(args.cell.innerText))
+                if (args.json && args.json.length)
                 {
-                    let countries = JSON.parse(args.cell.innerText);
-               
-                    countries.forEach((c) =>
+                    args.json.forEach((c) =>
                         {
                             names.push(c.label[0])
                         }
@@ -73,22 +95,5 @@
                     break;
                 }
        } 
-    }
-
-    function isJsonString(str) {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            return false;
-        }
-        return true;
-    }
-
-    function objectProperty(obj, name)
-    {
-        if (obj && obj[name]) {
-            return obj[name];
-        }
-        return '';
     }
 </script>

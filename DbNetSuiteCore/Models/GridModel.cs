@@ -65,6 +65,8 @@ namespace DbNetSuiteCore.Models
         public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
         public Dictionary<string,string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
+
         public string JsonArrayProperty { get; set; } = string.Empty;
 
         [JsonIgnore]

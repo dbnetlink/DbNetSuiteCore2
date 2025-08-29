@@ -23,5 +23,7 @@
         public const string Insert = "insert";
         public const string Refresh = "refresh";
         public const string SearchDialog = "searchDialog";
+        public const string ApiRequestParameters = "apiRequestParameters";
+        
     }
 }

@@ -384,6 +384,11 @@ namespace DbNetSuiteCore.Services
                 gridModel.RowsModified = RequestHelper.GetModifiedRows(_context, gridModel);
                 gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
 
+                if (gridModel.DataSourceType == DataSourceType.JSON)
+                { 
+                   _jsonRepository.UpdateApiRequestParameters(gridModel, _context);
+                }
+
                 AssignParentModel(gridModel);
                 AssignSearchDialogFilter(gridModel);
 
