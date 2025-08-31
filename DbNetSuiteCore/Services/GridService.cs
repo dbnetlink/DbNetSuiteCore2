@@ -373,16 +373,17 @@ namespace DbNetSuiteCore.Services
             {
                 var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration);
                 GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
-                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
+                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? string.Empty);
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
-                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
-                gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
-                gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
+                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context)?.Trim() ?? string.Empty;
+                gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context) ?? string.Empty;
+                gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context) ?? string.Empty;
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
                 gridModel.FormValues = RequestHelper.GridFormColumnValues(_context, gridModel);
-                gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
+                gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context)?.Trim() ?? string.Empty;
                 gridModel.RowsModified = RequestHelper.GetModifiedRows(_context, gridModel);
-                gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
+                gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context) ?? "false");
+                gridModel.RowId = RequestHelper.FormValue(TriggerNames.ViewDialogContent, string.Empty, _context) ?? string.Empty;
 
                 if (gridModel.DataSourceType == DataSourceType.JSON)
                 { 

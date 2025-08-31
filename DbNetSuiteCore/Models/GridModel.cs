@@ -68,7 +68,6 @@ namespace DbNetSuiteCore.Models
         public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
 
         public string JsonArrayProperty { get; set; } = string.Empty;
-
         [JsonIgnore]
         public GridModel NestedGrid
         {

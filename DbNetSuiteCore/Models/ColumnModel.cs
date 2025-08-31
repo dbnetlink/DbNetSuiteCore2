@@ -231,9 +231,8 @@ namespace DbNetSuiteCore.Models
             Initialised = true;
             Name = (dataSourceType == DataSourceType.Excel || dataSourceType == DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
 
-            if (this is FormColumn)
+            if (this is FormColumn formColumn)
             {
-                var formColumn = (FormColumn)this;
                 switch (dataSourceType)
                 {
                     case DataSourceType.MongoDB:
@@ -241,6 +240,11 @@ namespace DbNetSuiteCore.Models
                         formColumn.Autoincrement = (Name == MongoDbRepository.PrimaryKeyName);
                         break;
                 }
+            }
+
+            if (dataColumn.ExtendedProperties.Contains("DataType"))
+            {
+                DataType = (Type)dataColumn.ExtendedProperties["DataType"];
             }
         }
         public string ToStringOrEmpty(object? value)

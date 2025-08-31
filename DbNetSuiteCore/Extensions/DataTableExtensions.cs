@@ -370,8 +370,8 @@ namespace DbNetSuiteCore.Extensions
         private static string KeyFilter(ComponentModel componentModel, List<ColumnModel> keyColumns)
         {
             List<string> primaryKeyFilter = new List<string>();
-            /*
-            List<object> primaryKeyValues = TextHelper.DeobfuscateKey<List<object>>(componentModel.ParentKey) ?? new List<object>();
+
+            List<object> primaryKeyValues = componentModel.GetPrimaryKeyValues();
             if (primaryKeyValues.Count() == keyColumns.Count())
             {
                 foreach (var item in keyColumns.Select((value, index) => new { value = value, index = index }))
@@ -379,7 +379,7 @@ namespace DbNetSuiteCore.Extensions
                     primaryKeyFilter.Add($"({item.value.Name} = {Quoted(item.value)}{primaryKeyValues[item.index]}{Quoted(item.value)})");
                 }
             }
-            */
+
             return string.Join(" and ", primaryKeyFilter);
         }
 

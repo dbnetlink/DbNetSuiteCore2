@@ -41,7 +41,8 @@ namespace DbNetSuiteCore.Models
         public SummaryModel? ParentModel { get; set; }
         public SummaryModel? SummaryModel { get; set; }
         public bool IsBlazor { get; set; } = false;
-
+        [JsonIgnore]
+        internal string RowId { get; set; }
         public string Url
         {
             get
@@ -163,6 +164,10 @@ namespace DbNetSuiteCore.Models
             return LinkedControlIds.ContainsKey(typeName) ? LinkedControlIds[typeName] : new List<string>();
         }
 
+        public List<object> GetPrimaryKeyValues()
+        {
+            return JsonConvert.DeserializeObject<List<object>>(TextHelper.DeobfuscateString(RowId)) ?? new List<object>();
+        }
         public List<object> GetParentKeyValues()
         {
             var primaryKeyValues = new List<object>();

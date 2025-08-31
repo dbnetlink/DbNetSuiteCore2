@@ -664,6 +664,13 @@ namespace DbNetSuiteCore.Extensions
                     return false;
             }
         }
+
+        public static int ParseInt(string intString)
+        {
+            int value = -1;
+            Int32.TryParse(intString, out value);
+            return value;
+        }
         private static Type GetColumnType(string typeName)
         {
             return Type.GetType("System." + typeName);
