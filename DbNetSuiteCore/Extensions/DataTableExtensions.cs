@@ -376,7 +376,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 foreach (var item in keyColumns.Select((value, index) => new { value = value, index = index }))
                 {
-                    primaryKeyFilter.Add($"({item.value.Name} = {Quoted(item.value)}{primaryKeyValues[item.index]}{Quoted(item.value)})");
+                    primaryKeyFilter.Add($"([{item.value.Name}] = {Quoted(item.value)}{primaryKeyValues[item.index]}{Quoted(item.value)})");
                 }
             }
 

@@ -120,7 +120,7 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                primaryKeyValue = componentModel.GetParentKeyValues();
+                primaryKeyValue = componentModel.GetPrimaryKeyValues();
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
             return await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
