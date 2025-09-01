@@ -109,9 +109,10 @@ namespace DbNetSuiteCore.ViewModels
         {
             if ((gridColumn?.Filter ?? FilterType.None) != FilterType.None)
             {
-                if (gridColumn.LookupOptions != null && gridColumn.LookupOptions.Any())
+                var options = gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>();
+                if (options.Any() || gridColumn?.Filter == FilterType.Distinct)
                 {
-                    return RenderColumnSelectFilter(gridColumn.LookupOptions, gridColumn.Key);
+                    return RenderColumnSelectFilter(options, gridColumn.Key);
                 }
                 else
                 {

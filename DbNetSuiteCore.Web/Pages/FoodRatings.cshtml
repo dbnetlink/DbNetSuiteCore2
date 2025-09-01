@@ -36,14 +36,13 @@
 
         .right-half {
             flex: 1; /* This div will also take up one part, creating an equal split */
-            overflow:auto;
+            overflow: auto;
         }
 
         .content {
             display: inline-flex;
             gap: 10px;
         }
-
 
     </style>
 
@@ -130,26 +129,26 @@
 
         gridModel.Columns = new List<GridColumn>
         {
-            new GridColumn("BusinessName", "Name"),
-            new GridColumn("AddressLine2"),
-            new GridColumn("AddressLine3"),
-            new GridColumn("AddressLine4"),
-            new GridColumn("PostCode"),
-            new GridColumn("BusinessType") {Filter = FilterType.Distinct},
-            new GridColumn("Distance") {DataType = typeof(decimal), Format = "0.00"},
-            new GridColumn("FHRSID") {PrimaryKey = true},
-            new GridColumn("LocalAuthorityEmailAddress") {Format = FormatType.Email},
-            new GridColumn("LocalAuthorityName") {Filter = FilterType.Distinct},
-            new GridColumn("LocalAuthorityWebSite") {Format = FormatType.Url},
-            new GridColumn("NewRatingPending"),
-            new GridColumn("Phone"),
-            new GridColumn("RatingDate") {DataType = typeof(DateTime)},
-            new GridColumn("RatingKey"),
-            new GridColumn("RatingValue"),
-            new GridColumn("RightToReply"),
-            new GridColumn("SchemeType"),
-            new GridColumn("geocode","Latitude/Longitude"){DataType = typeof(JsonDocument)},
-            new GridColumn("scores","Hygiene/Structural/Confidence"){DataType = typeof(JsonDocument)}
+        new GridColumn("BusinessName", "Name"),
+        new GridColumn("AddressLine2"),
+        new GridColumn("AddressLine3"),
+        new GridColumn("AddressLine4"),
+        new GridColumn("PostCode"),
+        new GridColumn("BusinessType") {Filter = FilterType.Distinct},
+        new GridColumn("Distance") {DataType = typeof(decimal), Format = "0.00"},
+        new GridColumn("FHRSID") {PrimaryKey = true},
+        new GridColumn("LocalAuthorityEmailAddress") {Format = FormatType.Email},
+        new GridColumn("LocalAuthorityName") {Filter = FilterType.Distinct},
+        new GridColumn("LocalAuthorityWebSite") {Format = FormatType.Url},
+        new GridColumn("NewRatingPending"),
+        new GridColumn("Phone"),
+        new GridColumn("RatingDate") {DataType = typeof(DateTime)},
+        new GridColumn("RatingKey"),
+        new GridColumn("RatingValue"),
+        new GridColumn("RightToReply"),
+        new GridColumn("SchemeType"),
+        new GridColumn("geocode","Latitude/Longitude"){DataType = typeof(JsonDocument)},
+        new GridColumn("scores","Hygiene/Structural/Confidence"){DataType = typeof(JsonDocument)}
         };
 
         gridModel.Caption = "Food establishment ratings";
@@ -160,6 +159,7 @@
         gridModel.ApiRequestParameters["maxDistanceLimit"] = "5";
 
         gridModel.ClientEvents[GridClientEvent.CellTransform] = "cellTransform";
+        gridModel.ClientEvents[GridClientEvent.ViewDialogUpdated] = "viewCellTransform";
         gridModel.ClientEvents[GridClientEvent.Initialised] = "saveGridRef";
 
         gridModel.ViewDialog = new ViewDialog();
@@ -200,15 +200,12 @@
                     }
                     break;
                 case "geocode":
-                    if (args.json)
-                    {
-                        args.cell.innerHTML = `${args.json.latitude} / ${args.json.longitude}`
-                    }
+                    formatGeocode(args.cell, args.json)
                     break;
                 case "scores":
                     if (args.json && args.json.Hygiene)
                     {
-                       args.cell.innerHTML = `${args.json.Hygiene} / ${args.json.Structural} / ${args.json.ConfidenceInManagement}`
+                        formatScores(args.cell, args.json)
                     }
                     else
                     {
@@ -217,7 +214,41 @@
                     break;
             }
         }
-    </script>
 
+        function viewCellTransform(sender, args)
+        {
+            var cell = args.viewDialog.columnCell('geocode')
+            var json = JSON.parse(cell.innerText)
+            formatGeocode(cell, json)
+
+            var cell = args.viewDialog.columnCell('scores')
+            var json = JSON.parse(cell.innerText)
+            formatScores(cell, json)
+        }
+
+        function formatGeocode(cell, json)
+        {
+            if (json)
+            {
+                cell.innerHTML = `${json.latitude} / ${json.longitude}`
+            }
+            else
+            {
+                cell.innerHTML = '&nbsp;'
+            }
+        }
+
+        function formatScores(cell, json)
+        {
+            if (json && json.Hygiene)
+            {
+                cell.innerHTML = `${json.Hygiene} / ${json.Structural} / ${json.ConfidenceInManagement}`
+            }
+            else
+            {
+                cell.innerHTML = '&nbsp;'
+            }
+        }
+    </script>
 </body>
 </html>

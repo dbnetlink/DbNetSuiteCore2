@@ -173,6 +173,7 @@ namespace DbNetSuiteCore.Services
             {
                 case TriggerNames.ParentKey:
                 case TriggerNames.Refresh:
+                case TriggerNames.ApiRequestParameters:
                     gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
                     gridModel.Columns.ToList().ForEach(c => c.DbLookupOptions = null);
                     break;

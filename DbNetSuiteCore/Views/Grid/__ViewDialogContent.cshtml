@@ -34,7 +34,7 @@
 
                         <td class="font-bold whitespace-nowrap">@(gridColumn.Label)</td>
                         <td>
-                            <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style)>
+                            <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style) data-userdatatype="@gridColumn.UserDataType">
                                 @if (gridColumn.DataType == typeof(Boolean) && (gridColumn.EnumOptions?.Any() ?? false) == false)
                                 {
                                     var boolValue = Convert.ToBoolean(Convert.ToInt16(value));

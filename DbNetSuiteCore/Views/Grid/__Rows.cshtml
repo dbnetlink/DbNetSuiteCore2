@@ -175,7 +175,7 @@
 
         </tr>
 
-        @if (Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey)
+        @if ((Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey) || Model.GridModel.TriggerName == TriggerNames.ApiRequestParameters)
         {
             <tr style="display:none" class="lookup-refresh">
                 <td colspan="@Model.ColSpan">
