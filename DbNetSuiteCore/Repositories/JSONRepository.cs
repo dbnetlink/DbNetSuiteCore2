@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Extensions;
+﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DocumentFormat.OpenXml.InkML;
@@ -79,21 +80,26 @@ namespace DbNetSuiteCore.Repositories
 
         private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext httpContext)
         {
-            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable dataTable))
+            if (componentModel.Cache)
             {
-                return dataTable;
-            }
-            else
-            {
-                dataTable = await JsonToDataTable(componentModel, httpContext);
-
-                if (componentModel.Cache)
+                if (componentModel.TriggerName == TriggerNames.ApiRequestParameters)
                 {
-                    _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
+                    _memoryCache.Remove(componentModel.Id);
                 }
-
-                return dataTable;
+                else if (_memoryCache.TryGetValue(componentModel.Id, out DataTable cachedDataTable))
+                {
+                    return cachedDataTable;
+                }
             }
+
+            DataTable dataTable = await JsonToDataTable(componentModel, httpContext);
+
+            if (componentModel.Cache)
+            {
+                _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
+            }
+
+            return dataTable;
         }
 
         private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext httpContext)
@@ -139,7 +145,7 @@ namespace DbNetSuiteCore.Repositories
                         {
                             parameters = url.Split("?").Last().Split("&").ToList();
                         }
-                        
+
                         foreach (var key in gridModel.ApiRequestParameters.Keys)
                         {
                             if (string.IsNullOrEmpty(gridModel.ApiRequestParameters[key]) == false)
@@ -151,7 +157,7 @@ namespace DbNetSuiteCore.Repositories
                         if (parameters.Count > 0)
                         {
                             url = $"{url.Split("?").First()}?{string.Join("&", parameters)}";
-                        }   
+                        }
 
                         foreach (var key in gridModel.ApiRequestHeaders.Keys)
                         {
@@ -198,11 +204,11 @@ namespace DbNetSuiteCore.Repositories
                     {
                         jToken = child.First;
                         break;
-                    }   
+                    }
                 }
             }
 
-            Dictionary<string,Type> dataTypes = new Dictionary<string, Type>();
+            Dictionary<string, Type> dataTypes = new Dictionary<string, Type>();
             List<string> dataColumnNames = new List<string>();
 
             if (jToken is JArray srcArray)
@@ -245,7 +251,7 @@ namespace DbNetSuiteCore.Repositories
                 if (componentModel.GetColumns().Any())
                 {
                     List<string> columnNames = componentModel.GetColumns().Select(c => c.Expression).ToList();
-                    List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c) == false).ToList();
+                    List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c,StringComparer.OrdinalIgnoreCase) == false).ToList();
 
                     foreach (string columnName in missingColumnNames)
                     {
