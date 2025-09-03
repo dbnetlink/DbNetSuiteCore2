@@ -64,6 +64,8 @@ namespace DbNetSuiteCore.Models
         }
         [JsonIgnore]
         public string JSON { get; set; } = string.Empty;
+        public Dictionary<string, string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
         private List<ComponentModel> _LinkedControls { get; set; } = new List<ComponentModel>();
 
         public ComponentModel LinkedControl

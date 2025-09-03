@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
 using Microsoft.Extensions.Options;
 using DbNetSuiteCore.Middleware;
+using DbNetSuiteCore.Enums;
 
 namespace DbNetSuiteCore.Services
 {
@@ -80,11 +81,16 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context),_configuration);
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context) ?? string.Empty,_configuration);
                 SelectModel selectModel = JsonConvert.DeserializeObject<SelectModel>(model) ?? new SelectModel();
-                selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
+                selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? String.Empty);
                 AssignParentModel(selectModel);
-                selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
+                selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context)?.Trim() ?? String.Empty; 
+
+                if (selectModel.DataSourceType == DataSourceType.JSON)
+                {
+                    _jsonRepository.UpdateApiRequestParameters(selectModel, _context);
+                }
                 return selectModel;
             }
             catch(Exception ex)

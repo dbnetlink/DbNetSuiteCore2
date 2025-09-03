@@ -65,15 +65,15 @@ namespace DbNetSuiteCore.Repositories
         }
 
 
-        public void UpdateApiRequestParameters(GridModel gridModel, HttpContext? context)
+        public void UpdateApiRequestParameters(ComponentModel componentModel, HttpContext? context)
         {
             Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context)) ?? new Dictionary<string, string>();
             apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
-            foreach (string key in gridModel.ApiRequestParameters.Keys)
+            foreach (string key in componentModel.ApiRequestParameters.Keys)
             {
                 if (apiRequestParameters.ContainsKey(key))
                 {
-                    gridModel.ApiRequestParameters[key] = apiRequestParameters[key];
+                    componentModel.ApiRequestParameters[key] = apiRequestParameters[key];
                 }
             }
         }
@@ -138,31 +138,14 @@ namespace DbNetSuiteCore.Repositories
                         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                     }
 
-                    if (componentModel is GridModel gridModel)
+                    if (componentModel.ApiRequestParameters.Keys.Any())
                     {
-                        var parameters = new List<string>();
-                        if (url.Split("?").Length > 1)
-                        {
-                            parameters = url.Split("?").Last().Split("&").ToList();
-                        }
+                        url = UpdateUrlParameters(url, componentModel.ApiRequestParameters);
+                    }
 
-                        foreach (var key in gridModel.ApiRequestParameters.Keys)
-                        {
-                            if (string.IsNullOrEmpty(gridModel.ApiRequestParameters[key]) == false)
-                            {
-                                parameters.Add($"{key}={gridModel.ApiRequestParameters[key]}");
-                            }
-                        }
-
-                        if (parameters.Count > 0)
-                        {
-                            url = $"{url.Split("?").First()}?{string.Join("&", parameters)}";
-                        }
-
-                        foreach (var key in gridModel.ApiRequestHeaders.Keys)
-                        {
-                            _httpClient.DefaultRequestHeaders.Add(key, gridModel.ApiRequestHeaders[key]);
-                        }
+                    foreach (var key in componentModel.ApiRequestHeaders.Keys)
+                    {
+                        _httpClient.DefaultRequestHeaders.Add(key, componentModel.ApiRequestHeaders[key]);
                     }
 
                     json = await _httpClient.GetStringAsync(url);
@@ -185,6 +168,30 @@ namespace DbNetSuiteCore.Repositories
             }
 
             return dataTable;
+        }
+
+        private string UpdateUrlParameters(string url, Dictionary<string, string> apiParameters)
+        {
+            if (apiParameters.Keys.Any())
+            {
+                var urlParameters = new List<string>();
+                if (url.Split("?").Length > 1)
+                {
+                    urlParameters = url.Split("?").Last().Split("&").ToList();
+                }
+                foreach (var key in apiParameters.Keys)
+                {
+                    if (string.IsNullOrEmpty(apiParameters[key]) == false)
+                    {
+                        urlParameters.Add($"{key}={apiParameters[key]}");
+                    }
+                }
+                if (urlParameters.Count > 0)
+                {
+                    url = $"{url.Split("?").First()}?{string.Join("&", urlParameters)}";
+                }
+            }
+            return url;
         }
 
         private DataTable Tabulate(string json, ComponentModel componentModel)

@@ -8,6 +8,6 @@ namespace DbNetSuiteCore.Repositories
         public Task GetRecords(ComponentModel componentModel, HttpContext httpContext);
         public Task GetRecord(ComponentModel componentModel, HttpContext httpContext);
         public Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext httpContext);
-        public void UpdateApiRequestParameters(GridModel gridModel, HttpContext? context);
+        public void UpdateApiRequestParameters(ComponentModel componentModel, HttpContext? context);
     }
 }

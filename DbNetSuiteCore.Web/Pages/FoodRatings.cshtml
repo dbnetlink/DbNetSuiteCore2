@@ -13,14 +13,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>ArcGIS Street Map of the UK</title>
+    <title>Food Establishment Ratings</title>
     @DbNetSuiteCore.Resources.StyleSheet()
-    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
+        }
+
+
+        .divider {
+            width: 5px;
+            cursor: ew-resize;
+            background-color: #ccc;
+            user-select: none; /* Prevents text selection during drag */
         }
 
         .container {
@@ -44,111 +52,70 @@
             gap: 10px;
         }
 
+        .leaflet-pane {
+            z-index:1;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .left-half, .right-half {
+            flex-grow: 1;
+            overflow: auto;
+        }
+
+        .divider {
+            width: 5px;
+            cursor: ew-resize;
+            background-color: #ccc;
+            user-select: none; /* Prevents text selection during drag */
+        }
+
     </style>
 
-    <script src="https://js.arcgis.com/4.28/"></script>
-    <script>
-            require([
-            "esri/config",
-            "esri/Map",
-            "esri/views/MapView",
-            "esri/Graphic",
-            "esri/layers/GraphicsLayer",
-            "esri/geometry/Circle"
-        ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, Circle) {
-
-            // Set the ArcGIS API key for accessing services
-            esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurLGmz8Xa_xil726lBBYQxOOosl3feoCQCyUhcbJcnIfVCUzCe2Fx_wa2KVqJWkulhcep7S_VN5v9dgZingl8MPgKcWDSY-egzsFANDNzPo5GXpFdHKxy16fTbXsFoIieUlGlNjh_gGgcrNvtcrfKlOQeutcQ6BB04HcDFCO1eWEBHgUCzIQRor5GivTW1WI8P3MurAx8R_4ue3xDwSY0g-c.AT1_z0JxEzxl";
-
-            // Create a new GraphicsLayer to hold the circle graphic
-            const graphicsLayer = new GraphicsLayer();
-
-            // Create a new Map instance with the graphics layer
-            const map = new Map({
-                basemap: "arcgis-streets",
-                layers: [graphicsLayer] // Add the graphics layer to the map
-            });
-
-            // Create a MapView to display the map
-            const view = new MapView({
-                container: "viewDiv",
-                map: map,
-                center: [-2.0, 54.0],
-                zoom: 6
-            });
-
-            // Add a click event handler to the view
-            view.on("click", function(event) {
-                // Clear any existing graphics before adding the new one
-                graphicsLayer.removeAll();
-
-                // The point of the click
-                const point = event.mapPoint;
-
-                // Define a symbol for the circle
-                const circleSymbol = {
-                    type: "simple-fill",
-                    color: [51, 153, 255, 0.5], // Light blue with transparency
-                    outline: {
-                        color: [255, 255, 255],
-                        width: 1
-                    }
-                };
-
-                // Create a Circle geometry
-                const circleGeometry = new Circle({
-                    center: point,
-                    geodesic: true,
-                    radius: 5,
-                    radiusUnit: "miles"
-                });
-
-                // Create a Graphic from the geometry and symbol
-                // The Graphic class can accept a Circle geometry directly.
-                const circleGraphic = new Graphic({
-                    geometry: circleGeometry,
-                    symbol: circleSymbol
-                });
-
-                // Add the graphic to the graphics layer to display it on the map
-                graphicsLayer.add(circleGraphic);
-
-                console.log("Circle drawn at: ", point.longitude, point.latitude);
-
-                window.updateParams(point.longitude, point.latitude);
-            });
-        });
-
-
-
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
     @{
+        var selectModel = new SelectModel(DataSourceType.JSON, $"https://api.ratings.food.gov.uk/BusinessTypes");
+        selectModel.Caption = "Business Type";
+        selectModel.Layout = LayoutType.Row;
+        selectModel.Columns = new List<SelectColumn>()
+        {
+            new SelectColumn("BusinessTypeId"),
+            new SelectColumn("BusinessTypeName")
+        };
+        selectModel.ApiRequestHeaders["x-api-version"] = "2";
+
+        selectModel.ClientEvents[SelectClientEvent.OptionSelected] = "businessTypeSelected";
+
         var gridModel = new GridModel(DataSourceType.JSON, $"https://api.ratings.food.gov.uk/Establishments");
 
         gridModel.Columns = new List<GridColumn>
         {
-        new GridColumn("BusinessName", "Name"),
-        new GridColumn("AddressLine2"),
-        new GridColumn("AddressLine3"),
-        new GridColumn("AddressLine4"),
-        new GridColumn("PostCode"),
-        new GridColumn("BusinessType") {Filter = FilterType.Distinct},
-        new GridColumn("Distance") {DataType = typeof(decimal), Format = "0.00"},
-        new GridColumn("FHRSID") {PrimaryKey = true},
-        new GridColumn("LocalAuthorityEmailAddress") {Format = FormatType.Email},
-        new GridColumn("LocalAuthorityName") {Filter = FilterType.Distinct},
-        new GridColumn("LocalAuthorityWebSite") {Format = FormatType.Url},
-        new GridColumn("NewRatingPending"),
-        new GridColumn("Phone"),
-        new GridColumn("RatingDate") {DataType = typeof(DateTime)},
-        new GridColumn("RatingKey"),
-        new GridColumn("RatingValue"),
-        new GridColumn("RightToReply"),
-        new GridColumn("SchemeType"),
-        new GridColumn("geocode","Latitude/Longitude"){DataType = typeof(JsonDocument)},
-        new GridColumn("scores","Hygiene/Structural/Confidence"){DataType = typeof(JsonDocument)}
+            new GridColumn("BusinessName", "Name"),
+            new GridColumn("BusinessType"),// {Filter = FilterType.Distinct},
+            new GridColumn("scores","Rating (Hygiene / Structural / Confidence"){DataType = typeof(JsonDocument)},
+            new GridColumn("RatingDate") {DataType = typeof(DateTime)},
+            new GridColumn("AddressLine2"),
+            new GridColumn("AddressLine3"),
+            new GridColumn("AddressLine4"),
+            new GridColumn("PostCode"),
+            new GridColumn("Phone"),
+            new GridColumn("FHRSID") {PrimaryKey = true},
+            new GridColumn("LocalAuthorityEmailAddress") {Format = FormatType.Email},
+            new GridColumn("LocalAuthorityName") {Filter = FilterType.Distinct},
+            new GridColumn("LocalAuthorityWebSite") {Format = FormatType.Url},
+            new GridColumn("NewRatingPending") {DataType = typeof(Boolean)},
+            new GridColumn("RatingKey"),
+            new GridColumn("RatingValue"),
+            new GridColumn("RightToReply"),
+            new GridColumn("SchemeType"),
+            new GridColumn("Distance") {DataType = typeof(decimal), Format = "0.00"},
+            new GridColumn("geocode","Latitude / Longitude"){DataType = typeof(JsonDocument)}
         };
 
         gridModel.Caption = "Food establishment ratings";
@@ -156,18 +123,24 @@
         gridModel.ApiRequestParameters["name"] = "xxxxxxxxx";
         gridModel.ApiRequestParameters["latitude"] = "";
         gridModel.ApiRequestParameters["longitude"] = "";
-        gridModel.ApiRequestParameters["maxDistanceLimit"] = "5";
+        gridModel.ApiRequestParameters["maxDistanceLimit"] = "";
+        gridModel.ApiRequestParameters["businessTypeId"] = "";
 
         gridModel.ClientEvents[GridClientEvent.CellTransform] = "cellTransform";
         gridModel.ClientEvents[GridClientEvent.ViewDialogUpdated] = "viewCellTransform";
         gridModel.ClientEvents[GridClientEvent.Initialised] = "saveGridRef";
+        gridModel.ClientEvents[GridClientEvent.RowSelected] = "showEstablishmentMarker";
 
         gridModel.ViewDialog = new ViewDialog();
         gridModel.Cache = true;
     }
     <div class="container">
-        <div class="left-half" id="viewDiv"></div>
+        <div class="left-half" id="map"></div>
+        <div class="divider"></div>
         <div class="right-half">
+            <div>
+                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(selectModel))
+            </div>
             <div class="content">
                 @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel))
             </div>
@@ -175,13 +148,78 @@
     </div>
     @DbNetSuiteCore.Resources.ClientScript()
     <script>
-        function updateParams(longitude,latitude)
+         function milesToMeters(miles) {
+            return miles * 1609.34;
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            var map = L.map('map').setView([51.450374438241084, -2.5946547584106376], 12); // Set initial view to the UK
+
+            window.map = map;
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // 3. Add a placeholder for the circle
+            var circle = null;
+
+            // 4. Listen for map clicks
+            map.on('click', function(e) {
+              // Remove any previously drawn circle
+              if (circle) {
+                map.removeLayer(circle);
+              }
+
+              // Get the latitude and longitude of the mouse click
+              var lat = e.latlng.lat;
+              var lon = e.latlng.lng;
+
+              console.log(`Latitude: ${lat} / Longitude: ${lon}`)
+
+              // Specify the radius in miles
+              var radiusMiles = 1;
+
+              // Create a new circle with the specified radius
+              circle = L.circle([lat, lon], {
+                color: 'lightsteelblue',
+                fillColor: 'lightsteelblue',
+                fillOpacity: 0.4,
+                radius: milesToMeters(radiusMiles) // Convert radius to meters for Leaflet
+              }).addTo(map);
+
+              window.updateParams(e.latlng.lng,  e.latlng.lat, radiusMiles);
+            });
+
+        });
+
+        var requestParams = {}
+
+        function updateParams(longitude,latitude, radius)
+        {
+            requestParams.latitude = latitude;
+            requestParams.longitude = longitude;
+            requestParams.maxDistanceLimit = radius;
+            requestParams.name = '';
+            refreshData();
+        }
+
+        function refreshData() {
+            if (window.marker) {
+                window.map.removeLayer(window.marker);
+            }
+
+             window.foodRatingsGrid.updateApiRequestParameters(requestParams);
+        }
+
+        function businessTypeSelected(sender, args)
         {
             var params = {}
-            params.latitude = latitude;
-            params.longitude = longitude;
-            params.name = '';
-            window.foodRatingsGrid.updateApiRequestParameters(params);
+            params.businessTypeId = args.selectedOptions[0].value;
+           
+            if (requestParams.latitude)
+            {
+                refreshData();
+            }
         }
 
         function saveGridRef(sender, args)
@@ -249,6 +287,46 @@
                 cell.innerHTML = '&nbsp;'
             }
         }
+
+        function showEstablishmentMarker(sender, args) {
+            var json = JSON.parse(sender.columnValue('geocode', args.row))
+
+            if (window.marker) {
+                window.map.removeLayer(window.marker);
+            }
+
+            window.marker = L.marker([json.latitude, json.longitude]).addTo(window.map);
+        }
+
+
+        const divider = document.querySelector('.divider');
+        const leftPane = document.querySelector('.left-half');
+        const rightPane = document.querySelector('.right-half');
+
+        divider.addEventListener('mousedown', function(e) {
+          let startX = e.pageX;
+          let leftWidth = leftPane.offsetWidth;
+          let rightWidth = rightPane.offsetWidth;
+          const containerWidth = divider.parentElement.offsetWidth;
+
+          function onMouseMove(e) {
+            const deltaX = e.pageX - startX;
+            const newLeftWidth = leftWidth + deltaX;
+            const newRightWidth = rightWidth - deltaX;
+
+            // Set new sizes in pixels
+            leftPane.style.width = newLeftWidth + 'px';
+            rightPane.style.width = newRightWidth + 'px';
+          }
+
+          function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+          }
+
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+        });
     </script>
 </body>
 </html>
