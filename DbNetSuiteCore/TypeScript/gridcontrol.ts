@@ -161,7 +161,7 @@ class GridControl extends ComponentControl {
         }
 
         const rect = cell.getBoundingClientRect();
-        popover.style.top = `${rect.bottom + window.scrollY}px`;
+        popover.style.top = `${rect.bottom + window.scrollY - (rect.height -20)}px`;
         popover.style.left = `${rect.left + 20 + window.scrollX}px`;
         popover.style.opacity = '1';
     }
@@ -705,6 +705,9 @@ class GridControl extends ComponentControl {
 
     public columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement {
         let th = this.heading(columnName);
+        if (!th) {
+            console.error(`Column name: '${columnName}' not found`)
+        }
         return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
     }
 

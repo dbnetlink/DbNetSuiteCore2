@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.CustomisationHelpers;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
@@ -150,6 +151,11 @@ namespace DbNetSuiteCore.Repositories
 
                     json = await _httpClient.GetStringAsync(url);
                 }
+            }
+
+            if (componentModel is GridModel gridModel && gridModel.GetJsonRecordType != null)
+            {
+                json = JsonTransformer.TransformJson(json, gridModel.GetJsonRecordType);
             }
 
             DataTable? dataTable = new();

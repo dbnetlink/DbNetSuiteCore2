@@ -30,7 +30,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbNetSuiteCore();
 
-builder.Services.Configure<DbNetSuiteCoreOptions>(options => ValidationHelper.AssignOptions(options));
 
 var app = builder.Build();
 

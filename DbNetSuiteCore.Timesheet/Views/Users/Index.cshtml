@@ -1,6 +1,7 @@
 ﻿@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Timesheet.Constants
+@using DbNetSuiteCore.Web.Models
 @model DbNetSuiteCore.Timesheet.ViewModels.BaseViewModel
 @{
     ViewData["Title"] = "Users";
@@ -36,6 +37,7 @@
         new FormColumn("Email")
     };
     usersForm.Bind(FormClientEvent.RecordLoaded, "userControl.userSelected");
+    usersForm.CustomisationClass = new AspNetUsersCustomisation();
 
     var userRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetRoles") { };
     userRolesGrid.Columns = new List<GridColumn>()

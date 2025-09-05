@@ -102,7 +102,18 @@ namespace DbNetSuiteCore.Extensions
                 dc.SetOrdinal(ordinal);
                 foreach (DataRow dr in dt.Rows)
                 {
-                    dr[dc.ColumnName] = dr[columnName] == DBNull.Value ? DBNull.Value : Convert.ChangeType(dr[columnName], dataType);
+                    var value = dr[columnName];
+                    if (value == DBNull.Value)
+                    {
+                        continue;
+                    }
+                    value = Convert.ChangeType(value, dataType);
+
+                    if (value.GetType() == typeof(DateTime))
+                    {
+                        value = ((DateTime)value).Date;
+                    }
+                    dr[dc.ColumnName] = value;
                 }
                 dt.Columns.Remove(columnName);
                 dc.ColumnName = columnName;

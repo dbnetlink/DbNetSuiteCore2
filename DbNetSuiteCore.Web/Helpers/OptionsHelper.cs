@@ -13,26 +13,7 @@ namespace DbNetSuiteCore.Web.Helpers
         public const string CustomerEditForm = "CustomerEditForm";
         public const string LeakReportGrid = "LeakReportGrid";
 
-        public static void AssignOptions(DbNetSuiteCoreOptions options)
-        {
-            options.FormUpdateValidationDelegate = async (formModel, httpContext, configuration) =>
-            {
-                return ValidateFormUpdate(formModel, httpContext, configuration);
-            };
-            options.FormDeleteValidationDelegate = async (formModel, httpContext, configuration) =>
-            {
-                return ValidateFormDelete(formModel, httpContext, configuration);
-            };
-            options.GridUpdateValidationDelegate = async (formModel, httpContext, configuration) =>
-            {
-                return ValidateGridUpdate(formModel, httpContext, configuration);
-            };
-            options.GridInitialisationDelegate = async (formModel, httpContext, configuration) =>
-            {
-                return GridInitialisation(formModel, httpContext, configuration);
-            };
-        }
-
+      
         public static bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             switch (formModel.Name)

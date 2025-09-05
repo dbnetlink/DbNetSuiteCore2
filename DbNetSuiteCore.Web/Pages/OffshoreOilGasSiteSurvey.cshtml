@@ -1,0 +1,294 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using System.Text.Json
+@using DbNetSuiteCore.Web.Models
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>Food Establishment Ratings</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+
+        .divider {
+            width: 5px;
+            cursor: ew-resize;
+            background-color: #ccc;
+            user-select: none; /* Prevents text selection during drag */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row; /* Arranges the divs side-by-side */
+            height: 100vh; /* Ensures the container fills the viewport height */
+            width: 100vw; /* Ensures the container fills the viewport width */
+        }
+
+        .left-half {
+            flex: 1; /* This div will take up one part of the available space */
+        }
+
+        .right-half {
+            flex: 1; /* This div will also take up one part, creating an equal split */
+            overflow: auto;
+        }
+
+        .content {
+            display: inline-flex;
+            gap: 10px;
+        }
+
+        .leaflet-pane {
+            z-index: 1;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .left-half, .right-half {
+            flex-grow: 1;
+            overflow: auto;
+        }
+
+        .divider {
+            width: 5px;
+            cursor: ew-resize;
+            background-color: #ccc;
+            user-select: none; /* Prevents text selection during drag */
+        }
+
+    </style>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+    @{
+        var gridModel = new GridModel(DataSourceType.JSON, $"https://ogcapi.bgs.ac.uk/collections/offshore-oil-gas-site-surveys/items?f=json&lang=en-US");
+        gridModel.Caption = "Offshore Oil/Gas Site Survey";
+        gridModel.JsonRecordType = new OffshoreOilGasSiteSurveyTransform();
+        gridModel.ApiRequestParameters["limit"] = "1000";
+
+        gridModel.Columns = new List<GridColumn>
+        {
+            new GridColumn("Title"),
+            new GridColumn("Id"),
+            new GridColumn("DeccRefNo"),
+            new GridColumn("Originator") { Filter = FilterType.Distinct},
+            new GridColumn("SurveyYear") { Filter = FilterType.Distinct},
+            new GridColumn("SvyStartDate", "Survey Start"),
+            new GridColumn("SvyEndDate", "Survey End"),
+            new GridColumn("SiteSvyName","Name"),
+            new GridColumn("Abstract", "Description"),
+         //   new GridColumn("Custodian") { Filter = FilterType.Distinct},
+            new GridColumn("CustodianEmail","Email") {Format = FormatType.Email},
+            new GridColumn("BgsRefNo"),
+         //   new GridColumn("MdfileidNercGuid"),
+
+        new GridColumn("Contractor") { Filter = FilterType.Distinct},
+            new GridColumn("AdditionalInfo", "Notes") {MaxChars = 20},
+            new GridColumn("CustodianName"),
+            new GridColumn("CustodianTel"),
+            new GridColumn("Geometry") {DataOnly = true}
+        };
+
+        /*
+        gridModel.ApiRequestHeaders["x-api-version"] = "2";
+        gridModel.ApiRequestParameters["name"] = "xxxxxxxxx";
+        gridModel.ApiRequestParameters["latitude"] = "";
+        gridModel.ApiRequestParameters["longitude"] = "";
+        gridModel.ApiRequestParameters["maxDistanceLimit"] = "";
+        gridModel.ApiRequestParameters["businessTypeId"] = "";
+
+        gridModel.ClientEvents[GridClientEvent.CellTransform] = "cellTransform";
+        gridModel.ClientEvents[GridClientEvent.ViewDialogUpdated] = "viewCellTransform";
+        gridModel.ClientEvents[GridClientEvent.Initialised] = "saveGridRef";
+        */
+        gridModel.ClientEvents[GridClientEvent.RowSelected] = "drawFieldPolygon";
+
+        // gridModel.ViewDialog = new ViewDialog();
+        gridModel.Cache = true;
+    }
+    <div class="container">
+        <div class="left-half" id="map"></div>
+        <div class="divider"></div>
+        <div class="right-half">
+            <div class="content">
+                @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel))
+            </div>
+        </div>
+    </div>
+    @DbNetSuiteCore.Resources.ClientScript()
+    <script>
+        var requestParams = {}
+
+        function updateParams(longitude,latitude, radius)
+        {
+            requestParams.latitude = latitude;
+            requestParams.longitude = longitude;
+            requestParams.maxDistanceLimit = radius;
+            requestParams.name = '';
+            refreshData();
+        }
+
+        function refreshData() {
+            if (window.marker) {
+                window.map.removeLayer(window.marker);
+            }
+
+             window.foodRatingsGrid.updateApiRequestParameters(requestParams);
+        }
+
+        function businessTypeSelected(sender, args)
+        {
+            var params = {}
+            params.businessTypeId = args.selectedOptions[0].value;
+
+            if (requestParams.latitude)
+            {
+                refreshData();
+            }
+        }
+
+        function saveGridRef(sender, args)
+        {
+            window.foodRatingsGrid = sender;
+        }
+
+        function cellTransform(sender, args)
+        {
+            switch (args.columnName.toLowerCase())
+            {
+                case "links":
+                    if (args.json && args.json.length)
+                    {
+                        args.cell.innerHTML = `<a target='_blank' href=${args.json[0].href}>Link</a>`;
+                    }
+                    break;
+                case "geocode":
+                    formatGeocode(args.cell, args.json)
+                    break;
+                case "scores":
+                    if (args.json && args.json.Hygiene)
+                    {
+                        formatScores(args.cell, args.json)
+                    }
+                    else
+                    {
+                        args.cell.innerText = ''
+                    }
+                    break;
+            }
+        }
+
+        function viewCellTransform(sender, args)
+        {
+            var cell = args.viewDialog.columnCell('geocode')
+            var json = JSON.parse(cell.innerText)
+            formatGeocode(cell, json)
+
+            var cell = args.viewDialog.columnCell('scores')
+            var json = JSON.parse(cell.innerText)
+            formatScores(cell, json)
+        }
+
+        function formatGeocode(cell, json)
+        {
+            if (json)
+            {
+                cell.innerHTML = `${json.latitude} / ${json.longitude}`
+            }
+            else
+            {
+                cell.innerHTML = '&nbsp;'
+            }
+        }
+
+        function formatScores(cell, json)
+        {
+            if (json && json.Hygiene)
+            {
+                cell.innerHTML = `${json.Hygiene} / ${json.Structural} / ${json.ConfidenceInManagement}`
+            }
+            else
+            {
+                cell.innerHTML = '&nbsp;'
+            }
+        }
+
+        function drawFieldPolygon(sender, args) {
+            var json = JSON.parse(sender.columnValue('geometry', args.row))
+            var text = sender.columnValue('abstract', args.row)
+            var polygonCoords = json.coordinates[0];
+
+            polygonCoords.forEach((item, index, arr) => {
+                item.reverse();
+            });
+
+            if (!window.mapObj) {
+                var map = L.map('map');
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                window.mapObj = map;
+            }
+
+            window.mapObj.setView(polygonCoords[0], 8)
+
+            if (window.polygon) {
+                window.mapObj.removeLayer(window.polygon);
+            }
+
+            window.polygon = L.polygon(polygonCoords).bindPopup(text,{point: L.point(0,10)}).addTo(window.mapObj).openPopup();
+        }
+
+
+        const divider = document.querySelector('.divider');
+        const leftPane = document.querySelector('.left-half');
+        const rightPane = document.querySelector('.right-half');
+
+        divider.addEventListener('mousedown', function(e) {
+          let startX = e.pageX;
+          let leftWidth = leftPane.offsetWidth;
+          let rightWidth = rightPane.offsetWidth;
+          const containerWidth = divider.parentElement.offsetWidth;
+
+          function onMouseMove(e) {
+            const deltaX = e.pageX - startX;
+            const newLeftWidth = leftWidth + deltaX;
+            const newRightWidth = rightWidth - deltaX;
+
+            // Set new sizes in pixels
+            leftPane.style.width = newLeftWidth + 'px';
+            rightPane.style.width = newRightWidth + 'px';
+          }
+
+          function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+          }
+
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+        });
+    </script>
+</body>
+</html>

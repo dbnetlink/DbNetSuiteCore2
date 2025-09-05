@@ -651,14 +651,14 @@ namespace DbNetSuiteCore.Services
 
                     if (lessThanMinimum)
                     {
-                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>", formColumn.MinValue);
+                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>&nbsp;", formColumn.MinValue);
                         formColumn.InError = true;
                     }
 
                     if (greaterThanMaximum)
                     {
                         formColumn.InError = true;
-                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>", formColumn.MaxValue);
+                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>&nbsp;", formColumn.MaxValue);
                     }
                     break;
                 case ResourceNames.NotUnique:

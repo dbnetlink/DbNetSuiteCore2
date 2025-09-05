@@ -47,7 +47,7 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         z-index: 1000;
     }
-
+        /*
         .dbnetsuite-grid .tooltip-popover::after {
             content: " ";
             position: absolute;
@@ -58,7 +58,7 @@
             border-style: solid;
             border-color: transparent transparent gainsboro transparent;
         }
-
+        */
 .dbnetsuite {
     --bg-error: rgb(254 205 211);
     --bg-warning: rgb(254 215 170);

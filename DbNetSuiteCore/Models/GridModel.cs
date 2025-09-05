@@ -4,9 +4,9 @@ using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
+using DbNetSuiteCore.CustomisationHelpers.Interfaces;
 
 namespace DbNetSuiteCore.Models
 {
@@ -64,6 +64,20 @@ namespace DbNetSuiteCore.Models
         public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
+        [JsonIgnore]
+
+        public IJsonTransform? JsonRecordType
+        {
+            set { JsonRecordTypeName = SetType(value); }
+        }
+        internal Type? GetJsonRecordType => GetType(JsonRecordTypeName);
+        public string JsonRecordTypeName { get; set; } = string.Empty;
+        public ICustomGrid? CustomisationClass
+        {
+            set{ CustomisationTypeName = SetType(value);}
+        }
+        internal Type? GetCustomisationType => GetType(CustomisationTypeName);
+        public string CustomisationTypeName { get; set; } = string.Empty;
 
         public string JsonArrayProperty { get; set; } = string.Empty;
         [JsonIgnore]

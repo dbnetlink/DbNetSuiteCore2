@@ -4,6 +4,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Web.Helpers
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Models
 @{
     var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Caption = "Product Edit"};
     productGrid.Columns = new List<GridColumn>() {
@@ -19,7 +20,7 @@
         new GridColumn("Discontinued","", "NotActive") {Edit = true, DataType = typeof(bool), HelpText = "Discontinued products must have a re-order level of 0"}
     };
 
-    productGrid.Name = OptionsHelper.ProductEditGrid;
+    productGrid.CustomisationClass = new ProductEditGridCustomisation();
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(productGrid))
 }
 

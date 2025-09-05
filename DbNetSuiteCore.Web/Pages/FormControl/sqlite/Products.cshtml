@@ -2,12 +2,13 @@
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Web.Helpers
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Models
 
 @{
     var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Insert = true, Delete = true, LayoutColumns = 3 };
     productForm.Columns = new List<FormColumn>() {
         new FormColumn("ProductID","ID") { DataOnly = true},
-        new FormColumn("ProductName", "Name") {Required = true, MinLength = 10, MaxLength = 20 },
+        new FormColumn("ProductName", "Name") {Required = true, MinLength = 3, MaxLength = 20 },
         new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
         new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
         new FormColumn("QuantityPerUnit", "Qty"){ InitialValue = 0},
@@ -18,10 +19,10 @@
         new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true, HelpText = "Discontinued products must have a re-order level of 0"}
     };
 
-    productForm.Name = "ProductEditForm";
+    productForm.CustomisationClass = new ProductEditFormCustomisation();
 
-    productForm.FixedFilter = "UnitPrice > @unitprice";
-    productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
+//    productForm.FixedFilter = "UnitPrice > @unitprice";
+ //   productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
 
    // productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateReorderLevel";
     @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))

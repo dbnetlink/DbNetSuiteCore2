@@ -6,8 +6,6 @@ builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web app
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-builder.Services.Configure<DbNetSuiteCoreOptions>(options => OptionsHelper.AssignOptions(options));
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

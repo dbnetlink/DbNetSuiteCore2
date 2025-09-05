@@ -26,7 +26,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (string.IsNullOrEmpty(gridColumn.RegularExpression) == false)
             {
-                value = Regex.Match(value.ToString(), gridColumn.RegularExpression);
+                value = Regex.Match(value.ToString() ?? string.Empty, gridColumn.RegularExpression);
             }
 
             string format = gridColumn.Format;
@@ -34,10 +34,16 @@ namespace DbNetSuiteCore.Extensions
             switch (format)
             {
                 case FormatType.Email:
-                    value = $"<a href=\"mailto:{value}\">{value}</a>";
+                    if (ValidationHelper.IsValidEmail(value.ToString() ?? string.Empty))
+                    {
+                        value = $"<a href=\"mailto:{value}\">{value}</a>";
+                    }
                     break;
                 case FormatType.Url:
-                    value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
+                    if (ValidationHelper.IsValidUri(value.ToString() ?? string.Empty))
+                    {
+                        value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
+                    }
                     break;
                 case FormatType.Image:
                     value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img {(string.IsNullOrEmpty(gridColumn.Style) ? "" : $"style=\"{gridColumn.Style}\"")} src =\"{s}\"/>"));

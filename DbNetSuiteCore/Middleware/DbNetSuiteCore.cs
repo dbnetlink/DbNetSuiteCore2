@@ -26,11 +26,11 @@ namespace DbNetSuiteCore.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService, IOptions<DbNetSuiteCoreOptions> options)
+        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
         {
             if (context.Request.Path.ToString().EndsWith(_extension))
             {
-                await GenerateResponse(context, resourceService, gridService, selectService, formService, options);
+                await GenerateResponse(context, resourceService, gridService, selectService, formService);
             }
             else
             {
@@ -38,7 +38,7 @@ namespace DbNetSuiteCore.Middleware
             }
         }
 
-        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService, IOptions<DbNetSuiteCoreOptions> options)
+        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
         {
             var request = context.Request;
             var resp = context.Response;
@@ -50,13 +50,13 @@ namespace DbNetSuiteCore.Middleware
             switch(page.ToLower())
             {
                 case "gridcontrol":
-                    response = await gridService.Process(context, page, options);
+                    response = await gridService.Process(context, page);
                     break;
                 case "selectcontrol":
                     response = await selectService.Process(context, page);
                     break;
                 case "formcontrol":
-                    response = await formService.Process(context, page, options);
+                    response = await formService.Process(context, page);
                     break;
                 default:
                     response = resourceService.Process(context, page);
@@ -79,14 +79,6 @@ namespace DbNetSuiteCore.Middleware
         }
     }
 
-    public class DbNetSuiteCoreOptions
-    {
-        public FormValidationDelegate? FormUpdateValidationDelegate { get; set; }
-        public GridValidationDelegate? GridUpdateValidationDelegate { get; set; }
-        public FormValidationDelegate? FormInsertValidationDelegate { get; set; }
-        public FormValidationDelegate? FormDeleteValidationDelegate { get; set; }
-        public GridValidationDelegate? GridInitialisationDelegate { get; set; }
-    }
 
     public static class DbNetSuiteCoreExtensions
     {

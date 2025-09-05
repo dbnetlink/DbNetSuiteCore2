@@ -13,6 +13,7 @@ using MongoDB.Bson;
 using Microsoft.Extensions.Options;
 using DbNetSuiteCore.Middleware;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DbNetSuiteCore.CustomisationHelpers.Interfaces;
 
 namespace DbNetSuiteCore.Services
 {
@@ -22,7 +23,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-        public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions> options)
+        public async Task<Byte[]> Process(HttpContext context, string page)
         {
             try
             {
@@ -30,7 +31,7 @@ namespace DbNetSuiteCore.Services
                 switch (page.ToLower())
                 {
                     case "formcontrol":
-                        return await FormView(options);
+                        return await FormView();
                     default:
                         return new byte[0];
                 }
@@ -42,7 +43,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<Byte[]> FormView(IOptions<DbNetSuiteCoreOptions> options)
+        private async Task<Byte[]> FormView()
         {
             FormModel formModel = GetFormModel();
             formModel.TriggerName = RequestHelper.TriggerName(_context);
@@ -52,11 +53,11 @@ namespace DbNetSuiteCore.Services
             switch (formModel.TriggerName)
             {
                 case TriggerNames.Apply:
-                    return await ApplyUpdate(formModel, options);
+                    return await ApplyUpdate(formModel);
                 case TriggerNames.Toolbar:
                     return await Toolbar(formModel);
                 case TriggerNames.Delete:
-                    return await ApplyDelete(formModel, options);
+                    return await ApplyDelete(formModel);
                 case TriggerNames.Insert:
                     return await InitialiseInsert(formModel);
                 default:
@@ -133,14 +134,14 @@ namespace DbNetSuiteCore.Services
 
             return primaryKeyValues;
         }
-        private async Task<Byte[]> ApplyUpdate(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
+        private async Task<Byte[]> ApplyUpdate(FormModel formModel)
         {
             FormViewModel formViewModel = new FormViewModel(formModel);
             var committed = false;
 
             if (formModel.ClientEvents.Keys.Contains(FormClientEvent.ValidateUpdate) == false)
             {
-                if (await ValidateRecord(formModel, options))
+                if (await ValidateRecord(formModel))
                 {
                     await Commit();
                 }
@@ -148,7 +149,7 @@ namespace DbNetSuiteCore.Services
             }
             else if (formModel.ValidationPassed == false)
             {
-                formModel.ValidationPassed = await ValidateRecord(formModel, options);
+                formModel.ValidationPassed = await ValidateRecord(formModel);
             }
             else
             {
@@ -198,11 +199,11 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<Byte[]> ApplyDelete(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
+        private async Task<Byte[]> ApplyDelete(FormModel formModel)
         {
             try
             {
-                if (await CustomDelegateValidation(options.Value.FormDeleteValidationDelegate, formModel))
+                if (await CustomValidation(formModel, nameof(ICustomForm.ValidateFormDelete)))
                 {
                     await DeleteRecord(formModel);
                     formModel.PrimaryKeyValues = new List<List<object>>();
@@ -235,7 +236,7 @@ namespace DbNetSuiteCore.Services
             return await View("Form/__Form", new FormViewModel(formModel));
         }
 
-        private async Task<bool> ValidateRecord(FormModel formModel, IOptions<DbNetSuiteCoreOptions> options)
+        private async Task<bool> ValidateRecord(FormModel formModel)
         {
             var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError, ResourceNames.NotUnique };
 
@@ -254,8 +255,7 @@ namespace DbNetSuiteCore.Services
                 return false;
             }
 
-            FormValidationDelegate? validationDelegate = formModel.Mode == FormMode.Update ? options?.Value.FormUpdateValidationDelegate : options?.Value.FormInsertValidationDelegate;
-            return await CustomDelegateValidation(validationDelegate, formModel);
+            return await CustomValidation(formModel, formModel.Mode == FormMode.Update ? nameof(ICustomForm.ValidateFormUpdate): nameof(ICustomForm.ValidateFormInsert));
         }
 
         private void PopulateGuidPrimaryKey(FormModel formModel)
@@ -278,14 +278,14 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<bool> CustomDelegateValidation(FormValidationDelegate? validationDelegate, FormModel formModel)
+        private async Task<bool> CustomValidation(FormModel formModel, string methodName)
         {
-            if (validationDelegate == null)
+            if (formModel.GetCustomisationType == null)
             {
                 return true;
             }
 
-            bool result = await validationDelegate(formModel, _context!, _configuration);
+            bool result = (bool)ReflectionHelper.InvokeMethod(formModel.GetCustomisationType, methodName, new object[] { formModel, _context, _configuration })!;
 
             if (result == false)
             {

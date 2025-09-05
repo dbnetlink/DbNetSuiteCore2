@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-    public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions>? options = null)
+    public async Task<Byte[]> Process(HttpContext context, string page)
     {
             try
             {

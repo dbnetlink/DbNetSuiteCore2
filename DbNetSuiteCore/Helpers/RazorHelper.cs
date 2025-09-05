@@ -44,7 +44,9 @@ namespace DbNetSuiteCore.Helpers
             }
             foreach (var column in gridModel.DataOnlyColumns)
             {
-                dataAttributes.Add($"data-{column.ColumnName.ToLower()}=\"{row[column.ColumnName]}\"");
+                string value = row[column.ColumnName]?.ToString() ?? string.Empty;
+                string quote = value.Contains(@"""") ? "'" : @"""";
+                dataAttributes.Add($"data-{column.ColumnName.ToLower()}={quote}{row[column.ColumnName]}{quote}");
             }
 
             return new HtmlString(string.Join(" ", dataAttributes.ToArray()));

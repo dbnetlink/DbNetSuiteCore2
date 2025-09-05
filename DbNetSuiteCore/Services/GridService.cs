@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.CustomisationHelpers.Interfaces;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
@@ -10,6 +11,7 @@ using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
 using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2010.Word;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -25,7 +27,7 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-        public async Task<Byte[]> Process(HttpContext context, string page, IOptions<DbNetSuiteCoreOptions> options)
+        public async Task<Byte[]> Process(HttpContext context, string page)
         {
             if (context.Request.Method != "POST")
             {
@@ -38,7 +40,7 @@ namespace DbNetSuiteCore.Services
                 switch (page.ToLower())
                 {
                     case "gridcontrol":
-                        return await GridView(options);
+                        return await GridView();
                     default:
                         return new byte[0];
                 }
@@ -50,7 +52,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<Byte[]> GridView(IOptions<DbNetSuiteCoreOptions> options)
+        private async Task<Byte[]> GridView()
         {
             GridModel gridModel = GetGridModel() ?? new GridModel();
             gridModel.TriggerName = RequestHelper.TriggerName(_context);
@@ -62,14 +64,14 @@ namespace DbNetSuiteCore.Services
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
                 case TriggerNames.Apply:
-                    return await ApplyUpdate(gridModel,options);
+                    return await ApplyUpdate(gridModel);
                 case TriggerNames.NestedGrid:
                     return await View("Grid/__Nested", ConfigureNestedGrid(gridModel));
                 case TriggerNames.ViewDialogContent:
                     return await View("Grid/__ViewDialogContent", await ViewDialogContent(gridModel));
                 default:
                     string viewName = gridModel.Uninitialised ? "Grid/__Markup" : "Grid/__Rows";
-                    return await View(viewName, await GetGridViewModel(gridModel,options));
+                    return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
 
@@ -79,7 +81,7 @@ namespace DbNetSuiteCore.Services
             return new GridViewDialogViewModel(gridModel);
         }
 
-        private async Task<GridViewModel> GetGridViewModel(GridModel gridModel, IOptions<DbNetSuiteCoreOptions>? options = null)
+        private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
         {
             if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentModel?.Name) == false)
             {
@@ -101,9 +103,9 @@ namespace DbNetSuiteCore.Services
                     ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
                 }
 
-                if (options?.Value.GridInitialisationDelegate != null)
+                if (gridModel.GetCustomisationType != null)
                 {
-                    await options.Value.GridInitialisationDelegate(gridModel, _context!, _configuration);
+                    ReflectionHelper.InvokeMethod(gridModel.GetCustomisationType, nameof(ICustomGrid.GridInitialisation), new object[] { gridModel, _context, _configuration });
                 }
             }
 
@@ -451,18 +453,18 @@ namespace DbNetSuiteCore.Services
             return contentType;
         }
 
-        private async Task<Byte[]> ApplyUpdate(GridModel gridModel, IOptions<DbNetSuiteCoreOptions> options)
+        private async Task<Byte[]> ApplyUpdate(GridModel gridModel)
         {
             if (gridModel.ClientEvents.Keys.Contains(GridClientEvent.ValidateUpdate) == false)
             {
-                if (ValidateRecord(gridModel, options))
+                if (ValidateRecord(gridModel))
                 {
                     await CommitUpdate(gridModel);
                 }
             }
             else if (gridModel.ValidationPassed == false)
             {
-                gridModel.ValidationPassed = ValidateRecord(gridModel, options);
+                gridModel.ValidationPassed = ValidateRecord(gridModel);
             }
             else
             {
@@ -507,7 +509,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private bool ValidateRecord(GridModel gridModel, IOptions<DbNetSuiteCoreOptions> options)
+        private bool ValidateRecord(GridModel gridModel)
         {
             var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError };
 
@@ -519,20 +521,20 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
-            if (options.Value.GridUpdateValidationDelegate == null)
-            {
-                return true;
-            }
+            bool result = true;
 
-            bool result = Task.Run<bool>(async () => await options.Value.GridUpdateValidationDelegate(gridModel, _context!, _configuration)).Result; 
-
-            if (result == false)
+            if (gridModel.GetCustomisationType != null)
             {
-                if (string.IsNullOrEmpty(gridModel.Message))
+                result = (bool)ReflectionHelper.InvokeMethod(gridModel.GetCustomisationType, nameof(ICustomGrid.ValidateGridUpdate), new object[] { gridModel, _context, _configuration })!;
+
+                if (result == false)
                 {
-                    gridModel.Message = "Custom validation failed";
+                    if (string.IsNullOrEmpty(gridModel.Message))
+                    {
+                        gridModel.Message = "Custom validation failed";
+                    }
+                    gridModel.MessageType = MessageType.Error;
                 }
-                gridModel.MessageType = MessageType.Error;
             }
 
             return result;
