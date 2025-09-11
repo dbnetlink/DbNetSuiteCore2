@@ -3,7 +3,7 @@
     private currentUserId: String | undefined = undefined;
 
     constructor() {
-    }
+    } 
 
     public saveGridReference(gridControl: GridControl, args: any) {
         this.usersRolesGrid = gridControl;

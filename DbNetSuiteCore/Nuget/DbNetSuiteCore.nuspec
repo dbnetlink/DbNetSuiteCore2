@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>DbNetSuiteCore</id>
-    <version>2.0.55</version>
+    <version>2.0.56</version>
     <authors>DbNetLink</authors>
     <owners>DbNetLink</owners>
     <icon>nuget_logo.png</icon>
@@ -56,13 +56,13 @@
 
     <!-- Assembly files for .NET 7 -->
     <file src="..\bin\Release\net7.0\DbNetSuiteCore.dll" target="lib\net7.0" />
-    <file src="..\bin\Release\net7.0\zh-hans\DbNetSuiteCore.resources.dll" target="lib\net7.0\zh-hans" />
-    <file src="..\bin\Release\net7.0\zh-hant\DbNetSuiteCore.resources.dll" target="lib\net7.0\zh-hant" />
+    <file src="..\bin\Release\net7.0\zh-Hans\DbNetSuiteCore.resources.dll" target="lib\net7.0\zh-Hans" />
+    <file src="..\bin\Release\net7.0\zh-Hant\DbNetSuiteCore.resources.dll" target="lib\net7.0\zh-Hant" />
 
     <!-- Assembly files for .NET 8 -->
     <file src="..\bin\Release\net8.0\DbNetSuiteCore.dll" target="lib\net8.0" />
-    <file src="..\bin\Release\net8.0\zh-hans\DbNetSuiteCore.resources.dll" target="lib\net8.0\zh-hans" />
-    <file src="..\bin\Release\net8.0\zh-hant\DbNetSuiteCore.resources.dll" target="lib\net8.0\zh-hant" />
+    <file src="..\bin\Release\net8.0\zh-Hans\DbNetSuiteCore.resources.dll" target="lib\net8.0\zh-Hans" />
+    <file src="..\bin\Release\net8.0\zh-Hant\DbNetSuiteCore.resources.dll" target="lib\net8.0\zh-Hant" />
   </files>
 </package>
 

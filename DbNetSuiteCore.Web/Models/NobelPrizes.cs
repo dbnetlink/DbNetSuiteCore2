@@ -1,45 +1,55 @@
-﻿namespace DbNetSuiteCore.Web.Models
+﻿using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+
+namespace DbNetSuiteCore.Web.Models
 {
-    public class NobelPrizes
+    public class NobelPrizeTransform : IJsonTransform
     {
-        public List<NobelPrize> prizes { get; set; } = new List<NobelPrize> { };
+        public List<NobelPrize> prizes { get; set; }
+
+        public object Transform()
+        {
+            List<TransformedNobelPrizeList> list = prizes.Select(p => new TransformedNobelPrizeList(p.year, p.category, p.laureates) { }).ToList();
+            return list;
+        }
+
+
     }
     public class NobelPrize
     {
-        public string year { get; set; } = string.Empty;
-        public string category { get; set; } = string.Empty;
-        public List<Laureate> laureates { get; set; } = new List<Laureate> { };
+        public string year { get; set; }
+        public string category { get; set; }
+        public List<Laureate> laureates { get; set; }
+    }
+
+    public class TransformedNobelPrizeList
+    {
+        public TransformedNobelPrizeList(string year, string category, List<Laureate> laureates)
+        {
+            this.year = year;
+            this.category = category;
+            this.laureates = LaureatesMarkUp(laureates);
+
+        }
+        public string year { get; set; }
+        public string category { get; set; }
+        public string laureates { get; set; }
+
+        private string LaureatesMarkUp(List<Laureate> laureates)
+        {
+            if (laureates == null)
+            {
+                return string.Empty;
+            }
+            return $"{string.Join("", laureates.Select(l => $"<p><b>{l.surname}, {l.firstname}</b> - {l.motivation.Replace("\"","")}</p>").ToList())}";
+        }
     }
 
     public class Laureate
     {
-        public string id { get; set; } = string.Empty;
-        public string firstname { get; set; } = string.Empty;
-        public string surname { get; set; } = string.Empty;
-        public string motivation { get; set; } = string.Empty;
-        public string share { get; set; } = string.Empty;
+        public string id { get; set; }
+        public string firstname { get; set; }
+        public string surname { get; set; }
+        public string motivation { get; set; }
+        public string share { get; set; }
     }
-
-    public class NobelPrizeLaureate
-    { 
-        public NobelPrizeLaureate(NobelPrize prize, Laureate laureate)
-        {
-            year = Convert.ToInt32(prize.year);
-            category = prize.category;
-            id = Convert.ToInt32(laureate.id);
-            firstname = laureate.firstname;
-            surname = laureate.surname;
-            motivation = laureate.motivation;
-            share = Convert.ToInt32(laureate.share);
-        }
-
-        public int year { get; set; }
-        public string category { get; set; } = string.Empty;
-        public int id { get; set; }
-        public string firstname { get; set; } = string.Empty;
-        public string surname { get; set; } = string.Empty;
-        public string motivation { get; set; } = string.Empty;
-        public int share { get; set; }
-    }
-
 }

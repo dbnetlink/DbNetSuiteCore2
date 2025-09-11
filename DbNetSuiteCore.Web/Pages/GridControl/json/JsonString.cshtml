@@ -7,22 +7,16 @@
 @using System.Net.Http
 
 @{
-    HttpClient client = new HttpClient();
-    string json = await client.GetStringAsync("https://api.nobelprize.org/v1/prize.json");
-    NobelPrizes nobelPrizes = System.Text.Json.JsonSerializer.Deserialize<NobelPrizes>(json);
-    List<NobelPrizeLaureate> transformedList = nobelPrizes.prizes.Where(p => p.laureates != null).SelectMany(p => p.laureates.Select(l => new { p, l })).Select(x => new NobelPrizeLaureate(x.p, x.l)).ToList();
-    var gridModel = new GridModel(DataSourceType.JSON, System.Text.Json.JsonSerializer.Serialize(transformedList));
+    var gridModel = new GridModel(DataSourceType.JSON, "https://api.nobelprize.org/v1/prize.json");
 
     gridModel.Columns = new List<GridColumn>()
     {
-        new GridColumn("Id"),
-        new GridColumn("Year") { Filter = FilterType.Distinct},
-        new GridColumn("Category") {  Filter = FilterType.Distinct},
-        new GridColumn("Firstname"),
-        new GridColumn("Surname"),
-        new GridColumn("Motivation"),
-        new GridColumn("Share") {  Filter = FilterType.Distinct}
+            new GridColumn("Year") { Filter = FilterType.Distinct},
+            new GridColumn("Category") {  Filter = FilterType.Distinct},
+            new GridColumn("Laureates")
     };
+
+    gridModel.JsonRecordType = new NobelPrizeTransform();
 
     gridModel.Cache = true;
 
