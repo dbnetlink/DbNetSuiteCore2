@@ -19,7 +19,7 @@
         new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true, HelpText = "Discontinued products must have a re-order level of 0"}
     };
 
-    productForm.CustomisationClass = new ProductEditFormCustomisation();
+    productForm.CustomisationPlugin = typeof(ProductEditFormCustomisation);
 
 //    productForm.FixedFilter = "UnitPrice > @unitprice";
  //   productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));

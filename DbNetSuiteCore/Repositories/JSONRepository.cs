@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.CustomisationHelpers;
+using DbNetSuiteCore.CustomisationHelpers.Interfaces;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
@@ -153,9 +154,14 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (componentModel is GridModel gridModel && gridModel.GetJsonRecordType != null)
+            if (componentModel is GridModel gridModel && gridModel.JsonTransformPluginName != null)
             {
-                json = JsonTransformer.TransformJson(json, gridModel.GetJsonRecordType);
+                if (PluginHelper.DoesTypeImplementInterface<IJsonTransformPlugin>(gridModel.JsonTransformPluginName) == false)
+                {
+                    throw new Exception($"The <b>JsonTransformPlugin</b> property must implement the {nameof(IJsonTransformPlugin)} interface");
+                }
+
+                json = PluginHelper.TransformJson(json, PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName)!, new object[] { gridModel, httpContext, _configuration });
             }
 
             DataTable? dataTable = new();

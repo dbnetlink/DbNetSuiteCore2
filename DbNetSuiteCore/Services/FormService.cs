@@ -203,7 +203,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                if (await CustomValidation(formModel, nameof(ICustomForm.ValidateFormDelete)))
+                if (await CustomValidation(formModel, nameof(ICustomFormPlugin.ValidateDelete)))
                 {
                     await DeleteRecord(formModel);
                     formModel.PrimaryKeyValues = new List<List<object>>();
@@ -255,7 +255,7 @@ namespace DbNetSuiteCore.Services
                 return false;
             }
 
-            return await CustomValidation(formModel, formModel.Mode == FormMode.Update ? nameof(ICustomForm.ValidateFormUpdate): nameof(ICustomForm.ValidateFormInsert));
+            return await CustomValidation(formModel, formModel.Mode == FormMode.Update ? nameof(ICustomFormPlugin.ValidateUpdate): nameof(ICustomFormPlugin.ValidateInsert));
         }
 
         private void PopulateGuidPrimaryKey(FormModel formModel)
@@ -280,12 +280,12 @@ namespace DbNetSuiteCore.Services
 
         private async Task<bool> CustomValidation(FormModel formModel, string methodName)
         {
-            if (formModel.GetCustomisationType == null)
+            if (string.IsNullOrEmpty(formModel.CustomisationPluginName))
             {
                 return true;
             }
 
-            bool result = (bool)ReflectionHelper.InvokeMethod(formModel.GetCustomisationType, methodName, new object[] { formModel, _context, _configuration })!;
+            bool result = (bool)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, new object[] { formModel, _context, _configuration })!;
 
             if (result == false)
             {

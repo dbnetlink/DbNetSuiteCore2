@@ -103,9 +103,9 @@ namespace DbNetSuiteCore.Services
                     ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
                 }
 
-                if (gridModel.GetCustomisationType != null)
+                if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false)
                 {
-                    ReflectionHelper.InvokeMethod(gridModel.GetCustomisationType, nameof(ICustomGrid.GridInitialisation), new object[] { gridModel, _context, _configuration });
+                    PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), new object[] { gridModel, _context, _configuration });
                 }
             }
 
@@ -397,6 +397,7 @@ namespace DbNetSuiteCore.Services
                 AssignSearchDialogFilter(gridModel);
 
                 gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
+                gridModel.Message = string.Empty;
 
                 return gridModel;
             }
@@ -523,9 +524,9 @@ namespace DbNetSuiteCore.Services
 
             bool result = true;
 
-            if (gridModel.GetCustomisationType != null)
+            if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false)
             {
-                result = (bool)ReflectionHelper.InvokeMethod(gridModel.GetCustomisationType, nameof(ICustomGrid.ValidateGridUpdate), new object[] { gridModel, _context, _configuration })!;
+                result = (bool)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), new object[] { gridModel, _context, _configuration })!;
 
                 if (result == false)
                 {

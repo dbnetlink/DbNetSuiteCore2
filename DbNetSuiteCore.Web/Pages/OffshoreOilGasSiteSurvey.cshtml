@@ -83,7 +83,7 @@
     @{
         var gridModel = new GridModel(DataSourceType.JSON, $"https://ogcapi.bgs.ac.uk/collections/offshore-oil-gas-site-surveys/items?f=json&lang=en-US");
         gridModel.Caption = "Offshore Oil/Gas Site Survey";
-        gridModel.JsonRecordType = new OffshoreOilGasSiteSurveyTransform();
+        gridModel.JsonTransformPlugin = typeof(OffshoreOilGasSiteSurveyTransform);
         gridModel.ApiRequestParameters["limit"] = "1000";
 
         gridModel.Columns = new List<GridColumn>

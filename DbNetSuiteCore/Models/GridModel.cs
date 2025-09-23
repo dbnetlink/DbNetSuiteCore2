@@ -66,18 +66,20 @@ namespace DbNetSuiteCore.Models
         public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
         [JsonIgnore]
 
-        public IJsonTransform? JsonRecordType
+        public Type? JsonTransformPlugin
         {
-            set { JsonRecordTypeName = SetType(value); }
+            set 
+            {
+                JsonTransformPluginName = PluginHelper.GetNameFromType(value);
+            }
         }
-        internal Type? GetJsonRecordType => GetType(JsonRecordTypeName);
-        public string JsonRecordTypeName { get; set; } = string.Empty;
-        public ICustomGrid? CustomisationClass
+
+        public string JsonTransformPluginName { get; set; } = string.Empty;
+        public Type? CustomisationPlugin
         {
-            set{ CustomisationTypeName = SetType(value);}
+            set{ CustomisationPluginName = PluginHelper.GetNameFromType(value);}
         }
-        internal Type? GetCustomisationType => GetType(CustomisationTypeName);
-        public string CustomisationTypeName { get; set; } = string.Empty;
+        public string CustomisationPluginName { get; set; } = string.Empty;
 
         public string JsonArrayProperty { get; set; } = string.Empty;
         [JsonIgnore]

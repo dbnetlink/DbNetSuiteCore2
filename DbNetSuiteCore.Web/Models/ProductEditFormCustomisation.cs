@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class ProductEditFormCustomisation : ICustomForm
+    public class ProductEditFormCustomisation : ICustomFormPlugin
     {
-        public bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             var reorderLevel = Convert.ToInt32(formModel.FormValue("reorderlevel"));
             var discontinued = Boolean.Parse(formModel.FormValue("discontinued").ToString());
@@ -22,16 +22,16 @@ namespace DbNetSuiteCore.Web.Models
             return true;
         }
 
-        public bool ValidateFormInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
            return true;
         }
 
-        public bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             return true;
         }
-        public void FormInitialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
         }
     }
