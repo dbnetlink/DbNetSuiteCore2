@@ -37,7 +37,7 @@
         new FormColumn("Email")
     };
     usersForm.Bind(FormClientEvent.RecordLoaded, "userControl.userSelected");
-    usersForm.CustomisationClass = new AspNetUsersCustomisation();
+    usersForm.CustomisationPlugin = typeof(AspNetUsersCustomisation);
 
     var userRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetRoles") { };
     userRolesGrid.Columns = new List<GridColumn>()

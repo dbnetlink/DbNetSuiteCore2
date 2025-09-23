@@ -7,24 +7,24 @@ using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class AspNetUserRolesCustomisation : ICustomForm
+    public class AspNetUserRolesCustomisation : ICustomFormPlugin
     {
-        public bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             return true;
         }
 
-        public bool ValidateFormInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             formModel.FormValues["userid"] = TextHelper.DeobfuscateString(formModel.FormValues["userid"]);
             return true;
         }
 
-        public bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             return true;
         }
-        public void FormInitialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
         }
     }

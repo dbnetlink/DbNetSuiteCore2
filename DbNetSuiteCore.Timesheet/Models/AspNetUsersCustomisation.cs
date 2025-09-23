@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class AspNetUsersCustomisation : ICustomForm
+    public class AspNetUsersCustomisation : ICustomFormPlugin
     {
-        public bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             if (formModel.FormValues.ContainsKey("Email"))
             {
@@ -23,17 +23,17 @@ namespace DbNetSuiteCore.Web.Models
             return true;
         }
 
-        public bool ValidateFormInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
            return true;
         }
 
-        public bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             formModel.Message = "Cannot delete User";
             return false;
         }
-        public void FormInitialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
         }
     }

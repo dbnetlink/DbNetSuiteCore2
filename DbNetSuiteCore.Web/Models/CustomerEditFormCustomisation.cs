@@ -7,19 +7,19 @@ using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class CustomerEditFormCustomisation : ICustomForm
+    public class CustomerEditFormCustomisation : ICustomFormPlugin
     {
-        public bool ValidateFormUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             return true;
         }
 
-        public bool ValidateFormInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
            return true;
         }
 
-        public bool ValidateFormDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             var dataTable = DbHelper.GetRecord(formModel, httpContext);
 
@@ -30,7 +30,7 @@ namespace DbNetSuiteCore.Web.Models
             }
             return true;
         }
-        public void FormInitialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
         }
     }

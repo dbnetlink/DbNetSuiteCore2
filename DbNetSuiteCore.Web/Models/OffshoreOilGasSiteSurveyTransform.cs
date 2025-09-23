@@ -1,18 +1,19 @@
 ﻿using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+using DbNetSuiteCore.Models;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using System.Diagnostics.Contracts;
 using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class OffshoreOilGasSiteSurveyTransform : IJsonTransform
+    public class OffshoreOilGasSiteSurveyTransform : IJsonTransformPlugin
     {
         [JsonPropertyName("type")]
         public string Type { get; set; }
         [JsonPropertyName("features")]
         public List<Feature> Features { get; set; }
 
-        public object Transform()
+        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration _configuration)
         {
             // A new anonymous object is created with a new structure
             return Features.Select(f => new

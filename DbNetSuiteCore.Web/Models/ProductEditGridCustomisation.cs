@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class ProductEditGridCustomisation : ICustomGrid
+    public class ProductEditGridCustomisation : ICustomGridPlugin
     {
-        public bool ValidateGridUpdate(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
         {
             foreach (var row in gridModel.ModifiedRows().Keys)
             {
@@ -24,7 +24,7 @@ namespace DbNetSuiteCore.Web.Models
 
             return true;
         }
-        public void GridInitialisation(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
         {
         }
     }

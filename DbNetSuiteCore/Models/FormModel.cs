@@ -35,12 +35,11 @@ namespace DbNetSuiteCore.Models
         public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
         public ModifiedRow Modified { get; set; } = new ModifiedRow();
         public Dictionary<string, object[]> RecordData => Data.Columns.Cast<DataColumn>().Where(c => c.DataType != typeof(Byte[])).ToDictionary(c => c.ColumnName, c => Data.Rows.Cast<DataRow>().AsEnumerable().Select(r => r[c]).ToArray());
-        public ICustomForm? CustomisationClass
+        public Type? CustomisationPlugin
         {
-            set { CustomisationTypeName = SetType(value); }
+            set { CustomisationPluginName = PluginHelper.GetNameFromType(value); }
         }
-        internal Type? GetCustomisationType => GetType(CustomisationTypeName);
-        public string CustomisationTypeName { get; set; } = string.Empty;
+        public string CustomisationPluginName { get; set; } = string.Empty;
 
         public FormModel() : base()
         {

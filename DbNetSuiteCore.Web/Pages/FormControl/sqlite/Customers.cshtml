@@ -20,7 +20,7 @@
         new FormColumn("Phone") { Pattern = "^(?:\\+1)?\\s?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}$", HelpText = "Please enter a valid US phone number"},
         new FormColumn("Fax") };
 
-    customerForm.CustomisationClass = new CustomerEditFormCustomisation();
+    customerForm.CustomisationPlugin = typeof(CustomerEditFormCustomisation);
 
     @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
 }

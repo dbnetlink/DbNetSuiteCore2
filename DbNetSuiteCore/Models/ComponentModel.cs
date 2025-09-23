@@ -236,16 +236,6 @@ namespace DbNetSuiteCore.Models
         public abstract ColumnModel NewColumn(BsonElement element);
         internal abstract ColumnModel? SortColumn { get; }
         internal abstract SortOrder? SortSequence { get; set; }
-
-
-        protected Type? GetType(string typeName)
-        {
-            return String.IsNullOrEmpty(typeName) ? null : Type.GetType(typeName); 
-        }
-
-        protected string SetType(object? obj)
-        {
-            return obj != null ? $"{obj.GetType().FullName}, {obj.GetType().Assembly.FullName}" : string.Empty;
-        }
+      
     }
 }
