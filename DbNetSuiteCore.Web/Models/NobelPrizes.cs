@@ -1,12 +1,13 @@
 ﻿using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Web.Models
 {
-    public class NobelPrizeTransform : IJsonTransform
+    public class NobelPrizeTransform : IJsonTransformPlugin
     {
         public List<NobelPrize> prizes { get; set; }
 
-        public object Transform()
+        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
         {
             List<TransformedNobelPrizeList> list = prizes.Select(p => new TransformedNobelPrizeList(p.year, p.category, p.laureates) { }).ToList();
             return list;

@@ -16,7 +16,7 @@
             new GridColumn("Laureates")
     };
 
-    gridModel.JsonRecordType = new NobelPrizeTransform();
+    gridModel.JsonTransformPlugin = typeof(NobelPrizeTransform);
 
     gridModel.Cache = true;
 

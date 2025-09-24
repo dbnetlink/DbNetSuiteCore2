@@ -6,6 +6,6 @@ namespace DbNetSuiteCore.CustomisationHelpers.Interfaces
 {
     public interface IJsonTransformPlugin    
     {
-        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration _configuration); 
+        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration configuration); 
     }
 }

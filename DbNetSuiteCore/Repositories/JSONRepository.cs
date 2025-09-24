@@ -154,7 +154,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (componentModel is GridModel gridModel && gridModel.JsonTransformPluginName != null)
+            if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false)
             {
                 if (PluginHelper.DoesTypeImplementInterface<IJsonTransformPlugin>(gridModel.JsonTransformPluginName) == false)
                 {
