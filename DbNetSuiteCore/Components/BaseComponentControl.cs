@@ -50,6 +50,14 @@ namespace DbNetSuiteCore
                 {
                     gridModel.OptimizeForLargeDataset = false;
                 }
+
+                if (gridModel.RowSelection == RowSelection.None)
+                {
+                    if (gridModel.IsParent || gridModel.ViewDialog != null || gridModel.ClientEvents.ContainsKey(GridClientEvent.RowSelected))
+                    {
+                        gridModel.RowSelection = RowSelection.Single;
+                    }
+                }
             }
         }
 

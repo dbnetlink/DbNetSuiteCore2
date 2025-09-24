@@ -9,7 +9,7 @@ namespace DbNetSuiteCore.Models
 {
     public abstract class ComponentModel
     {
-        protected RowSelection _RowSelection = RowSelection.Single;
+        protected RowSelection _RowSelection = RowSelection.None;
         private string _Url = string.Empty;
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;

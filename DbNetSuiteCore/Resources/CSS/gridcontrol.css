@@ -22,6 +22,10 @@
         border-radius: 5px;
     }
 
+    .dbnetsuite-grid tr.grid-row:nth-child(odd) {
+        background-color: whitesmoke;
+    }
+
     .dbnetsuite-grid input.multi-select {
         zoom: 1.25;
         margin-left: 0.25rem;
