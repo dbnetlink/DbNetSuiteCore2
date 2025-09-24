@@ -21,7 +21,10 @@
         border: 1px solid gainsboro;
         border-radius: 5px;
     }
-
+    .dbnetsuite-grid tr.bg-cyan-600 {
+        --tw-bg-opacity: 1;
+        background-color: rgb(8 145 178 / var(--tw-bg-opacity, 1)) !important;
+    }
     .dbnetsuite-grid tr.grid-row:nth-child(odd) {
         background-color: whitesmoke;
     }
