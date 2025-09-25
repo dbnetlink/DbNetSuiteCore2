@@ -4,5 +4,6 @@
     {
         public bool Modified { get; set; } = false;
         public List<string> Columns { get; set; } = new List<string>();
+        public bool InError { get; set; } = false;
     }
 }

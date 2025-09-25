@@ -220,11 +220,10 @@ namespace DbNetSuiteCore.Repositories
         public async Task UpdateRecords(GridModel gridModel)
         {
             var primaryKeysValues = await GetPrimaryKeyValues(gridModel);
-            var modifiedRows = gridModel.ModifiedRows();
 
-            foreach (var row in modifiedRows.Keys)
+            foreach (var row in gridModel.ModifiedRows.Keys)
             {
-                CommandConfig update = gridModel.BuildUpdate(row, primaryKeysValues[row], modifiedRows[row].Columns);
+                CommandConfig update = gridModel.BuildUpdate(row, primaryKeysValues[row], gridModel.ModifiedRows[row].Columns);
                 var connection = GetConnection(gridModel.ConnectionAlias);
                 connection.Open();
                 await ExecuteUpdate(update, connection);

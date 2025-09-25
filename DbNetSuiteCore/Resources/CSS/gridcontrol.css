@@ -29,6 +29,10 @@
         background-color: whitesmoke;
     }
 
+    .dbnetsuite-grid tr.in-error {
+        background-color: var(--bg-error) !important;
+    }
+
     .dbnetsuite-grid input.multi-select {
         zoom: 1.25;
         margin-left: 0.25rem;

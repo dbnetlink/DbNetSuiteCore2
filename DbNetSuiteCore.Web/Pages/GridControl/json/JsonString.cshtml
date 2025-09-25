@@ -17,7 +17,6 @@
     };
 
     gridModel.JsonTransformPlugin = typeof(NobelPrizeTransform);
-
     gridModel.Cache = true;
 
     @(await new DbNetSuiteCore.GridControl(HttpContext).Render(gridModel))

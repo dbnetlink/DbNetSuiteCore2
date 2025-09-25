@@ -58,12 +58,14 @@ namespace DbNetSuiteCore.Models
         public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
         public bool IsEditable => Columns.Any(c => c.Editable);
         public bool ValidationPassed { get; set; } = false;
-        public Dictionary<string, List<string>> FormValues;
+        public Dictionary<string, List<string>> FormValues { get; internal set; }
         internal string FirstEditableColumnName => Columns.Where(c => c.Editable).First().ColumnName;
         [JsonIgnore]
         public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-        public List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
-        public List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
+        [JsonProperty]
+        internal List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
+        [JsonProperty]
+        internal List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
         [JsonIgnore]
 
         public Type? JsonTransformPlugin
@@ -74,12 +76,14 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public string JsonTransformPluginName { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string JsonTransformPluginName { get; set; } = string.Empty;
         public Type? CustomisationPlugin
         {
             set{ CustomisationPluginName = PluginHelper.GetNameFromType(value);}
         }
-        public string CustomisationPluginName { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string CustomisationPluginName { get; set; } = string.Empty;
 
         public string JsonArrayProperty { get; set; } = string.Empty;
         [JsonIgnore]
@@ -232,25 +236,33 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public Dictionary<int, ModifiedRow> ModifiedRows()
+        private Dictionary<int, ModifiedRow> _ModifiedRows = new Dictionary<int, ModifiedRow>();
+        [JsonIgnore]
+        public Dictionary<int, ModifiedRow> ModifiedRows
         {
-            var modifiedRows = new Dictionary<int, ModifiedRow>();
-            var rowCount = FormValues[FirstEditableColumnName].Count;
-
-            for (var r = 0; r < rowCount; r++)
+            get
             {
-                if (RowsModified != null && RowsModified.Count == rowCount)
+                if (_ModifiedRows.Keys.Any() || (FormValues ?? new Dictionary<string, List<string>>()).Any() == false)
                 {
-                    if (RowsModified[r].Modified)
+                    return _ModifiedRows;
+                }
+                _ModifiedRows = new Dictionary<int, ModifiedRow>();
+                var rowCount = FormValues[FirstEditableColumnName].Count;
+
+                for (var r = 0; r < rowCount; r++)
+                {
+                    if (RowsModified != null && RowsModified.Count == rowCount)
                     {
-                        modifiedRows[r] = RowsModified[r];
+                        if (RowsModified[r].Modified)
+                        {
+                            _ModifiedRows[r] = RowsModified[r];
+                        }
                     }
                 }
+
+                return _ModifiedRows;
             }
-
-            return modifiedRows;
         }
-
 
         public void Bind(GridClientEvent clientEvent, string functionName)
         {

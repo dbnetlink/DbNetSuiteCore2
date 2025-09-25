@@ -39,7 +39,8 @@ namespace DbNetSuiteCore.Models
         {
             set { CustomisationPluginName = PluginHelper.GetNameFromType(value); }
         }
-        public string CustomisationPluginName { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string CustomisationPluginName { get; set; } = string.Empty;
 
         public FormModel() : base()
         {

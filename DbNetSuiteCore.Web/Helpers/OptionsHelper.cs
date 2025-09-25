@@ -55,7 +55,7 @@ namespace DbNetSuiteCore.Web.Helpers
             switch (gridModel.Name)
             {
                 case ProductEditGrid:
-                    foreach (var row in gridModel.ModifiedRows().Keys)
+                    foreach (var row in gridModel.ModifiedRows.Keys)
                     {
                         var reorderLevel = Convert.ToInt32(gridModel.FormValues["reorderlevel"][row]);
                         var discontinued = Convert.ToBoolean(gridModel.FormValues["discontinued"][row]);

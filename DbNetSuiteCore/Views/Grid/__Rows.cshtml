@@ -14,7 +14,15 @@
     @foreach (DataRow row in Model.Rows)
     {
         rowIndex++;
-        <tr style="cursor:pointer" class="grid-row" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
+
+        List<string> rowClasses = new List<string>() { "grid-row" };
+
+        if (Model.GridModel.ModifiedRows.ContainsKey(rowIndex) && Model.GridModel.ModifiedRows[rowIndex].InError)
+        {
+            rowClasses.Add("in-error");
+        }
+
+        <tr style="cursor:pointer" class="@(String.Join(" ",rowClasses))" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
             @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
                 if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
