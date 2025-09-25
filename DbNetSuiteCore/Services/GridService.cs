@@ -479,10 +479,18 @@ namespace DbNetSuiteCore.Services
 
         private async Task CommitUpdate(GridModel gridModel)
         {
-            await UpdateRecords(gridModel);
-            gridModel.FormValues = new Dictionary<string, List<string>>();
-            gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
-            gridModel.MessageType = MessageType.Success;
+            try
+            {
+                await UpdateRecords(gridModel);
+                gridModel.FormValues = new Dictionary<string, List<string>>();
+                gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                gridModel.MessageType = MessageType.Success;
+            }
+            catch (Exception ex)
+            {
+                gridModel.Message = ex.Message;
+                gridModel.MessageType = MessageType.Error;
+            }
         }
 
         protected async Task UpdateRecords(GridModel gridModel)
