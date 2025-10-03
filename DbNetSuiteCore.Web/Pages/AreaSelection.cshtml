@@ -1,0 +1,73 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using System.Text.Json
+@using DbNetSuiteCore.Web.Models
+
+@{
+    ViewData["title"] = "Area Events";
+
+    var formModel = new FormModel(DataSourceType.SQLite, "MapViewer", "AreaEvent") { Insert = true, Delete = true };
+
+    formModel.Columns = new List<FormColumn>{
+        new FormColumn("EventName"),
+        new FormColumn("EventStart") {DataType = typeof(DateTime), ControlType = FormControlType.DateTime},
+        new FormColumn("EventEnd") {DataType = typeof(DateTime), ControlType = FormControlType.DateTime},
+        new FormColumn("GeoJSON") {DataOnly = true},
+        new FormColumn("Id") {DataOnly = true },
+    };
+
+    formModel.LayoutColumns = 1;
+    formModel.ClientEvents[FormClientEvent.Initialised] = "saveFormReference";
+    formModel.ClientEvents[FormClientEvent.RecordLoaded] = "restoreSelectedAreas";
+
+    var gridModel = new GridModel(DataSourceType.SQLite, "MapViewer", "AreaEvent");
+    gridModel.Caption = ViewData["title"].ToString();
+
+    gridModel.DeferredLoad = true;
+
+    gridModel.Columns = new List<GridColumn>{
+        new GridColumn("EventName"),
+        new GridColumn("EventStart") {DataType = typeof(DateTime), Format="dd-MM-yyyy hh:mm"},
+        new GridColumn("EventEnd") {DataType = typeof(DateTime), Format="dd-MM-yyyy hh:mm"},
+        new GridColumn("GeoJSON") {DataOnly = true},
+        new GridColumn("Id") {DataOnly = true },
+    };
+
+    gridModel.LinkedControl = formModel;
+
+    //   gridModel.ClientEvents[GridClientEvent.RowSelected] = "restoreSelectedAreas";
+
+}
+<div class="row flex-grow-1">
+    <div class="col-8 left-half" id="map"></div>
+    <div class="col-4 right-half" style="display:none">
+        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel))</div>
+        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(formModel))</div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+    <script>
+        require.config({
+                       paths: {
+                           // This maps the 'esri' alias to the base URL of the ArcGIS API
+                           'esri': 'https://js.arcgis.com/4.28/esri',
+                           'arcgis': 'https://js.arcgis.com/4.28/arcgis'
+                       }
+                   });
+        window.restoreSelectedAreas = function() {}
+        require(['js/areaSelection'], function(areaSelection) {
+            window.restoreSelectedAreas = areaSelection.restoreSelectedAreas;
+            window.saveFormReference = areaSelection.saveFormReference;
+        });
+    </script>
+}

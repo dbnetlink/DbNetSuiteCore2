@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Constants;
 using System.Text.RegularExpressions;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Enums;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -18,6 +19,23 @@ namespace DbNetSuiteCore.Extensions
             {
                 gridColumn.Format = "d";
             }
+
+            /*
+            if (gridColumn.DataSource.HasValue)
+            {
+                switch(gridColumn.DataSource.Value)
+                {
+                    case Enums.DataSourceType.SQLite:
+                        switch (gridColumn.DbDataType)
+                        {
+                            case nameof(SQLiteDataTypes.REAL):
+                                value = UnixTimeStampToDateTime(Convert.ToDouble(value));
+                                return Convert.ToDateTime(value).ToString(gridColumn.Format);
+                        }
+                        break;
+                }
+            }
+            */
 
             if (string.IsNullOrEmpty(gridColumn.Format))
             {
@@ -49,11 +67,20 @@ namespace DbNetSuiteCore.Extensions
                     value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img {(string.IsNullOrEmpty(gridColumn.Style) ? "" : $"style=\"{gridColumn.Style}\"")} src =\"{s}\"/>"));
                     break;
                 default:
-                    value = ColumnModelHelper.FormatValue(gridColumn,value);
+                    try
+                    {
+                        value = ColumnModelHelper.FormatValue(gridColumn, value);
+                    }
+                    catch { }
                     break;
             }
 
             return value;
+        }
+
+        static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            return DateTime.UnixEpoch.AddSeconds(unixTimeStamp).ToLocalTime();
         }
 
         public static string TruncateValue(this GridColumn gridColumn, string value)

@@ -115,6 +115,8 @@ namespace DbNetSuiteCore.Models
             }
         }
 
+        public DataSourceType? DataSource { get; set; } = null;
+
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
         {
@@ -227,15 +229,16 @@ namespace DbNetSuiteCore.Models
         }
         public void Update(DataColumn dataColumn, DataSourceType dataSourceType)
         {
+            this.DataSource = dataSourceType;
             DataType = dataColumn.DataType;
             Initialised = true;
-            Name = (dataSourceType == DataSourceType.Excel || dataSourceType == DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
+            Name = (dataSourceType == Enums.DataSourceType.Excel || dataSourceType == Enums.DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
 
             if (this is FormColumn formColumn)
             {
                 switch (dataSourceType)
                 {
-                    case DataSourceType.MongoDB:
+                    case Enums.DataSourceType.MongoDB:
                         PrimaryKey = (Name == MongoDbRepository.PrimaryKeyName);
                         formColumn.Autoincrement = (Name == MongoDbRepository.PrimaryKeyName);
                         break;
@@ -254,6 +257,7 @@ namespace DbNetSuiteCore.Models
 
         public void Update(DataRow dataRow, DataSourceType dataSourceType, bool generated = false)
         {
+            DataSource = dataSourceType;
             try
             {
                 switch (dataSourceType)
