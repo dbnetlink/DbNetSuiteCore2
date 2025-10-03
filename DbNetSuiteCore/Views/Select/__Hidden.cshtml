@@ -1,13 +1,12 @@
 ﻿@model DbNetSuiteCore.Models.SelectModel
 @inject IConfiguration Configuration
 @using Microsoft.Extensions.Configuration
-@using Newtonsoft.Json
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-<input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonConvert.SerializeObject(Model), Configuration)" />
+<input type="hidden" name="model" value="@TextHelper.ObfuscateString(Model, Configuration)" />
 @if (Model.IsParent)
 {
-    <input type="hidden" name="summarymodel" value="@TextHelper.ObfuscateString(JsonConvert.SerializeObject(Model.SummaryModel), Configuration)" />
+    <input type="hidden" name="summarymodel" value="@TextHelper.ObfuscateString(Model.SummaryModel, Configuration)" />
 }
 @if (string.IsNullOrEmpty(Model.JSON) == false)
 {

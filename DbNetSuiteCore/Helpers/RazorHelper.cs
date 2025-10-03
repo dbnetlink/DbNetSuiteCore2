@@ -40,7 +40,7 @@ namespace DbNetSuiteCore.Helpers
 
             if (gridModel.PrimaryKeyValue(row) != null)
             {
-                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(gridModel.PrimaryKeyValue(row)))}\"");
+                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(gridModel.PrimaryKeyValue(row)), null, gridModel.HttpContext)}\"");
             }
             foreach (var column in gridModel.DataOnlyColumns)
             {

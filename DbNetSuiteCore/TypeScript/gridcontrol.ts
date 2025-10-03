@@ -717,13 +717,15 @@ class GridControl extends ComponentControl {
         }
 
         let datasetValue = row.dataset[columnName] ?? row.dataset[columnName.toLowerCase()];
-        if (datasetValue) {
+        if (datasetValue || datasetValue == '') {
             return datasetValue;
         }
         let cell:HTMLTableCellElement = this.columnCell(columnName, row)
 
-        if (this.hasFormControl(cell)) {
-            return this.formControlValue(columnName, row);
+        if (cell) {
+            if (this.hasFormControl(cell)) {
+                return this.formControlValue(columnName, row);
+            }
         }
 
         return cell ? cell.dataset.value : null;

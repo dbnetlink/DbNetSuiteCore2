@@ -468,7 +468,7 @@ namespace DbNetSuiteCore.Extensions
             string parentModel = RequestHelper.FormValue(key, string.Empty, context);
             if (string.IsNullOrEmpty(parentModel) == false)
             {
-                string json = TextHelper.DeobfuscateString(parentModel, configuration);
+                string json = TextHelper.DeobfuscateString(parentModel, configuration, context);
                 if (string.IsNullOrEmpty(json) == false)
                 {
                     componentModel.ParentModel = JsonConvert.DeserializeObject<SummaryModel>(json);

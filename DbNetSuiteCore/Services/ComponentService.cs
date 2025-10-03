@@ -129,6 +129,7 @@ namespace DbNetSuiteCore.Services
 
         protected void AssignParentModel(ComponentModel componentModel)
         {
+            componentModel.HttpContext = _context;
             var primaryKey = RequestHelper.FormValue("primaryKey", null, _context);
             var foreignKey = RequestHelper.FormValue("foreignKey", null, _context);
 

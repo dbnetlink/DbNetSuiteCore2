@@ -91,6 +91,8 @@ namespace DbNetSuiteCore.Models
         public string Message = string.Empty;
         public MessageType MessageType = MessageType.None;
         public bool IsParent => LinkedControlIds.Any();
+        [JsonIgnore]
+        internal HttpContext HttpContext { get; set; }
         public ComponentModel()
         {
             Id = GeneratedId();

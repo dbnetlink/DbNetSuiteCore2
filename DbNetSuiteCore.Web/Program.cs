@@ -1,10 +1,9 @@
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 
 var app = builder.Build();
 

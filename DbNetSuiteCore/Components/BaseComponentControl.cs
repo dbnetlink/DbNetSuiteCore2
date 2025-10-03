@@ -20,6 +20,8 @@ namespace DbNetSuiteCore
                 gridModel._NestedGrids.Add(gridModel.DeepCopy());
             }
 
+            gridModel.HttpContext = _httpContext;
+
             ValidateControl(gridModel);
 
             return await RenderView("Grid/__ControlForm", gridModel);
@@ -27,11 +29,13 @@ namespace DbNetSuiteCore
 
         protected async Task<string> Render(SelectModel selectModel)
         {
+            selectModel.HttpContext = _httpContext;
             return await RenderView("Select/__ControlForm", selectModel);
         }
 
         protected async Task<string> Render(FormModel formModel)
         {
+            formModel.HttpContext = _httpContext;
             return await RenderView("Form/__ControlForm", formModel);
         }
 

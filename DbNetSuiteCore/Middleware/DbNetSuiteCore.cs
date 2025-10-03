@@ -93,7 +93,7 @@ namespace DbNetSuiteCore.Middleware
                     SupportedUICultures = new List<CultureInfo> { new CultureInfo(locale) },
                     DefaultRequestCulture = new RequestCulture(locale)
                 };
-
+                
                 builder.UseRequestLocalization(localizationOptions);
             }
             return builder.UseMiddleware<DbNetSuiteCore>();
@@ -127,7 +127,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IExcelRepository, ExcelRepository>();
             services.AddScoped<IMongoDbRepository, MongoDbRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
-
+            services.AddSingleton<DataProtectionService>();
             return services;
         }
     }

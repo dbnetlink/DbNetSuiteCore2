@@ -1,4 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Services;
 using System.Configuration;
 using System.IO.Compression;
 using System.Text;
@@ -11,7 +13,7 @@ namespace DbNetSuiteCore.Helpers
         static public string GenerateLabel(string label)
         {
             label = label.Split(".").Last();
-            label = label.Replace("[",string.Empty).Replace("]", string.Empty);
+            label = label.Replace("[", string.Empty).Replace("]", string.Empty);
             label = Regex.Replace(label, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
             return Capitalise(label.Replace("_", " ").Replace(".", " "));
         }
@@ -19,7 +21,25 @@ namespace DbNetSuiteCore.Helpers
         {
             return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(text);
         }
-        public static string ObfuscateString(string input, IConfiguration? configuration = null)
+
+        public static string ObfuscateString(ComponentModel componentModel, IConfiguration? configuration = null)
+        {
+            return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(componentModel), configuration, componentModel.HttpContext);
+        }
+
+        public static string ObfuscateString(SummaryModel summaryModel, IConfiguration? configuration = null)
+        {
+            if (summaryModel != null)
+            {
+                return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(summaryModel), configuration, summaryModel.HttpContext);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        public static string ObfuscateString(string input, IConfiguration? configuration = null, HttpContext? httpContext = null)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -31,10 +51,21 @@ namespace DbNetSuiteCore.Helpers
             {
                 return Compress(input);
             }
-            return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
-                                                 }
 
-        public static string DeobfuscateString(string input, IConfiguration? configuration = null)
+            if (httpContext != null)
+            {
+                DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
+                if (dataProtectionService != null)
+                {
+                    string text = dataProtectionService.Encrypt(input);
+                    return text;
+                }
+            }
+
+            return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
+        }
+
+        public static string DeobfuscateString(string input, IConfiguration? configuration = null, HttpContext? httpContext = null)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -46,6 +77,20 @@ namespace DbNetSuiteCore.Helpers
             {
                 return Decompress(input);
             }
+
+            if (httpContext != null)
+            {
+                DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
+                if (dataProtectionService != null)
+                {
+                    string text = dataProtectionService.Decrypt(input);
+                    if (text != null)
+                    {
+                        return text;
+                    }
+                }
+            }
+
             return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
@@ -65,35 +110,9 @@ namespace DbNetSuiteCore.Helpers
             return columnName;
         }
 
-        public static string Caesar(this string source, Int16 shift)
-        {
-            var maxChar = Convert.ToInt32(char.MaxValue);
-            var minChar = Convert.ToInt32(char.MinValue);
-
-            var buffer = source.ToCharArray();
-
-            for (var i = 0; i < buffer.Length; i++)
-            {
-                var shifted = Convert.ToInt32(buffer[i]) + shift;
-
-                if (shifted > maxChar)
-                {
-                    shifted -= maxChar;
-                }
-                else if (shifted < minChar)
-                {
-                    shifted += maxChar;
-                }
-
-                buffer[i] = Convert.ToChar(shifted);
-            }
-
-            return new string(buffer);
-        }
-
         public static bool IsAlphaNumeric(string text)
         {
-            return text.All(c => char.IsLetterOrDigit(c) ||  c == '_');
+            return text.All(c => char.IsLetterOrDigit(c) || c == '_');
         }
 
         public static string Compress(string text)
@@ -122,7 +141,7 @@ namespace DbNetSuiteCore.Helpers
             return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
         }
 
-        private static EncryptionConfig GetEncryptionConfig(IConfiguration? configuration = null)
+        internal static EncryptionConfig GetEncryptionConfig(IConfiguration? configuration = null)
         {
             if (configuration == null)
             {
@@ -130,18 +149,25 @@ namespace DbNetSuiteCore.Helpers
             }
             else
             {
-                return new EncryptionConfig()
+                EncryptionConfig encryptionConfig = new EncryptionConfig()
                 {
                     Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
-                    Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt)
+                    Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt),
+                    DataProtectionPurpose = configuration.ConfigValue(ConfigurationHelper.AppSetting.DataProtectionPurpose)
                 };
+
+                encryptionConfig.Key = string.IsNullOrEmpty(encryptionConfig.Key) ? Environment.MachineName : encryptionConfig.Key;
+                encryptionConfig.Salt = string.IsNullOrEmpty(encryptionConfig.Salt) ? Environment.MachineName : encryptionConfig.Salt;
+                encryptionConfig.DataProtectionPurpose = string.IsNullOrEmpty(encryptionConfig.DataProtectionPurpose) ? Environment.MachineName : encryptionConfig.DataProtectionPurpose;
+                return encryptionConfig;
             }
         }
 
         internal class EncryptionConfig
         {
-            public string Key { get; set; } = string.Empty;
-            public string Salt { get; set; } = string.Empty;
+            public string Key { get; set; } = Environment.MachineName;
+            public string Salt { get; set; } = Environment.MachineName;
+            public string DataProtectionPurpose { get; set; } = Environment.MachineName;
 
             public bool IsValid => !string.IsNullOrEmpty(Key) && !string.IsNullOrEmpty(Salt);
         }

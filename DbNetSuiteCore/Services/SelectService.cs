@@ -81,7 +81,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context) ?? string.Empty,_configuration);
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context) ?? string.Empty,_configuration, _context);
                 SelectModel selectModel = JsonConvert.DeserializeObject<SelectModel>(model) ?? new SelectModel();
                 selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? String.Empty);
                 AssignParentModel(selectModel);

@@ -364,7 +364,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration);
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration, _context);
                 FormModel formModel = JsonConvert.DeserializeObject<FormModel>(model) ?? new FormModel();
                 formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);

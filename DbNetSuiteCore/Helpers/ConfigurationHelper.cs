@@ -11,7 +11,8 @@
             UpdateDisabled,
             LicenseKey,
             LicenseId,
-            Locale
+            Locale,
+            DataProtectionPurpose
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)

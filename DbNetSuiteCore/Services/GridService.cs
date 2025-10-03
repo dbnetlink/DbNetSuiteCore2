@@ -374,7 +374,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration);
+                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration, _context);
                 GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
                 gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? string.Empty);
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);

@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -17,6 +18,8 @@ namespace DbNetSuiteCore.Models
         public bool HasEmptyOption { get; set; } = false;
         public Dictionary<string,object> ParentRow => RowIdx < 0 ? new Dictionary<string, object>() : Data.Keys.ToDictionary(k => k, k => Data[k][RowIdx],StringComparer.CurrentCultureIgnoreCase);
         public string Name => ParentRow.Keys.Contains("name") ? ParentRow["name"]?.ToString() ?? string.Empty : string.Empty;
+        [JsonIgnore]
+        public HttpContext? HttpContext { get; set; } = null;
         public SummaryModel()
         {
         }
@@ -43,6 +46,8 @@ namespace DbNetSuiteCore.Models
                 RowCount = selectModel.Data.Rows.Cast<DataRow>().Count();
                 HasEmptyOption = string.IsNullOrEmpty(selectModel.EmptyOption) == false;
             }
+
+            HttpContext = componentModel.HttpContext;
         }
     }
 }
