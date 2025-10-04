@@ -642,27 +642,17 @@ namespace DbNetSuiteCore.Extensions
                     switch (dataSourceType)
                     {
                         case DataSourceType.SQLite:
-                            switch (column.DbDataType)
-                            {/*
-                                case nameof(SQLiteDataTypes.REAL):
-                                    paramValue = Convert.ToDateTime(paramValue).ToUniversalTime().Subtract(DateTime.UnixEpoch).TotalSeconds;
-                                    break;
-                                */
-                                default:
-                                    string format = "yyyy-MM-dd";
-                                    if (column is FormColumn formColumn)
-                                    {
-                                       switch (formColumn.ControlType)
-                                        {
-                                            case FormControlType.DateTime:
-                                                format = "yyyy-MM-dd HH:mm";
-                                                break;
-                                        }
-                                    }
-                                    paramValue = Convert.ToDateTime(paramValue).ToString();
-                                    break;
-
+                            string format = "yyyy-MM-dd";
+                            if (column is FormColumn formColumn)
+                            {
+                                switch (formColumn.ControlType)
+                                {
+                                    case FormControlType.DateTime:
+                                        format = "yyyy-MM-dd HH:mm";
+                                        break;
+                                }
                             }
+                            paramValue = Convert.ToDateTime(paramValue).ToString(format);
                             break;
                     }
                     break;
