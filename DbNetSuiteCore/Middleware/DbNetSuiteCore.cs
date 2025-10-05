@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using DbNetSuiteCore.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace DbNetSuiteCore.Middleware
 {
@@ -107,6 +108,25 @@ namespace DbNetSuiteCore.Middleware
                 var embeddedFileProvider = new EmbeddedFileProvider(typeof(DbNetSuiteCore).Assembly);
                 options.FileProviders.Add(embeddedFileProvider);
             });
+
+            var dpBuilder = services.AddDataProtection()
+                .SetApplicationName("DbNetSuiteCore.IsolatedData").PersistKeysToFileSystem(new DirectoryInfo("dpkeys"));
+            /*
+            // 1. Check if the host app provided a Redis connection string for load balancing
+            var redisConnection = config["DataProtection:RedisConnectionString"];
+
+            if (!string.IsNullOrEmpty(redisConnection))
+            {
+                // 2. Load-Balanced SCENARIO: Use Redis for shared key storage
+                var redis = ConnectionMultiplexer.Connect(redisConnection);
+                dpBuilder.PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");
+            }
+            else
+            {
+                // 3. Single-Server SCENARIO (Default): Use local file system
+                dpBuilder.PersistKeysToFileSystem(new DirectoryInfo("dpkeys"));
+            }
+            */
 
             services.AddHttpContextAccessor();
             services.AddRazorPages().AddRazorRuntimeCompilation();
