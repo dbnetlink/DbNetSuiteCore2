@@ -109,8 +109,8 @@ namespace DbNetSuiteCore.Middleware
                 options.FileProviders.Add(embeddedFileProvider);
             });
 
-            var dpBuilder = services.AddDataProtection()
-                .SetApplicationName("DbNetSuiteCore.IsolatedData").PersistKeysToFileSystem(new DirectoryInfo("dpkeys"));
+            //var dpBuilder = services.AddDataProtection()
+             //   .SetApplicationName("DbNetSuiteCore.IsolatedData").PersistKeysToFileSystem(new DirectoryInfo("dpkeys"));
             /*
             // 1. Check if the host app provided a Redis connection string for load balancing
             var redisConnection = config["DataProtection:RedisConnectionString"];
@@ -147,7 +147,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IExcelRepository, ExcelRepository>();
             services.AddScoped<IMongoDbRepository, MongoDbRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
-            services.AddSingleton<DataProtectionService>();
+        //    services.AddSingleton<DataProtectionService>();
             return services;
         }
     }

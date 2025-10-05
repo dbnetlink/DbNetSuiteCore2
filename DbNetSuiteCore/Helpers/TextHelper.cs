@@ -1,7 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Services;
-using System.Configuration;
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -51,7 +49,7 @@ namespace DbNetSuiteCore.Helpers
             {
                 return Compress(input);
             }
-
+            /*
             if (httpContext != null)
             {
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
@@ -61,6 +59,7 @@ namespace DbNetSuiteCore.Helpers
                     return text;
                 }
             }
+            */
 
             return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
@@ -78,6 +77,7 @@ namespace DbNetSuiteCore.Helpers
                 return Decompress(input);
             }
 
+            /*
             if (httpContext != null)
             {
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
@@ -90,7 +90,7 @@ namespace DbNetSuiteCore.Helpers
                     }
                 }
             }
-
+            */
             return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
