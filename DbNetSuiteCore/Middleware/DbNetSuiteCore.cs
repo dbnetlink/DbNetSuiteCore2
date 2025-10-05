@@ -147,7 +147,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IExcelRepository, ExcelRepository>();
             services.AddScoped<IMongoDbRepository, MongoDbRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
-        //    services.AddSingleton<DataProtectionService>();
+            services.AddSingleton<DataProtectionService>();
             return services;
         }
     }

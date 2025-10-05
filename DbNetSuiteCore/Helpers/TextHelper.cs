@@ -1,5 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Services;
+using Microsoft.Extensions.Configuration;
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -49,8 +51,8 @@ namespace DbNetSuiteCore.Helpers
             {
                 return Compress(input);
             }
-            /*
-            if (httpContext != null)
+
+            if (httpContext != null && encryptionConfig.UseDataProtection)
             {
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
@@ -59,7 +61,7 @@ namespace DbNetSuiteCore.Helpers
                     return text;
                 }
             }
-            */
+
 
             return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
@@ -77,8 +79,7 @@ namespace DbNetSuiteCore.Helpers
                 return Decompress(input);
             }
 
-            /*
-            if (httpContext != null)
+            if (httpContext != null && encryptionConfig.UseDataProtection)
             {
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
@@ -90,7 +91,7 @@ namespace DbNetSuiteCore.Helpers
                     }
                 }
             }
-            */
+
             return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
@@ -153,7 +154,8 @@ namespace DbNetSuiteCore.Helpers
                 {
                     Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
                     Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt),
-                    DataProtectionPurpose = configuration.ConfigValue(ConfigurationHelper.AppSetting.DataProtectionPurpose)
+                    DataProtectionPurpose = configuration.ConfigValue(ConfigurationHelper.AppSetting.DataProtectionPurpose),
+                    UseDataProtection = configuration.ConfigValue(ConfigurationHelper.AppSetting.UseDataProtection).ToLower() == "true"
                 };
 
                 encryptionConfig.Key = string.IsNullOrEmpty(encryptionConfig.Key) ? Environment.MachineName : encryptionConfig.Key;
@@ -168,8 +170,8 @@ namespace DbNetSuiteCore.Helpers
             public string Key { get; set; } = Environment.MachineName;
             public string Salt { get; set; } = Environment.MachineName;
             public string DataProtectionPurpose { get; set; } = Environment.MachineName;
-
             public bool IsValid => !string.IsNullOrEmpty(Key) && !string.IsNullOrEmpty(Salt);
+            public bool UseDataProtection { get; set; } = false;
         }
     }
 }

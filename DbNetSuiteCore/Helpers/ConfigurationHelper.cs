@@ -12,7 +12,8 @@
             LicenseKey,
             LicenseId,
             Locale,
-            DataProtectionPurpose
+            DataProtectionPurpose,
+            UseDataProtection
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)
