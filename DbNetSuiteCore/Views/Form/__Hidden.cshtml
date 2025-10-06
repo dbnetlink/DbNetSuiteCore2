@@ -4,7 +4,14 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Models
-<input type="hidden" name="model" value="@TextHelper.ObfuscateString(Model, Configuration)" />
+@if (ConfigurationHelper.ServerStateManagement(Configuration) == false)
+{
+    <input type="hidden" name="model" value="@TextHelper.ObfuscateString(Model, Configuration)" />
+}
+else
+{
+    <input type="hidden" name="model" value="@CacheHelper.CacheModel(Model)" />
+}
 @if (Model.IsParent)
 {
     <input type="hidden" name="summarymodel" value="@TextHelper.ObfuscateString(Model.SummaryModel, Configuration)" />

@@ -155,6 +155,7 @@ namespace DbNetSuiteCore.Services
                 {
                     var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
                     nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentModel!.Name}";
+                    nestedChildGrid.HttpContext = _context;
                     nestedGrid._NestedGrids.Add(nestedChildGrid);
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
@@ -164,6 +165,7 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
+            gridModel._NestedGrids.ForEach(g => g.HttpContext = _context);
             return gridModel._NestedGrids;
         }
 
@@ -374,8 +376,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context), _configuration, _context);
-                GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
+                GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(StateHelper.GetSerialisedModel(_context,_configuration)) ?? new GridModel();
                 gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? string.Empty);
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context)?.Trim() ?? string.Empty;

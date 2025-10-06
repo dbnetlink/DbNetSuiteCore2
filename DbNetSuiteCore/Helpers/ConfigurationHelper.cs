@@ -13,12 +13,18 @@
             LicenseId,
             Locale,
             DataProtectionPurpose,
-            UseDataProtection
+            UseDataProtection,
+            StateManagement
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)
         {
             return configuration[$"DbNetSuiteCore:{setting}"] ?? string.Empty;
+        }
+
+        public static bool ServerStateManagement(this IConfiguration configuration)
+        {
+            return ConfigValue(configuration, AppSetting.StateManagement).ToLower() == "server";
         }
     }
 }
