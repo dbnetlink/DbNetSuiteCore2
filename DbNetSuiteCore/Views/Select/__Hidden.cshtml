@@ -3,17 +3,10 @@
 @using Microsoft.Extensions.Configuration
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-@if (ConfigurationHelper.ServerStateManagement(Configuration) == false)
-{   
-    <input type="hidden" name="model" value="@TextHelper.ObfuscateString(Model, Configuration)" />
-}
-else
-{
-    <input type="hidden" name="model" value="@CacheHelper.CacheModel(Model)" />
-}
+@RazorHelper.ModelState(Model, Configuration)
 @if (Model.IsParent)
 {
-    <input type="hidden" name="summarymodel" value="@TextHelper.ObfuscateString(Model.SummaryModel, Configuration)" />
+    @RazorHelper.ModelSummaryState(Model.SummaryModel, Model, Configuration)
 }
 @if (string.IsNullOrEmpty(Model.JSON) == false)
 {

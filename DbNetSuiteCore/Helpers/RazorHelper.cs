@@ -1,12 +1,13 @@
 ﻿using DbNetSuiteCore.Extensions;
-using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Html;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System.Configuration;
 using System.Data;
 using System.Text.Encodings.Web;
-using DocumentFormat.OpenXml.EMMA;
-using System.Configuration;
-using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Helpers
 {
@@ -99,6 +100,38 @@ namespace DbNetSuiteCore.Helpers
             attributes.Add("type", "button");
             attributes.Add("title", ResourceHelper.GetResourceString(type));
             return new HtmlString($"<button {Attributes(attributes)}>{icon.ToString()}</button>");
+        }
+
+        public static HtmlString ModelState(ComponentModel componentModel, IConfiguration configuration)
+        {
+            var attributes = new Dictionary<string, string>();
+            if (ConfigurationHelper.ServerStateManagement(configuration))
+            {
+                attributes.Add("value", CacheHelper.CacheModel(componentModel));
+            }
+            else
+            {
+                attributes.Add("value", TextHelper.ObfuscateString(componentModel, configuration));
+            }
+            attributes.Add("type", "hidden");
+            attributes.Add("name", "model");
+            return new HtmlString($"<input {Attributes(attributes)}/>");
+        }
+
+        public static HtmlString ModelSummaryState(SummaryModel summaryModel, ComponentModel componentModel, IConfiguration configuration)
+        {
+            var attributes = new Dictionary<string, string>();
+            if (ConfigurationHelper.ServerStateManagement(configuration))
+            {
+                attributes.Add("value", CacheHelper.CacheSummaryModel(summaryModel, componentModel));
+            }
+            else
+            {
+                attributes.Add("value", TextHelper.ObfuscateString(summaryModel, configuration));
+            }
+            attributes.Add("type", "hidden");
+            attributes.Add("name", "summarymodel");
+            return new HtmlString($"<input {Attributes(attributes)}/>");
         }
     }
 }

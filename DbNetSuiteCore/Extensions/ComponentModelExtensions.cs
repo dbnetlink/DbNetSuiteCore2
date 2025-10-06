@@ -465,20 +465,16 @@ namespace DbNetSuiteCore.Extensions
 
         public static void AssignParentModel(this ComponentModel componentModel, HttpContext context, IConfiguration configuration, string key = "parentModel")
         {
-            string parentModel = RequestHelper.FormValue(key, string.Empty, context);
-            if (string.IsNullOrEmpty(parentModel) == false)
+            string json = StateHelper.GetSerialisedModel(context, configuration, key);
+            if (string.IsNullOrEmpty(json) == false)
             {
-                string json = TextHelper.DeobfuscateString(parentModel, configuration, context);
-                if (string.IsNullOrEmpty(json) == false)
+                componentModel.ParentModel = JsonConvert.DeserializeObject<SummaryModel>(json);
+
+                string rowIndex = RequestHelper.FormValue("rowindex", string.Empty, context);
+
+                if (string.IsNullOrEmpty(rowIndex) == false)
                 {
-                    componentModel.ParentModel = JsonConvert.DeserializeObject<SummaryModel>(json);
-
-                    string rowIndex = RequestHelper.FormValue("rowindex", string.Empty, context);
-
-                    if (string.IsNullOrEmpty(rowIndex) == false)
-                    {
-                        componentModel.ParentModel.RowIdx = int.Parse(rowIndex);
-                    }
+                    componentModel.ParentModel.RowIdx = int.Parse(rowIndex);
                 }
             }
         }
