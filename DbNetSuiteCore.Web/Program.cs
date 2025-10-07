@@ -1,9 +1,21 @@
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
+
+string redisServer = builder.Configuration.GetConnectionString("RedisServer");
+
+if (string.IsNullOrEmpty(redisServer) == false)
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisServer;
+        options.InstanceName = "DbNetSuiteCore";
+    });
+}
 
 var app = builder.Build();
 

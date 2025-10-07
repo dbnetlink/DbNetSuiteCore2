@@ -105,7 +105,11 @@ namespace DbNetSuiteCore.Helpers
         public static HtmlString ModelState(ComponentModel componentModel, IConfiguration configuration)
         {
             var attributes = new Dictionary<string, string>();
-            if (ConfigurationHelper.ServerStateManagement(configuration))
+            if (ConfigurationHelper.UseDistributedServerCache(configuration))
+            {
+                attributes.Add("value", CacheHelper.RedisCacheModel(componentModel));
+            }
+            else if (ConfigurationHelper.ServerStateManagement(configuration))
             {
                 attributes.Add("value", CacheHelper.CacheModel(componentModel));
             }
@@ -121,7 +125,11 @@ namespace DbNetSuiteCore.Helpers
         public static HtmlString ModelSummaryState(SummaryModel summaryModel, ComponentModel componentModel, IConfiguration configuration)
         {
             var attributes = new Dictionary<string, string>();
-            if (ConfigurationHelper.ServerStateManagement(configuration))
+            if (ConfigurationHelper.UseDistributedServerCache(configuration))
+            {
+                attributes.Add("value", CacheHelper.RedisCacheSummaryModel(summaryModel, componentModel));
+            }
+            else if (ConfigurationHelper.ServerStateManagement(configuration))
             {
                 attributes.Add("value", CacheHelper.CacheSummaryModel(summaryModel, componentModel));
             }

@@ -1,15 +1,17 @@
-﻿using Microsoft.Extensions.FileProviders;
-using System.Net;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
-using DbNetSuiteCore.Repositories;
-using DbNetSuiteCore.Services.Interfaces;
-using DbNetSuiteCore.Services;
-using DbNetSuiteCore.Enums;
-using Microsoft.AspNetCore.Localization;
-using System.Globalization;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using Microsoft.Extensions.Options;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services;
+using DbNetSuiteCore.Services.Interfaces;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Net;
 
 namespace DbNetSuiteCore.Middleware
 {
@@ -83,23 +85,6 @@ namespace DbNetSuiteCore.Middleware
 
     public static class DbNetSuiteCoreExtensions
     {
-        public static IApplicationBuilder UseDbNetSuiteCore(this IApplicationBuilder builder, Culture? culture = null)
-        {
-            if (culture.HasValue)
-            {
-                string locale = culture.Value.ToString().Replace("_", "-");
-                RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
-                {
-                    SupportedCultures = new List<CultureInfo> { new CultureInfo(locale) },
-                    SupportedUICultures = new List<CultureInfo> { new CultureInfo(locale) },
-                    DefaultRequestCulture = new RequestCulture(locale)
-                };
-                
-                builder.UseRequestLocalization(localizationOptions);
-            }
-            return builder.UseMiddleware<DbNetSuiteCore>();
-        }
-
         public static IServiceCollection AddDbNetSuiteCore(this IServiceCollection services)
         {
             services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
@@ -108,25 +93,6 @@ namespace DbNetSuiteCore.Middleware
                 var embeddedFileProvider = new EmbeddedFileProvider(typeof(DbNetSuiteCore).Assembly);
                 options.FileProviders.Add(embeddedFileProvider);
             });
-
-            //var dpBuilder = services.AddDataProtection()
-             //   .SetApplicationName("DbNetSuiteCore.IsolatedData").PersistKeysToFileSystem(new DirectoryInfo("dpkeys"));
-            /*
-            // 1. Check if the host app provided a Redis connection string for load balancing
-            var redisConnection = config["DataProtection:RedisConnectionString"];
-
-            if (!string.IsNullOrEmpty(redisConnection))
-            {
-                // 2. Load-Balanced SCENARIO: Use Redis for shared key storage
-                var redis = ConnectionMultiplexer.Connect(redisConnection);
-                dpBuilder.PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");
-            }
-            else
-            {
-                // 3. Single-Server SCENARIO (Default): Use local file system
-                dpBuilder.PersistKeysToFileSystem(new DirectoryInfo("dpkeys"));
-            }
-            */
 
             services.AddHttpContextAccessor();
             services.AddRazorPages().AddRazorRuntimeCompilation();
@@ -148,7 +114,26 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IMongoDbRepository, MongoDbRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
             services.AddSingleton<DataProtectionService>();
+            services.AddScoped<ICacheService, CacheService>();
+
             return services;
+        }
+        public static IApplicationBuilder UseDbNetSuiteCore(this WebApplication app, Culture? culture = null)
+        {
+            if (culture.HasValue)
+            {
+                string locale = culture.Value.ToString().Replace("_", "-");
+                RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
+                {
+                    SupportedCultures = new List<CultureInfo> { new CultureInfo(locale) },
+                    SupportedUICultures = new List<CultureInfo> { new CultureInfo(locale) },
+                    DefaultRequestCulture = new RequestCulture(locale)
+                };
+
+                app.UseRequestLocalization(localizationOptions);
+            }
+
+            return app.UseMiddleware<DbNetSuiteCore>();
         }
     }
 }
