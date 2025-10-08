@@ -155,7 +155,7 @@ namespace DbNetSuiteCore.Helpers
                     Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
                     Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt),
                     DataProtectionPurpose = configuration.ConfigValue(ConfigurationHelper.AppSetting.DataProtectionPurpose),
-                    UseDataProtection = configuration.ConfigValue(ConfigurationHelper.AppSetting.UseDataProtection).ToLower() == "true"
+                    UseDataProtection = ConfigurationHelper.UseDataProtection(configuration)
                 };
 
                 encryptionConfig.Key = string.IsNullOrEmpty(encryptionConfig.Key) ? Environment.MachineName : encryptionConfig.Key;

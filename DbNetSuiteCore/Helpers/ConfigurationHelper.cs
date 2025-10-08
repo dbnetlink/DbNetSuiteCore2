@@ -14,7 +14,8 @@
             Locale,
             DataProtectionPurpose,
             UseDataProtection,
-            StateManagement
+            StateManagement,
+            UseDistributedServerCache
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)
@@ -25,6 +26,16 @@
         public static bool ServerStateManagement(this IConfiguration configuration)
         {
             return ConfigValue(configuration, AppSetting.StateManagement).ToLower() == "server";
+        }
+
+        public static bool UseDistributedServerCache(this IConfiguration configuration)
+        {
+            return configuration.ConfigValue(ConfigurationHelper.AppSetting.UseDistributedServerCache).ToLower() == "true";
+        }
+
+        public static bool UseDataProtection(this IConfiguration configuration)
+        {
+            return configuration.ConfigValue(ConfigurationHelper.AppSetting.UseDataProtection).ToLower() == "true";
         }
     }
 }
