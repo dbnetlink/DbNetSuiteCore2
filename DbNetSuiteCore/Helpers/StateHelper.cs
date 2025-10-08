@@ -1,11 +1,4 @@
-﻿using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.InkML;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-
-namespace DbNetSuiteCore.Helpers
+﻿namespace DbNetSuiteCore.Helpers
 {
 
     public static class StateHelper

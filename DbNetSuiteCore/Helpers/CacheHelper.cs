@@ -1,6 +1,4 @@
 ﻿using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.EMMA;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace DbNetSuiteCore.Helpers

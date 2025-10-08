@@ -1,11 +1,7 @@
 ﻿using DbNetSuiteCore.Extensions;
-using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Html;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System.Configuration;
 using System.Data;
 using System.Text.Encodings.Web;
 

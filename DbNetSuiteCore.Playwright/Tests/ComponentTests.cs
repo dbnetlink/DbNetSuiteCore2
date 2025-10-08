@@ -1,13 +1,14 @@
-﻿using Microsoft.Playwright.NUnit;
-using System.Net.Sockets;
-using System.Net;
-using NUnit.Framework;
+﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Playwright.Models;
-using Microsoft.Playwright;
 using DbNetSuiteCore.Playwright.Enums;
-using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Playwright.Models;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Playwright;
+using Microsoft.Playwright.NUnit;
+using NUnit.Framework;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
 
 
 namespace DbNetSuiteCore.Playwright.Tests
@@ -27,7 +28,6 @@ namespace DbNetSuiteCore.Playwright.Tests
             _baseUrl = $"https://localhost:{_port}/";
             _factory = new CustomWebApplicationFactory<Program>(_baseUrl);
             _client = _factory.CreateClient();
-            
         }
         [OneTimeTearDown]
         public void OneTimeTearDown()
@@ -44,6 +44,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             {
                 url = $"{_baseUrl}{componentType.ToString().ToLower()}/{page}";
             }
+            Page.SetDefaultTimeout(10000);
             await Page.GotoAsync(url);
         }
 
@@ -348,6 +349,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
             foreach (string token in searches.Keys)
             {
+                await Page.WaitForTimeoutAsync(100);
                 await search.FillAsync(token);
                 await TestRowCount(searches[token],"record");
             }
