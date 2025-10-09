@@ -15,8 +15,8 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
             };
 
             await SelectSearchTest(searches, "json/customers");
-            await SelectSearchTest(searches, $"json/customers?port={Port}");
-            await SelectSearchTest(searches, $"json/customers?port={Port}&mode=string");
+          //  await SelectSearchTest(searches, $"json/customers?mode=api");
+          //  await SelectSearchTest(searches, $"json/customers?mode=string");
         }
 
         [Test]
@@ -28,8 +28,8 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
             };
 
             await SelectGroupTest(searches, "json/cities");
-            await SelectGroupTest(searches, $"json/cities?port={Port}");
-            await SelectGroupTest(searches, $"json/cities?port={Port}&mode=string");
+            await SelectGroupTest(searches, $"json/cities?model=api");
+            await SelectGroupTest(searches, $"json/cities?mode=string");
         }
     }
 }

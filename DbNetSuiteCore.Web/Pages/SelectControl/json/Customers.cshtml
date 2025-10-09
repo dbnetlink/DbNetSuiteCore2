@@ -11,13 +11,11 @@
         new SelectColumn("CompanyName")
     };
 
-    var port = Request.Query["port"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["port"];
     var mode = Request.Query["mode"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["string"];
-
-    var url = String.IsNullOrEmpty(port.ToString()) ? "/data/json/customers.json" : $"https://localhost:{port}/customers";
+    var url = mode == "string" ? "/data/json/customers.json" : $"/customers";
 
     SelectModel customerSelect;
-    if (port != string.Empty && mode != string.Empty)
+    if (mode == "string")
     {
         HttpClient client = new HttpClient();
         string json = await client.GetStringAsync(url);

@@ -286,7 +286,6 @@ namespace DbNetSuiteCore.Playwright.Tests
         private async Task TestRowCount(int expectedRowCount, string type = "row")
         {
             await Page.WaitForResponseAsync(r => r.Url.Contains("control.htmx"));
-
             if (expectedRowCount == 0)
             {
                 await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();
@@ -349,7 +348,6 @@ namespace DbNetSuiteCore.Playwright.Tests
 
             foreach (string token in searches.Keys)
             {
-                await Page.WaitForTimeoutAsync(100);
                 await search.FillAsync(token);
                 await TestRowCount(searches[token],"record");
             }
