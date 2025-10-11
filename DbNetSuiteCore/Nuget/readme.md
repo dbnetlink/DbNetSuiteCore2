@@ -49,4 +49,4 @@ You can then add a component to your Razor page as follows:
 </html>
 ```
 
-For demos [click here](https://dbnetsuitecore.com/) and for the documentation [click here](https://dbnetsuitecore.document360.io/docs) 
+For demos [click here](https://dbnetsuitecore.com/) and for the documentation [click here](https://github.com/dbnetlink/DbNetSuiteCore2/wiki) 
