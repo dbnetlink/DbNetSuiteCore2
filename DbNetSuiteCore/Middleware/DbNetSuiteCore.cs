@@ -1,15 +1,11 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services;
 using DbNetSuiteCore.Services.Interfaces;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Net;
 

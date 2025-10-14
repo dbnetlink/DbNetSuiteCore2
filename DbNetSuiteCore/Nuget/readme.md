@@ -1,10 +1,10 @@
 
 # DbNetSuiteCore
 
-**DbNetSuiteCore** is a set of ASP.Net Core application UI development components designed to enable the rapid development of data driven web applications using Razor Pages, MVC or Blazor. **DbNetSuiteCore** currently supports MSSQL, MySQL, MariaDB, PostgreSQL, Oracle, MongoDB and SQLite databases along with JSON (files and API), CSV and Excel files and the file system itself.
+**DbNetSuiteCore** is a set of ASP.Net Core application UI development components designed to enable the rapid development of data driven web applications using Razor Pages, MVC or Blazor Server. **DbNetSuiteCore** currently supports MSSQL, MySQL, MariaDB, PostgreSQL, Oracle, MongoDB and SQLite databases along with JSON (files and API), CSV and Excel files and the file system.
 
 Simply add DbNetSuiteCore to your pipeline as follows:
-```c#
+```cs
 {
     using DbNetSuiteCore.Middleware;                    // <= Add this line
 
@@ -27,7 +27,7 @@ Simply add DbNetSuiteCore to your pipeline as follows:
 }
 ```
 You can then add a component to your Razor page as follows:
-```c#
+```razor
 @page
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
@@ -41,7 +41,7 @@ You can then add a component to your Razor page as follows:
     <main>
 @{
     GridModel customerGrid = new GridModel(DataSourceType.SQLite, "Northwind", "Customers");
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customerGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerGrid))
 }
     </main>
     @DbNetSuiteCore.Resources.ClientScript() @* Add the client-side library *@
