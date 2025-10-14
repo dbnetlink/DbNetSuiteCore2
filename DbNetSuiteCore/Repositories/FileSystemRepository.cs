@@ -58,7 +58,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (TextHelper.IsAbsolutePath(gridModel.Url))
             {
-                folderSeparator = "\\";
+                folderSeparator = Path.DirectorySeparatorChar.ToString();
             }
 
             var urlParts = gridModel.Url.Split(folderSeparator);
@@ -87,7 +87,7 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                var pathParts = _env.WebRootPath.Split("\\");
+                var pathParts = _env.WebRootPath.Split(Path.DirectorySeparatorChar.ToString());
                 var urlParts = componentModel.Url.Split("/");
 
                 foreach (var part in urlParts)
@@ -101,7 +101,7 @@ namespace DbNetSuiteCore.Repositories
                         pathParts = pathParts.Append(part).ToArray();
                     }
                 }
-                path = string.Join("\\", pathParts);
+                path = string.Join(Path.DirectorySeparatorChar.ToString(), pathParts);
             }
 
             return Tabulate(Contents(path), componentModel);

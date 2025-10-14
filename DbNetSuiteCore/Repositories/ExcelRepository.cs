@@ -137,7 +137,7 @@ namespace DbNetSuiteCore.Repositories
                 return filePath;
 
             }
-            return $"{_env.WebRootPath}{filePath.Replace("/", "\\")}".Replace("//", "/");
+            return $"{_env.WebRootPath}{filePath.Replace("/", @"\")}".Replace("//", "/");
         }
     }
 }

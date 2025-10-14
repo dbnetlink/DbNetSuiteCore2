@@ -3,6 +3,7 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Services;
 using Microsoft.Extensions.Configuration;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -139,7 +140,14 @@ namespace DbNetSuiteCore.Helpers
 
         public static bool IsAbsolutePath(string path)
         {
-            return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+            }
+            else
+            {
+                return path.StartsWith("/");
+            }
         }
 
         internal static EncryptionConfig GetEncryptionConfig(IConfiguration? configuration = null)
