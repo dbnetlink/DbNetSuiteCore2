@@ -17,7 +17,11 @@ namespace DbNetSuiteCore
         {
             if (gridModel.DataSourceType == DataSourceType.FileSystem)
             {
-                gridModel._NestedGrids.Add(gridModel.DeepCopy());
+                var gridModelCopy = gridModel.DeepCopy();
+                if (gridModelCopy != null)
+                {
+                    gridModel._NestedGrids.Add(gridModelCopy);
+                }
             }
 
             gridModel.HttpContext = _httpContext;
@@ -79,7 +83,7 @@ namespace DbNetSuiteCore
 
     public static class ExtensionMethods
     {
-        public static T DeepCopy<T>(this T self)
+        public static T? DeepCopy<T>(this T self)
         {
             var serialized = JsonConvert.SerializeObject(self);
             return JsonConvert.DeserializeObject<T>(serialized);

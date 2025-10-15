@@ -7,7 +7,6 @@
         {
             AllowConnectionString,
             UpdateDisabled,
-            DataProtectionPurpose,
             StateManagement,
             UseDistributedServerCache
         }

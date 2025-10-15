@@ -42,7 +42,7 @@ namespace DbNetSuiteCore.Models
         public SummaryModel? SummaryModel { get; set; }
         public bool IsBlazor { get; set; } = false;
         [JsonIgnore]
-        internal string RowId { get; set; }
+        internal string RowId { get; set; } = string.Empty;
         public string Url
         {
             get
@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Models
         public MessageType MessageType = MessageType.None;
         public bool IsParent => LinkedControlIds.Any();
         [JsonIgnore]
-        internal HttpContext HttpContext { get; set; }
+        internal HttpContext? HttpContext { get; set; } = null;
         public ComponentModel()
         {
             Id = GeneratedId();

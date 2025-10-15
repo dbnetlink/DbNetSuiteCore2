@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 
-<tbody id="@Model.HxIdTarget.Replace("#","")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-messagetype="@Model.GridModel.MessageType" data-validationpassed="@Model.GridModel.ValidationPassed">
+<tbody id="@Model.HxIdTarget.Replace("#", "")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-messagetype="@Model.GridModel.MessageType" data-validationpassed="@Model.GridModel.ValidationPassed">
     @{
         int rowIndex = -1;
     }
@@ -22,7 +22,7 @@
             rowClasses.Add("in-error");
         }
 
-        <tr style="cursor:pointer" class="@(String.Join(" ",rowClasses))" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
+        <tr style="cursor:pointer" class="@(String.Join(" ", rowClasses))" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
             @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
                 if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
@@ -108,7 +108,7 @@
                 {
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));
                     <td @RazorHelper.CellDataAttributes(classes, boolValue, column.Style)>
-                        <div class="flex justify-center items-center">@(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())</div>
+                        <div class="flex justify-center items-center">@(boolValue? IconHelper.Checked() : IconHelper.Unchecked())</div>
                     </td>
                 }
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
@@ -125,7 +125,10 @@
                 {
                     <td @RazorHelper.CellDataAttributes(classes, new Byte[0], column.Style)>
                         <div class="border-solid border-2 rounded-sm border-slate-400">
-                            @Html.Raw(column.Image.Img(row[dataColumn] as byte[]))
+                            @if (row[dataColumn] is byte[] byteArray)
+                            {
+                                @Html.Raw(column.Image.Img(byteArray))
+                            }
                         </div>
                     </td>
                 }
@@ -136,11 +139,12 @@
                         classes.Add("text-right");
                     }
 
-                    var value = column.FormatValue(row[dataColumn]!);
+                    object? value = column.FormatValue(row[dataColumn]);
 
-                    if (column.DataType == typeof(string) && column.MaxChars < value.ToString().Length)
+                    var stringValue = value?.ToString() ?? string.Empty;
+                    if (column.DataType == typeof(string) && column.MaxChars < stringValue.Length)
                     {
-                        value = column.TruncateValue(value.ToString());
+                        value = column.TruncateValue(stringValue);
                         classes.Add("tooltip-text");
                     }
                     <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>

@@ -25,9 +25,13 @@ namespace DbNetSuiteCore.Extensions
             {
                 using (DataColumn newColumn = new DataColumn($"{currentColumn.ColumnName}_lookup_", typeof(string)))
                 {
-                    int ordinal = dataTable.Columns[currentColumn.ColumnName].Ordinal;
+                    int? ordinal = dataTable.Columns[currentColumn.ColumnName]?.Ordinal;
+                    if (ordinal == null)
+                    {
+                        return;
+                    }
                     dataTable.Columns.Add(newColumn);
-                    newColumn.SetOrdinal(ordinal);
+                    newColumn.SetOrdinal(ordinal.Value);
 
                     foreach (DataRow dataRow in dataTable.Rows)
                     {
@@ -67,7 +71,7 @@ namespace DbNetSuiteCore.Extensions
 
                 foreach (DataRow dr in dataTable.Rows)
                 {
-                    switch(gridColumn.DataTypeName)
+                    switch (gridColumn.DataTypeName)
                     {
                         case nameof(DateTime):
                             try
@@ -77,7 +81,7 @@ namespace DbNetSuiteCore.Extensions
                             catch
                             {
                                 dr[dc.ColumnName] = DBNull.Value;
-                            }       
+                            }
                             continue;
                     }
                 }

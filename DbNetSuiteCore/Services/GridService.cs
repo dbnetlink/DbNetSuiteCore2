@@ -154,9 +154,12 @@ namespace DbNetSuiteCore.Services
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
                     var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
-                    nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentModel!.Name}";
-                    nestedChildGrid.HttpContext = _context;
-                    nestedGrid._NestedGrids.Add(nestedChildGrid);
+                    if (nestedChildGrid != null)
+                    {
+                        nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentModel!.Name}";
+                        nestedChildGrid.HttpContext = _context;
+                        nestedGrid._NestedGrids.Add(nestedChildGrid);
+                    }
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
                 {

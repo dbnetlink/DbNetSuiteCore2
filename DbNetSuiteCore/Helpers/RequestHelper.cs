@@ -1,7 +1,6 @@
 ﻿using Azure.Core;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.InkML;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -33,15 +32,19 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static Dictionary<string, string> FormColumnValues(HttpContext httpContext, FormModel formModel)
+        public static Dictionary<string, string> FormColumnValues(HttpContext? httpContext, FormModel formModel)
         {
             Dictionary<string, string> formValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (string key in httpContext.Request.Form.Keys)
+
+            if (httpContext?.Request?.Form != null)
             {
-                if (key.StartsWith("_"))
+                foreach (string key in httpContext.Request.Form.Keys)
                 {
-                    string columnName = formModel.LookupColumnName(key.Substring(1));
-                    formValues[columnName] = httpContext.Request.Form[key];
+                    if (key.StartsWith("_"))
+                    {
+                        string columnName = formModel.LookupColumnName(key.Substring(1));
+                        formValues[columnName] = httpContext.Request.Form[key];
+                    }
                 }
             }
 
@@ -79,7 +82,7 @@ namespace DbNetSuiteCore.Helpers
             }
 
             return modifiedRows;
-        }   
+        }
 
         public static ModifiedRow GetModified(HttpContext httpContext, FormModel formModel)
         {
@@ -126,15 +129,24 @@ namespace DbNetSuiteCore.Helpers
             return string.Empty;
         }
 
-        public static string Diagnostics(HttpContext httpContext, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        public static string Diagnostics(HttpContext? httpContext, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             var diagnostics = new List<string>();
+
+            if (httpContext == null)
+            {
+                diagnostics.Add("No HttpContext available");
+                return string.Join("</br>", diagnostics);
+            }
 
             // Request Headers
             diagnostics.Add("<b>=== Headers ===</b>");
             foreach (var header in httpContext.Request.Headers.OrderBy(h => h.Key))
             {
-                diagnostics.Add($"{header.Key}: {string.Join(", ", header.Value)}");
+                if (header.Value.Any())
+                {
+                    diagnostics.Add($"{header.Key}: {string.Join(", ", header.Value.ToString())}");
+                }
             }
 
             // Content Type Details
@@ -192,7 +204,7 @@ namespace DbNetSuiteCore.Helpers
                 diagnostics.Add($"{appSetting}: {configuration.ConfigValue(appSetting)}");
             }
             diagnostics.Add("<b>=== License ===</b>");
-           // diagnostics.Add($"License: {JsonConvert.SerializeObject(LicenseHelper.ValidateLicense(configuration, httpContext, webHostEnvironment))}");
+            // diagnostics.Add($"License: {JsonConvert.SerializeObject(LicenseHelper.ValidateLicense(configuration, httpContext, webHostEnvironment))}");
 
             return string.Join("</br>", diagnostics);
         }

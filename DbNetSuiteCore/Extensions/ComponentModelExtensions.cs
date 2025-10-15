@@ -89,7 +89,7 @@ namespace DbNetSuiteCore.Extensions
         {
             string sql = $"select {AddSelectPart(componentModel, true)} from {componentModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = sql };
-            AddPrimaryKeyFilterPart(componentModel, query, primaryKeyValue /*== null ? componentModel.ParentKey*/ : primaryKeyValue);
+            AddPrimaryKeyFilterPart(componentModel, query, primaryKeyValue ?? string.Empty);
             return query;
         }
 

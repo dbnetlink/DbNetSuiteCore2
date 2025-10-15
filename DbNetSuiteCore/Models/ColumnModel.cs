@@ -22,7 +22,7 @@ namespace DbNetSuiteCore.Models
         public string ColumnName => Name.Split(".").Last();
         public string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".", "_") : Expression;
         public string Key { get; set; }
-        public string BaseTableName { get; set; }
+        public string BaseTableName { get; set; } = string.Empty;
         public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
         public List<KeyValuePair<string, string>>? LookupOptions => GetLookupOptions();
         // [JsonIgnore]
@@ -134,7 +134,10 @@ namespace DbNetSuiteCore.Models
 
             if (dataColumn.ExtendedProperties.Contains("DataType"))
             {
-                DataType = (Type)dataColumn.ExtendedProperties["DataType"];
+                if (dataColumn.ExtendedProperties["DataType"] is Type dataType)
+                {
+                    DataType = dataType;
+                }
             }
             this.Update(dataColumn, dataSourceType);
         }

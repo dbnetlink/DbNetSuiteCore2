@@ -44,7 +44,7 @@ namespace DbNetSuiteCore.Middleware
 
             string page = request.Path.ToString().Split('/').Last().Replace(_extension,string.Empty);
 
-            byte[] response = null;
+            byte[]? response = null;
 
             switch(page.ToLower())
             {
@@ -73,11 +73,10 @@ namespace DbNetSuiteCore.Middleware
             }
             else
             {
-                await resp.WriteAsync(response.ToString());
+                await resp.WriteAsync(response?.ToString() ?? string.Empty);
             }
         }
     }
-
 
     public static class DbNetSuiteCoreExtensions
     {

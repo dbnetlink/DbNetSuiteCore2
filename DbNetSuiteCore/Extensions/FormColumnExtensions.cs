@@ -13,17 +13,17 @@ namespace DbNetSuiteCore.Extensions
                 return value;
             }
 
-            switch (formColumn?.DataType.Name)
+            if (value is string stringValue)
             {
-                case nameof(DateTime):
-                    if (value is string)
-                    {
+                switch (formColumn?.DataType.Name)
+                {
+                    case nameof(DateTime):
                         DateTime dateTime;
-                        if (DateTime.TryParse(value.ToString(), out dateTime) == false)
+                        if (DateTime.TryParse(stringValue, out dateTime) == false)
                         {
                             value = dateTime;
                         }
-                        else if (DateTimeTryParseExact(value.ToString(), out dateTime))
+                        else if (DateTimeTryParseExact(stringValue, out dateTime))
                         {
                             value = dateTime;
                         }
@@ -31,17 +31,15 @@ namespace DbNetSuiteCore.Extensions
                         {
                             return value;
                         }
-                    }
-                    return ((DateTime)value).ToString(formColumn.DateTimeFormat); ;
-                case nameof(DateTimeOffset):
-                    DateTimeOffset dateTimeOffset;
-                    if (value is string)
-                    {
-                        if (DateTimeOffset.TryParse(value.ToString(), out dateTimeOffset))
+                        return ((DateTime)value).ToString(formColumn.DateTimeFormat); ;
+                    case nameof(DateTimeOffset):
+                        DateTimeOffset dateTimeOffset;
+
+                        if (DateTimeOffset.TryParse(stringValue, out dateTimeOffset))
                         {
                             value = dateTimeOffset;
                         }
-                        else if (DateTimeOffsetTryParseExact(value.ToString(), out dateTimeOffset))
+                        else if (DateTimeOffsetTryParseExact(stringValue, out dateTimeOffset))
                         {
                             value = dateTimeOffset;
                         }
@@ -49,34 +47,29 @@ namespace DbNetSuiteCore.Extensions
                         {
                             return value;
                         }
-                    }
-                    return ((DateTimeOffset)value).ToString(formColumn.DateTimeFormat);
-                case nameof(TimeSpan):
-                    TimeSpan timeSpan;
-                    if (value is string)
-                    {
-                        if (TimeSpan.TryParse(value.ToString(), out timeSpan) == false)
+                        return ((DateTimeOffset)value).ToString(formColumn.DateTimeFormat);
+                    case nameof(TimeSpan):
+                        TimeSpan timeSpan;
+                        if (TimeSpan.TryParse(stringValue, out timeSpan) == false)
                         {
                             return value;
                         }
                         value = timeSpan;
-                    }
-                    return ((TimeSpan)value).ToString(formColumn.DateTimeFormat);
-                default:
-                    if (string.IsNullOrEmpty(formColumn.Format) == false)
-                    {
-                        var formattedValue = ColumnModelHelper.FormatValue(formColumn, value);
-
-                        if (formColumn.ControlType == Enums.FormControlType.Number || formColumn.MinValue != null || formColumn.MaxValue != null)
-                        {
-                            formattedValue = RemoveNonNumberDigitsAndCharacters(formattedValue);
-                        }
-
-                        return formattedValue;
-                    }
-                    break;
+                        return ((TimeSpan)value).ToString(formColumn.DateTimeFormat);
+                }
             }
 
+            if (string.IsNullOrEmpty(formColumn?.Format) == false)
+            {
+                var formattedValue = ColumnModelHelper.FormatValue(formColumn, value);
+
+                if (formColumn.ControlType == Enums.FormControlType.Number || formColumn.MinValue != null || formColumn.MaxValue != null)
+                {
+                    formattedValue = RemoveNonNumberDigitsAndCharacters(formattedValue);
+                }
+
+                return formattedValue;
+            }
             return value;
         }
 

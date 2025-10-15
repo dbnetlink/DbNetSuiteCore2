@@ -41,16 +41,10 @@ namespace DbNetSuiteCore.Services
         private async Task<Byte[]> SelectView()
         {
             SelectModel selectModel = GetSelectModel() ?? new SelectModel();
-            selectModel.TriggerName = RequestHelper.TriggerName(_context);
+            selectModel.TriggerName = _context == null ? string.Empty : RequestHelper.TriggerName(_context);
 
-            CheckLicense(selectModel);
-
-            switch (selectModel.TriggerName)
-            {
-                default:
-                    string viewName = selectModel.Uninitialised ? "Select/__Markup" : "Select/__Options";
-                    return await View(viewName, await GetSelectViewModel(selectModel));
-            }
+            string viewName = selectModel.Uninitialised ? "Select/__Markup" : "Select/__Options";
+            return await View(viewName, await GetSelectViewModel(selectModel));
         }
 
         private async Task<SelectViewModel> GetSelectViewModel(SelectModel selectModel)

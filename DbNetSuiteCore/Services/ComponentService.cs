@@ -26,7 +26,7 @@ namespace DbNetSuiteCore.Services
         protected readonly IMongoDbRepository _mongoDbRepository;
         protected readonly IOracleRepository _oracleRepository;
 
-        protected HttpContext? _context = null;
+        protected HttpContext? _context;
         protected readonly IConfiguration _configuration;
         protected readonly IWebHostEnvironment _webHostEnvironment;
 

@@ -14,11 +14,11 @@ namespace DbNetSuiteCore.Extensions
                 return value;
             }
 
-            if (value is Byte[])
+            if (value is Byte[] byteValue)
             {
                 try
                 {
-                    return Convert.ToBase64String(value as byte[]);
+                    return Convert.ToBase64String(byteValue);
                 }
                 catch
                 {
@@ -26,7 +26,7 @@ namespace DbNetSuiteCore.Extensions
                 }
             }
 
-            if (selectColumn?.DataType == typeof(DateTime) && string.IsNullOrEmpty(selectColumn.Format))
+            if (selectColumn.DataType == typeof(DateTime) && string.IsNullOrEmpty(selectColumn.Format))
             {
                 selectColumn.Format = "d";
             }
