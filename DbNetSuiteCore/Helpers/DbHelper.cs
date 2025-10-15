@@ -128,10 +128,6 @@ namespace DbNetSuiteCore.Helpers
                     assemblyName = "MySqlConnector";
                     connectionName = "MySqlConnection";
                     break;
-                case DataSourceType.Excel:
-                    assemblyName = "System.Data.OleDb";
-                    connectionName = "OleDbConnection";
-                    break;
                 case DataSourceType.Oracle:
                     assemblyName = "Oracle.ManagedDataAccess";
                     connectionName = "Client.OracleConnection";

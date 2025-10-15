@@ -93,7 +93,7 @@ namespace DbNetSuiteCore.ViewModels
             html.Add(RazorHelper.Attribute($"hx-target", "closest tr"));
             html.Add(RazorHelper.Attribute($"hx-indicator", "next .htmx-indicator"));
             html.Add(RazorHelper.Attribute($"hx-swap", "afterend"));
-            html.Add(RazorHelper.Attribute($"hx-vals", $"{{\"primaryKey\":\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(GridModel.PrimaryKeyValue(row)))}\"}}"));
+       //     html.Add(RazorHelper.Attribute($"hx-vals", $"{{\"primaryKey\":\"{TextHelper.Compress(JsonConvert.SerializeObject(GridModel.PrimaryKeyValue(row)))}\"}}"));
             html.Add(RazorHelper.Attribute($"hx-trigger", "click once"));
             html.Add(RazorHelper.Attribute($"style", "display:none"));
             return new HtmlString(string.Join(" ", html));

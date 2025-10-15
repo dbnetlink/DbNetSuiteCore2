@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Services;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Configuration;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
@@ -46,14 +47,8 @@ namespace DbNetSuiteCore.Helpers
             {
                 return string.Empty;
             }
-            var encryptionConfig = GetEncryptionConfig(configuration);
 
-            if (encryptionConfig.IsValid == false)
-            {
-                return Compress(input);
-            }
-
-            if (httpContext != null && encryptionConfig.UseDataProtection)
+            if (httpContext != null)
             {
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
@@ -61,10 +56,11 @@ namespace DbNetSuiteCore.Helpers
                     string text = dataProtectionService.Encrypt(input);
                     return text;
                 }
-            }
+             }
 
+            return Compress(input);
 
-            return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
+            //  return EncryptionHelper.Encrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
         public static string DeobfuscateString(string input, IConfiguration? configuration = null, HttpContext? httpContext = null)
@@ -73,14 +69,8 @@ namespace DbNetSuiteCore.Helpers
             {
                 return string.Empty;
             }
-            var encryptionConfig = GetEncryptionConfig(configuration);
 
-            if (encryptionConfig.IsValid == false)
-            {
-                return Decompress(input);
-            }
-
-            if (httpContext != null && encryptionConfig.UseDataProtection)
+            if (httpContext != null)
             {
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
@@ -92,8 +82,9 @@ namespace DbNetSuiteCore.Helpers
                     }
                 }
             }
+            return Decompress(input);
 
-            return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
+            //  return EncryptionHelper.Decrypt(input, encryptionConfig.Key, encryptionConfig.Salt);
         }
 
         public static T? DeobfuscateKey<T>(string input)
@@ -160,14 +151,14 @@ namespace DbNetSuiteCore.Helpers
             {
                 EncryptionConfig encryptionConfig = new EncryptionConfig()
                 {
-                    Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
-                    Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt),
+              //      Key = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionKey),
+              //      Salt = configuration.ConfigValue(ConfigurationHelper.AppSetting.EncryptionSalt),
                     DataProtectionPurpose = configuration.ConfigValue(ConfigurationHelper.AppSetting.DataProtectionPurpose),
-                    UseDataProtection = ConfigurationHelper.UseDataProtection(configuration)
+              //      UseDataProtection = ConfigurationHelper.UseDataProtection(configuration)
                 };
 
-                encryptionConfig.Key = string.IsNullOrEmpty(encryptionConfig.Key) ? Environment.MachineName : encryptionConfig.Key;
-                encryptionConfig.Salt = string.IsNullOrEmpty(encryptionConfig.Salt) ? Environment.MachineName : encryptionConfig.Salt;
+             //   encryptionConfig.Key = string.IsNullOrEmpty(encryptionConfig.Key) ? Environment.MachineName : encryptionConfig.Key;
+            //    encryptionConfig.Salt = string.IsNullOrEmpty(encryptionConfig.Salt) ? Environment.MachineName : encryptionConfig.Salt;
                 encryptionConfig.DataProtectionPurpose = string.IsNullOrEmpty(encryptionConfig.DataProtectionPurpose) ? Environment.MachineName : encryptionConfig.DataProtectionPurpose;
                 return encryptionConfig;
             }
@@ -175,11 +166,11 @@ namespace DbNetSuiteCore.Helpers
 
         internal class EncryptionConfig
         {
-            public string Key { get; set; } = Environment.MachineName;
-            public string Salt { get; set; } = Environment.MachineName;
+       //     public string Key { get; set; } = Environment.MachineName;
+       //     public string Salt { get; set; } = Environment.MachineName;
             public string DataProtectionPurpose { get; set; } = Environment.MachineName;
-            public bool IsValid => !string.IsNullOrEmpty(Key) && !string.IsNullOrEmpty(Salt);
-            public bool UseDataProtection { get; set; } = false;
+       //     public bool IsValid => !string.IsNullOrEmpty(Key) && !string.IsNullOrEmpty(Salt);
+            public bool UseDataProtection { get; set; } = true;
         }
     }
 }

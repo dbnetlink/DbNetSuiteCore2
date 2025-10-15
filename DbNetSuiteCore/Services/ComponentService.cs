@@ -568,7 +568,7 @@ namespace DbNetSuiteCore.Services
         {
             if (componentModel.Uninitialised)
             {
-                componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
+             //   componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
             }
         }
 

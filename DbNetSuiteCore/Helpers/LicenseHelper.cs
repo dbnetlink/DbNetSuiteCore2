@@ -7,6 +7,7 @@ namespace DbNetSuiteCore.Helpers
 {
     public static class LicenseHelper
     {
+        /*
         public static string GenerateLicenseKey(LicenseInfo licenseInfo)
         {
             var licenseJson = JsonConvert.SerializeObject(licenseInfo);
@@ -64,6 +65,7 @@ namespace DbNetSuiteCore.Helpers
         {
             return bool.TryParse(configuration["DOTNET_RUNNING_IN_CONTAINER"], out bool value) && value;
         }
+        */
 
         public static bool IsLocalRequest(HttpContext httpContext)
         {
