@@ -368,47 +368,47 @@ namespace DbNetSuiteCore.Repositories
                     componentModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => dr[0] != DBNull.Value).Select(dr => dr[0]).ToList();
                 }
 
-                var lookup = column.Lookup!;
-
-                DataTable lookupData = await CreateLookupOptionsFromPipeline(database, column, lookupValues);
-
-                column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+                if (column.Lookup != null)
+                {
+                    DataTable lookupData = await CreateLookupOptionsFromPipeline(database, column.Lookup, lookupValues);
+                    column.DbLookupOptions = lookupData.AsEnumerable().Select(row => new KeyValuePair<string, string>(row[0]?.ToString() ?? string.Empty, row[1]?.ToString() ?? string.Empty)).ToList();
+                }
             }
 
             componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
         }
 
-        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, ColumnModel columnModel, List<object>? values)
+        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, Lookup lookup, List<object>? values)
         {
-            var collection = database.GetCollection<BsonDocument>(columnModel.Lookup.TableName);
+            var collection = database.GetCollection<BsonDocument>(lookup.TableName);
 
             var pipeline = new List<BsonDocument>();
 
             if (values != null)
             {
-                pipeline.Add(new BsonDocument("$match", new BsonDocument(columnModel.Lookup.KeyColumn, new BsonDocument("$in", new BsonArray(values)))));
+                pipeline.Add(new BsonDocument("$match", new BsonDocument(lookup.KeyColumn, new BsonDocument("$in", new BsonArray(values)))));
             };
 
             var project = new BsonDocument
             {
-                { columnModel.Lookup.KeyColumn, $"${columnModel.Lookup.KeyColumn}" }
+                { lookup.KeyColumn, $"${lookup.KeyColumn}" }
             };
 
-            var descriptionColumn = columnModel.Lookup.DescriptionColumn;
+            var descriptionColumn = lookup.DescriptionColumn;
 
-            if (columnModel.Lookup.DescriptionColumn.Contains(":"))
+            if (lookup.DescriptionColumn.Contains(":"))
             {
                 descriptionColumn = "description";
-                project.AddRange(new BsonDocument(descriptionColumn, new BsonDocument("$concat", new BsonArray(FormatConcatFields(columnModel.Lookup.DescriptionColumn)))));
+                project.AddRange(new BsonDocument(descriptionColumn, new BsonDocument("$concat", new BsonArray(FormatConcatFields(lookup.DescriptionColumn)))));
             }
             else
             {
-                project.Add(columnModel.Lookup.DescriptionColumn, $"${descriptionColumn}");
+                project.Add(lookup.DescriptionColumn, $"${descriptionColumn}");
             }
 
             pipeline.Add(new BsonDocument("$project", project));
 
-            var columns = new List<ColumnModel> { new ColumnModel(columnModel.Lookup.KeyColumn), new ColumnModel(descriptionColumn) };
+            var columns = new List<ColumnModel> { new ColumnModel(lookup.KeyColumn), new ColumnModel(descriptionColumn) };
 
             var cursor = await collection.AggregateAsync<BsonDocument>(pipeline);
             return await BuildDataTableFromCursor(cursor, columns);
@@ -464,7 +464,7 @@ namespace DbNetSuiteCore.Repositories
 
         private IMongoDatabase GetDatabase(ComponentModel componentModel)
         {
-            string connectionString = _configuration.GetConnectionString(componentModel.ConnectionAlias);
+            string? connectionString = _configuration.GetConnectionString(componentModel.ConnectionAlias);
 
             if (connectionString == null)
             {

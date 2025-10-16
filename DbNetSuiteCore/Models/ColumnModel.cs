@@ -250,7 +250,10 @@ namespace DbNetSuiteCore.Models
 
             if (dataColumn.ExtendedProperties.Contains("DataType"))
             {
-                DataType = (Type)dataColumn.ExtendedProperties["DataType"];
+                if (dataColumn.ExtendedProperties["DataType"] is Type dataType)
+                {
+                    DataType = dataType;
+                }
             }
         }
         public string ToStringOrEmpty(object? value)

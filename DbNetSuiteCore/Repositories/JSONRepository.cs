@@ -27,7 +27,7 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(ComponentModel componentModel, HttpContext httpContext)
+        public async Task GetRecords(ComponentModel componentModel, HttpContext? httpContext)
         {
             componentModel.Data = await BuildDataTable(componentModel, httpContext);
 
@@ -53,14 +53,14 @@ namespace DbNetSuiteCore.Repositories
                 selectModel.ConvertEnumLookups();
             }
         }
-        public async Task GetRecord(ComponentModel componentModel, HttpContext httpContext)
+        public async Task GetRecord(ComponentModel componentModel, HttpContext? httpContext)
         {
             var dataTable = await BuildDataTable(componentModel, httpContext);
             dataTable.FilterWithPrimaryKey(componentModel);
             componentModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext httpContext)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext? httpContext)
         {
             componentModel.Data = await BuildDataTable(componentModel, httpContext);
             return componentModel.Data;
@@ -69,18 +69,22 @@ namespace DbNetSuiteCore.Repositories
 
         public void UpdateApiRequestParameters(ComponentModel componentModel, HttpContext? context)
         {
-            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context)) ?? new Dictionary<string, string>();
-            apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
-            foreach (string key in componentModel.ApiRequestParameters.Keys)
+            Dictionary<string, string>? apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context) ?? string.Empty);
+
+            if (apiRequestParameters != null)
             {
-                if (apiRequestParameters.ContainsKey(key))
+                apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
+                foreach (string key in componentModel.ApiRequestParameters.Keys)
                 {
-                    componentModel.ApiRequestParameters[key] = apiRequestParameters[key];
+                    if (apiRequestParameters.ContainsKey(key))
+                    {
+                        componentModel.ApiRequestParameters[key] = apiRequestParameters[key];
+                    }
                 }
             }
         }
 
-        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext httpContext)
+        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext? httpContext)
         {
             if (componentModel.Cache)
             {
@@ -88,9 +92,12 @@ namespace DbNetSuiteCore.Repositories
                 {
                     _memoryCache.Remove(componentModel.Id);
                 }
-                else if (_memoryCache.TryGetValue(componentModel.Id, out DataTable cachedDataTable))
+                else if (_memoryCache.TryGetValue(componentModel.Id, out DataTable? cachedDataTable))
                 {
-                    return cachedDataTable;
+                    if (cachedDataTable != null)
+                    {
+                        return cachedDataTable;
+                    }
                 }
             }
 
@@ -104,7 +111,7 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext httpContext)
+        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext? httpContext)
         {
             string json = string.Empty;
 
@@ -126,7 +133,7 @@ namespace DbNetSuiteCore.Repositories
                         url = url.Substring(1);
                     }
 
-                    if (url.StartsWith("http") == false)
+                    if (url.StartsWith("http") == false && httpContext != null)
                     {
                         url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
                     }
@@ -154,7 +161,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false)
+            if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && httpContext != null)
             {
                 if (PluginHelper.DoesTypeImplementInterface<IJsonTransformPlugin>(gridModel.JsonTransformPluginName) == false)
                 {
@@ -215,7 +222,7 @@ namespace DbNetSuiteCore.Repositories
                 jToken = jToken.SelectToken(gridModel.JsonArrayProperty);
             }
 
-            if (jToken is not JArray)
+            if (jToken is not JArray && jToken != null)
             {
                 foreach (JToken child in jToken.Children())
                 {
@@ -270,7 +277,7 @@ namespace DbNetSuiteCore.Repositories
                 if (componentModel.GetColumns().Any())
                 {
                     List<string> columnNames = componentModel.GetColumns().Select(c => c.Expression).ToList();
-                    List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c,StringComparer.OrdinalIgnoreCase) == false).ToList();
+                    List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c, StringComparer.OrdinalIgnoreCase) == false).ToList();
 
                     foreach (string columnName in missingColumnNames)
                     {

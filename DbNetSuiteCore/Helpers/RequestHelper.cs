@@ -15,13 +15,17 @@ namespace DbNetSuiteCore.Helpers
             return httpContext.Request.Query.ContainsKey(key) ? httpContext.Request.Query[key].ToString() : defaultValue;
         }
 
-        public static string? FormValue(string key, string? defaultValue, HttpContext httpContext)
+        public static string FormValue(string key, string defaultValue, HttpContext? httpContext)
         {
-            return FormValue(key, defaultValue, httpContext.Request.Form);
+            return FormValue(key, defaultValue, httpContext?.Request?.Form);
         }
 
-        public static string? FormValue(string key, string? defaultValue, IFormCollection form)
+        public static string FormValue(string key, string defaultValue, IFormCollection? form)
         {
+            if (form == null)
+            {
+                return string.Empty;
+            }
             try
             {
                 return form.ContainsKey(key) ? form[key].ToString() : defaultValue;
@@ -38,12 +42,13 @@ namespace DbNetSuiteCore.Helpers
 
             if (httpContext?.Request?.Form != null)
             {
-                foreach (string key in httpContext.Request.Form.Keys)
+                var form = httpContext.Request.Form;
+                foreach (string key in form.Keys)
                 {
                     if (key.StartsWith("_"))
                     {
                         string columnName = formModel.LookupColumnName(key.Substring(1));
-                        formValues[columnName] = httpContext.Request.Form[key];
+                        formValues[columnName] = form[key].ToString();
                     }
                 }
             }
@@ -51,25 +56,28 @@ namespace DbNetSuiteCore.Helpers
             return formValues;
         }
 
-        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext httpContext, GridModel gridModel)
+        public static Dictionary<string, List<string>> GridFormColumnValues(HttpContext? httpContext, GridModel gridModel)
         {
             Dictionary<string, List<string>> formValues = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            foreach (string key in httpContext.Request.Form.Keys)
+
+            if (httpContext != null)
             {
-                if (key.StartsWith("_") && key.StartsWith("__") == false)
+                foreach (string key in httpContext.Request.Form.Keys)
                 {
-                    string columnName = gridModel.LookupColumnName(key.Substring(1));
-                    formValues[columnName] = FormValueList(key, httpContext).Select(f => f.Trim()).ToList();
+                    if (key.StartsWith("_") && key.StartsWith("__") == false)
+                    {
+                        string columnName = gridModel.LookupColumnName(key.Substring(1));
+                        formValues[columnName] = FormValueList(key, httpContext).Select(f => f.Trim()).ToList();
+                    }
                 }
             }
 
             return formValues;
         }
 
-
-        public static List<ModifiedRow> GetModifiedRows(HttpContext httpContext, GridModel gridModel)
+        public static List<ModifiedRow> GetModifiedRows(HttpContext? httpContext, GridModel gridModel)
         {
-            var modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("modifiedrows", string.Empty, httpContext));
+            List<ModifiedRow>? modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("modifiedrows", string.Empty, httpContext) ?? string.Empty);
 
             if (modifiedRows == null)
             {
@@ -84,21 +92,28 @@ namespace DbNetSuiteCore.Helpers
             return modifiedRows;
         }
 
-        public static ModifiedRow GetModified(HttpContext httpContext, FormModel formModel)
+        public static ModifiedRow GetModified(HttpContext? httpContext, FormModel formModel)
         {
-            var modifiedRow = JsonConvert.DeserializeObject<ModifiedRow>(FormValue("modifiedform", string.Empty, httpContext));
-
-            if (modifiedRow == null)
+            ModifiedRow? modifiedRow = new ModifiedRow();
+            if (httpContext != null)
             {
-                return new ModifiedRow();
+                modifiedRow = JsonConvert.DeserializeObject<ModifiedRow>(FormValue("modifiedform", string.Empty, httpContext) ?? string.Empty);
+                if (modifiedRow == null)
+                {
+                    return new ModifiedRow();
+                }
+                ConvertColumnNames(modifiedRow, formModel);
             }
 
-            ConvertColumnNames(modifiedRow, formModel);
             return modifiedRow;
         }
 
-        private static void ConvertColumnNames(ModifiedRow modifiedRow, ComponentModel componentModel)
+        private static void ConvertColumnNames(ModifiedRow? modifiedRow, ComponentModel componentModel)
         {
+            if (modifiedRow == null)
+            {
+                return;
+            }
             List<string> columns = new List<string>();
             foreach (var column in modifiedRow.Columns)
             {
@@ -108,22 +123,36 @@ namespace DbNetSuiteCore.Helpers
             modifiedRow.Columns = columns;
         }
 
-        public static List<string> FormValueList(string key, HttpContext httpContext)
+        public static List<string> FormValueList(string key, HttpContext? httpContext)
         {
+            if (httpContext == null)
+            {
+                return new List<string>();
+            }
+
+            var form = httpContext.Request.Form;
+            // Convert possible nulls to empty string to ensure List<string>
+            return form[key].Select(s => s ?? string.Empty).ToList();
+
+            /*
 #if NET8_0
-            return [.. httpContext.Request.Form[key]];
+            return [.. form[key].Select(s => s ?? string.Empty)];
 #else
-            return httpContext.Request.Form[key].ToList();
+            return form[key].Select(s => s ?? string.Empty).ToList();
 #endif
+            */
         }
 
-        public static string TriggerName(HttpContext httpContext)
+        public static string TriggerName(HttpContext? httpContext)
         {
-            foreach (string key in httpContext.Request.Headers.Keys)
+            if (httpContext != null)
             {
-                if (key.ToLower() == HeaderNames.HxTriggerName.ToLower())
+                foreach (string key in httpContext.Request.Headers.Keys)
                 {
-                    return httpContext.Request.Headers[key].ToString();
+                    if (key.ToLower() == HeaderNames.HxTriggerName.ToLower())
+                    {
+                        return httpContext.Request.Headers[key].ToString();
+                    }
                 }
             }
             return string.Empty;
@@ -163,10 +192,10 @@ namespace DbNetSuiteCore.Helpers
                     switch (form.Key)
                     {
                         case "model":
-                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value, configuration, httpContext)}");
+                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value.ToString(), configuration, httpContext)}");
                             break;
                         default:
-                            diagnostics.Add($"{form.Key}: {string.Join(", ", form.Value)}");
+                            diagnostics.Add($"{form.Key}: {string.Join(", ", form.Value.ToString())}");
                             break;
                     }
                 }

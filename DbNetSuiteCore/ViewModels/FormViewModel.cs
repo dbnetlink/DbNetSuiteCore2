@@ -18,10 +18,10 @@ namespace DbNetSuiteCore.ViewModels
         public string SelectId => _formModel.Id;
         public string LinkedFormIds => string.Join(",", FormModel.LinkedFormIds);
         public DataRow Record => FormModel.Data.Rows.Count == 0 ? FormModel.Data.NewRow() : FormModel.Data.Rows[0];
-        public object RecordId => FormModel.RecordId;
+        public object RecordId => FormModel.RecordId ?? new List<object>();
         public string HxTarget => "closest div.form-and-toolbar";
         public string SearchInput => FormModel.SearchInput;
-        public bool HideToolbar => FormModel.IsLinked && FormModel.ParentModel.RowCount == 0 && FormModel.OneToOne == false;
+        public bool HideToolbar => FormModel.IsLinked && FormModel.ParentModel?.RowCount == 0 && FormModel.OneToOne == false;
         public FormMode Mode => FormModel.Mode;
         public bool ReadOnly => FormModel.ReadOnly;
         public bool RenderInsert => FormModel.Insert && Mode != FormMode.Insert && ReadOnly == false;

@@ -28,8 +28,12 @@ namespace DbNetSuiteCore.Helpers
             return RedisCacheObject(summaryModel, $"{componentModel.Id}Summary", componentModel.HttpContext);
         }
 
-        private static string CacheObject(object obj, string key, HttpContext httpContext)
+        private static string CacheObject(object obj, string key, HttpContext? httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new Exception("HttpContext is not available.");
+            }
             string serialisedModel = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
             serialisedModel = TextHelper.Compress(serialisedModel);
 
@@ -44,8 +48,12 @@ namespace DbNetSuiteCore.Helpers
             return TextHelper.ObfuscateString(key);
         }
 
-        private static string RedisCacheObject(object obj, string key, HttpContext httpContext)
+        private static string RedisCacheObject(object obj, string key, HttpContext? httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new Exception("HttpContext is not available.");
+            }
             string serialisedModel = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
             serialisedModel = TextHelper.Compress(serialisedModel);
 
@@ -97,7 +105,7 @@ namespace DbNetSuiteCore.Helpers
             {
                 throw new Exception("Redis service is not available.");
             }
-            string data = cacheService.GetAsync(cacheKey).Result;
+            string data = cacheService.GetAsync(cacheKey).Result ?? string.Empty;
             if (string.IsNullOrEmpty(data) == false)
             {
                 return TextHelper.Decompress(data);

@@ -562,7 +562,7 @@ namespace DbNetSuiteCore.Repositories
                 {
                     if (reader.Read())
                     {
-                        string columnType = reader["Type"].ToString();
+                        string columnType = reader["Type"]?.ToString() ?? string.Empty;
                         // Extract options from column type definition
                         var matches = Regex.Matches(columnType, "'([^']*)'");
 

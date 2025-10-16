@@ -1,14 +1,15 @@
-﻿using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Repositories;
+﻿using DbNetSuiteCore.Attributes;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using System.Text.RegularExpressions;
-using System.Data;
-using System.Globalization;
-using DbNetSuiteCore.Attributes;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using System.Data;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -301,19 +302,23 @@ namespace DbNetSuiteCore.Extensions
                 primaryKeyValue = new List<object>() { primaryKeyValue };
             }
 
-            List<string> where = new List<string>();
-            foreach (var item in componentModel.GetColumns().Where(c => c.PrimaryKey).Select((value, index) => new { value, index }))
+            if (primaryKeyValue is List<object> primaryKeyValueList)
             {
-                var paramName = DbHelper.ParameterName(item.value.ParamName, componentModel.DataSourceType);
-                where.Add($"{item.value.Expression} {oper} {paramName}");
-                query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(item.value, (primaryKeyValue as List<object>)[item.index]) ?? string.Empty;
+
+                List<string> where = new List<string>();
+                foreach (var item in componentModel.GetColumns().Where(c => c.PrimaryKey).Select((value, index) => new { value, index }))
+                {
+                    var paramName = DbHelper.ParameterName(item.value.ParamName, componentModel.DataSourceType);
+                    where.Add($"{item.value.Expression} {oper} {paramName}");
+                    query.Params[$"{paramName}"] = ColumnModelHelper.TypedValue(item.value, primaryKeyValueList[item.index]) ?? string.Empty;
+                }
+                query.Sql += $" where ({string.Join(" and ", where)})";
             }
-            query.Sql += $" where ({string.Join(" and ", where)})";
         }
 
         public static void AddParentKeyFilterPart(ComponentModel componentModel, CommandConfig query, List<string> filterParts)
         {
-            if (componentModel.ParentModel.RowIdx < 0)
+            if (componentModel.ParentModel == null || componentModel.ParentModel.RowIdx < 0)
             {
                 filterParts.Add($"(1=2)");
                 return;
@@ -329,7 +334,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 if (string.IsNullOrEmpty(item.value.ForeignKeyParentColumn) == false)
                 {
-                    parentKeyValues[item.index] = componentModel.ParentModel!.ParentRow[item.value.ForeignKeyParentColumn];
+                    parentKeyValues[item.index] = componentModel.ParentModel.ParentRow[item.value.ForeignKeyParentColumn];
                 }
             }
 
@@ -356,7 +361,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     parameter.Value = JsonElementExtension.Value((System.Text.Json.JsonElement)parameter.Value);
                 }
-                query.Params[DbHelper.ParameterName(parameter.Name, query.DataSourceType)] = ColumnModelHelper.TypedValue(parameter.TypeName, parameter.Value);
+                query.Params[DbHelper.ParameterName(parameter.Name, query.DataSourceType)] = ColumnModelHelper.TypedValue(parameter.TypeName, parameter.Value) ?? DBNull.Value;
             }
         }
 
@@ -438,7 +443,11 @@ namespace DbNetSuiteCore.Extensions
                 foreach (var column in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.ParseFormat) == false))
                 {
                     DataColumn? dataColumn = componentModel.GetDataColumn(column);
-                    componentModel.Data.ParseColumnDataType(dataColumn, column, gridModel);
+                    if (dataColumn == null)
+                    {
+                        continue;
+                    }   
+                    componentModel.Data.ParseColumnDataType((DataColumn)dataColumn, column, gridModel);
                 }
             }
         }
@@ -463,26 +472,29 @@ namespace DbNetSuiteCore.Extensions
             return componentModel.Distinct ? "distinct " : string.Empty;
         }
 
-        public static void AssignParentModel(this ComponentModel componentModel, HttpContext context, IConfiguration configuration, string key = "parentModel")
+        public static void AssignParentModel(this ComponentModel componentModel, HttpContext? context, IConfiguration configuration, string key = "parentModel")
         {
             string json = StateHelper.GetSerialisedModel(context, configuration, key);
             if (string.IsNullOrEmpty(json) == false)
             {
                 componentModel.ParentModel = JsonConvert.DeserializeObject<SummaryModel>(json);
 
-                string rowIndex = RequestHelper.FormValue("rowindex", string.Empty, context);
-
-                if (string.IsNullOrEmpty(rowIndex) == false)
+                if (componentModel.ParentModel is SummaryModel)
                 {
-                    componentModel.ParentModel.RowIdx = int.Parse(rowIndex);
+                    string rowIndex = RequestHelper.FormValue("rowindex", string.Empty, context);
+
+                    if (string.IsNullOrEmpty(rowIndex) == false)
+                    {
+                        componentModel.ParentModel.RowIdx = int.Parse(rowIndex);
+                    }
                 }
             }
         }
 
-        public static object? ParamValue(object value, ColumnModel column, DataSourceType dataSourceType, bool gridColumnFilter = false)
+        public static object? ParamValue(object? val, ColumnModel column, DataSourceType dataSourceType, bool gridColumnFilter = false)
         {
             var dataType = column.DataTypeName;
-            if (value == null)
+            if (val == null)
             {
                 if (dataType == "Byte[]")
                     return new byte[0];
@@ -490,7 +502,10 @@ namespace DbNetSuiteCore.Extensions
                     return DBNull.Value;
             }
 
-            if (string.IsNullOrEmpty(value.ToString()))
+            object value = val;
+            string valueString = val?.ToString() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(valueString))
             {
                 if (dataType == nameof(Boolean))
                 {
@@ -499,7 +514,7 @@ namespace DbNetSuiteCore.Extensions
                 return DBNull.Value;
             }
 
-            object paramValue = value.ToString();
+            object? paramValue = valueString;
             try
             {
                 switch (dataType)
@@ -507,56 +522,56 @@ namespace DbNetSuiteCore.Extensions
                     case nameof(String):
                         break;
                     case nameof(Boolean):
-                        paramValue = ParseBoolean(value.ToString());
+                        paramValue = ParseBoolean(valueString);
                         break;
                     case nameof(TimeSpan):
                         if (gridColumnFilter == false)
                         {
-                            if (column is FormColumn)
+                            if (column is FormColumn formColumn)
                             {
-                                string inputType = (column as FormColumn).ControlType.ToString();
-                                paramValue = TimeSpan.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, TimeSpanStyles.None);
+                                string inputType = formColumn.ControlType.ToString();
+                                paramValue = TimeSpan.ParseExact(valueString, column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, TimeSpanStyles.None);
                             }
-                            if (column is GridColumn)
+                            if (column is GridColumn gridColumn)
                             {
-                                string inputType = (column as GridColumn).SearchControlType.ToString();
-                                paramValue = TimeSpan.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, TimeSpanStyles.None);
+                                string inputType = gridColumn.SearchControlType.ToString();
+                                paramValue = TimeSpan.ParseExact(valueString, column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, TimeSpanStyles.None);
                             }
                         }
                         else
                         {
-                            paramValue = TimeSpan.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                            paramValue = TimeSpan.Parse(valueString, CultureInfo.CurrentCulture);
                         }
                         break;
                     case nameof(DateTime):
                         if (gridColumnFilter == false)
                         {
-                            if (column is FormColumn)
+                            if (column is FormColumn formColumn)
                             {
-                                string inputType = (column as FormColumn).ControlType.ToString();
-                                paramValue = DateTime.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, DateTimeStyles.None);
+                                string inputType = formColumn.ControlType.ToString();
+                                paramValue = DateTime.ParseExact(valueString, column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, DateTimeStyles.None);
                             }
-                            if (column is GridColumn)
+                            if (column is GridColumn gridColumn)
                             {
-                                string inputType = (column as GridColumn).SearchControlType.ToString();
-                                paramValue = DateTime.ParseExact(value.ToString(), column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, DateTimeStyles.None);
+                                string inputType = gridColumn.SearchControlType.ToString();
+                                paramValue = DateTime.ParseExact(valueString, column.GetDateTimeFormat(inputType), CultureInfo.CurrentCulture, DateTimeStyles.None);
                             }
                         }
                         else
                         {
                             if (string.IsNullOrEmpty(column.Format))
                             {
-                                paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTime)}"));
+                                paramValue = Convert.ChangeType(value, typeof(DateTime));
                             }
                             else
                             {
                                 try
                                 {
-                                    paramValue = DateTime.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
+                                    paramValue = DateTime.ParseExact(valueString, column.Format, CultureInfo.CurrentCulture);
                                 }
                                 catch
                                 {
-                                    paramValue = DateTime.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                                    paramValue = DateTime.Parse(valueString, CultureInfo.CurrentCulture);
                                 }
                             }
                             if (paramValue is DateTime && dataSourceType == DataSourceType.MSSQL)
@@ -570,25 +585,25 @@ namespace DbNetSuiteCore.Extensions
                         }
                         break;
                     case nameof(DateTimeOffset):
-                        if (column is FormColumn)
+                        if (column is FormColumn fc)
                         {
-                            paramValue = DateTimeOffset.ParseExact(value.ToString(), (column as FormColumn).DateTimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None);
+                            paramValue = DateTimeOffset.ParseExact(valueString, fc.DateTimeFormat, CultureInfo.CurrentCulture, DateTimeStyles.None);
                         }
                         else
                         {
                             if (string.IsNullOrEmpty(column.Format))
                             {
-                                paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTimeOffset)}"));
+                                paramValue = Convert.ChangeType(value, typeof(DateTimeOffset));
                             }
                             else
                             {
                                 try
                                 {
-                                    paramValue = DateTimeOffset.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
+                                    paramValue = DateTimeOffset.ParseExact(valueString, column.Format, CultureInfo.CurrentCulture);
                                 }
                                 catch
                                 {
-                                    paramValue = DateTimeOffset.Parse(value.ToString(), CultureInfo.CurrentCulture);
+                                    paramValue = DateTimeOffset.Parse(valueString, CultureInfo.CurrentCulture);
                                 }
                             }
                             if (paramValue is DateTimeOffset && dataSourceType == DataSourceType.MSSQL)
@@ -602,7 +617,7 @@ namespace DbNetSuiteCore.Extensions
                         }
                         break;
                     case nameof(Guid):
-                        paramValue = new Guid(value.ToString());
+                        paramValue = new Guid(valueString);
                         break;
                     case nameof(Int16):
                     case nameof(Int32):
@@ -613,21 +628,21 @@ namespace DbNetSuiteCore.Extensions
                         if (string.IsNullOrEmpty(column.Format) == false)
                         {
                             var cultureInfo = Thread.CurrentThread.CurrentCulture;
-                            value = value.ToString().Replace(cultureInfo.NumberFormat.CurrencySymbol, "");
+                            value = valueString.Replace(cultureInfo.NumberFormat.CurrencySymbol, "");
                         }
-                        paramValue = Convert.ChangeType(value, GetColumnType(dataType));
+                        paramValue = Convert.ChangeType(value, GetColumnType(dataType) ?? typeof(Double));
                         break;
                     case nameof(UInt16):
                     case nameof(UInt32):
                     case nameof(UInt64):
-                        paramValue = Convert.ChangeType(value, GetColumnType(dataType.Replace("U", string.Empty)));
+                        paramValue = Convert.ChangeType(value, GetColumnType(dataType.Replace("U", string.Empty)) ?? typeof(UInt64));
                         break;
                     default:
-                        paramValue = Convert.ChangeType(value, GetColumnType(dataType));
+                        paramValue = Convert.ChangeType(value, GetColumnType(dataType) ?? typeof(String));
                         break;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -677,7 +692,7 @@ namespace DbNetSuiteCore.Extensions
             Int32.TryParse(intString, out value);
             return value;
         }
-        private static Type GetColumnType(string typeName)
+        private static Type? GetColumnType(string typeName)
         {
             return Type.GetType("System." + typeName);
         }

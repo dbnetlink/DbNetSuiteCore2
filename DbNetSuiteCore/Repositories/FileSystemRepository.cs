@@ -18,9 +18,9 @@ namespace DbNetSuiteCore.Repositories
             _configuration = configuration;
             _env = env;
         }
-        public async Task GetRecords(ComponentModel componentModel, HttpContext httpContext)
+        public async Task GetRecords(ComponentModel componentModel)
         {
-            var dataTable = await BuildDataTable(componentModel, httpContext);
+            var dataTable = await BuildDataTable(componentModel);
             componentModel.Data = dataTable;
 
             string filterPart = string.Empty;
@@ -47,9 +47,9 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext httpContext)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            return await BuildDataTable(componentModel, httpContext);
+            return await BuildDataTable(componentModel);
         }
 
         public static void UpdateUrl(GridModel gridModel)
@@ -73,7 +73,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext httpContext)
+        private async Task<DataTable> BuildDataTable(ComponentModel componentModel)
         {
             if (string.IsNullOrEmpty(componentModel.Url))
             {
@@ -191,12 +191,15 @@ namespace DbNetSuiteCore.Repositories
 
         private void AddSubFolder(IFileInfo folder, DataTable dataTable)
         {
-            var contents = Contents(folder.PhysicalPath);
-
-            foreach (IFileInfo file in contents)
+            if (folder.PhysicalPath != null)
             {
-                AddRow(file, dataTable);
-            };
+                var contents = Contents(folder.PhysicalPath);
+
+                foreach (IFileInfo file in contents)
+                {
+                    AddRow(file, dataTable);
+                }
+            }
         }
 
         private string GetPath(string? physicalPath)

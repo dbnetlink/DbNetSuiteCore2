@@ -130,8 +130,8 @@ namespace DbNetSuiteCore.Services
         protected void AssignParentModel(ComponentModel componentModel)
         {
             componentModel.HttpContext = _context;
-            var primaryKey = RequestHelper.FormValue("primaryKey", null, _context);
-            var foreignKey = RequestHelper.FormValue("foreignKey", null, _context);
+            var primaryKey = RequestHelper.FormValue("primaryKey", string.Empty, _context);
+            var foreignKey = RequestHelper.FormValue("foreignKey", string.Empty, _context);
 
             try
             {
@@ -145,7 +145,7 @@ namespace DbNetSuiteCore.Services
 
             if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)
             {
-                componentModel.Url = primaryKey ?? string.Empty;
+                componentModel.Url = primaryKey;
             }
             else
             {
@@ -171,7 +171,7 @@ namespace DbNetSuiteCore.Services
                             }
                             break;
                         default:
-                            if (foreignKey != null)
+                            if (string.IsNullOrEmpty(foreignKey) == false)
                             {
                                 var foreignKeyValue = TextHelper.DeobfuscateKey<List<string>>(foreignKey ?? string.Empty);
 
@@ -237,7 +237,7 @@ namespace DbNetSuiteCore.Services
                         case DataSourceType.Oracle:
                             foreach (ColumnModel column in componentModel.GetColumns())
                             {
-                                DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => r["ColumnName"].ToString().ToLower() == column.Expression.ToLower());
+                                DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
                                 if (dataRow != null)
                                 {
                                     column.Update(dataRow, componentModel.DataSourceType);
@@ -342,7 +342,7 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.Excel:
                     return await _excelRepository.GetColumns(componentModel);
                 case DataSourceType.FileSystem:
-                    return await _fileSystemRepository.GetColumns(componentModel, _context);
+                    return await _fileSystemRepository.GetColumns(componentModel);
                 case DataSourceType.MongoDB:
                     return await _mongoDbRepository.GetColumns(componentModel);
                 case DataSourceType.Oracle:
@@ -372,7 +372,7 @@ namespace DbNetSuiteCore.Services
                     await _excelRepository.GetRecords(componentModel);
                     break;
                 case DataSourceType.FileSystem:
-                    await _fileSystemRepository.GetRecords(componentModel, _context);
+                    await _fileSystemRepository.GetRecords(componentModel);
                     break;
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.GetRecords(componentModel);
@@ -670,7 +670,10 @@ namespace DbNetSuiteCore.Services
                         {
                             break;
                         }
-                        CheckForUniqueness(resourceName, paramValue, formColumn, componentModel as FormModel);
+                        if (componentModel is FormModel formModel)
+                        {
+                            CheckForUniqueness(resourceName, paramValue, formColumn, formModel);
+                        }
                     }
                     break;
             }

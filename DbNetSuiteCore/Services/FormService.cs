@@ -280,7 +280,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task<bool> CustomValidation(FormModel formModel, string methodName)
         {
-            if (string.IsNullOrEmpty(formModel.CustomisationPluginName))
+            if (string.IsNullOrEmpty(formModel.CustomisationPluginName) || _context == null)
             {
                 return true;
             }
@@ -365,23 +365,23 @@ namespace DbNetSuiteCore.Services
             try
             {
                 FormModel formModel = JsonConvert.DeserializeObject<FormModel>(StateHelper.GetSerialisedModel(_context, _configuration)) ?? new FormModel();
-                formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
+                formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? string.Empty);
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
-                formModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
+                formModel.SearchInput = (RequestHelper.FormValue("searchInput", string.Empty, _context) ?? string.Empty).Trim();
                 formModel.FormValues = RequestHelper.FormColumnValues(_context, formModel);
                 formModel.Columns.ToList().ForEach(column => column.InError = false);   
                 formModel.Message = string.Empty;
                 formModel.Modified = RequestHelper.GetModified(_context, formModel); ;
-                formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
+                formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context) ?? string.Empty);
                 formModel.CommitType = null;
-                formModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
+                formModel.SearchDialogConjunction = (RequestHelper.FormValue("searchDialogConjunction", "and", _context) ?? string.Empty).Trim();
 
                 AssignParentModel(formModel);
                 AssignSearchDialogFilter(formModel);
 
                 return formModel;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new FormModel();
             }

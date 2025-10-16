@@ -86,7 +86,7 @@ namespace DbNetSuiteCore.Services
                 }
                 return selectModel;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 return new SelectModel();
             }

@@ -60,7 +60,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static void ParseColumnDataType(this DataTable dataTable, DataColumn? dataColumn, GridColumn gridColumn, GridModel gridModel)
+        public static void ParseColumnDataType(this DataTable dataTable, DataColumn dataColumn, GridColumn gridColumn, GridModel gridModel)
         {
             var columnName = dataColumn.ColumnName;
             using (DataColumn dc = new DataColumn($"{columnName}_new", gridColumn.DataType))
@@ -76,7 +76,11 @@ namespace DbNetSuiteCore.Extensions
                         case nameof(DateTime):
                             try
                             {
-                                dr[dc.ColumnName] = DateTime.ParseExact(dr[columnName].ToString(), gridColumn.ParseFormat, CultureInfo.InvariantCulture);
+                                var columnValue = dr[columnName]?.ToString();
+                                if (columnValue != null)
+                                {
+                                    dr[dc.ColumnName] = DateTime.ParseExact(columnValue, gridColumn.ParseFormat, CultureInfo.InvariantCulture);
+                                }
                             }
                             catch
                             {

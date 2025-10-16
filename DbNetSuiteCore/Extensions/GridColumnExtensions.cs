@@ -19,25 +19,8 @@ namespace DbNetSuiteCore.Extensions
             {
                 gridColumn.Format = "d";
             }
-
-            /*
-            if (gridColumn.DataSource.HasValue)
-            {
-                switch(gridColumn.DataSource.Value)
-                {
-                    case Enums.DataSourceType.SQLite:
-                        switch (gridColumn.DbDataType)
-                        {
-                            case nameof(SQLiteDataTypes.REAL):
-                                value = UnixTimeStampToDateTime(Convert.ToDouble(value));
-                                return Convert.ToDateTime(value).ToString(gridColumn.Format);
-                        }
-                        break;
-                }
-            }
-            */
-
-            if (string.IsNullOrEmpty(gridColumn.Format))
+       
+            if (string.IsNullOrEmpty(gridColumn?.Format))
             {
                 return value;
             }

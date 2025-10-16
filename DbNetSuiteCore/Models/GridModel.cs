@@ -58,7 +58,7 @@ namespace DbNetSuiteCore.Models
         public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
         public bool IsEditable => Columns.Any(c => c.Editable);
         public bool ValidationPassed { get; set; } = false;
-        public Dictionary<string, List<string>> FormValues { get; internal set; }
+        public Dictionary<string, List<string>> FormValues { get; internal set; } = new Dictionary<string, List<string>>();
         internal string FirstEditableColumnName => Columns.Where(c => c.Editable).First().ColumnName;
         [JsonIgnore]
         public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
@@ -242,12 +242,13 @@ namespace DbNetSuiteCore.Models
         {
             get
             {
-                if (_ModifiedRows.Keys.Any() || (FormValues ?? new Dictionary<string, List<string>>()).Any() == false)
+                var formValues = FormValues ?? new Dictionary<string, List<string>>();
+                if (_ModifiedRows.Keys.Any() || formValues.Any() == false)
                 {
                     return _ModifiedRows;
                 }
                 _ModifiedRows = new Dictionary<int, ModifiedRow>();
-                var rowCount = FormValues[FirstEditableColumnName].Count;
+                var rowCount = formValues[FirstEditableColumnName].Count;
 
                 for (var r = 0; r < rowCount; r++)
                 {

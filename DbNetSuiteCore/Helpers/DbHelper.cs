@@ -53,7 +53,11 @@ namespace DbNetSuiteCore.Helpers
 
         public static DataTable GetRecord(FormModel formModel, HttpContext httpContext)
         {
-            FormService? formService = httpContext.RequestServices.GetService<FormService>(); ;
+            FormService? formService = httpContext.RequestServices.GetService<FormService>(); 
+            if (formService == null)
+            {
+                throw new Exception("FormService not registered with the dependency injection container.s");
+            }
             return formService.GetRecordDataTable(formModel).Result;
         }
 
@@ -144,16 +148,28 @@ namespace DbNetSuiteCore.Helpers
             {
                 throw new Exception($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}. {ex.Message}");
             }
-            Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
+            Type? connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
+
+            if (connectionType == null)
+            {
+                throw new Exception($"Unable to find connection type ({connectionName}) in data provider ({assemblyName}).");
+            }
 
             Object[] args = new Object[1];
             args[0] = connectionString;
 
             try
             {
-                return (IDbConnection)Activator.CreateInstance(connectionType!, args);
+                var instance = Activator.CreateInstance(connectionType, args) as IDbConnection;
+
+                if (instance == null)
+                {
+                    throw new Exception($"Unable to create instance of connection type ({connectionName}) in data provider ({assemblyName}).");
+                }
+
+                return instance;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new Exception($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>");
             }
@@ -263,19 +279,20 @@ namespace DbNetSuiteCore.Helpers
         {
             List<string> tables = new List<string>();
 
-            var connection = GetConnection(connectionAlias, dataSourceType, configuration, webHostEnvironment);
-            connection.Open();
-            switch (dataSourceType)
+            using (var connection = GetConnection(connectionAlias, dataSourceType, configuration, webHostEnvironment))
             {
-                case DataSourceType.MSSQL:
-                    tables = LoadMSSQLTables(connection as SqlConnection);
-                    break;
-                default:
-                    tables = LoadSchemaTables(dataSourceType, connection);
-                    break;
-            }
+                connection.Open();
 
-            connection.Close();
+                if (connection is SqlConnection sqlConnection)
+                {
+                    tables = LoadMSSQLTables(sqlConnection);
+                }
+                else
+                {
+                    tables = LoadSchemaTables(dataSourceType, connection);
+                }
+                connection.Close();
+            }
 
             return tables;
         }

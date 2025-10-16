@@ -51,25 +51,26 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-              return await BuildDataTable(componentModel);
+            return await BuildDataTable(componentModel);
         }
 
         private async Task<DataTable> BuildDataTable(ComponentModel componentModel)
         {
-            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable dataTable))
+            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable? dataTable))
             {
-                return dataTable;
+                if (dataTable != null)
+                {
+                    return dataTable;
+                }
+            }
+
+            if (ComponentModelExtensions.IsCsvFile(componentModel))
+            {
+                dataTable = CsvToDataTable(componentModel);
             }
             else
             {
-                if (ComponentModelExtensions.IsCsvFile(componentModel))
-                {
-                    dataTable = CsvToDataTable(componentModel);
-                }
-                else
-                {
-                    dataTable = LoadSpreadsheet(componentModel);
-                }
+                dataTable = LoadSpreadsheet(componentModel);
             }
 
             if (componentModel.GetColumns().Any())
@@ -86,14 +87,14 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private  DataTable LoadSpreadsheet(ComponentModel componentModel)
+        private DataTable LoadSpreadsheet(ComponentModel componentModel)
         {
             DataTable dataTable = new DataTable();
             try
             {
                 using ExcelDataReader edr = ExcelDataReader.Create(FilePath(componentModel.Url));
                 {
-                      dataTable.Load(edr);
+                    dataTable.Load(edr);
                 }
                 foreach (ColumnModel column in componentModel.GetColumns())
                 {
@@ -103,7 +104,7 @@ namespace DbNetSuiteCore.Repositories
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new Exception($"Unable to read the Excel file {componentModel.Url}");
             }

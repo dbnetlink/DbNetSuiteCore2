@@ -10,7 +10,6 @@ namespace DbNetSuiteCore.Models
     {
         private object? _minValue { get; set; } = null;
         private object? _maxValue { get; set; } = null;
-        private bool _suggest = false;
         public FormControlType ControlType { get; set; } = FormControlType.Auto;
         public bool Required { get; set; } = false;
         [JsonIgnore]

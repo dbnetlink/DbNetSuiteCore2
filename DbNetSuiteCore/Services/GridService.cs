@@ -103,7 +103,7 @@ namespace DbNetSuiteCore.Services
                     ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
                 }
 
-                if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false)
+                if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
                 {
                     PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), new object[] { gridModel, _context, _configuration });
                 }
@@ -122,7 +122,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
             }
 
-            gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
+            gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context) ?? string.Empty;
             gridModel.FormValues.Clear();
             gridModel.Columns.ToList().ForEach(c => c.LineInError.Clear());
 
@@ -174,7 +174,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task GetGridRecords(GridModel gridModel)
         {
-            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
+            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context) ?? string.Empty);
 
             switch (gridModel.TriggerName)
             {
@@ -253,15 +253,23 @@ namespace DbNetSuiteCore.Services
                 }
                 sb.AppendLine(string.Join(",", fields));
             }
-            _context.Response.ContentType = GetMimeTypeForFileExtension(".csv");
 
+            SetMimeType(_context, ".csv");
             return Encoding.UTF8.GetBytes(sb.ToString());
+        }
+
+        private void SetMimeType(HttpContext? httpContext, string extension)
+        {
+            if (httpContext != null)
+            {
+                httpContext.Response.ContentType = GetMimeTypeForFileExtension(extension);
+            }
         }
 
         private async Task<Byte[]> ConvertDataTableToHTML(GridModel gridModel)
         {
             gridModel.PageSize = gridModel.Data.Rows.Count;
-            _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
+            SetMimeType(_context, ".html");
             var gridViewModel = await GetGridViewModel(gridModel);
             gridViewModel.RenderMode = RenderMode.Export;
             return await View("Grid/__Export", gridViewModel);
@@ -270,7 +278,7 @@ namespace DbNetSuiteCore.Services
         private byte[] ConvertDataTableToJSON(DataTable dataTable)
         {
             var json = JsonConvert.SerializeObject(dataTable, Newtonsoft.Json.Formatting.Indented);
-            _context.Response.ContentType = GetMimeTypeForFileExtension(".json");
+            SetMimeType(_context, ".json");
             return Encoding.UTF8.GetBytes(json);
         }
 
@@ -365,7 +373,7 @@ namespace DbNetSuiteCore.Services
                     }
                 }
 
-                _context.Response.ContentType = GetMimeTypeForFileExtension(".xlsx");
+                SetMimeType(_context, ".xlsx");
                 using (var memoryStream = new MemoryStream())
                 {
                     workbook.SaveAs(memoryStream);
@@ -405,7 +413,7 @@ namespace DbNetSuiteCore.Services
 
                 return gridModel;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 return new GridModel();
             }
@@ -450,7 +458,7 @@ namespace DbNetSuiteCore.Services
 
             var provider = new FileExtensionContentTypeProvider();
 
-            if (!provider.TryGetContentType(extension, out string contentType))
+            if (!provider.TryGetContentType(extension, out string? contentType))
             {
                 contentType = defaultContentType;
             }
@@ -536,7 +544,7 @@ namespace DbNetSuiteCore.Services
 
             bool result = true;
 
-            if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false)
+            if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false && _context != null)
             {
                 result = (bool)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), new object[] { gridModel, _context, _configuration })!;
 

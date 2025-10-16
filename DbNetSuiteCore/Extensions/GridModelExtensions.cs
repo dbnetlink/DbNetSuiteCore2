@@ -127,7 +127,7 @@ namespace DbNetSuiteCore.Extensions
 
                     if (columnFilter.Value.Key == "like")
                     {
-                        paramValue = paramValue.ToString().ToLower();
+                        paramValue = (paramValue ?? string.Empty).ToString()!.ToLower();
                         expression = ComponentModelExtensions.CaseInsensitiveExpression(gridModel, expression);
                     }
                     string paramName = DbHelper.ParameterName($"columnfilter{i}", gridModel.DataSourceType);
@@ -266,8 +266,11 @@ namespace DbNetSuiteCore.Extensions
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.DistinctLookup))
                 {
                     DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
-                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false && dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], gridColumn.DataType)).OrderBy(v => v).ToList();
-                    gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+                    if (dataColumn != null)
+                    {
+                        var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false && dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], gridColumn.DataType)).OrderBy(v => v).ToList();
+                        gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+                    }
                 }
             }
         }
@@ -322,7 +325,7 @@ namespace DbNetSuiteCore.Extensions
 
             List<string> where = new List<string>();
 
-            foreach (var item in gridModel.Columns.Where(c => c.PrimaryKey).Select((value,index) => new {value = value, index = index}))
+            foreach (var item in gridModel.Columns.Where(c => c.PrimaryKey).Select((value, index) => new { value = value, index = index }))
             {
                 where.Add($"{item.value.ColumnName} = {DbHelper.ParameterName(item.value.ColumnName, gridModel.DataSourceType)}");
                 update.Params[item.value.ColumnName] = ComponentModelExtensions.ParamValue(primaryKeyValues[item.index], item.value, gridModel.DataSourceType) ?? DBNull.Value;
@@ -336,7 +339,7 @@ namespace DbNetSuiteCore.Extensions
         {
             string columnName = gridColumn.ColumnName;
             string value = string.Empty;
-            
+
             if (gridModel.FormValues.ContainsKey(columnName))
             {
                 value = gridModel.FormValues[columnName][r];

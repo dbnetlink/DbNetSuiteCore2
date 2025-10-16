@@ -26,35 +26,45 @@ namespace DbNetSuiteCore.Helpers
 
         public static string TransformJson(string jsonString, Type targetType, object[]? args = null)
         {
-            object instance = JsonSerializer.Deserialize(jsonString, targetType);
+            object? instance = JsonSerializer.Deserialize(jsonString, targetType);
 
             if (instance == null)
             {
                 throw new ArgumentException("Failed to deserialize JSON string.");
             }
 
-            MethodInfo transformMethod = targetType.GetMethod(nameof(IJsonTransformPlugin.Transform));
+            MethodInfo? transformMethod = targetType.GetMethod(nameof(IJsonTransformPlugin.Transform));
 
             if (transformMethod == null)
             {
                 throw new InvalidOperationException($"Type {targetType.Name} does not have a public 'Transform' method.");
             }
 
-            object transformedData = transformMethod.Invoke(instance, args);
+            object? transformedData = transformMethod.Invoke(instance, args);
 
             return JsonSerializer.Serialize(transformedData, new JsonSerializerOptions { });
         }
 
         public static object? InvokeMethod(string typeName, string methodName, object[]? args = null)
         {
-            return InvokeMethod(GetTypeFromName(typeName), methodName, args);
+            Type? type = GetTypeFromName(typeName);
+            if (type == null)
+            {
+                throw new ArgumentException($"Type '{typeName}' could not be found.");
+            }
+            return InvokeMethod(type, methodName, args);
         }
 
         public static object? InvokeMethod(Type type, string methodName, object[]? args = null)
         {
-            object instance = Activator.CreateInstance(type);
+            object? instance = Activator.CreateInstance(type);
 
-            MethodInfo method = type.GetMethod(methodName);
+            if (instance == null)
+            {
+                throw new InvalidOperationException($"Unable to create instance of '{type.Name}'.");
+            }
+
+            MethodInfo? method = type.GetMethod(methodName);
 
             if (method == null)
             {

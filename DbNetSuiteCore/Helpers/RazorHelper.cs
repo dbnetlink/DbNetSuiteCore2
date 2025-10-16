@@ -79,11 +79,15 @@ namespace DbNetSuiteCore.Helpers
 
         public static double? JavaScriptDateTime(object? dateTime)
         {
-            if (string.IsNullOrEmpty(dateTime?.ToString()))
-                return null;
-
-            dateTime = Convert.ToDateTime(dateTime);
-            return (dateTime as DateTime?).Value.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+            if (string.IsNullOrEmpty(dateTime?.ToString()) == false)
+            {
+                dateTime = Convert.ToDateTime(dateTime);
+                if (dateTime is DateTime dt)
+                {
+                    return dt.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+                }
+            }
+            return null;
         }
 
         public static HtmlString IconButton(string type, HtmlString icon, Dictionary<string, string>? attributes = null)
