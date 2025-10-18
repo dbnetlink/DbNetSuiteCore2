@@ -7,7 +7,7 @@
 
 <div class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 @Model.Justify()">
     <div id="searchview" class="flex flex-row gap-1"">
-        @if (Model.GridModel.IsStoredProcedure == false)
+        @if (Model.IsStoredProcedure == false)
         {
             <input class="" style="width:10rem" autofocus type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="@TriggerNames.Search" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
         }
@@ -30,7 +30,7 @@
             @Model.RenderNavButton(TriggerNames.First, IconHelper.First(), ResourceHelper.GetResourceString(ResourceNames.First))
             @Model.RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), ResourceHelper.GetResourceString(ResourceNames.Previous))
             <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Page)</span>
-            @Model.RenderPageNumber(Model.GridModel.CurrentPage, Model.TotalPages)
+            @Model.RenderPageNumber(Model.CurrentPage, Model.TotalPages)
             <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
             @Model.RenderTotalPages(Model.TotalPages)
             <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Rows)</span>

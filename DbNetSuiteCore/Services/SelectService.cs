@@ -76,9 +76,9 @@ namespace DbNetSuiteCore.Services
             try
             {
                 SelectModel selectModel = JsonConvert.DeserializeObject<SelectModel>(StateHelper.GetSerialisedModel(_context, _configuration)) ?? new SelectModel();
-                selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? String.Empty);
+                selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 AssignParentModel(selectModel);
-                selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context)?.Trim() ?? String.Empty; 
+                selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim(); 
 
                 if (selectModel.DataSourceType == DataSourceType.JSON)
                 {

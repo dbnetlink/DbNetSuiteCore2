@@ -18,9 +18,9 @@ namespace DbNetSuiteCore.Repositories
             _configuration = configuration;
             _env = env;
         }
-        public async Task GetRecords(ComponentModel componentModel)
+        public void GetRecords(ComponentModel componentModel)
         {
-            var dataTable = await BuildDataTable(componentModel);
+            var dataTable = BuildDataTable(componentModel);
             componentModel.Data = dataTable;
 
             string filterPart = string.Empty;
@@ -47,9 +47,9 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task<DataTable> GetColumns(ComponentModel componentModel)
+        public DataTable GetColumns(ComponentModel componentModel)
         {
-            return await BuildDataTable(componentModel);
+            return BuildDataTable(componentModel);
         }
 
         public static void UpdateUrl(GridModel gridModel)
@@ -73,7 +73,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private async Task<DataTable> BuildDataTable(ComponentModel componentModel)
+        private DataTable BuildDataTable(ComponentModel componentModel)
         {
             if (string.IsNullOrEmpty(componentModel.Url))
             {

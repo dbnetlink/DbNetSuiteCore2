@@ -1,13 +1,13 @@
-﻿@model DbNetSuiteCore.ViewModels.GridViewModel
+﻿@model GridViewModel
 @using System.Data
 @using DbNetSuiteCore.Helpers
-@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.ViewModels
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 
-<tbody id="@Model.HxIdTarget.Replace("#", "")" data-currentpage="@Model.GridModel.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.GridModel.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.GridModel.Message)" data-messagetype="@Model.GridModel.MessageType" data-validationpassed="@Model.GridModel.ValidationPassed">
+<tbody id="@Model.HxIdTarget.Replace("#", "")" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.Message)" data-messagetype="@Model.MessageType" data-validationpassed="@Model.ValidationPassed">
     @{
         int rowIndex = -1;
     }
@@ -29,7 +29,7 @@
                 {
                     <td class="text-base"><input class="multi-select" type="checkbox" /></td>
                 }
-                if (Model.GridModel._NestedGrids.Any())
+                if (Model.HasNestedGrids)
                 {
                     if (Model.DataSourceType == DataSourceType.FileSystem)
                     {
@@ -54,9 +54,9 @@
                     }
                 }
             }
-            @foreach (GridColumn column in Model.VisibleColumns)
+            @foreach (GridColumnViewModel column in Model.VisibleColumns)
             {
-                DataColumn? dataColumn = Model.GetDataColumn(column);
+                DataColumn? dataColumn = Model.GetDataColumn(column.Column);
 
                 if (dataColumn == null)
                 {
@@ -74,7 +74,7 @@
                     classes.Add("align-top");
                 }
 
-                if (column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
+                if (column.Column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
                 {
                     classes.Add("text-center");
                 }
@@ -89,22 +89,22 @@
                     string dbValue = column.ToStringOrEmpty((dataColumn == null) ? string.Empty : (column.Editable ? column.FormColumn.FormatValue(row[dataColumn]) : column.FormatValue(row[dataColumn])));
                     string value = dbValue;
 
-                    if (Model.GridModel.FormValues.ContainsKey(column.ColumnName))
+                    if (Model.FormValues.ContainsKey(column.ColumnName))
                     {
-                        value = Model.GridModel.FormValues[column.ColumnName][rowIndex];
+                        value = Model.FormValues[column.ColumnName][rowIndex];
                     }
 
-                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)> @column.FormColumn.RenderControl(value, dbValue, Model.GridModel, rowIndex)</td>
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Column.Style)> @column.FormColumn.RenderControl(value, dbValue, Model.GridModel, rowIndex)</td>
                     continue;
                 }
 
                 if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
                 {
-                    <td @RazorHelper.CellDataAttributes(classes, "", column.Style)>&nbsp;</td>
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Column.Style)>&nbsp;</td>
                     continue;
                 }
 
-                if (column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
+                if (column.Column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
                 {
                     var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));
                     <td @RazorHelper.CellDataAttributes(classes, boolValue, column.Style)>
@@ -113,7 +113,7 @@
                 }
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
-                    if (string.IsNullOrEmpty(column.Lookup?.TableName) && column.IsNumeric && column.EnumOptions == null)
+                    if (string.IsNullOrEmpty(column.Column.Lookup?.TableName) && column.IsNumeric && column.EnumOptions == null)
                     {
                         classes.Add("text-right");
                     }
@@ -142,12 +142,12 @@
                     object? value = column.FormatValue(row[dataColumn]);
 
                     var stringValue = value?.ToString() ?? string.Empty;
-                    if (column.DataType == typeof(string) && column.MaxChars < stringValue.Length)
+                    if (column.Column.DataType == typeof(string) && column.Column.MaxChars < stringValue.Length)
                     {
                         value = column.TruncateValue(stringValue);
                         classes.Add("tooltip-text");
                     }
-                    <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>@Html.Raw(value)</td>
+                    <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Column.Style)>@Html.Raw(value)</td>
                 }
             }
 
@@ -166,7 +166,7 @@
         <tr style="display:none">
             <td colspan="@Model.ColSpan">
                 <div>
-                    @await Html.PartialAsync("Grid/__Hidden", Model.GridModel)
+                    @await Html.PartialAsync("Grid/__Hidden", Model)
                     <span style="display:none" id="sortIcon">@Model.SortIcon</span>
                     @{
                         var attributes = new Dictionary<string, string>();
@@ -177,7 +177,7 @@
                         attributes["hx-swap"] = "outerHTML";
                         attributes["hx-indicator"] = "next .htmx-indicator";
                     }
-                    @if (Model.GridModel.IsLinked)
+                    @if (Model.IsLinked)
                     {
                         <input name="@TriggerNames.ParentKey" @RazorHelper.Attributes(attributes) />
                     }
@@ -187,11 +187,11 @@
 
         </tr>
 
-        @if ((Model.GridModel.IsLinked && Model.GridModel.TriggerName == TriggerNames.ParentKey) || Model.GridModel.TriggerName == TriggerNames.ApiRequestParameters)
+        @if ((Model.IsLinked && Model.TriggerName == TriggerNames.ParentKey) || Model.TriggerName == TriggerNames.ApiRequestParameters)
         {
             <tr style="display:none" class="lookup-refresh">
                 <td colspan="@Model.ColSpan">
-                    @foreach (var gridColumn in Model.GridModel.Columns.Where(c => c.Lookup != null))
+                    @foreach (var gridColumn in Model.Columns.Where(c => c.Column.Lookup != null))
                     {
                         @Model.RenderLookupOptions(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
                     }
@@ -199,13 +199,13 @@
             </tr>
         }
 
-        @if (Model.GridModel.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
+        @if (Model.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
         {
             <tr style="display:none" class="column-filter-error">
                 <td colspan="@Model.ColSpan">
-                    @foreach (var gridColumn in Model.GridModel.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
+                    @foreach (var gridColumn in Model.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
                     {
-                        @Model.RenderColumnFilterError(gridColumn)
+                        @Model.RenderColumnFilterError(gridColumn.Column)
                     }
                 </td>
             </tr>

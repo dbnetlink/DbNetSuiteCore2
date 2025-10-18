@@ -1,13 +1,13 @@
-﻿@model IEnumerable<DbNetSuiteCore.Models.GridModel>
+﻿@model IEnumerable<DbNetSuiteCore.ViewModels.GridViewModel>
 @using System.Data
 <tr class="nested-grid-row">
     <td class="w-12"></td>
     <td colspan="@Model.First().ColSpan">
         <div class="flex items-start gap-2">
-            @foreach (var gridModel in Model)
+            @foreach (var gridViewModel in Model)
             {
                 <div>
-                    @await Html.PartialAsync("Grid/__ControlForm", gridModel)
+                    @await Html.PartialAsync("Grid/__ControlForm", gridViewModel)
                 </div>
             }
         </div>

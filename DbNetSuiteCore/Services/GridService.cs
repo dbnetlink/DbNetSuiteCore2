@@ -122,7 +122,7 @@ namespace DbNetSuiteCore.Services
                 gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
             }
 
-            gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context) ?? string.Empty;
+            gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
             gridModel.FormValues.Clear();
             gridModel.Columns.ToList().ForEach(c => c.LineInError.Clear());
 
@@ -141,7 +141,7 @@ namespace DbNetSuiteCore.Services
             return gridViewModel;
         }
 
-        private List<GridModel> ConfigureNestedGrid(GridModel gridModel)
+        private IEnumerable<GridViewModel> ConfigureNestedGrid(GridModel gridModel)
         {
             foreach (var nestedGrid in gridModel._NestedGrids)
             {
@@ -169,12 +169,12 @@ namespace DbNetSuiteCore.Services
             }
 
             gridModel._NestedGrids.ForEach(g => g.HttpContext = _context);
-            return gridModel._NestedGrids;
+            return gridModel._NestedGrids.Select(g => new GridViewModel(g));
         }
 
         private async Task GetGridRecords(GridModel gridModel)
         {
-            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context) ?? string.Empty);
+            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
             switch (gridModel.TriggerName)
             {
@@ -388,17 +388,17 @@ namespace DbNetSuiteCore.Services
             try
             {
                 GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(StateHelper.GetSerialisedModel(_context,_configuration)) ?? new GridModel();
-                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? string.Empty);
+                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
-                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context)?.Trim() ?? string.Empty;
-                gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context) ?? string.Empty;
-                gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context) ?? string.Empty;
+                gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
+                gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
+                gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
                 gridModel.FormValues = RequestHelper.GridFormColumnValues(_context, gridModel);
-                gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context)?.Trim() ?? string.Empty;
+                gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
                 gridModel.RowsModified = RequestHelper.GetModifiedRows(_context, gridModel);
-                gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context) ?? "false");
-                gridModel.RowId = RequestHelper.FormValue(TriggerNames.ViewDialogContent, string.Empty, _context) ?? string.Empty;
+                gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
+                gridModel.RowId = RequestHelper.FormValue(TriggerNames.ViewDialogContent, string.Empty, _context);
 
                 if (gridModel.DataSourceType == DataSourceType.JSON)
                 { 

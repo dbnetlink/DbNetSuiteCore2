@@ -203,7 +203,7 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                if (await CustomValidation(formModel, nameof(ICustomFormPlugin.ValidateDelete)))
+                if (CustomValidation(formModel, nameof(ICustomFormPlugin.ValidateDelete)))
                 {
                     await DeleteRecord(formModel);
                     formModel.PrimaryKeyValues = new List<List<object>>();
@@ -255,7 +255,7 @@ namespace DbNetSuiteCore.Services
                 return false;
             }
 
-            return await CustomValidation(formModel, formModel.Mode == FormMode.Update ? nameof(ICustomFormPlugin.ValidateUpdate): nameof(ICustomFormPlugin.ValidateInsert));
+            return CustomValidation(formModel, formModel.Mode == FormMode.Update ? nameof(ICustomFormPlugin.ValidateUpdate): nameof(ICustomFormPlugin.ValidateInsert));
         }
 
         private void PopulateGuidPrimaryKey(FormModel formModel)
@@ -278,7 +278,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        private async Task<bool> CustomValidation(FormModel formModel, string methodName)
+        private bool CustomValidation(FormModel formModel, string methodName)
         {
             if (string.IsNullOrEmpty(formModel.CustomisationPluginName) || _context == null)
             {
@@ -365,16 +365,16 @@ namespace DbNetSuiteCore.Services
             try
             {
                 FormModel formModel = JsonConvert.DeserializeObject<FormModel>(StateHelper.GetSerialisedModel(_context, _configuration)) ?? new FormModel();
-                formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context) ?? string.Empty);
+                formModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 formModel.CurrentRecord = formModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetRecordNumber(formModel);
-                formModel.SearchInput = (RequestHelper.FormValue("searchInput", string.Empty, _context) ?? string.Empty).Trim();
+                formModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 formModel.FormValues = RequestHelper.FormColumnValues(_context, formModel);
                 formModel.Columns.ToList().ForEach(column => column.InError = false);   
                 formModel.Message = string.Empty;
                 formModel.Modified = RequestHelper.GetModified(_context, formModel); ;
-                formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context) ?? string.Empty);
+                formModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", formModel.ValidationPassed.ToString(), _context));
                 formModel.CommitType = null;
-                formModel.SearchDialogConjunction = (RequestHelper.FormValue("searchDialogConjunction", "and", _context) ?? string.Empty).Trim();
+                formModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
 
                 AssignParentModel(formModel);
                 AssignSearchDialogFilter(formModel);

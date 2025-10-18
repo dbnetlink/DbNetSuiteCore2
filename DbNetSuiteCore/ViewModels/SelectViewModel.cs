@@ -18,6 +18,7 @@ namespace DbNetSuiteCore.ViewModels
         public DataRowCollection Rows => SelectModel.Data.Rows;
         public bool SelectFirstOption => SelectModel.RowSelection != RowSelection.Multiple && string.IsNullOrEmpty(SelectModel.EmptyOption);
         public string HxTarget => $"next div.target";
+        public bool IsGrouped => SelectModel.IsGrouped;
         public string Value(DataRow dataRow) 
         {
             return RowValue(dataRow, GetDataColumn(SelectModel.ValueColumn));

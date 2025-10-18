@@ -33,7 +33,7 @@ namespace DbNetSuiteCore.ViewModels
         public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation == false && ShowQuickSearch == false);
         public string ConfirmDialogId => $"confirmDialog{_formModel.Id}";
         public FormMode? CommitType => FormModel.CommitType;
-
+        public bool OneToOne => FormModel.OneToOne;
 
         public FormViewModel(FormModel formModel) : base(formModel)
         {

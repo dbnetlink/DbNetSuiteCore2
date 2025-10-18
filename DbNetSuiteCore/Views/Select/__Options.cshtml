@@ -14,7 +14,7 @@
             <option value="">@Model.SelectModel.EmptyOption</option>
         }
 
-        @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)
+        @if (Model.Rows.Count > 0 && Model.IsGrouped)
         {
             @Model.OpenOptionGroup(Model.Rows[0])
         }
@@ -29,19 +29,19 @@
             @Model.RenderOption(row, rowNumber)
             rowNumber++;
         }
-        @if (Model.Rows.Count > 0 && Model.SelectModel.IsGrouped)
+        @if (Model.Rows.Count > 0 && Model.IsGrouped)
         {
             @Model.CloseOptionGroup()
         }
 
-        @if (Model.Rows.Count == 0 && Model.SelectModel.IsLinked == false)
+        @if (Model.Rows.Count == 0 && Model.IsLinked == false)
         {
             @Model.RenderNoRecordsOption()
         }
     </select>
 }
-@await Html.PartialAsync("Select/__Hidden", Model.SelectModel)
-@if (Model.SelectModel.IsLinked)
+@await Html.PartialAsync("Select/__Hidden", Model)
+@if (Model.IsLinked)
 {
     <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="closest div.target" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" />
 }

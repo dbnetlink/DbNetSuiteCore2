@@ -1,6 +1,7 @@
 ﻿@model DbNetSuiteCore.ViewModels.GridViewModel
 @using System.Data
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.ViewModels
 @using Microsoft.AspNetCore.Html
 <html>
 <head>
@@ -33,10 +34,10 @@
     <table class="htmx-table">
         <thead>
             <tr class="bg-slate-200">
-                @foreach (ColumnModel column in Model.VisibleColumns)
+                @foreach (GridColumnViewModel column in Model.VisibleColumns)
                 {
                     <th class="text-base">
-                        <div class="flex flex-row justify-between items-center">@(column?.Label)</div>
+                        <div class="flex flex-row justify-between items-center">@(column.Column.Label)</div>
                     </th>
                 }
             </tr>

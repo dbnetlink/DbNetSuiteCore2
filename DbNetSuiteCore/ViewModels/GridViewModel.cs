@@ -11,9 +11,10 @@ namespace DbNetSuiteCore.ViewModels
 {
     public class GridViewModel : ComponentViewModel
     {
-        public IEnumerable<GridColumn> Columns => _gridModel.Columns;
-        public IEnumerable<GridColumn> VisibleColumns => _gridModel.VisbleColumns;
-        public IEnumerable<GridColumn> DataOnlyColumns => _gridModel.DataOnlyColumns;
+        public IEnumerable<GridColumnViewModel> Columns => _gridModel.Columns.Select(c => new GridColumnViewModel(c));
+        public IEnumerable<GridColumnViewModel> VisibleColumns => _gridModel.VisbleColumns.Select(c => new GridColumnViewModel(c));
+        public IEnumerable<GridColumnViewModel> DataOnlyColumns => _gridModel.DataOnlyColumns.Select(c => new GridColumnViewModel(c));
+        public IEnumerable<GridColumnViewModel> FilterColumns => _gridModel.FilterColumns.Select(c => new GridColumnViewModel(c));
         private readonly GridModel _gridModel = new GridModel();
         public GridModel GridModel => _gridModel;
         public ViewDialog ViewDialog => _gridModel.ViewDialog!;
@@ -21,17 +22,24 @@ namespace DbNetSuiteCore.ViewModels
         public int TotalPages => RowCount == 0 ? 0 : (int)Math.Ceiling((double)RowCount / GridModel.PageSize);
         public int RowCount => GridModel.PaginateQuery ? GridModel.TotalRows : GridModel.Data.Rows.Count;
         public string GridId => _gridModel.Id;
+        public bool IsEditable => _gridModel.IsEditable;
+        public bool IsStoredProcedure => _gridModel.IsStoredProcedure;
         public string ViewDialogId => $"viewDialog{_gridModel.Id}";
         public string LinkedGridIds => string.Join(",", _gridModel.LinkedGridIds);
         public string SearchInput => _gridModel.SearchInput;
         public string CurrentSortKey => _gridModel.CurrentSortKey;
+        public string TriggerName => _gridModel.TriggerName;
+        public bool HasNestedGrids => _gridModel.HasNestedGrids;
         public HtmlString SortIcon => _gridModel.CurrentSortAscending ? IconHelper.ArrowUp() : IconHelper.ArrowDown();
         public DataSourceType DataSourceType => _gridModel.DataSourceType;
         public RenderMode RenderMode { get; set; } = RenderMode.Page;
+        public int CurrentPage => _gridModel.CurrentPage;
+        public bool IsNested => _gridModel.IsNested;
+        public Dictionary<string,List<string>> FormValues => _gridModel.FormValues;
 
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
-        public int ColSpan => VisibleColumns.Count() + (GridModel._NestedGrids.Any() ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
+        public int ColSpan => VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
         public bool Editable => GridModel.Columns.Any(c => c.Editable);
         public GridViewModel(GridModel gridModel) : base(gridModel)
         {

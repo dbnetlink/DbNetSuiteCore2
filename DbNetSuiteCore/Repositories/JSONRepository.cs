@@ -69,7 +69,7 @@ namespace DbNetSuiteCore.Repositories
 
         public void UpdateApiRequestParameters(ComponentModel componentModel, HttpContext? context)
         {
-            Dictionary<string, string>? apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context) ?? string.Empty);
+            Dictionary<string, string>? apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context));
 
             if (apiRequestParameters != null)
             {

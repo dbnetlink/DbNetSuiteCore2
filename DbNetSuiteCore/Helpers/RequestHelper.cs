@@ -77,7 +77,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static List<ModifiedRow> GetModifiedRows(HttpContext? httpContext, GridModel gridModel)
         {
-            List<ModifiedRow>? modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("modifiedrows", string.Empty, httpContext) ?? string.Empty);
+            List<ModifiedRow>? modifiedRows = JsonConvert.DeserializeObject<List<ModifiedRow>>(FormValue("modifiedrows", string.Empty, httpContext));
 
             if (modifiedRows == null)
             {
@@ -97,7 +97,7 @@ namespace DbNetSuiteCore.Helpers
             ModifiedRow? modifiedRow = new ModifiedRow();
             if (httpContext != null)
             {
-                modifiedRow = JsonConvert.DeserializeObject<ModifiedRow>(FormValue("modifiedform", string.Empty, httpContext) ?? string.Empty);
+                modifiedRow = JsonConvert.DeserializeObject<ModifiedRow>(FormValue("modifiedform", string.Empty, httpContext));
                 if (modifiedRow == null)
                 {
                     return new ModifiedRow();
@@ -133,14 +133,6 @@ namespace DbNetSuiteCore.Helpers
             var form = httpContext.Request.Form;
             // Convert possible nulls to empty string to ensure List<string>
             return form[key].Select(s => s ?? string.Empty).ToList();
-
-            /*
-#if NET8_0
-            return [.. form[key].Select(s => s ?? string.Empty)];
-#else
-            return form[key].Select(s => s ?? string.Empty).ToList();
-#endif
-            */
         }
 
         public static string TriggerName(HttpContext? httpContext)

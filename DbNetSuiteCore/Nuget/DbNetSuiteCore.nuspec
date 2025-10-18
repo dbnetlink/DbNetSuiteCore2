@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>DbNetSuiteCore</id>
-    <version>2.0.62</version>
+    <version>2.0.64</version>
     <authors>DbNetLink</authors>
     <owners>DbNetLink</owners>
     <icon>nuget_logo.png</icon>
@@ -21,7 +21,6 @@
       <group targetFramework="net7.0">
         <dependency id="ClosedXML" version="0.105.0" exclude="Build,Analyzers" />
         <dependency id="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" version="7.0.15" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.AspNetCore.WebUtilities" version="2.1.1" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Data.SqlClient" version="5.1.4" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Data.Sqlite" version="7.0.15" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Data.Sqlite.Core" version="7.0.15" exclude="Build,Analyzers" />
@@ -35,7 +34,6 @@
       <group targetFramework="net8.0">
         <dependency id="ClosedXML" version="0.105.0" exclude="Build,Analyzers" />
         <dependency id="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" version="8.0.10" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.AspNetCore.WebUtilities" version="8.0.10" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Data.SqlClient" version="5.2.3" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Data.Sqlite" version="8.0.10" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Data.Sqlite.Core" version="8.0.10" exclude="Build,Analyzers" />

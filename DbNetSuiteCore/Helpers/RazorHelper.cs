@@ -122,20 +122,24 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString($"<input {Attributes(attributes)}/>");
         }
 
-        public static HtmlString ModelSummaryState(SummaryModel summaryModel, ComponentModel componentModel, IConfiguration configuration)
+        public static HtmlString ModelSummaryState(ComponentModel componentModel, IConfiguration configuration)
         {
             var attributes = new Dictionary<string, string>();
-            if (ConfigurationHelper.UseDistributedServerCache(configuration))
+
+            if (componentModel.SummaryModel is SummaryModel summaryModel)
             {
-                attributes.Add("value", CacheHelper.RedisCacheSummaryModel(summaryModel, componentModel));
-            }
-            else if (ConfigurationHelper.ServerStateManagement(configuration))
-            {
-                attributes.Add("value", CacheHelper.CacheSummaryModel(summaryModel, componentModel));
-            }
-            else
-            {
-                attributes.Add("value", TextHelper.ObfuscateString(summaryModel, configuration));
+                if (ConfigurationHelper.UseDistributedServerCache(configuration))
+                {
+                    attributes.Add("value", CacheHelper.RedisCacheSummaryModel(summaryModel, componentModel));
+                }
+                else if (ConfigurationHelper.ServerStateManagement(configuration))
+                {
+                    attributes.Add("value", CacheHelper.CacheSummaryModel(summaryModel, componentModel));
+                }
+                else
+                {
+                    attributes.Add("value", TextHelper.ObfuscateString(summaryModel, configuration));
+                }
             }
             attributes.Add("type", "hidden");
             attributes.Add("name", "summarymodel");

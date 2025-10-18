@@ -18,9 +18,9 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(ComponentModel componentModel)
+        public void GetRecords(ComponentModel componentModel)
         {
-            var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : await BuildDataTable(componentModel);
+            var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : BuildDataTable(componentModel);
             if (componentModel is GridModel)
             {
                 var gridModel = (GridModel)componentModel;
@@ -42,19 +42,19 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task GetRecord(ComponentModel componentModel)
+        public void GetRecord(ComponentModel componentModel)
         {
-            var dataTable = await BuildDataTable(componentModel);
+            var dataTable = BuildDataTable(componentModel);
             dataTable.FilterWithPrimaryKey(componentModel);
             componentModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(ComponentModel componentModel)
+        public DataTable GetColumns(ComponentModel componentModel)
         {
-            return await BuildDataTable(componentModel);
+            return BuildDataTable(componentModel);
         }
 
-        private async Task<DataTable> BuildDataTable(ComponentModel componentModel)
+        private DataTable BuildDataTable(ComponentModel componentModel)
         {
             if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable? dataTable))
             {

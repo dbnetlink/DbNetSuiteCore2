@@ -15,22 +15,26 @@ namespace DbNetSuiteCore.Models
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
 		[JsonIgnore]
-		public IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
+		internal IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
 		[JsonIgnore]
-		public IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
+		internal IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
 		[JsonIgnore]
-		public IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
+		internal IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
 		[JsonIgnore]
 		internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
-        public int CurrentPage { get; set; } = 1;
+        [JsonProperty]
+        internal int CurrentPage { get; set; } = 1;
          internal string SortKey  
         { 
             get { return string.IsNullOrEmpty(_SortKey) ? InitalSortColumn?.Key ?? string.Empty : _SortKey; } 
             set { _SortKey = value; } 
         }
-        public string CurrentSortKey { get; set; } = string.Empty;
-        public SortOrder? CurrentSortSequence { get; set; }
-        public bool CurrentSortAscending => SortSequence == SortOrder.Asc;
+        [JsonProperty]
+        internal string CurrentSortKey { get; set; } = string.Empty;
+        [JsonProperty]
+        internal SortOrder? CurrentSortSequence { get; set; }
+        [JsonProperty]
+        internal bool CurrentSortAscending => SortSequence == SortOrder.Asc;
         internal override GridColumn? SortColumn => (Columns.FirstOrDefault(c => c.Key == CurrentSortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
         internal GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
         internal GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
@@ -42,26 +46,30 @@ namespace DbNetSuiteCore.Models
         internal string ExportFormat { get; set; } = string.Empty;
         internal List<string> ColumnFilter { get; set; } = new List<string>();
         public int PageSize { get; set; } = 20;
-        public bool IsNested { get; set; } = false;
+        [JsonProperty]
+        internal bool IsNested { get; set; } = false;
         public bool IncludeJsonData { get; set; } = false;
         [JsonIgnore]
         public string JsonData { get; set; } = string.Empty;
-        public int ColSpan => VisbleColumns.ToList().Count;
-        public override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
-        public List<string> LinkedGridIds => GetLinkedControlIds(nameof(GridModel));  
+        public int ColSpan => VisbleColumns.Count();
+        internal override IEnumerable<ColumnModel> SearchableColumns => GetColumns().Where(c => c.StringSearchable);
+        [JsonProperty]
+        internal List<string> LinkedGridIds => GetLinkedControlIds(nameof(GridModel));
         public List<GridModel> _NestedGrids { get; set; } = new List<GridModel>();
+        internal bool HasNestedGrids => _NestedGrids.Any();
         public IEnumerable<GridColumn> Columns { get; set; } = new List<GridColumn>();
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
         public bool OptimizeForLargeDataset { get; set; } = false;
         internal bool PaginateQuery => OptimizeForLargeDataset && TriggerName != TriggerNames.Download;
-        public int TotalRows { get; set; }
-        public bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
-        public bool IsEditable => Columns.Any(c => c.Editable);
-        public bool ValidationPassed { get; set; } = false;
+        [JsonProperty]
+        internal int TotalRows { get; set; }
+        internal bool IsGrouped => Columns.Any(c => c.Aggregate != AggregateType.None);
+        internal bool IsEditable => Columns.Any(c => c.Editable);
+        [JsonProperty]
         public Dictionary<string, List<string>> FormValues { get; internal set; } = new Dictionary<string, List<string>>();
         internal string FirstEditableColumnName => Columns.Where(c => c.Editable).First().ColumnName;
         [JsonIgnore]
-        public IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        internal IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         [JsonProperty]
         internal List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         [JsonProperty]
@@ -139,26 +147,26 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        public override IEnumerable<ColumnModel> GetColumns()
+        internal override IEnumerable<ColumnModel> GetColumns()
         {
             return Columns.Cast<ColumnModel>();
         }
 
-        public override void SetColumns(IEnumerable<ColumnModel> columns)
+        internal override void SetColumns(IEnumerable<ColumnModel> columns)
         {
             Columns = columns.Cast<GridColumn>();
         }
 
-        public override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
+        internal override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
         { 
             return new GridColumn(dataRow, dataSourceType); 
         }
-        public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
+        internal override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new GridColumn(dataColumn, dataSourceType);
         }
 
-        public override ColumnModel NewColumn(BsonElement element)
+        internal override ColumnModel NewColumn(BsonElement element)
         {
             return new GridColumn(element);
         }
@@ -176,7 +184,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public void ConfigureSort(string sortKey)
+        internal void ConfigureSort(string sortKey)
         {
             if (string.IsNullOrEmpty(sortKey) == false)
             {
@@ -202,7 +210,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public object? PrimaryKeyValue(DataRow dataRow)
+        internal object? PrimaryKeyValue(DataRow dataRow)
         {
             if (DataSourceType == DataSourceType.FileSystem)
             {

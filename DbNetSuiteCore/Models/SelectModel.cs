@@ -20,7 +20,7 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public SelectColumn OptionGroupColumn => Columns.Where(c => c.OptionGroup).FirstOrDefault() ?? new SelectColumn();
         [JsonIgnore]
-        public override IEnumerable<SelectColumn> SearchableColumns
+        internal override IEnumerable<SelectColumn> SearchableColumns
         {
             get
             {
@@ -53,7 +53,7 @@ namespace DbNetSuiteCore.Models
             set { _RowSelection = value; }
         }
 
-        public bool IsGrouped => Columns.Any(c => c.OptionGroup);
+        internal bool IsGrouped => Columns.Any(c => c.OptionGroup);
         public LayoutType Layout { get; set; } = LayoutType.Column;
 
         public SelectModel() : base()
@@ -75,26 +75,26 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        public override IEnumerable<ColumnModel> GetColumns()
+        internal override IEnumerable<ColumnModel> GetColumns()
         {
             return Columns.Cast<ColumnModel>();
         }
 
-        public override void SetColumns(IEnumerable<ColumnModel> columns)
+        internal override void SetColumns(IEnumerable<ColumnModel> columns)
         {
             Columns = columns.Cast<SelectColumn>();
         }
 
-        public override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
+        internal override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
         {
             return new SelectColumn(dataRow, dataSourceType);
         }
-        public override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
+        internal override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new SelectColumn(dataColumn, dataSourceType);
         }
 
-        public override ColumnModel NewColumn(BsonElement element)
+        internal override ColumnModel NewColumn(BsonElement element)
         {
             return new SelectColumn(element);
         }

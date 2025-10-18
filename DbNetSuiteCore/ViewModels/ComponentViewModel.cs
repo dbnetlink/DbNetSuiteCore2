@@ -45,11 +45,25 @@ namespace DbNetSuiteCore.ViewModels
         }
 
         public string HxIdTarget { get; set; }
+        public bool IsBlazor => _componentModel.IsBlazor;
+        public bool IsParent => _componentModel.IsParent;
+        public string PostUrl => _componentModel.PostUrl;
+        public string HxFormTrigger => _componentModel.HxFormTrigger;
+        public string Id => _componentModel.Id;
+        public bool IsLinked => _componentModel.IsLinked;
+        public string Message
+        {
+            get { return _componentModel.Message; }
+            set { _componentModel.Message = value; }
+        } 
+        public MessageType MessageType => _componentModel.MessageType;
+        public string JSON => _componentModel.JSON;
+        public bool ValidationPassed => _componentModel.ValidationPassed;
         public string SearchDialogId => $"searchDialog{_componentModel.Id}";
         public string LookupDialogId => $"lookupDialog{_componentModel.Id}";
 
         public string LinkedControlIds => string.Join(",", _componentModel.GetLinkedControlIds());
-        public IEnumerable<ColumnModel> SearchDialogColumns => _componentModel.GetColumns().Where(c => c.IsSearchable);
+        public IEnumerable<ColumnViewModel> SearchDialogColumns => _componentModel.GetColumns().Where(c => c.IsSearchable).Select(c => new ColumnViewModel(c));
         public bool SearchDialog => SearchDialogColumns.Any() && _componentModel.Search && _componentModel.DataSourceType != DataSourceType.MongoDB;
         public HtmlString RenderSearchLookupOptions(List<KeyValuePair<string, string>> options, string key)
         {

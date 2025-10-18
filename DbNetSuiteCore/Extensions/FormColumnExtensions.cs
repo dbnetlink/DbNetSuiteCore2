@@ -31,7 +31,7 @@ namespace DbNetSuiteCore.Extensions
                         {
                             return value;
                         }
-                        return ((DateTime)value).ToString(formColumn.DateTimeFormat); ;
+                        break;
                     case nameof(DateTimeOffset):
                         DateTimeOffset dateTimeOffset;
 
@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Extensions
                         {
                             return value;
                         }
-                        return ((DateTimeOffset)value).ToString(formColumn.DateTimeFormat);
+                        break;
                     case nameof(TimeSpan):
                         TimeSpan timeSpan;
                         if (TimeSpan.TryParse(stringValue, out timeSpan) == false)
@@ -55,8 +55,18 @@ namespace DbNetSuiteCore.Extensions
                             return value;
                         }
                         value = timeSpan;
-                        return ((TimeSpan)value).ToString(formColumn.DateTimeFormat);
+                        break;
                 }
+            }
+
+            switch (formColumn?.DataType.Name)
+            {
+                case nameof(DateTime):
+                    return ((DateTime)value).ToString(formColumn.DateTimeFormat); ;
+                case nameof(DateTimeOffset):
+                    return ((DateTimeOffset)value).ToString(formColumn.DateTimeFormat);
+                case nameof(TimeSpan):
+                    return ((TimeSpan)value).ToString(formColumn.DateTimeFormat);
             }
 
             if (string.IsNullOrEmpty(formColumn?.Format) == false)

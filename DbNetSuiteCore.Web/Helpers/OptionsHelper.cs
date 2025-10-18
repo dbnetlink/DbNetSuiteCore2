@@ -50,7 +50,7 @@ namespace DbNetSuiteCore.Web.Helpers
             return true;
         }
 
-        public static bool ValidateGridUpdate(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        internal static bool ValidateGridUpdate(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
         {
             switch (gridModel.Name)
             {

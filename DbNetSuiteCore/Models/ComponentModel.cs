@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.Models
         public string Name { get; set; } = string.Empty;
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
-        public DataTable Data { get; set; } = new DataTable();
+        internal DataTable Data { get; set; } = new DataTable();
         [JsonIgnore]
         public DataTable Record { get; set; } = new DataTable();
         public string TableName { get; set; } = string.Empty;
@@ -23,8 +23,10 @@ namespace DbNetSuiteCore.Models
         public string DatabaseName { get; set; } = string.Empty;
         public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
         public string ConnectionAlias { get; set; } = string.Empty;
-        public bool IsStoredProcedure { get; set; } = false;
-        public Dictionary<string, List<string>> LinkedControlIds { get; set; } = new Dictionary<string, List<string>>();
+        [JsonProperty]
+        internal bool IsStoredProcedure { get; set; } = false;
+        [JsonProperty]
+        internal Dictionary<string, List<string>> LinkedControlIds { get; set; } = new Dictionary<string, List<string>>();
         internal bool Uninitialised => GetColumns().Any() == false || GetColumns().Where(c => c.Initialised == false).Any();
         internal string SearchInput { get; set; } = string.Empty;
         internal string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
@@ -33,14 +35,18 @@ namespace DbNetSuiteCore.Models
         public string Caption { get; set; } = string.Empty;
         internal bool IgnoreSchemaTable { get; set; } = false;
         internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
-        public abstract IEnumerable<ColumnModel> SearchableColumns { get; }
+        internal abstract IEnumerable<ColumnModel> SearchableColumns { get; }
         [JsonIgnore]
-        public LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
+        internal LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
-        public Dictionary<string, string> ColumnAliasLookup { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        public SummaryModel? ParentModel { get; set; }
-        public SummaryModel? SummaryModel { get; set; }
-        public bool IsBlazor { get; set; } = false;
+        [JsonProperty]
+        internal SummaryModel? ParentModel { get; set; }
+        [JsonProperty]
+        internal SummaryModel? SummaryModel { get; set; }
+        [JsonProperty]
+        internal bool IsBlazor { get; set; } = false;
+        [JsonProperty]
+        internal bool ValidationPassed { get; set; } = false;
         [JsonIgnore]
         internal string RowId { get; set; } = string.Empty;
         public string Url
@@ -63,7 +69,7 @@ namespace DbNetSuiteCore.Models
             }
         }
         [JsonIgnore]
-        public string JSON { get; set; } = string.Empty;
+        internal string JSON { get; set; } = string.Empty;
         public Dictionary<string, string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
         private List<ComponentModel> _LinkedControls { get; set; } = new List<ComponentModel>();
@@ -75,12 +81,13 @@ namespace DbNetSuiteCore.Models
                 AddLinkedControl(value);
             }
         }
-        public bool IsLinked { get; set; } = false;
+        [JsonProperty]
+        internal bool IsLinked { get; set; } = false;
         //public string ParentKey { get; set; } = string.Empty;
         public bool DeferredLoad { get; set; } = false;
-        public string HxFormTrigger => IsLinked || DeferredLoad ? "submit" : "load";
-        public string PostUrl => $"{this.GetType().Name.Replace("Model", "control").ToLower()}.htmx";
-        public string TriggerName { get; set; } = string.Empty;
+        internal string HxFormTrigger => IsLinked || DeferredLoad ? "submit" : "load";
+        internal string PostUrl => $"{this.GetType().Name.Replace("Model", "control").ToLower()}.htmx";
+        internal string TriggerName { get; set; } = string.Empty;
         public string FixedFilter { get; set; } = string.Empty;
         public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
         public bool Cache { get; set; } = false;
@@ -89,8 +96,9 @@ namespace DbNetSuiteCore.Models
         public bool Search { get; set; } = true;
         internal string SearchDialogConjunction { get; set; } = "and";
         public string Message = string.Empty;
-        public MessageType MessageType = MessageType.None;
-        public bool IsParent => LinkedControlIds.Any();
+        [JsonProperty]
+        internal MessageType MessageType = MessageType.None;
+        internal bool IsParent => LinkedControlIds.Any();
         [JsonIgnore]
         internal HttpContext? HttpContext { get; set; } = null;
         public ComponentModel()
@@ -126,17 +134,17 @@ namespace DbNetSuiteCore.Models
             TableName = tableName;
         }
 
-        public DataColumn? GetDataColumn(ColumnModel column)
+        internal DataColumn? GetDataColumn(ColumnModel column)
         {
             return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower() || c.ColumnName.ToLower() == column.Expression.ToLower());
         }
 
-        public ColumnModel? GetColumn(string columnName)
+        internal ColumnModel? GetColumn(string columnName)
         {
             return GetColumns().FirstOrDefault(c => c.ColumnName.ToLower() == columnName.ToLower() || c.Name.ToLower() == columnName.ToLower() || c.Expression.ToLower() == columnName.ToLower());
         }
 
-        public object RowValue(DataRow dataRow, string columnName, object defaultValue)
+        internal object RowValue(DataRow dataRow, string columnName, object defaultValue)
         {
             var dataColumn = dataRow.Table.Columns.Cast<DataColumn>().ToList().FirstOrDefault(c => c.ColumnName == columnName);
 
@@ -153,26 +161,26 @@ namespace DbNetSuiteCore.Models
             return $"{this.GetType().Name.Replace("Model", string.Empty)}{DateTime.Now.Ticks}";
         }
 
-        public void SetId()
+        internal void SetId()
         {
             Id = GeneratedId();
         }
 
-        public string ObfuscateColumnName(ColumnModel column)
+        internal string ObfuscateColumnName(ColumnModel column)
         {
             return (string.IsNullOrEmpty(column.Alias) ? column.ColumnName : column.Alias).ToLower();
         }
 
-        public List<string> GetLinkedControlIds(string typeName)
+        internal List<string> GetLinkedControlIds(string typeName)
         {
             return LinkedControlIds.ContainsKey(typeName) ? LinkedControlIds[typeName] : new List<string>();
         }
 
-        public List<object> GetPrimaryKeyValues()
+        internal List<object> GetPrimaryKeyValues()
         {
             return JsonConvert.DeserializeObject<List<object>>(TextHelper.DeobfuscateString(RowId)) ?? new List<object>();
         }
-        public List<object> GetParentKeyValues()
+        internal List<object> GetParentKeyValues()
         {
             var primaryKeyValues = new List<object>();
             foreach (var column in ParentModel!.Columns.Where(c => c.PrimaryKey))
@@ -183,7 +191,7 @@ namespace DbNetSuiteCore.Models
             return primaryKeyValues;
         }
 
-        public List<string> GetLinkedControlIds()
+        internal List<string> GetLinkedControlIds()
         {
             return LinkedControlIds.SelectMany(d => d.Value).ToList();
         }
@@ -231,11 +239,11 @@ namespace DbNetSuiteCore.Models
             return GetColumns().FirstOrDefault(c => c.Alias.ToLower() == columnName.ToLower())?.ColumnName ?? columnName;
         }
 
-        public abstract IEnumerable<ColumnModel> GetColumns();
-        public abstract void SetColumns(IEnumerable<ColumnModel> columns);
-        public abstract ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType);
-        public abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
-        public abstract ColumnModel NewColumn(BsonElement element);
+        internal abstract IEnumerable<ColumnModel> GetColumns();
+        internal abstract void SetColumns(IEnumerable<ColumnModel> columns);
+        internal abstract ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType);
+        internal abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
+        internal abstract ColumnModel NewColumn(BsonElement element);
         internal abstract ColumnModel? SortColumn { get; }
         internal abstract SortOrder? SortSequence { get; set; }
       

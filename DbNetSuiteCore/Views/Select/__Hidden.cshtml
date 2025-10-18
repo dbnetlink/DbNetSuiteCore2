@@ -1,12 +1,12 @@
-﻿@model DbNetSuiteCore.Models.SelectModel
+﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
 @inject IConfiguration Configuration
 @using Microsoft.Extensions.Configuration
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-@RazorHelper.ModelState(Model, Configuration)
+@RazorHelper.ModelState(Model.SelectModel, Configuration)
 @if (Model.IsParent)
 {
-    @RazorHelper.ModelSummaryState(Model.SummaryModel, Model, Configuration)
+    @RazorHelper.ModelSummaryState(Model.SelectModel, Configuration)
 }
 @if (string.IsNullOrEmpty(Model.JSON) == false)
 {

@@ -18,7 +18,7 @@
     {
         <div class="flex text-lg caption">@Model.FormModel.Caption</div>
     }
-    <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-onetoone="@Model.FormModel.OneToOne" data-mode="@Model.Mode" data-validationpassed="@Model.FormModel.ValidationPassed" data-committype="@Model.CommitType">
+    <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-onetoone="@Model.OneToOne" data-mode="@Model.Mode" data-validationpassed="@Model.ValidationPassed" data-committype="@Model.CommitType">
 
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
             @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == false && c.Autoincrement == false))
@@ -40,8 +40,8 @@
                 @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
             }
         </div>
-        @await Html.PartialAsync("Form/__Hidden", Model.FormModel)
-        @if (Model.FormModel.IsLinked)
+        @await Html.PartialAsync("Form/__Hidden")
+        @if (Model.IsLinked)
         {
             <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" />
         }
@@ -53,17 +53,16 @@
     }
     @{
         HtmlString highlightAttr = new HtmlString("");
-        if (string.IsNullOrEmpty(Model.FormModel.Message))
+        if (string.IsNullOrEmpty(Model.Message))
         {
-            Model.FormModel.Message = "&nbsp;";
+            Model.Message = "&nbsp;";
         }
         else
         {
-            highlightAttr = RazorHelper.Attribute("data-highlight", Model.FormModel.MessageType.ToString().ToLower());
+            highlightAttr = RazorHelper.Attribute("data-highlight", Model.MessageType.ToString().ToLower());
         }
 
-        <div id="form-message" class="flex border rounded border-slate-300 p-1" @highlightAttr>@Html.Raw(Model.FormModel.Message)</div>
+        <div id="form-message" class="flex border rounded border-slate-300 p-1" @highlightAttr>@Html.Raw(Model.Message)</div>
     }
 
-    @await Html.PartialAsync("__LicenseInfo", Model.FormModel.LicenseInfo)
 </div>

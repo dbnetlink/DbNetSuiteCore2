@@ -9,7 +9,7 @@
             {
                 return string.Empty;
             }
-            string model = RequestHelper.FormValue(name, string.Empty, httpContext) ?? string.Empty;
+            string model = RequestHelper.FormValue(name, string.Empty, httpContext);
             if (ConfigurationHelper.UseDistributedServerCache(configuration))
             {
                 return CacheHelper.GetRedisModel(model, httpContext);

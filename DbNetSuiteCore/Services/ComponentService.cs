@@ -340,9 +340,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.JSON:
                     return await _jsonRepository.GetColumns(componentModel, _context);
                 case DataSourceType.Excel:
-                    return await _excelRepository.GetColumns(componentModel);
+                    return _excelRepository.GetColumns(componentModel);
                 case DataSourceType.FileSystem:
-                    return await _fileSystemRepository.GetColumns(componentModel);
+                    return _fileSystemRepository.GetColumns(componentModel);
                 case DataSourceType.MongoDB:
                     return await _mongoDbRepository.GetColumns(componentModel);
                 case DataSourceType.Oracle:
@@ -369,10 +369,10 @@ namespace DbNetSuiteCore.Services
                     await _jsonRepository.GetRecords(componentModel, _context);
                     break;
                 case DataSourceType.Excel:
-                    await _excelRepository.GetRecords(componentModel);
+                    _excelRepository.GetRecords(componentModel);
                     break;
                 case DataSourceType.FileSystem:
-                    await _fileSystemRepository.GetRecords(componentModel);
+                    _fileSystemRepository.GetRecords(componentModel);
                     break;
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.GetRecords(componentModel);
@@ -441,7 +441,7 @@ namespace DbNetSuiteCore.Services
                     await _jsonRepository.GetRecord(componentModel, _context);
                     break;
                 case DataSourceType.Excel:
-                    await _excelRepository.GetRecord(componentModel);
+                    _excelRepository.GetRecord(componentModel);
                     break;
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.GetRecord(componentModel);

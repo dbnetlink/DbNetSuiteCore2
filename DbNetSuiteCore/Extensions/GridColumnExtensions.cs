@@ -8,7 +8,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class GridColumnExtensions
     {
-        public static object? FormatValue(this GridColumn gridColumn, object value)
+        internal static object? FormatValue(this GridColumn gridColumn, object value)
         {
             if (string.IsNullOrEmpty(value?.ToString()) || value == DBNull.Value || gridColumn.NoFormat)
             {
@@ -61,12 +61,12 @@ namespace DbNetSuiteCore.Extensions
             return value;
         }
 
-        static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        internal static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             return DateTime.UnixEpoch.AddSeconds(unixTimeStamp).ToLocalTime();
         }
 
-        public static string TruncateValue(this GridColumn gridColumn, string value)
+        internal static string TruncateValue(this GridColumn gridColumn, string value)
         {
             var array = value.Substring(0, gridColumn.MaxChars).Split(" ");
 

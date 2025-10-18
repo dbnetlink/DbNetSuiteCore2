@@ -1,14 +1,14 @@
-﻿@model GridModel
+﻿@model GridViewModel
 @inject IConfiguration Configuration
 @using Microsoft.Extensions.Configuration
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.ViewModels
 @using DbNetSuiteCore.Enums
-@RazorHelper.ModelState(Model, Configuration)
-@if (Model.IsParent || Model._NestedGrids.Any())
+@RazorHelper.ModelState(Model.GridModel, Configuration)
+@if (Model.IsParent || Model.HasNestedGrids)
 {
-    @RazorHelper.ModelSummaryState(Model.SummaryModel, Model, Configuration)
+    @RazorHelper.ModelSummaryState(Model.GridModel, Configuration)
 }
 <input type="hidden" name="validationPassed" value="@Model.ValidationPassed" />
 @if (string.IsNullOrEmpty(Model.JSON) == false)

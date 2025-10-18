@@ -1,4 +1,4 @@
-﻿@model DbNetSuiteCore.Models.GridModel
+﻿@model DbNetSuiteCore.ViewModels.GridViewModel
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
 @using Newtonsoft.Json
@@ -9,10 +9,10 @@
 <script>
     @if (Model.IsNested)
     {
-        <text>DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.ClientEvents))); </text>
+        <text>DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents))); </text>
     }
     else
     {
-        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.ClientEvents)), @Model.DeferredLoad.ToString().ToLower()); });</text>
+        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.GridModel.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents)), @Model.GridModel.DeferredLoad.ToString().ToLower()); });</text>
     }
 </script>

@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using Newtonsoft.Json;
+using DbNetSuiteCore.ViewModels;
 
 namespace DbNetSuiteCore
 {
@@ -25,22 +26,20 @@ namespace DbNetSuiteCore
             }
 
             gridModel.HttpContext = _httpContext;
-
             ValidateControl(gridModel);
-
-            return await RenderView("Grid/__ControlForm", gridModel);
+            return await RenderView("Grid/__ControlForm", new GridViewModel(gridModel));
         }
 
         protected async Task<string> Render(SelectModel selectModel)
         {
             selectModel.HttpContext = _httpContext;
-            return await RenderView("Select/__ControlForm", selectModel);
+            return await RenderView("Select/__ControlForm", new SelectViewModel(selectModel));
         }
 
         protected async Task<string> Render(FormModel formModel)
         {
             formModel.HttpContext = _httpContext;
-            return await RenderView("Form/__ControlForm", formModel);
+            return await RenderView("Form/__ControlForm", new FormViewModel(formModel));
         }
 
         private void ValidateControl(ComponentModel componentModel)
@@ -69,7 +68,7 @@ namespace DbNetSuiteCore
             }
         }
 
-        protected async Task<string> RenderView(string viewName, ComponentModel componentModel)
+        protected async Task<string> RenderView(string viewName, ComponentViewModel componentModel)
         {
             if (_httpContext == null)
             {

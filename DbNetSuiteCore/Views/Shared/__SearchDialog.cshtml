@@ -18,7 +18,7 @@
         </nav>
         <div class="flex search-dialog-content" style="max-height:400px;overflow-y:scroll;padding:5px;">
             <table cellpadding="3" class="table-auto border-collapse m-1 border-spacing-2 search-dialog">
-                @foreach (ColumnModel columnModel in Model.SearchDialogColumns)
+                @foreach (ColumnViewModel columnModel in Model.SearchDialogColumns)
                 {
                     <tr data-columnname="@columnModel.ColumnName.ToLower()">
                         <td style="font-weight:bold">
@@ -33,7 +33,7 @@
                         </td>
                     </tr>
                 }
-                @foreach (ColumnModel columnModel in Model.SearchDialogColumns)
+                @foreach (ColumnViewModel columnModel in Model.SearchDialogColumns)
                 {
                     <tr style="display:none">
                         <td colspan="3">
