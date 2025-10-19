@@ -14,6 +14,7 @@ namespace DbNetSuiteCore.Models
     {
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte), nameof(SByte) };
         private Type? _DataType = null;
+        private Type? _LookupEnum = null;
         private List<KeyValuePair<string, string>>? _EnumOptions;
         private SearchControlType _searchControlType = SearchControlType.Text;
         public string Label { get; set; } = string.Empty;
@@ -28,19 +29,28 @@ namespace DbNetSuiteCore.Models
         // [JsonIgnore]
         public List<KeyValuePair<string, string>>? DbLookupOptions { get; set; } = null;
         [JsonIgnore]
-        public Type? LookupEnum { get; set; }
+        public Type? LookupEnum
+        {
+            set
+            {
+                LookupEnumTypeName = PluginHelper.GetNameFromType(value);
+            }
+        }
+        internal string LookupEnumTypeName { get; set; } = string.Empty;
+
         public List<string>? LookupList { get; set; }
         public IEnumerable<Int32>? LookupRange { get; set; }
         public Dictionary<string, string>? LookupDictionary { get; set; }
         public string ParamName => $"Param{Ordinal}";
         public int Ordinal { get; set; }
-        public List<KeyValuePair<string, string>>? EnumOptions
+        [JsonProperty]
+        internal List<KeyValuePair<string, string>>? EnumOptions
         {
             get
             {
-                if (LookupEnum != null)
+                if (string.IsNullOrEmpty(LookupEnumTypeName) == false && _EnumOptions == null)
                 {
-                    _EnumOptions = EnumHelper.GetEnumOptions(LookupEnum!, DataType);
+                    _EnumOptions = EnumHelper.GetEnumOptions(PluginHelper.GetTypeFromName(LookupEnumTypeName)!, DataType);
                 };
                 return _EnumOptions;
             }
@@ -61,27 +71,34 @@ namespace DbNetSuiteCore.Models
                 };
             }
         }
-        public string DbDataType { get; set; } = string.Empty;
-        public string UserDataType { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string DbDataType { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string UserDataType { get; set; } = string.Empty;
         public string Format { get; set; } = string.Empty;
-        public bool Initialised { get; set; } = false;
-        public bool Valid { get; set; } = true;
+        [JsonProperty]
+        internal bool Initialised { get; set; } = false;
+        [JsonProperty]
+        internal bool Valid { get; set; } = true;
         public Lookup? Lookup { get; set; }
-        public bool DistinctLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName);
-        public bool SearchLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName) == false;
+        internal bool DistinctLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName);
+        internal bool SearchLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName) == false;
         public bool DataOnly { get; set; } = false;
         public bool PrimaryKey { get; set; } = false;
         public bool ForeignKey { get; set; } = false;
         public string ForeignKeyParentColumn { get; set; } = string.Empty;
         internal bool StringSearchable => (DataType == typeof(string) && DbDataType != "xml");
         public SortOrder? InitialSortOrder { get; set; } = null;
-        public bool LookupNotPopulated => (Lookup != null && LookupOptions == null);
-        public string EnumName { get; set; } = string.Empty;
-        public bool AllowDBNull { get; set; } = true;
+        internal bool LookupNotPopulated => (Lookup != null && LookupOptions == null);
+        [JsonProperty]
+        internal string EnumName { get; set; } = string.Empty;
+        [JsonProperty]
+        internal bool AllowDBNull { get; set; } = true;
         public bool Search { get; set; } = true;
         public string Alias { get; set; } = string.Empty;
-        public bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType() && ForeignKey == false;
-        public SearchControlType SearchControlType
+        internal bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType() && ForeignKey == false;
+        [JsonProperty]
+        internal SearchControlType SearchControlType
         {
             get
             {
@@ -114,8 +131,8 @@ namespace DbNetSuiteCore.Models
                 };
             }
         }
-
-        public DataSourceType? DataSource { get; set; } = null;
+        [JsonProperty]
+        internal DataSourceType? DataSource { get; set; } = null;
 
         [JsonIgnore]
         public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
@@ -230,7 +247,7 @@ namespace DbNetSuiteCore.Models
             }
             return LookupDictionary.OrderBy(o => o.Value).Select(o => new KeyValuePair<string, string>(o.Key, o.Value)).ToList();
         }
-        public void Update(DataColumn dataColumn, DataSourceType dataSourceType)
+        internal void Update(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             this.DataSource = dataSourceType;
             DataType = dataColumn.DataType;
@@ -256,12 +273,12 @@ namespace DbNetSuiteCore.Models
                 }
             }
         }
-        public string ToStringOrEmpty(object? value)
+        internal string ToStringOrEmpty(object? value)
         {
             return value?.ToString() ?? string.Empty;
         }
 
-        public void Update(DataRow dataRow, DataSourceType dataSourceType, bool generated = false)
+        internal void Update(DataRow dataRow, DataSourceType dataSourceType, bool generated = false)
         {
             DataSource = dataSourceType;
             try
@@ -381,7 +398,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public bool AffinityDataType()
+        internal bool AffinityDataType()
         {
             switch (DbDataType)
             {
@@ -405,7 +422,7 @@ namespace DbNetSuiteCore.Models
             return dataRow[name];
         }
 
-        public void Update(BsonValue bsonValue)
+        internal void Update(BsonValue bsonValue)
         {
             if (string.IsNullOrEmpty(DbDataType) == false || bsonValue.BsonType == BsonType.Null)
             {
@@ -446,7 +463,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        public string GetLookupValue(object value)
+        internal string GetLookupValue(object value)
         {
             if (LookupOptions == null)
             {
@@ -513,7 +530,7 @@ namespace DbNetSuiteCore.Models
             return string.Empty;
         }
 
-        public HtmlString SearchOperatorSelection(DataSourceType dataSourceType)
+        internal HtmlString SearchOperatorSelection(DataSourceType dataSourceType)
         {
             var attributes = new Dictionary<string, string>();
             attributes["name"] = $"searchDialogOperator";
@@ -535,7 +552,7 @@ namespace DbNetSuiteCore.Models
             return new HtmlString(string.Join(string.Empty, select));
         }
 
-        public HtmlString SearchInput()
+        internal HtmlString SearchInput()
         {
             var attributes = new Dictionary<string, string>();
             attributes["name"] = "searchDialogValue1";

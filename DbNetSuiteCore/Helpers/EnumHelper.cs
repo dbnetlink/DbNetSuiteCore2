@@ -11,15 +11,15 @@ namespace DbNetSuiteCore.Helpers
             if (enumType != null)
             {
                 bool enumHasDescription = EnumHasDescription(enumType);
-                foreach (Enum i in Enum.GetValues(enumType).Cast<Enum>())
+                foreach (Enum e in Enum.GetValues(enumType).Cast<Enum>())
                 {
-                    var description = GetEnumDescription(i);
-                    var value = dataType == typeof(String) ? GetEnumDescription(i) : Convert.ToInt32(i).ToString();
+                    var description = GetEnumDescription(e);
+                    var value = dataType == typeof(String) ? e.ToString() : Convert.ToInt32(e).ToString();
                     options.Add(new KeyValuePair<string, string>(value, description));
                 }
             }
 
-            return options;
+            return options.OrderBy(kvp => kvp.Value).ToList();
         }
         public static string GetEnumDescription(Enum value)
         {
