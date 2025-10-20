@@ -67,18 +67,18 @@ namespace DbNetSuiteCore.Repositories
         }
 
 
-        public void UpdateApiRequestParameters(ComponentModel componentModel, HttpContext? context)
+        public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext? context)
         {
             Dictionary<string, string>? apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context));
 
             if (apiRequestParameters != null)
             {
                 apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
-                foreach (string key in componentModel.ApiRequestParameters.Keys)
+                foreach (string key in gridSelectModel.ApiRequestParameters.Keys)
                 {
                     if (apiRequestParameters.ContainsKey(key))
                     {
-                        componentModel.ApiRequestParameters[key] = apiRequestParameters[key];
+                        gridSelectModel.ApiRequestParameters[key] = apiRequestParameters[key];
                     }
                 }
             }
@@ -147,14 +147,17 @@ namespace DbNetSuiteCore.Repositories
                         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                     }
 
-                    if (componentModel.ApiRequestParameters.Keys.Any())
+                    if (componentModel is GridSelectModel gridSelectModel)
                     {
-                        url = UpdateUrlParameters(url, componentModel.ApiRequestParameters);
-                    }
+                        if (gridSelectModel.ApiRequestParameters.Keys.Any())
+                        {
+                            url = UpdateUrlParameters(url, gridSelectModel.ApiRequestParameters);
+                        }
 
-                    foreach (var key in componentModel.ApiRequestHeaders.Keys)
-                    {
-                        _httpClient.DefaultRequestHeaders.Add(key, componentModel.ApiRequestHeaders[key]);
+                        foreach (var key in gridSelectModel.ApiRequestHeaders.Keys)
+                        {
+                            _httpClient.DefaultRequestHeaders.Add(key, gridSelectModel.ApiRequestHeaders[key]);
+                        }
                     }
 
                     json = await _httpClient.GetStringAsync(url);

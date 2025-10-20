@@ -14,7 +14,7 @@
     customerSelect.ClientEvents[SelectClientEvent.OptionSelected] = "optionSelected";
 
 
-    @(await new DbNetSuiteCore.SelectControl(Context).Render(customerSelect))
+    @(await new DbNetSuiteCore.Control(Context).Render(customerSelect))
 }
 
 <script>

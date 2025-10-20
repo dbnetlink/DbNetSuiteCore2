@@ -5,17 +5,17 @@ namespace DbNetSuiteCore.ViewModels
 {
     public class GridViewDialogViewModel : ComponentViewModel
     {
-        public DataRow Record => GridModel.Data.Rows[0];
-        public IEnumerable<GridColumn> Columns => _gridModel.Columns.Where(gc => gc.Viewable);
+        public DataRow Record => _gridViewModel.Rows.First();
+        public IEnumerable<GridColumnViewModel> Columns => _gridViewModel.Columns.Where(c => c.Column.Viewable);
         public int ColumnCount => Columns.Count();
-        public IEnumerable<GridColumn> VisibleColumns => _gridModel.VisbleColumns;
+        public IEnumerable<GridColumnViewModel> VisibleColumns => _gridViewModel.VisibleColumns;
 
-        private readonly GridModel _gridModel = new GridModel();
-        public GridModel GridModel => _gridModel;
+        private readonly GridViewModel _gridViewModel;
+        public GridViewModel GridViewModel => _gridViewModel;
        
         public GridViewDialogViewModel(GridModel gridModel) : base(gridModel)
         {
-            _gridModel = gridModel;
+            _gridViewModel = new GridViewModel(gridModel);
         }
     }
 }

@@ -19,7 +19,7 @@
     var invoiceGrid = new GridModel(DataSourceType.MSSQL, "Northwind(mssql)", "invoices");
     invoiceGrid.Columns = invoiceColumns;
     invoiceGrid.ClientEvents[GridClientEvent.CellTransform] = "highlightQuantity";
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(invoiceGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(invoiceGrid))
 }
 
 <script>

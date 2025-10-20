@@ -9,11 +9,11 @@
     orderItemsGrid.Columns = new List<GridColumn>
     {
         new GridColumn("Order_id", "Order ID"),
-        new GridColumn("product_id", "Product") {Lookup = new Lookup("Products", "product_id","product_name"), Edit = true},
-        new GridColumn("quantity") {Edit = true},
-        new GridColumn("unit_price") {Edit = true},
-        new GridColumn("unit_price * quantity", "Total Price") {DataType = typeof(Decimal)},
+        new GridColumn("product_id", "Product") {Lookup = new Lookup("Products", "product_id","product_name"), Filter = FilterType.Default, FormColumn = new FormColumn()},
+        new GridColumn("quantity") {FormColumn = new FormColumn()},
+        new GridColumn("unit_price") {FormColumn = new FormColumn(), Format = "c"},
+        new GridColumn("unit_price * quantity", "Total Price") {DataType = typeof(Decimal), Format = "c"},
    };
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderItemsGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderItemsGrid))
 }

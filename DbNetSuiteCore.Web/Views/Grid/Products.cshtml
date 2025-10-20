@@ -23,7 +23,7 @@
 	productsGrid.Bind(GridClientEvent.RowTransform, "highlightGridLowStock");
 	productsGrid.Bind(GridClientEvent.ViewDialogUpdated, "highlightViewLowStock");
 
-	@(await new DbNetSuiteCore.GridControl(Context).Render(productsGrid))
+	@(await new DbNetSuiteCore.Control(Context).Render(productsGrid))
 }
 <script>
 	function highlightGridLowStock(gridControl, args) {

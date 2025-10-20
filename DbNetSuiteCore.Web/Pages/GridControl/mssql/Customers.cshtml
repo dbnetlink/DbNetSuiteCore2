@@ -6,5 +6,5 @@
 @using Microsoft.Extensions.Primitives
 @{
     var customersGrid = new GridModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Customers");
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersGrid))
 }

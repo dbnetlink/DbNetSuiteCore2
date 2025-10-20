@@ -52,7 +52,7 @@
     ordersGrid.Columns = orderColumns;
     ordersGrid.AddLinkedControl(orderDetailGrid);
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid));
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid));
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid));
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderDetailGrid));
 }

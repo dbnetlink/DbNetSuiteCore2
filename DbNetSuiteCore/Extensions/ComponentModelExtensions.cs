@@ -94,7 +94,7 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
-        public static QueryCommandConfig BuildUniqueQuery(this FormModel formModel, GridFormColumn column)
+        public static QueryCommandConfig BuildUniqueQuery(this FormModel formModel, FormColumn column)
         {
             string sql = $"select count(*) from {formModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(formModel.DataSourceType) { Sql = sql };

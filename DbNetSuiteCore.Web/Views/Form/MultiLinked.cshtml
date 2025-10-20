@@ -44,11 +44,11 @@
 
     <div style="display:flex">
         <div>
-            <div> @(await new DbNetSuiteCore.FormControl(Context).Render(filmForm))</div>
+            <div> @(await new DbNetSuiteCore.Control(Context).Render(filmForm))</div>
         </div>
         <div style=display:flex;flex-direction: row;">
-            <div> @(await new DbNetSuiteCore.FormControl(Context).Render(actorsForm))</div>
-            <div> @(await new DbNetSuiteCore.FormControl(Context).Render(categoryForm))</div>
+            <div> @(await new DbNetSuiteCore.Control(Context).Render(actorsForm))</div>
+            <div> @(await new DbNetSuiteCore.Control(Context).Render(categoryForm))</div>
         </div>
     </div>
 }

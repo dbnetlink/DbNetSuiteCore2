@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Repositories
         public Task GetRecord(ComponentModel gridModel);
         public Task<DataTable> GetRecordDataTable(ComponentModel componentModel);
         public Task<bool> PrimaryKeyExists(ComponentModel componentModel);
-        public Task <bool> ValueIsUnique(FormModel formModel, GridFormColumn column);
+        public Task <bool> ValueIsUnique(FormModel formModel, FormColumn formColumn);
         public Task GetLookupOptions(ComponentModel componentModel);
         public Task UpdateRecord(FormModel formModel);
         public Task UpdateRecords(GridModel gridModel);

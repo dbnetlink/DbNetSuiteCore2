@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.Data;
 namespace DbNetSuiteCore.Models
 {
-    public class SelectModel : ComponentModel
+    public class SelectModel : GridSelectModel
     {
         private SortOrder? _SortSequence = SortOrder.Asc;
         public List<string> LinkedSelectIds => GetLinkedControlIds(nameof(SelectModel));

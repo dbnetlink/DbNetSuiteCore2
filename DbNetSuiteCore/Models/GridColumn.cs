@@ -7,27 +7,20 @@ using System.Data;
 
 namespace DbNetSuiteCore.Models
 {
-    public class GridColumn : GridFormColumn
+    public class GridColumn : ColumnModel
     {
         private FilterType _Filter = FilterType.None;
         private bool _Editable = false;
-        public bool Sortable => IsSortable();
-        public bool Editable
+        internal bool Sortable => IsSortable();
+        internal bool Editable
         {
-            get { return _Editable && PrimaryKey == false && ForeignKey == false; }
+            get { return FormColumn != null && PrimaryKey == false && ForeignKey == false; }
             set
             {
                 _Editable = value;
             }
         }
-        public bool Edit
-        {
-            set
-            {
-                _Editable = value;
-            }
-        }
-
+      
         public bool Viewable { get; set; } = true;
         public AggregateType Aggregate { get; set; } = AggregateType.None;
         public FilterType Filter
@@ -42,17 +35,18 @@ namespace DbNetSuiteCore.Models
                 }
             }
         }
-        public string FilterError { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string FilterError { get; set; } = string.Empty;
         public string Style { get; set; } = string.Empty;
         public Image? Image { get; set; }
         public int MaxChars { get; set; } = int.MaxValue;
-        internal bool NoFormat => Editable && (MaxValue != null || MinValue != null);
+        internal bool NoFormat => Editable && (FormColumn?.MaxValue != null || FormColumn?.MinValue != null);
         [Description("Apply reglular expression to value before displaying")]
         public string RegularExpression { get; set; } = string.Empty;
         [JsonIgnore]
-        public List<bool> LineInError { get; set; } = new List<bool>();
-             
-        public FormColumn FormColumn { get; set; } = new FormColumn();
+        internal List<bool> LineInError { get; set; } = new List<bool>();
+
+        public FormColumn? FormColumn { get; set; } = null;
         public string ParseFormat { get; set; } = string.Empty;
 
 

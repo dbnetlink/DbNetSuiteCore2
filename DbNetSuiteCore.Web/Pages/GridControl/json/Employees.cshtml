@@ -35,7 +35,7 @@
         new GridColumn("Status", "Status")
     };
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/json/employees.json") { 
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/json/employees.json") { 
         Columns = employeeColumns,
         Caption = "Employees",
         ViewDialog =  new ViewDialog()

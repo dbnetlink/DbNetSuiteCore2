@@ -80,6 +80,7 @@ namespace DbNetSuiteCore.Services
                 AssignParentModel(selectModel);
                 selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim(); 
 
+  
                 if (selectModel.DataSourceType == DataSourceType.JSON)
                 {
                     _jsonRepository.UpdateApiRequestParameters(selectModel, _context);

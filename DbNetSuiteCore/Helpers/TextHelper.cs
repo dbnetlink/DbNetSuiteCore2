@@ -24,16 +24,16 @@ namespace DbNetSuiteCore.Helpers
             return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(text);
         }
 
-        public static string ObfuscateString(ComponentModel componentModel, IConfiguration? configuration = null)
+        public static string ObfuscateString(ComponentModel componentModel)
         {
-            return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(componentModel), configuration, componentModel.HttpContext);
+            return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(componentModel), componentModel.HttpContext);
         }
 
-        public static string ObfuscateString(SummaryModel summaryModel, IConfiguration? configuration = null)
+        public static string ObfuscateString(SummaryModel summaryModel)
         {
             if (summaryModel != null)
             {
-                return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(summaryModel), configuration, summaryModel.HttpContext);
+                return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(summaryModel), summaryModel.HttpContext);
             }
             else
             {
@@ -41,7 +41,7 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static string ObfuscateString(string input, IConfiguration? configuration = null, HttpContext? httpContext = null)
+        public static string ObfuscateString(string input, HttpContext? httpContext = null)
         {
             if (string.IsNullOrEmpty(input))
             {
@@ -61,7 +61,7 @@ namespace DbNetSuiteCore.Helpers
             return Compress(input);
         }
 
-        public static string DeobfuscateString(string input, IConfiguration? configuration = null, HttpContext? httpContext = null)
+        public static string DeobfuscateString(string input, HttpContext? httpContext = null)
         {
             if (string.IsNullOrEmpty(input))
             {

@@ -12,7 +12,7 @@
 
     fileSelect.ClientEvents[SelectClientEvent.OptionSelected] = "showImage";
 
-    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(fileSelect))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(fileSelect))
 }
 
 <img id="flowerImage" />

@@ -22,4 +22,4 @@
     };
 }
 
-@(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/cities.csv") { Columns = columns, ViewDialog = new ViewDialog(), Cache = true }))
+@(await new DbNetSuiteCore.Control(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/cities.csv") { Columns = columns, ViewDialog = new ViewDialog(), Cache = true }))

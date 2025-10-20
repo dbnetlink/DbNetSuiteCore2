@@ -29,7 +29,7 @@
     customerSelectModel.LinkedControl = invoiceSelectModel;
     invoiceSelectModel.LinkedControl = invoiceLineSelectModel;
 
-    @(await new DbNetSuiteCore.SelectControl(Context).Render(customerSelectModel))
-    @(await new DbNetSuiteCore.SelectControl(Context).Render(invoiceSelectModel))
-    @(await new DbNetSuiteCore.SelectControl(Context).Render(invoiceLineSelectModel))
+    @(await new DbNetSuiteCore.Control(Context).Render(customerSelectModel))
+    @(await new DbNetSuiteCore.Control(Context).Render(invoiceSelectModel))
+    @(await new DbNetSuiteCore.Control(Context).Render(invoiceLineSelectModel))
 }

@@ -37,7 +37,7 @@ namespace DbNetSuiteCore.Helpers
 
             if (gridModel.PrimaryKeyValue(row) != null)
             {
-                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(gridModel.PrimaryKeyValue(row)), null, gridModel.HttpContext)}\"");
+                dataAttributes.Add($"data-id=\"{TextHelper.ObfuscateString(JsonConvert.SerializeObject(gridModel.PrimaryKeyValue(row)), gridModel.HttpContext)}\"");
             }
             foreach (var column in gridModel.DataOnlyColumns)
             {
@@ -115,7 +115,7 @@ namespace DbNetSuiteCore.Helpers
             }
             else
             {
-                attributes.Add("value", TextHelper.ObfuscateString(componentModel, configuration));
+                attributes.Add("value", TextHelper.ObfuscateString(componentModel));
             }
             attributes.Add("type", "hidden");
             attributes.Add("name", "model");
@@ -138,7 +138,7 @@ namespace DbNetSuiteCore.Helpers
                 }
                 else
                 {
-                    attributes.Add("value", TextHelper.ObfuscateString(summaryModel, configuration));
+                    attributes.Add("value", TextHelper.ObfuscateString(summaryModel));
                 }
             }
             attributes.Add("type", "hidden");

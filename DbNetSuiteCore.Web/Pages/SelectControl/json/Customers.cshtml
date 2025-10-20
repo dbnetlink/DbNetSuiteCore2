@@ -26,5 +26,5 @@
         customerSelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Cache = false };
     }
 
-    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(customerSelect))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerSelect))
 }

@@ -28,5 +28,5 @@
         new GridColumn("Reports_To") {Lookup = new Lookup("employees","Employee_ID","LastName || ', ' || FirstName"), Filter = FilterType.Default}
     };
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(employeeGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(employeeGrid))
 }

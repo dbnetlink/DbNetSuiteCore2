@@ -6,12 +6,12 @@
 @model GridViewDialogViewModel
 
 @{
-    int layoutColumns = Model.GridModel.ViewDialog!.LayoutColumns < Model.ColumnCount ? Model.GridModel.ViewDialog!.LayoutColumns : Model.ColumnCount;
+    int layoutColumns = Model.GridViewModel.ViewDialog!.LayoutColumns < Model.ColumnCount ? Model.GridViewModel.ViewDialog!.LayoutColumns : Model.ColumnCount;
     int remainder = Model.ColumnCount % layoutColumns;
     int rows = Math.Abs(Model.ColumnCount / layoutColumns) + (remainder == 0 ? 0 : 1);
 }
 
-<table class="table-auto border-collapse m-1" @RazorHelper.RowDataAttributes(Model.Record, Model.GridModel)>
+<table class="table-auto border-collapse m-1" @RazorHelper.RowDataAttributes(Model.Record, Model.GridViewModel.GridModel)>
     <tbody>
         @for (int r = 0; r < rows; r++)
         {
@@ -21,8 +21,8 @@
                     int i = r + ((c - 1) * rows);
                     @if (i < Model.ColumnCount)
                     {
-                        GridColumn gridColumn = Model.Columns.ToList()[i];
-                        DataColumn? dataColumn = Model.GridModel.GetDataColumn(gridColumn);
+                        GridColumnViewModel gridColumn = Model.Columns.ToList()[i];
+                        DataColumn? dataColumn = Model.GridViewModel.GetDataColumn(gridColumn.Column);
                         var classes = new List<string>() { "text-base", "view-cell" };
                         var value = Model.Record[dataColumn!];
                         var formattedvalue = gridColumn.FormatValue(value);
@@ -35,14 +35,14 @@
                         <td class="font-bold whitespace-nowrap">@(gridColumn.Label)</td>
                         <td>
                             <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style) data-userdatatype="@gridColumn.UserDataType">
-                                @if (gridColumn.DataType == typeof(Boolean) && (gridColumn.EnumOptions?.Any() ?? false) == false)
+                                @if (gridColumn.Column.DataType == typeof(Boolean) && (gridColumn.EnumOptions?.Any() ?? false) == false)
                                 {
                                     var boolValue = Convert.ToBoolean(Convert.ToInt16(value));
                                     @(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())
                                 }
-                                else if (gridColumn.Image != null && value != null)
+                                else if (gridColumn.Image != null && value is Byte[] byteArray)
                                 {
-                                    @Html.Raw(gridColumn.Image.Img(value as byte[]))
+                                    @Html.Raw(gridColumn.Image.Img(byteArray))
                                 }
                                 else
                                 {

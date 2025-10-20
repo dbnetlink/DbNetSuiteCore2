@@ -42,8 +42,8 @@
     productSelect.ClientEvents[SelectClientEvent.OptionSelected] = "getCaption";
 }
 
-@(await new DbNetSuiteCore.SelectControl(HttpContext).Render(productSelect))
-@(await new DbNetSuiteCore.GridControl(HttpContext).Render(superstoreGrid))
+@(await new DbNetSuiteCore.Control(HttpContext).Render(productSelect))
+@(await new DbNetSuiteCore.Control(HttpContext).Render(superstoreGrid))
 
 <script>
     var caption = ''

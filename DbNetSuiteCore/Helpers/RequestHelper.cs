@@ -184,7 +184,7 @@ namespace DbNetSuiteCore.Helpers
                     switch (form.Key)
                     {
                         case "model":
-                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value.ToString(), configuration, httpContext)}");
+                            diagnostics.Add($"{form.Key}: {TextHelper.DeobfuscateString(form.Value.ToString(), httpContext)}");
                             break;
                         default:
                             diagnostics.Add($"{form.Key}: {string.Join(", ", form.Value.ToString())}");

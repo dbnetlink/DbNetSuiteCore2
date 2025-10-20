@@ -14,5 +14,5 @@
         new FormColumn("unit_price") {}
    };
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderItemsForm))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderItemsForm))
 }

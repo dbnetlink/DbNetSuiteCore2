@@ -4,11 +4,12 @@ using DbNetSuiteCore.Helpers;
 using Microsoft.AspNetCore.Html;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
 {
-    public class FormColumn : GridFormColumn
+    public class FormColumn : ColumnModel
     {
         private bool _suggest = false;
         public ReadOnlyMode? ReadOnly { get; set; } = null;
@@ -62,6 +63,58 @@ namespace DbNetSuiteCore.Models
         public bool SelectControlType => (ControlType == FormControlType.Auto && Suggest == false) || ControlType == FormControlType.SelectMultiple;
         public string SequenceName { get; set; } = string.Empty;
 
+        private object? _minValue { get; set; } = null;
+        private object? _maxValue { get; set; } = null;
+        public FormControlType ControlType { get; set; } = FormControlType.Auto;
+        public bool Required { get; set; } = false;
+        [JsonIgnore]
+        public bool InError { get; set; } = false;
+
+        public object? MinValue
+        {
+            get
+            {
+                if (_minValue != null)
+                {
+                    return _minValue;
+                }
+                switch (DbDataType)
+                {
+                    case nameof(MSSQLDataTypes.TinyInt):
+                        _minValue = 0;
+                        break;
+                }
+                return _minValue;
+            }
+            set { _minValue = value; }
+        }
+        public object? MaxValue
+        {
+            get
+            {
+                if (_maxValue != null)
+                {
+                    return _maxValue;
+                }
+                switch (DbDataType)
+                {
+                    case nameof(MSSQLDataTypes.TinyInt):
+                        _maxValue = 255;
+                        break;
+                }
+                return _maxValue;
+            }
+            set { _maxValue = value; }
+        }
+        public TextTransform? TextTransform { get; set; } = null;
+        public int? MaxLength { get; set; } = null;
+        public int? MinLength { get; set; } = null;
+        public string? Pattern { get; set; } = null;
+        public string HelpText { get; set; } = string.Empty;
+        public bool Unique { get; set; } = false;
+
+        public HtmlEditor? HtmlEditor { get; set; } = null;
+
         public FormColumn()
         {
         }
@@ -90,12 +143,12 @@ namespace DbNetSuiteCore.Models
         }
 
 
-        public HtmlString RenderLabel(FormModel formModel)
+        internal HtmlString RenderLabel(FormModel formModel)
         {
             return new HtmlString($"<label for=\"{formModel.Id}_{formModel.ObfuscateColumnName(this)}\" class=\"font-bold text-slate-800\">{Label}</label>");
         }
 
-        public HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex = null )
+        internal HtmlString RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex = null )
         {
             GridFormControl = componentModel is GridModel;
 

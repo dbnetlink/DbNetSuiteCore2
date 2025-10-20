@@ -29,10 +29,10 @@
 
     <div class="flex flex-row">
         <div class="flex">
-            @(await new DbNetSuiteCore.SelectControl(Context).Render(customerSelect1))
+            @(await new DbNetSuiteCore.Control(Context).Render(customerSelect1))
         </div>
         <div class="flex">
-            @(await new DbNetSuiteCore.SelectControl(Context).Render(customerSelect2))
+            @(await new DbNetSuiteCore.Control(Context).Render(customerSelect2))
         </div>
     </div>
 

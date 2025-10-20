@@ -13,5 +13,5 @@
         new GridColumn("coalesce(Phone,'') || '/' || coalesce(Fax,'') as phone", "Phone/Fax") { DataType = typeof(String)}
     };
 
-    @(await new DbNetSuiteCore.GridControl(Context).Render(customerGrid))
+    @(await new DbNetSuiteCore.Control(Context).Render(customerGrid))
 }

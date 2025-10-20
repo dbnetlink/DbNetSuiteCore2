@@ -11,6 +11,6 @@
         new SelectColumn("ProductName"),
         new SelectColumn("CategoryName") {OptionGroup = true}
     };
-    @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(productSelect))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(productSelect))
 
 }

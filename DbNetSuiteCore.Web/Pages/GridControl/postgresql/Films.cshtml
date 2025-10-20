@@ -36,7 +36,7 @@
     filmsGrid.Columns = filmColumns;
     filmsGrid.AddLinkedControl(filmCategoryGrid);
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmsGrid));
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(filmsGrid));
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmCategoryGrid)) ;
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(filmCategoryGrid)) ;
 }

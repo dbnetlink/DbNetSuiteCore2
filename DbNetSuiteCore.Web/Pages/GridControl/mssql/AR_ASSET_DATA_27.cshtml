@@ -33,5 +33,5 @@
         new GridColumn("COMMENTS"),
         new GridColumn("EXPOSUREDATE")
     };
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(assetGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(assetGrid))
 }

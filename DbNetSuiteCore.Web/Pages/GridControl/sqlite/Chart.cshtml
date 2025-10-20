@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @{
-    var categorySalesChartGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[Sales By Category]");
+    var categorySalesChartGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[SalesByCategory]");
     categorySalesChartGrid.Columns = new List<GridColumn>
     {
         new GridColumn("CategoryName", "Category"),
@@ -11,11 +11,12 @@
     };
     categorySalesChartGrid.IncludeJsonData = true;
     categorySalesChartGrid.ToolbarPosition = ToolbarPosition.Hidden;
+    categorySalesChartGrid.HeadingMode = HeadingMode.Hidden;
     categorySalesChartGrid.Bind(GridClientEvent.PageLoaded, "renderChart");
 
-    <div style="display:flex; flex-direction:row">
+    <div style="display:flex; flex-direction:row;gap:20px;align-items:center">
         <div>
-            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(categorySalesChartGrid))
+            @(await new DbNetSuiteCore.Control(HttpContext).Render(categorySalesChartGrid))
         </div>
         <div style="width: 600px;">
             <canvas id="salesByCategory"></canvas>

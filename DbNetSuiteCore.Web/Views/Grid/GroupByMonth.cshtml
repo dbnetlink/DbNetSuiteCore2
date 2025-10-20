@@ -17,7 +17,7 @@
     var invoiceGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "invoices");
     invoiceGrid.Columns = invoiceColumns;
     invoiceGrid.ClientEvents[GridClientEvent.CellTransform] = "highlightQuantity";
-    @(await new DbNetSuiteCore.GridControl(Context).Render(invoiceGrid))
+    @(await new DbNetSuiteCore.Control(Context).Render(invoiceGrid))
 }
 
 <script>

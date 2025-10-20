@@ -5,5 +5,5 @@
 
 @{
     var customersGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(postgresql)", "getcustomers()");
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersGrid))
 }

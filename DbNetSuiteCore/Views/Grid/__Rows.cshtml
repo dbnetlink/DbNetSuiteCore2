@@ -79,7 +79,7 @@
                     classes.Add("text-center");
                 }
 
-                @if (column.Editable && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+                @if (column.Editable && column.FormColumn != null && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
                 {
                     if (column.LineInError.Count == Model.Rows.Count())
                     {
@@ -211,11 +211,11 @@
             </tr>
         }
 
-        @if (string.IsNullOrEmpty(Model.GridModel.JsonData) == false)
+        @if (string.IsNullOrEmpty(Model.JsonData) == false)
         {
             <tr>
                 <td style="display:none" colspan="@Model.ColSpan">
-                    <textarea style="display:none" id="jsonData">@Model.GridModel.JsonData</textarea>
+                    <textarea style="display:none" id="jsonData">@Model.JsonData</textarea>
                 </td>
             </tr>
         }

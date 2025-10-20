@@ -30,7 +30,7 @@
         };
         filmsModel.DeferredLoad = true;// (tab != ratings.First());
         <div class="tab-pane fade @(tab == ratings.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
-            @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmsModel))
+            @(await new DbNetSuiteCore.Control(HttpContext).Render(filmsModel))
         </div>
     }
 </div>

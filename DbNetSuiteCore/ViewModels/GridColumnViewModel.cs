@@ -15,11 +15,11 @@ namespace DbNetSuiteCore.ViewModels
         public bool Editable => Column.Editable;
         public bool Sortable => Column.Sortable;
         public string FilterError => Column.FilterError;
-        public FormColumnViewModel FormColumn 
+        public FormColumnViewModel? FormColumn 
         {
             get
             {
-                if (_formColumn == null)
+                if (_formColumn == null && Column.FormColumn != null)
                 {
                     _formColumn = new FormColumnViewModel(Column.FormColumn);
                 }

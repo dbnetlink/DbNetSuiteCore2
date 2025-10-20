@@ -25,7 +25,7 @@
 
     invoiceGrid.HeadingMode = HeadingMode.Frozen;
     invoiceGrid.ClientEvents[GridClientEvent.SelectedRowsUpdated] = "showSelectedRows";
-    @(await new DbNetSuiteCore.GridControl(Context).Render(invoiceGrid))
+    @(await new DbNetSuiteCore.Control(Context).Render(invoiceGrid))
 }
 
 <script>

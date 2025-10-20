@@ -24,5 +24,5 @@
 
     moviesGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(moviesGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(moviesGrid))
 }

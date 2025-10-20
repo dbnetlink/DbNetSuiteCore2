@@ -2,6 +2,7 @@
 @using System.Data
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
+@using DbNetSuiteCore.ViewModels
 @using MongoDB.Bson
 @using Microsoft.AspNetCore.Html
 @using DbNetSuiteCore.Constants
@@ -21,11 +22,11 @@
     <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-onetoone="@Model.OneToOne" data-mode="@Model.Mode" data-validationpassed="@Model.ValidationPassed" data-committype="@Model.CommitType">
 
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
-            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == false && c.Autoincrement == false))
+            @foreach (FormColumnViewModel formColumn in Model.Columns.Where(c => c.DataOnly == false && c.Autoincrement == false))
             {
-                var columnValues = Model.GetColumnValues(formColumn);
+                var columnValues = Model.GetColumnValues(formColumn.Column);
 
-                <div style="display:grid;grid-column:span @(formColumn.ColSpan);grid-row:span @(formColumn.RowSpan);" class="content-start">
+                <div style="display:grid;grid-column:span @(formColumn.Column.ColSpan);grid-row:span @(formColumn.Column.RowSpan);" class="content-start">
                     @{
                         @formColumn.RenderLabel(Model.FormModel)
                         @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
@@ -34,9 +35,9 @@
             }
         </div>
         <div>
-            @foreach (FormColumn formColumn in Model.Columns.Where(c => c.DataOnly == true && c.Autoincrement == false))
+            @foreach (FormColumnViewModel formColumn in Model.Columns.Where(c => c.DataOnly == true && c.Autoincrement == false))
             {
-                var columnValues = Model.GetColumnValues(formColumn);
+                var columnValues = Model.GetColumnValues(formColumn.Column);
                 @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
             }
         </div>

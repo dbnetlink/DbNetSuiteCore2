@@ -15,6 +15,6 @@
 
     var orderDetailGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[order details]");
     orderDetailGrid.Columns = orderDetailColumns;
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderDetailGrid))
 }
 

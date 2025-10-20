@@ -14,20 +14,21 @@ namespace DbNetSuiteCore.Models
     {
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte), nameof(SByte) };
         private Type? _DataType = null;
-        private Type? _LookupEnum = null;
         private List<KeyValuePair<string, string>>? _EnumOptions;
         private SearchControlType _searchControlType = SearchControlType.Text;
         public string Label { get; set; } = string.Empty;
         public string Expression { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
-        public string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".", "_") : Expression;
-        public string Key { get; set; }
-        public string BaseTableName { get; set; } = string.Empty;
-        public bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
-        public List<KeyValuePair<string, string>>? LookupOptions => GetLookupOptions();
-        // [JsonIgnore]
-        public List<KeyValuePair<string, string>>? DbLookupOptions { get; set; } = null;
+        internal string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".", "_") : Expression;
+        [JsonProperty]
+        internal string Key { get; set; }
+        [JsonProperty]
+        internal string BaseTableName { get; set; } = string.Empty;
+        internal bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
+        internal List<KeyValuePair<string, string>>? LookupOptions => GetLookupOptions();
+        [JsonProperty]
+        internal List<KeyValuePair<string, string>>? DbLookupOptions { get; set; } = null;
         [JsonIgnore]
         public Type? LookupEnum
         {
@@ -41,8 +42,9 @@ namespace DbNetSuiteCore.Models
         public List<string>? LookupList { get; set; }
         public IEnumerable<Int32>? LookupRange { get; set; }
         public Dictionary<string, string>? LookupDictionary { get; set; }
-        public string ParamName => $"Param{Ordinal}";
-        public int Ordinal { get; set; }
+        internal string ParamName => $"Param{Ordinal}";
+        [JsonProperty]
+        internal int Ordinal { get; set; }
         [JsonProperty]
         internal List<KeyValuePair<string, string>>? EnumOptions
         {
@@ -56,7 +58,7 @@ namespace DbNetSuiteCore.Models
             }
             set { _EnumOptions = value; }
         }
-        public string DataTypeName => DataType.ToString().Split(".").Last();
+        internal string DataTypeName => DataType.ToString().Split(".").Last();
         [JsonIgnore]
         public Type DataType
         {

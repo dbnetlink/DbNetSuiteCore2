@@ -35,4 +35,4 @@
     var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Columns = columns, Cache = true, ViewDialog = new ViewDialog() };
 }
 
-@(await new DbNetSuiteCore.GridControl(HttpContext).Render(superstoreGrid))
+@(await new DbNetSuiteCore.Control(HttpContext).Render(superstoreGrid))

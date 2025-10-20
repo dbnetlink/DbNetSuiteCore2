@@ -47,17 +47,17 @@
 }
 <div class="flex flex-row">
     <div class="flex">
-        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(countrySelect))
+        @(await new DbNetSuiteCore.Control(HttpContext).Render(countrySelect))
     </div>
     <div class="flex">
-        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(stateSelect))
+        @(await new DbNetSuiteCore.Control(HttpContext).Render(stateSelect))
     </div>
     <div class="flex">
-        @(await new DbNetSuiteCore.SelectControl(HttpContext).Render(citySelect))
+        @(await new DbNetSuiteCore.Control(HttpContext).Render(citySelect))
     </div>
 </div>
 <div class="flex">
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(citiesGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(citiesGrid))
 </div>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>

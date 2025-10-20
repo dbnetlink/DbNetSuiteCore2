@@ -8,21 +8,22 @@
 @{
     var columns = new List<GridColumn>()
     {
-    new GridColumn("Orderid"),
-    new GridColumn("Custid"),
-    new GridColumn("Empid") {Lookup = new Lookup("employee","empid", "concat_ws(', ', lastname, firstname)"),Edit = true},
-    new GridColumn("Orderdate") {Edit = true},
-    new GridColumn("Requireddate") {Edit = true},
-    new GridColumn("Shippeddate") {Edit = true},
-    new GridColumn("Shipperid") {Lookup = new Lookup("shipper","shipperid", "companyname"),Edit = true},
-    new GridColumn("Freight") {Edit = true},
-    new GridColumn("Shipname") {Edit = true},
-    new GridColumn("Shipaddress") {Edit = true},
-    new GridColumn("Shipcity") {Edit = true},
-    new GridColumn("Shipregion") {Edit = true},
-    new GridColumn("Shippostalcode") {Edit = true},
-    new GridColumn("Shipcountry") {Lookup = new Lookup(),Edit = true}
+        new GridColumn("Orderid"),
+        new GridColumn("Custid"),
+        new GridColumn("Empid") {Lookup = new Lookup("employee","empid", "concat_ws(', ', lastname, firstname)"),FormColumn = new FormColumn()},
+        new GridColumn("Orderdate") {FormColumn = new FormColumn()},
+        new GridColumn("Requireddate") {FormColumn = new FormColumn()},
+        new GridColumn("Shippeddate") {FormColumn = new FormColumn()},
+        new GridColumn("Shipperid") {Lookup = new Lookup("shipper","shipperid", "companyname"),FormColumn = new FormColumn(), Filter = FilterType.Default},
+        new GridColumn("Freight") {FormColumn = new FormColumn()},
+        new GridColumn("Shipname") {FormColumn = new FormColumn()},
+        new GridColumn("Shipaddress") {FormColumn = new FormColumn()},
+        new GridColumn("Shipcity") {FormColumn = new FormColumn()},
+        new GridColumn("Shipregion") {FormColumn = new FormColumn()},
+        new GridColumn("Shippostalcode") {FormColumn = new FormColumn()},
+        new GridColumn("Shipcountry") {Lookup = new Lookup(),FormColumn = new FormColumn()}
     };
+
 
     columns.ForEach(c => c.Filter = FilterType.Default);
 
@@ -30,5 +31,5 @@
     ordersGrid.Columns = columns;
     ordersGrid.OptimizeForLargeDataset = true;
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
 }

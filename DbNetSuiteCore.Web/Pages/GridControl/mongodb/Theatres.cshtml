@@ -17,5 +17,5 @@
     theatresGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
 
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(theatresGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(theatresGrid))
 }

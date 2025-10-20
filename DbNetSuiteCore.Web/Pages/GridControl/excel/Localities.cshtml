@@ -31,7 +31,7 @@
     };
 }
 
-@(await new DbNetSuiteCore.GridControl(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/localities.csv") { 
+@(await new DbNetSuiteCore.Control(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/localities.csv") { 
     Columns = columns, 
     Cache = false, 
     ViewDialog = new ViewDialog() 

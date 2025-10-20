@@ -70,8 +70,6 @@ namespace DbNetSuiteCore.Models
         }
         [JsonIgnore]
         internal string JSON { get; set; } = string.Empty;
-        public Dictionary<string, string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
-        public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
         private List<ComponentModel> _LinkedControls { get; set; } = new List<ComponentModel>();
 
         public ComponentModel LinkedControl
@@ -178,7 +176,7 @@ namespace DbNetSuiteCore.Models
 
         internal List<object> GetPrimaryKeyValues()
         {
-            return JsonConvert.DeserializeObject<List<object>>(TextHelper.DeobfuscateString(RowId)) ?? new List<object>();
+            return JsonConvert.DeserializeObject<List<object>>(TextHelper.DeobfuscateString(RowId,HttpContext)) ?? new List<object>();
         }
         internal List<object> GetParentKeyValues()
         {

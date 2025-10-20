@@ -148,9 +148,9 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task<bool> ValueIsUnique(FormModel formModel, GridFormColumn column)
+        public async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
         {
-            QueryCommandConfig query = formModel.BuildUniqueQuery(column);
+            QueryCommandConfig query = formModel.BuildUniqueQuery(formColumn);
             using (var connection = GetConnection(formModel.ConnectionAlias))
             {
                 connection.Open();

@@ -8,42 +8,40 @@
     var orderColumns = new List<GridColumn>
     {
         new GridColumn("id") {PrimaryKey = true},
-        new GridColumn("employee_id","Employee"){ Lookup = new Lookup("employees", "id", "concat(last_name,', ',first_name)"),Edit = true},
-        new GridColumn("customer_id","Customer"){ Lookup = new Lookup("customers", "id", "company"),Edit = true},
-        new GridColumn("order_date") {Edit = true},
-        new GridColumn("shipped_date") {Edit = true},
-        new GridColumn("shipper_id"){ Lookup = new Lookup("shippers", "id", "company"),Edit = true},
-        new GridColumn("ship_name") {Edit = true},
-        new GridColumn("ship_address") {Edit = true},
-        new GridColumn("ship_city") {Edit = true},
-        new GridColumn("ship_state_province") {Edit = true},
-        new GridColumn("ship_zip_postal_code") {Edit = true},
-        new GridColumn("ship_country_region") {Edit = true},
-        new GridColumn("shipping_fee") { Format = "c",Edit = true},
-        new GridColumn("taxes") { Format = "c",Edit = true},
-        new GridColumn("payment_type") {Edit = true},
-        new GridColumn("paid_date") {Edit = true},
-        new GridColumn("notes") {Edit = true},
-        new GridColumn("tax_rate") { Format = "c",Edit = true},
-        new GridColumn("tax_status_id") {Edit = true},
-        new GridColumn("status_id"){ Lookup = new Lookup("orders_status", "id", "status_name"),Edit = true},
+        new GridColumn("employee_id","Employee"){ Lookup = new Lookup("employees", "id", "concat(last_name,', ',first_name)"),FormColumn = new FormColumn()},
+        new GridColumn("customer_id","Customer"){ Lookup = new Lookup("customers", "id", "company"),FormColumn = new FormColumn()},
+        new GridColumn("order_date") {FormColumn = new FormColumn()},
+        new GridColumn("shipped_date") {FormColumn = new FormColumn()},
+        new GridColumn("shipper_id"){ Lookup = new Lookup("shippers", "id", "company"),FormColumn = new FormColumn()},
+        new GridColumn("ship_name") {FormColumn = new FormColumn()},
+        new GridColumn("ship_address") {FormColumn = new FormColumn()},
+        new GridColumn("ship_city") {FormColumn = new FormColumn()},
+        new GridColumn("ship_state_province") {FormColumn = new FormColumn()},
+        new GridColumn("ship_zip_postal_code") {FormColumn = new FormColumn()},
+        new GridColumn("ship_country_region") {FormColumn = new FormColumn()},
+        new GridColumn("shipping_fee") { Format = "c",FormColumn = new FormColumn()},
+        new GridColumn("taxes") { Format = "c",FormColumn = new FormColumn()},
+        new GridColumn("payment_type") {FormColumn = new FormColumn()},
+        new GridColumn("paid_date") {FormColumn = new FormColumn()},
+        new GridColumn("notes") {FormColumn = new FormColumn()},
+        new GridColumn("tax_rate") { Format = "c",FormColumn = new FormColumn()},
+        new GridColumn("tax_status_id") {FormColumn = new FormColumn()},
+        new GridColumn("status_id"){ Lookup = new Lookup("orders_status", "id", "status_name"),FormColumn = new FormColumn()},
     };
 
     var orderDetailColumns = new List<GridColumn>
     {
         new GridColumn("id") {PrimaryKey = true},
-        new GridColumn("order_id") {ForeignKey = true,Edit = true},
-        new GridColumn("product_id") {Lookup = new Lookup("products","id","product_name"),Edit = true},
-        new GridColumn("Quantity") {Edit = true},
-        new GridColumn("Unit_Price") {Edit = true},
-        new GridColumn("Discount") {Edit = true},
-        new GridColumn("status_id"){ Lookup = new Lookup("order_details_status", "id", "status_name"),Edit = true},
-        new GridColumn("Date_Allocated") {Edit = true},
-        new GridColumn("Purchase_Order_Id") {Edit = true},
-        new GridColumn("Inventory_Id") {Edit = true}
+        new GridColumn("order_id") {ForeignKey = true,FormColumn = new FormColumn()},
+        new GridColumn("product_id") {Lookup = new Lookup("products","id","product_name"),FormColumn = new FormColumn()},
+        new GridColumn("Quantity") {FormColumn = new FormColumn()},
+        new GridColumn("Unit_Price") {FormColumn = new FormColumn()},
+        new GridColumn("Discount") {FormColumn = new FormColumn()},
+        new GridColumn("status_id"){ Lookup = new Lookup("order_details_status", "id", "status_name"),FormColumn = new FormColumn()},
+        new GridColumn("Date_Allocated") {FormColumn = new FormColumn()},
+        new GridColumn("Purchase_Order_Id") {FormColumn = new FormColumn()},
+        new GridColumn("Inventory_Id") {FormColumn = new FormColumn()}
     };
-
-
 
     var orderDetailGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "northwind.order_details") { PageSize = 5, ViewDialog =  new ViewDialog() };
     orderDetailGrid.Columns = orderDetailColumns;
@@ -52,7 +50,7 @@
     ordersGrid.Columns = orderColumns;
     ordersGrid.AddLinkedControl(orderDetailGrid);
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid));
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid));
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(orderDetailGrid));
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderDetailGrid));
 }

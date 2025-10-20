@@ -12,5 +12,5 @@
 
     var invoiceGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "invoices");
     invoiceGrid.Columns = productColumns;
-    @(await new DbNetSuiteCore.GridControl(Context).Render(invoiceGrid))
+    @(await new DbNetSuiteCore.Control(Context).Render(invoiceGrid))
 }

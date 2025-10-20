@@ -405,20 +405,20 @@ namespace DbNetSuiteCore.Services
             return false;
         }
 
-        protected async Task<bool> ValueIsUnique(FormModel formModel, GridFormColumn column)
+        protected async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
         {
             switch (formModel.DataSourceType)
             {
                 case DataSourceType.SQLite:
-                    return await _sqliteRepository.ValueIsUnique(formModel, column);
+                    return await _sqliteRepository.ValueIsUnique(formModel, formColumn);
                 case DataSourceType.MySql:
-                    return await _mySqlRepository.ValueIsUnique(formModel, column);
+                    return await _mySqlRepository.ValueIsUnique(formModel, formColumn);
                 case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.ValueIsUnique(formModel, column);
+                    return await _postgreSqlRepository.ValueIsUnique(formModel, formColumn);
                 case DataSourceType.Oracle:
-                    return await _oracleRepository.ValueIsUnique(formModel, column);
+                    return await _oracleRepository.ValueIsUnique(formModel, formColumn);
                 case DataSourceType.MSSQL:
-                    return await _msSqlRepository.ValueIsUnique(formModel, column);
+                    return await _msSqlRepository.ValueIsUnique(formModel, formColumn);
                 default:
                     return true;
             }
@@ -572,7 +572,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected void ValidateFormValue(GridFormColumn formColumn, string value, ResourceNames resourceName, ComponentModel componentModel)
+        protected void ValidateFormValue(FormColumn formColumn, string value, ResourceNames resourceName, ComponentModel componentModel)
         {
             object? paramValue;
 
@@ -679,26 +679,26 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected void CheckForLengthError(ResourceNames resourceName, int? length, object? paramValue, GridFormColumn gridFormColumn, ComponentModel componentModel)
+        protected void CheckForLengthError(ResourceNames resourceName, int? length, object? paramValue, FormColumn formColumn, ComponentModel componentModel)
         {
             if (length.HasValue)
             {
-                if ((resourceName == ResourceNames.MinCharsError && length.Value > gridFormColumn.ToStringOrEmpty(paramValue).Length) ||
-                    (resourceName == ResourceNames.MaxCharsError && length.Value < gridFormColumn.ToStringOrEmpty(paramValue).Length))
+                if ((resourceName == ResourceNames.MinCharsError && length.Value > formColumn.ToStringOrEmpty(paramValue).Length) ||
+                    (resourceName == ResourceNames.MaxCharsError && length.Value < formColumn.ToStringOrEmpty(paramValue).Length))
                 {
                     componentModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", length.Value.ToString());
-                    gridFormColumn.InError = true;
+                    formColumn.InError = true;
                     componentModel.MessageType = MessageType.Error;
                 }
             }
         }
 
-        protected void CheckForUniqueness(ResourceNames resourceName, object? paramValue, GridFormColumn gridFormColumn, FormModel formModel)
+        protected void CheckForUniqueness(ResourceNames resourceName, object? paramValue, FormColumn formColumn, FormModel formModel)
         {
-            if (ValueIsUnique(formModel, gridFormColumn).Result == false)
+            if (ValueIsUnique(formModel, formColumn).Result == false)
             {
-                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", $"&nbsp;<b>{gridFormColumn.Label}</b>&nbsp;");
-                gridFormColumn.InError = true;
+                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", $"&nbsp;<b>{formColumn.Label}</b>&nbsp;");
+                formColumn.InError = true;
                 formModel.MessageType = MessageType.Error;
             }
         }

@@ -99,8 +99,11 @@ namespace DbNetSuiteCore.Services
 
                 foreach (var column in gridModel.Columns.Where(c => c.Editable))
                 {
-                    column.FormColumn = new FormColumn(column.Expression);
-                    ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
+                    if (column.FormColumn != null)
+                    {
+                        column.FormColumn.Expression = column.Expression;
+                        ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
+                    }
                 }
 
                 if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
@@ -448,7 +451,10 @@ namespace DbNetSuiteCore.Services
         {
             foreach (var column in gridModel.Columns.Where(c => c.Editable))
             {
-                column.FormColumn.SetLookupOptions(column);
+                if (column.FormColumn != null)
+                {
+                    column.FormColumn.SetLookupOptions(column);
+                }
             }
         }
 
@@ -578,6 +584,11 @@ namespace DbNetSuiteCore.Services
             {
                 foreach (GridColumn? gridColumn in gridModel.Columns.Where(c => c.Editable))
                 {
+
+                    if (gridColumn.FormColumn == null)
+                    {
+                        continue;
+                    }
                     var columnName = gridColumn.ColumnName;
 
                     var value = string.Empty;
@@ -587,9 +598,9 @@ namespace DbNetSuiteCore.Services
                         value = gridModel.FormValues[columnName][r];
                     }
 
-                    gridColumn.InError = false;
-                    ValidateFormValue(gridColumn, value, resourceName, gridModel);
-                    gridColumn.LineInError[r] = gridColumn.InError;
+                    gridColumn.FormColumn.InError = false;
+                    ValidateFormValue(gridColumn.FormColumn, value, resourceName, gridModel);
+                    gridColumn.LineInError[r] = gridColumn.FormColumn.InError;
 
                     if (CellSpecificError())
                     {
@@ -617,7 +628,7 @@ namespace DbNetSuiteCore.Services
 
             bool CellSpecificError()
             {
-                return resourceName == ResourceNames.MinValueError && gridModel.Columns.Any(c => c.InError);
+                return resourceName == ResourceNames.MinValueError && gridModel.Columns.Any(c => c.FormColumn != null && c.FormColumn.InError);
             }
         }
     }

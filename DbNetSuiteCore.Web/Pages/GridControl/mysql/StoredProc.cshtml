@@ -6,9 +6,9 @@
 @{
     var customersGridParameters = new List<DbParameter>() { new DbParameter("isactive", false) };
     var customersGrid = new GridModel(DataSourceType.MySql, "Sakila(mysql)", "GetAllCustomers2", customersGridParameters);
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(customersGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersGrid))
 
     var ordersGridParameters = new List<DbParameter>() { new DbParameter("orderDate", new DateTime(2006, 5, 1)) };
     var ordersGrid = new GridModel(DataSourceType.MySql, "Northwind(mysql)", "GetOrdersBeforeDate", ordersGridParameters);
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(ordersGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
 }

@@ -36,11 +36,11 @@
 
     <div>
         <div>
-            <div> @(await new DbNetSuiteCore.GridControl(HttpContext).Render(filmGrid))</div>
+            <div> @(await new DbNetSuiteCore.Control(HttpContext).Render(filmGrid))</div>
         </div>
         <div style=display:flex;flex-direction: row;">
-            <div> @(await new DbNetSuiteCore.GridControl(HttpContext).Render(actorsGrid))</div>
-            <div> @(await new DbNetSuiteCore.GridControl(HttpContext).Render(categoryGrid))</div>
+            <div> @(await new DbNetSuiteCore.Control(HttpContext).Render(actorsGrid))</div>
+            <div> @(await new DbNetSuiteCore.Control(HttpContext).Render(categoryGrid))</div>
         </div>
     </div>
 }

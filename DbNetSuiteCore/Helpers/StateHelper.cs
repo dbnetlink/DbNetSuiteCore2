@@ -20,7 +20,7 @@
             }
             else
             {
-                return TextHelper.DeobfuscateString(model, configuration, httpContext);
+                return TextHelper.DeobfuscateString(model, httpContext);
             }
         }
     }

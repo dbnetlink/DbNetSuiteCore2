@@ -9,7 +9,7 @@ namespace DbNetSuiteCore.ViewModels
 {
     public class SelectViewModel : ComponentViewModel
     {
-        public IEnumerable<SelectColumn> Columns => _selectModel.Columns;
+        public IEnumerable<SelectColumnViewModel> Columns => _selectModel.Columns.Select(c => new SelectColumnViewModel(c));
         private readonly SelectModel _selectModel = new SelectModel();
         public SelectModel SelectModel => _selectModel;
         public int RowCount => SelectModel.Data.Rows.Count;
@@ -29,7 +29,7 @@ namespace DbNetSuiteCore.ViewModels
         }
         public string GroupValue(DataRow dataRow)
         {
-            return RowValue(dataRow,GetDataColumn(Columns.First(c => c.OptionGroup)));
+            return RowValue(dataRow,GetDataColumn(Columns.Where(c => c.Column.OptionGroup).Select(c => c.Column).First()));
         }
 
         private string RowValue(DataRow dataRow, DataColumn? dataColumn)

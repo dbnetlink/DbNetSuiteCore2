@@ -15,7 +15,7 @@
     samplesGrid.ToolbarPosition = ToolbarPosition.Hidden;
     samplesGrid.ClientEvents[GridClientEvent.CellTransform] = "createLink";
 
-    @(await new DbNetSuiteCore.GridControl(HttpContext).Render(samplesGrid))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(samplesGrid))
 }
 <script>
     function createLink(gridControl, args) {

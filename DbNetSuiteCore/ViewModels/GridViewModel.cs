@@ -36,7 +36,7 @@ namespace DbNetSuiteCore.ViewModels
         public int CurrentPage => _gridModel.CurrentPage;
         public bool IsNested => _gridModel.IsNested;
         public Dictionary<string,List<string>> FormValues => _gridModel.FormValues;
-
+        public string JsonData => _gridModel.JsonData;
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
         public int ColSpan => VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);

@@ -14,5 +14,5 @@
         new FormColumn("location.address.zipcode")
     };
 
-    @(await new DbNetSuiteCore.FormControl(HttpContext).Render(theatresForm))
+    @(await new DbNetSuiteCore.Control(HttpContext).Render(theatresForm))
 }

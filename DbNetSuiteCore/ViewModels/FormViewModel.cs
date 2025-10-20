@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.ViewModels
 {
     public class FormViewModel : ComponentViewModel
     {
-        public IEnumerable<FormColumn> Columns => _formModel.Columns;
+        public IEnumerable<FormColumnViewModel> Columns => _formModel.Columns.Select(c => new FormColumnViewModel(c));
         private readonly FormModel _formModel = new FormModel();
         public FormModel FormModel => _formModel;
         public int RecordCount => FormModel.PrimaryKeyValues.Count;
