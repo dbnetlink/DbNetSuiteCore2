@@ -13,6 +13,6 @@
     }
     else
     {
-        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.GridModel.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents)), @Model.GridModel.DeferredLoad.ToString().ToLower()); });</text>
+        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents)), @Model.GridModel.DeferredLoad.ToString().ToLower()); });</text>
     }
 </script>

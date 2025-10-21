@@ -27,10 +27,25 @@ namespace DbNetSuiteCore.Repositories
             return DbHelper.GetConnection(database, _dataSourceType, _configuration, _env);
         }
 
+        private bool CoerceSqliteColumns(ComponentModel componentModel)
+        {
+            return (componentModel is GridSelectModel && componentModel.DataSourceType == DataSourceType.SQLite);
+        }
         public async Task GetRecords(ComponentModel componentModel)
         {
-            QueryCommandConfig query = componentModel.IsStoredProcedure ? componentModel.BuildProcedureCall() : componentModel.BuildQuery();
-            componentModel.Data = await GetDataTable(query, componentModel.ConnectionAlias, (componentModel is FormModel ? null : componentModel), componentModel.IsStoredProcedure ? CommandType.StoredProcedure : CommandType.Text);
+            CommandType commandType = CommandType.Text;
+            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType);
+            if (componentModel is GridSelectModel gridSelectModel && gridSelectModel.IsStoredProcedure)
+            {
+                query = gridSelectModel.BuildProcedureCall();
+                commandType = CommandType.StoredProcedure;
+            }
+            else
+            {                 
+                query = componentModel.BuildQuery();
+            }
+
+            componentModel.Data = await GetDataTable(query, componentModel, CoerceSqliteColumns(componentModel), commandType);
 
             if (componentModel is FormModel)
             {
@@ -123,7 +138,7 @@ namespace DbNetSuiteCore.Repositories
                 primaryKeyValue = componentModel.GetPrimaryKeyValues();
             }
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValue);
-            return await GetDataTable(query, componentModel.ConnectionAlias, componentModel);
+            return await GetDataTable(query, componentModel, CoerceSqliteColumns(componentModel));
         }
 
         public async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
@@ -333,7 +348,7 @@ namespace DbNetSuiteCore.Repositories
 
             try
             {
-                lookupData = await GetDataTable(query, componentModel.ConnectionAlias);
+                lookupData = await GetDataTable(query, componentModel);
             }
             catch (Exception ex)
             {
@@ -406,7 +421,7 @@ namespace DbNetSuiteCore.Repositories
             query.Params[$"{paramName}"] = $"%{gridModel.SearchInput}%";
             query.Sql = $"select {lookup.KeyColumn} from {lookup.TableName} where {lookup.DescriptionColumn} like {paramName}";
 
-            var dataTable = await GetDataTable(query, gridModel.ConnectionAlias);
+            var dataTable = await GetDataTable(query, gridModel);
             return dataTable.Rows.Cast<DataRow>().Select(dr => dr[0]).ToList();
         }
 
@@ -423,25 +438,25 @@ namespace DbNetSuiteCore.Repositories
                 case DataSourceType.Oracle:
                     if (componentModel.IgnoreSchemaTable)
                     {
-                        return await GetDataTable(query, componentModel.ConnectionAlias, null, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
+                        return await GetDataTable(query, componentModel, false, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
                     }
                     else
                     {
                         return await GetSchemaTable(query, componentModel.ConnectionAlias);
                     }
                 default:
-                    return await GetDataTable(query, componentModel.ConnectionAlias, null, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
+                    return await GetDataTable(query, componentModel, false, CommandType.Text, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
             }
         }
 
-        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, string database, ComponentModel? componentModel = null, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
+        public async Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, ComponentModel componentModel, bool coerceSqliteColumns = false, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default)
         {
-            using (IDbConnection connection = GetConnection(database))
+            using (IDbConnection connection = GetConnection(componentModel.ConnectionAlias))
             {
                 connection.Open();
                 DataTable dataTable = new DataTable();
 
-                if (componentModel?.DataSourceType == DataSourceType.SQLite)
+                if (coerceSqliteColumns)
                 {
                     if (componentModel.GetColumns().Any(c => c.AffinityDataType()))
                     {
@@ -459,12 +474,6 @@ namespace DbNetSuiteCore.Repositories
                     catch (Exception)
                     {
                         dataTable = new DataTable();
-                        /*
-                        foreach (var column in componentModel.GetColumns())
-                        {
-                          //  dataTable.Columns.Add(column.ColumnName);
-                        }
-                        */
                     }
                 }
                 using (DataSet ds = new DataSet() { EnforceConstraints = false })
@@ -580,7 +589,7 @@ namespace DbNetSuiteCore.Repositories
         public async Task<List<string>> GetPostgreSqlEnumOptions(ComponentModel componentModel, string enumName)
         {
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"SELECT unnest(enum_range(NULL::{enumName}))" };
-            var dataTable = await GetDataTable(query, componentModel.ConnectionAlias);
+            var dataTable = await GetDataTable(query, componentModel);
             var enumOptions = new List<string>();
 
             foreach (DataRow row in dataTable.Rows)

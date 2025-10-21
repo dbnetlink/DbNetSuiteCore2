@@ -13,7 +13,6 @@ namespace DbNetSuiteCore.ViewModels
         private readonly SelectModel _selectModel = new SelectModel();
         public SelectModel SelectModel => _selectModel;
         public int RowCount => SelectModel.Data.Rows.Count;
-        public string SelectId => _selectModel.Id;
         public string LinkedSelectIds => string.Join(",", SelectModel.LinkedSelectIds);
         public DataRowCollection Rows => SelectModel.Data.Rows;
         public bool SelectFirstOption => SelectModel.RowSelection != RowSelection.Multiple && string.IsNullOrEmpty(SelectModel.EmptyOption);

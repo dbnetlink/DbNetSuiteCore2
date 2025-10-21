@@ -21,17 +21,15 @@ namespace DbNetSuiteCore.Repositories
         public void GetRecords(ComponentModel componentModel)
         {
             var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : BuildDataTable(componentModel);
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                var gridModel = (GridModel)componentModel;
                 dataTable.FilterAndSort(gridModel);
                 gridModel.ConvertEnumLookups();
                 gridModel.GetDistinctLookups();
             }
 
-            if (componentModel is SelectModel)
+            if (componentModel is SelectModel selectModel)
             {
-                var selectModel = (SelectModel)componentModel;
                 if (selectModel.Distinct)
                 {
                     var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();

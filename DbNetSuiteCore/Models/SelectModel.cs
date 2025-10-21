@@ -8,17 +8,18 @@ namespace DbNetSuiteCore.Models
     public class SelectModel : GridSelectModel
     {
         private SortOrder? _SortSequence = SortOrder.Asc;
-        public List<string> LinkedSelectIds => GetLinkedControlIds(nameof(SelectModel));
+        [JsonProperty]
+        internal List<string> LinkedSelectIds => GetLinkedControlIds(nameof(SelectModel));
         public IEnumerable<SelectColumn> Columns { get; set; } = new List<SelectColumn>();
 
         [JsonIgnore]
-        public IEnumerable<SelectColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false);
+        internal IEnumerable<SelectColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false);
         [JsonIgnore]
-        public SelectColumn ValueColumn => NonOptionGroupColumns.FirstOrDefault() ?? new SelectColumn();
+        internal SelectColumn ValueColumn => NonOptionGroupColumns.FirstOrDefault() ?? new SelectColumn();
         [JsonIgnore]
-        public SelectColumn DescriptionColumn => Columns.Any() ? (NonOptionGroupColumns.Count() == 1 ? NonOptionGroupColumns.First() : NonOptionGroupColumns.Skip(1).First()) : new SelectColumn();
+        internal SelectColumn DescriptionColumn => Columns.Any() ? (NonOptionGroupColumns.Count() == 1 ? NonOptionGroupColumns.First() : NonOptionGroupColumns.Skip(1).First()) : new SelectColumn();
         [JsonIgnore]
-        public SelectColumn OptionGroupColumn => Columns.Where(c => c.OptionGroup).FirstOrDefault() ?? new SelectColumn();
+        internal SelectColumn OptionGroupColumn => Columns.Where(c => c.OptionGroup).FirstOrDefault() ?? new SelectColumn();
         [JsonIgnore]
         internal override IEnumerable<SelectColumn> SearchableColumns
         {
@@ -37,16 +38,35 @@ namespace DbNetSuiteCore.Models
                 return searchableColumns;
             }
         }
+        /// <summary>
+        /// Use this property or the Bind method to assign the name of a client-side JavaScript function to be executed for the specified client event.
+        /// </summary>
         public Dictionary<SelectClientEvent, string> ClientEvents { get; set; } = new Dictionary<SelectClientEvent, string>();
+        /// <summary>
+        /// Sets the number of visible rows in the Select. Default is 1 (drop-down)
+        /// </summary>
         public int Size { get; set; } = 1;
+        /// <summary>
+        /// Specifies the text for the empty option 
+        /// </summary>
         public string EmptyOption { get; set; } = string.Empty;
+        /// <summary>
+        /// When set to true the control renders a separate input box that can be used to filter the select options
+        /// </summary>
         public bool Searchable { get; set; } = false;
+        /// <summary>
+        /// When set to true will only return distinct values of the selected columns
+        /// </summary>
+        public bool Distinct { get; set; } = false;
         internal override SelectColumn? SortColumn => DescriptionColumn;
         internal override SortOrder? SortSequence
         {
             get { return _SortSequence; }
             set { _SortSequence = value; }
         }
+        /// <summary>
+        /// Defines whether single or multiple options can be selected. When set to Multiple it is suggested that the Size property is also set to a value > 1.
+        /// </summary>
         public RowSelection RowSelection
         {
             get { return _RowSelection; }
@@ -54,6 +74,9 @@ namespace DbNetSuiteCore.Models
         }
 
         internal bool IsGrouped => Columns.Any(c => c.OptionGroup);
+        /// <summary>
+        /// Controls the layout of the Caption, Search box and Select element. Column (default) renders one above the other and Row renders them across the page
+        /// </summary>
         public LayoutType Layout { get; set; } = LayoutType.Column;
 
         public SelectModel() : base()
@@ -98,7 +121,11 @@ namespace DbNetSuiteCore.Models
         {
             return new SelectColumn(element);
         }
-
+        /// <summary>
+        /// Use this method or the ClientEvents property to assign the name of a client-side JavaScript function to be executed for the specified client event.
+        /// </summary>
+        /// <param name="clientEvent">Type of client-side event</param>
+        /// <param name="functionName">Name of the JavaScript function</param>
         public void Bind(SelectClientEvent clientEvent, string functionName)
         {
             ClientEvents[clientEvent] = functionName;

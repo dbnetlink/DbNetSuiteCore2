@@ -49,10 +49,8 @@ namespace DbNetSuiteCore
                 componentModel.Url = string.Empty;
             }
 
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                GridModel gridModel = (GridModel)componentModel;
-
                 if (gridModel.IsGrouped)
                 {
                     gridModel.OptimizeForLargeDataset = false;
@@ -64,6 +62,11 @@ namespace DbNetSuiteCore
                     {
                         gridModel.RowSelection = RowSelection.Single;
                     }
+                }
+
+                if (gridModel.OptimizeForLargeDataset)
+                {
+                    gridModel.QueryLimit = -1;
                 }
             }
         }

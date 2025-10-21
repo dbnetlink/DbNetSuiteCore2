@@ -3,8 +3,6 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Data;
@@ -53,6 +51,12 @@ namespace DbNetSuiteCore.Extensions
             }
 
             query.Sql = $"{query.Sql}{Limit(componentModel)}";
+
+            if (componentModel.DataSourceType == DataSourceType.Oracle && componentModel.QueryLimit > -1)
+            {
+                query.Sql = $"select * from ({query.Sql}) where ROWNUM <= {componentModel.QueryLimit}";
+            }
+
             return query;
         }
 
@@ -346,7 +350,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static QueryCommandConfig BuildProcedureCall(this ComponentModel componentModel)
+        public static QueryCommandConfig BuildProcedureCall(this GridSelectModel componentModel)
         {
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"{componentModel.ProcedureName}" };
             AssignParameters(query, componentModel.ProcedureParameters);
@@ -469,7 +473,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static string Distinct(ComponentModel componentModel)
         {
-            return componentModel.Distinct ? "distinct " : string.Empty;
+            return (componentModel is SelectModel selectModel && selectModel.Distinct ? "distinct " : string.Empty);
         }
 
         public static void AssignParentModel(this ComponentModel componentModel, HttpContext? context, IConfiguration configuration, string key = "parentModel")

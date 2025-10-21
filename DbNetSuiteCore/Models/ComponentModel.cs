@@ -11,27 +11,45 @@ namespace DbNetSuiteCore.Models
     {
         protected RowSelection _RowSelection = RowSelection.None;
         private string _Url = string.Empty;
-        public string Id { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string Id { get; set; } = string.Empty;
+        /// <summary>
+        /// User assignable name that can be used to help reference controls on a page
+        /// </summary>
         public string Name { get; set; } = string.Empty;
+        /// <summary>
+        /// Defines the type of data that the control will access
+        /// </summary>
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
         internal DataTable Data { get; set; } = new DataTable();
         [JsonIgnore]
-        public DataTable Record { get; set; } = new DataTable();
+        internal DataTable Record { get; set; } = new DataTable();
+        /// <summary>
+        /// For the form control this should be a table name, for grid and select controls this can also be a view or multiple tables/views with required join information.
+        /// </summary>
+        /// <remarks>
+        /// An example of using mutliple tables and/or views would be "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id"        
+        /// /// </remarks> 
         public string TableName { get; set; } = string.Empty;
-        public string ProcedureName { get; set; } = string.Empty;
+        /// <summary>
+        /// The name of the database. MongoDB only.
+        /// </summary>
         public string DatabaseName { get; set; } = string.Empty;
-        public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
+        /// <summary>
+        /// The connection alias stored in appSetting.json or environment variables
+        /// </summary>
         public string ConnectionAlias { get; set; } = string.Empty;
-        [JsonProperty]
-        internal bool IsStoredProcedure { get; set; } = false;
+
         [JsonProperty]
         internal Dictionary<string, List<string>> LinkedControlIds { get; set; } = new Dictionary<string, List<string>>();
         internal bool Uninitialised => GetColumns().Any() == false || GetColumns().Where(c => c.Initialised == false).Any();
         internal string SearchInput { get; set; } = string.Empty;
         internal string SortColumnName => SortColumn?.ColumnName ?? string.Empty;
         internal string SortColumnOrdinal => SortColumn?.Ordinal.ToString() ?? string.Empty;
-        public bool Distinct { get; set; } = false;
+        /// <summary>
+        /// Specifies a caption for the control
+        /// </summary>
         public string Caption { get; set; } = string.Empty;
         internal bool IgnoreSchemaTable { get; set; } = false;
         internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
@@ -49,6 +67,12 @@ namespace DbNetSuiteCore.Models
         internal bool ValidationPassed { get; set; } = false;
         [JsonIgnore]
         internal string RowId { get; set; } = string.Empty;
+        /// <summary>
+        /// Specifies a Url for a JSON file or API endpoint that returns JSON to be used as the data source.
+        /// </summary>
+        /// <remarks>
+        /// A serialized JSON string can be assigned directly to this property.
+        /// <remarks>
         public string Url
         {
             get
@@ -71,7 +95,12 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         internal string JSON { get; set; } = string.Empty;
         private List<ComponentModel> _LinkedControls { get; set; } = new List<ComponentModel>();
-
+        /// <summary>
+        /// Used to assign linked child control(s) to this control.
+        /// </summary>
+        /// <remarks>
+        /// The parent control should specify a primary key column and the child control(s) should specify a foreign key column that references the parent primary key column.
+        /// </remarks>
         public ComponentModel LinkedControl
         {
             set
@@ -82,13 +111,35 @@ namespace DbNetSuiteCore.Models
         [JsonProperty]
         internal bool IsLinked { get; set; } = false;
         //public string ParentKey { get; set; } = string.Empty;
+        /// <summary>
+        /// When set to true the control will only load when it becomes visibile.
+        /// </summary>
+        /// <remarks>
+        /// This is useful when working with tabbed interfaces where controls are placed on tabs that are not initially visible.   
+        /// </remarks>
+
         public bool DeferredLoad { get; set; } = false;
         internal string HxFormTrigger => IsLinked || DeferredLoad ? "submit" : "load";
         internal string PostUrl => $"{this.GetType().Name.Replace("Model", "control").ToLower()}.htmx";
         internal string TriggerName { get; set; } = string.Empty;
+        /// <summary>
+        /// Allows a fixed filter to be applied to the data source query.
+        /// </summary>
+        /// <remarks>
+        /// Can used in conjunction with FixedFilterParameters to provide parameterised filtering.
+        /// </remarks>
         public string FixedFilter { get; set; } = string.Empty;
+        /// <summary>
+        /// Specifies parameters to be used in conjunction with the FixedFilter property.
+        /// </summary>
         public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
+        /// <summary>
+        /// When set to true the data retrieved from the data source will be cached for subsequent requests. Only valid for Excel and JSON data sources.
+        /// </summary>
         public bool Cache { get; set; } = false;
+        /// <summary>
+        /// Restricts the number of records returned from the data source query. Only valid for SQL based data sources.
+        /// </summary>
         public int QueryLimit { get; set; } = -1;
         public bool DiagnosticsMode { get; set; } = false;
         public bool Search { get; set; } = true;
@@ -109,22 +160,11 @@ namespace DbNetSuiteCore.Models
             Url = url;
         }
 
-        public ComponentModel(DataSourceType dataSourceType, string connectionAlias, string tableName, bool isStoredProcedure = false) : this()
+        public ComponentModel(DataSourceType dataSourceType, string connectionAlias, string tableName) : this()
         {
             DataSourceType = dataSourceType;
             ConnectionAlias = connectionAlias;
-            TableName = isStoredProcedure ? string.Empty : tableName;
-            ProcedureName = isStoredProcedure ? tableName : string.Empty;
-            IsStoredProcedure = isStoredProcedure;
-        }
-
-        public ComponentModel(DataSourceType dataSourceType, string connectionAlias, string procedureName, List<DbParameter> procedureParameters) : this()
-        {
-            DataSourceType = dataSourceType;
-            ConnectionAlias = connectionAlias;
-            ProcedureName = procedureName;
-            ProcedureParameters = procedureParameters;
-            IsStoredProcedure = true;
+            TableName = tableName;
         }
 
         public ComponentModel(string tableName) : this()

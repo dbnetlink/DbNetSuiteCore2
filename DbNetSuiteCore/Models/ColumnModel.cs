@@ -16,9 +16,19 @@ namespace DbNetSuiteCore.Models
         private Type? _DataType = null;
         private List<KeyValuePair<string, string>>? _EnumOptions;
         private SearchControlType _searchControlType = SearchControlType.Text;
+        /// <summary>
+        /// Specifies the label/heading associated with the column.
+        /// </summary>
         public string Label { get; set; } = string.Empty;
+        /// <summary>
+        /// The name of database column, a database expression or data source property name depending on the data source type.
+        /// </summary>
         public string Expression { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
+        /// <summary>
+        /// The name of the property as retrieved from the data source. For example, for the expression "coalesce(Address,'') || ', ' || coalesce(City,'') as address" the name would be "address"
+        /// </summary>
+        [JsonProperty]
+        public string Name { get; internal set; } = string.Empty;
         public string ColumnName => Name.Split(".").Last();
         internal string ColumnAlias => Expression.Contains(".") ? Expression.Replace(".", "_") : Expression;
         [JsonProperty]
@@ -38,9 +48,20 @@ namespace DbNetSuiteCore.Models
             }
         }
         internal string LookupEnumTypeName { get; set; } = string.Empty;
-
+        /// <summary>
+        /// Allows for a Lookup list to be supplied as a List of strings
+        /// </summary>
         public List<string>? LookupList { get; set; }
+        /// <summary>
+        /// Allows for a Lookup list to be supplied as a numerical range
+        /// </summary>
+        /// <remarks>
+        /// For example, {Required = true,InitialValue = 0, MaxValue = 50, LookupRange = Enumerable.Range(0,50) }
+        /// </remarks>
         public IEnumerable<Int32>? LookupRange { get; set; }
+        /// <summary>
+        /// Allows for a Lookup list to be supplied as a Dictionary
+        /// </summary>
         public Dictionary<string, string>? LookupDictionary { get; set; }
         internal string ParamName => $"Param{Ordinal}";
         [JsonProperty]
@@ -77,26 +98,65 @@ namespace DbNetSuiteCore.Models
         internal string DbDataType { get; set; } = string.Empty;
         [JsonProperty]
         internal string UserDataType { get; set; } = string.Empty;
+        /// <summary>
+        /// Specified a standard C# formatting string for data/time and numerical values
+        /// </summary>
         public string Format { get; set; } = string.Empty;
         [JsonProperty]
         internal bool Initialised { get; set; } = false;
         [JsonProperty]
         internal bool Valid { get; set; } = true;
+        /// <summary>
+        /// Allows for a Lookup list to be specified as a lookup against another table in the database
+        /// </summary>
+        /// <remarks>
+        /// For example, { Lookup = new Lookup("shippers", "id", "company")} performs a lookup against the "shippers" table using the "id" column and replaces it with the "company" value
+        /// </remarks>
         public Lookup? Lookup { get; set; }
         internal bool DistinctLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName);
         internal bool SearchLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName) == false;
+        /// <summary>
+        /// Returns the value to the browser without displaying it so that it can be used by the client-side API
+        /// </summary>
         public bool DataOnly { get; set; } = false;
+        /// <summary>
+        /// Identifies the column as a primary key
+        /// </summary>
+        /// <remarks>
+        /// When using against databases this value is usually set to true automatically from schema data
+        /// </remarks>
         public bool PrimaryKey { get; set; } = false;
+        /// <summary>
+        /// Identifies the column as a foreign key
+        /// </summary>
+        /// <remarks>
+        /// Used in linked child controls to identify the column that matches the primary key in the parent control
+        /// </remarks>
         public bool ForeignKey { get; set; } = false;
+        /// <summary>
+        /// Identifies the column in parent control to match against the foreign key column in the child control
+        /// </summary>
+        /// <remarks>
+        /// Typically the foreign key column will match against the primary key column in the parent control and this property allows that behaviour to be overridden
+        /// </remarks>
         public string ForeignKeyParentColumn { get; set; } = string.Empty;
         internal bool StringSearchable => (DataType == typeof(string) && DbDataType != "xml");
+        /// <summary>
+        /// Identifies the column that is used to provide the initial order in which the data is presented
+        /// </summary>
         public SortOrder? InitialSortOrder { get; set; } = null;
         internal bool LookupNotPopulated => (Lookup != null && LookupOptions == null);
         [JsonProperty]
         internal string EnumName { get; set; } = string.Empty;
         [JsonProperty]
         internal bool AllowDBNull { get; set; } = true;
+        /// <summary>
+        /// Determines whether the column is included in the Search Dialog
+        /// </summary>
         public bool Search { get; set; } = true;
+        /// <summary>
+        /// Provides an alternate alias by which the column can be referenced in the client-side API. The default is the Name property derived directly from the data source.
+        /// </summary>
         public string Alias { get; set; } = string.Empty;
         internal bool IsSearchable => DataType != typeof(Byte[]) && Search && SearchableDataType() && ForeignKey == false;
         [JsonProperty]
@@ -136,17 +196,11 @@ namespace DbNetSuiteCore.Models
         [JsonProperty]
         internal DataSourceType? DataSource { get; set; } = null;
 
-        [JsonIgnore]
-        public static List<KeyValuePair<string, string>> BooleanFilterOptions => new List<KeyValuePair<string, string>>()
-        {
-            new KeyValuePair<string, string>("1","Yes"),
-            new KeyValuePair<string, string>("0","No"),
-        };
-        public ColumnModel()
+        protected ColumnModel()
         {
             Key = Guid.NewGuid().ToString().Split("-").First();
         }
-        public ColumnModel(DataColumn dataColumn, DataSourceType dataSourceType) : this()
+        protected ColumnModel(DataColumn dataColumn, DataSourceType dataSourceType) : this()
         {
             Label = TextHelper.GenerateLabel(dataColumn.ColumnName);
             Expression = dataColumn.ColumnName;
@@ -161,32 +215,32 @@ namespace DbNetSuiteCore.Models
             this.Update(dataColumn, dataSourceType);
         }
 
-        public ColumnModel(DataRow dataRow, DataSourceType dataSourceType) : this()
+        protected ColumnModel(DataRow dataRow, DataSourceType dataSourceType) : this()
         {
             Expression = (string)RowValue(dataRow, "ColumnName", string.Empty);
             Update(dataRow, dataSourceType, true);
         }
 
-        public ColumnModel(string expression, string label) : this()
+        protected ColumnModel(string expression, string label) : this()
         {
             Expression = expression;
             Label = label;
         }
 
-        public ColumnModel(string expression, string label, string alias) : this()
+        protected ColumnModel(string expression, string label, string alias) : this()
         {
             Expression = expression;
             Label = label;
             Alias = alias;
         }
 
-        public ColumnModel(string expression) : this()
+        internal ColumnModel(string expression) : this()
         {
             Expression = expression;
             Label = TextHelper.GenerateLabel(expression);
         }
 
-        public ColumnModel(BsonElement element) : this(element.Name)
+        internal ColumnModel(BsonElement element) : this(element.Name)
         {
             if (element.Name == MongoDbRepository.PrimaryKeyName)
             {

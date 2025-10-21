@@ -21,7 +21,7 @@
         </div>
     }
     <div class="flex">
-        <select id="@Model.SelectModel.Id" class="w-full" style="padding-right:2rem" @RazorHelper.Attribute("size", Model.SelectModel.Size) @Multiple() data-linkedselectids="@Model.LinkedSelectIds" data-linkedcontrolids="@Model.LinkedControlIds">></select>
+        <select id="@Model.Id" class="w-full" style="padding-right:2rem" @RazorHelper.Attribute("size", Model.SelectModel.Size) @Multiple() data-linkedselectids="@Model.LinkedSelectIds" data-linkedcontrolids="@Model.LinkedControlIds">></select>
     </div>
     <div class="flex target">
         @await Html.PartialAsync("Select/__Options", Model)

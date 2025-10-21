@@ -70,7 +70,7 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public Dictionary<GridClientEvent, string> ClientEvents { get; set; } = new Dictionary<GridClientEvent, string>();
         /// <summary>
-        /// Set this property to true to improve performance for larger datasets. Onky valid for relational database data sources as it uses paging at the database level.
+        /// Set this property to true to improve performance for larger datasets. Only valid for relational database data sources as it uses paging at the database level.
         /// </summary>
         public bool OptimizeForLargeDataset { get; set; } = false;
         internal bool PaginateQuery => OptimizeForLargeDataset && TriggerName != TriggerNames.Download;

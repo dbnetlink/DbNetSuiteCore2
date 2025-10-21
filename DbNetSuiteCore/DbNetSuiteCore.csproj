@@ -261,7 +261,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TypeScriptToolsVersion>5.9</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>5.9.3</TypeScriptToolsVersion>
   </PropertyGroup>
 
   <!-- Conditional compilation example -->
