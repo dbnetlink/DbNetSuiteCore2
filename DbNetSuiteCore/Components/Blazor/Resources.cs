@@ -7,7 +7,7 @@ namespace DbNetSuiteCore.Blazor
     {
         public static MarkupString ClientScript()
         {
-            return new MarkupString(DbNetSuiteCore.Resources.ClientScriptHtml.Replace("js.htmx", "js.htmx?mode=blazor"));
+            return new MarkupString(DbNetSuiteCore.Resources.ClientScriptHtml);
         }
 
         public static MarkupString StyleSheet()

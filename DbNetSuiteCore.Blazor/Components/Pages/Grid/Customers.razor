@@ -1,4 +1,4 @@
-﻿@page "/Customers"
+﻿@page "/Grid/Customers"
 @attribute [StreamRendering]
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
@@ -9,7 +9,7 @@
 <PageTitle>Customers</PageTitle>
 
 @{
-    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook", "Customers");
     customerGridModel.Columns = new List<GridColumn>
     {
         new GridColumn("customerid", "CustomerID") {PrimaryKey = true },

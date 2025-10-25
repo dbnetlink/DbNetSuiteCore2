@@ -1,4 +1,4 @@
-﻿@page "/Customer_Form"
+﻿@page "/Form/Customer_Form"
 @attribute [StreamRendering]
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
@@ -10,7 +10,7 @@
 
 <p data-summary>CRUD applications can be created easily using the Form control</p>
 @{
-    var customerForm = new FormModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers") { Insert = true, Delete = true };
+    var customerForm = new FormModel(DataSourceType.SQLite, "Northwind", "Customers") { Insert = true, Delete = true };
     customerForm.Columns = new List<FormColumn>() {
         new FormColumn("CustomerID") { TextTransform = TextTransform.Uppercase,  MinLength = 5, MaxLength = 5},
         new FormColumn("CompanyName") {Required = true},

@@ -1,4 +1,4 @@
-﻿@page "/Linked"
+﻿@page "/Grid/Linked"
 @attribute [StreamRendering]
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
@@ -55,7 +55,7 @@
     invoiceGridModel.PageSize = 5;
     // invoiceGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
-    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook", "Customers");
     customerGridModel.Columns = customerColumns;
     customerGridModel.LinkedControl = invoiceGridModel;
     customerGridModel.PageSize = 5;

@@ -1,4 +1,4 @@
-﻿@page "/Nested"
+﻿@page "/Grid/Nested"
 @attribute [StreamRendering]
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
@@ -53,7 +53,7 @@
     invoiceGridModel.Caption = "Invoices";
     //  invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
 
-    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers") { Caption = "Customer List" };
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook", "Customers") { Caption = "Customer List" };
     customerGridModel.Columns = customerColumns;
     customerGridModel.NestedGrid = invoiceGridModel;
 }

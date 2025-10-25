@@ -1,4 +1,4 @@
-﻿@page "/Customer_Select"
+﻿@page "/Select/Customers"
 @attribute [StreamRendering]
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
@@ -10,7 +10,7 @@
 
 <p data-summary>The select control is designed to create a simple, searchable selection control</p>
 @{
-    var orderDetailsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[Order Details]");
+    var orderDetailsGrid = new GridModel(DataSourceType.SQLite, "Northwind", "[Order Details]");
     orderDetailsGrid.Columns = new List<GridColumn>
     {
         new GridColumn("OrderId", "Invoice Line ID") {ForeignKey = true },
@@ -25,7 +25,7 @@
     orderDetailsGrid.Caption = "Order Details";
     orderDetailsGrid.PageSize = 5;
 
-    var ordersGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Orders");
+    var ordersGrid = new GridModel(DataSourceType.SQLite, "Northwind", "Orders");
     ordersGrid.Columns = new List<GridColumn>
     {
         new GridColumn("OrderId", "Order ID") {PrimaryKey = true },
@@ -40,7 +40,7 @@
     ordersGrid.Caption = "Orders";
     ordersGrid.PageSize = 5;
 
-    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { Caption = "Customers", EmptyOption = "Please select a customer", Searchable = true };
+    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind", "customers") { Caption = "Customers", EmptyOption = "Please select a customer", Searchable = true };
 
     customerSelect.Columns = new List<SelectColumn>
     {
