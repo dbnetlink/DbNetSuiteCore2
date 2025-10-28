@@ -3,7 +3,7 @@ using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore
 {
-    public class Control : ComponentControl
+    public class Control : BaseComponentControl
     {
         public Control(HttpContext httpContext): base(httpContext)
         {
@@ -11,19 +11,19 @@ namespace DbNetSuiteCore
 
         public async Task<HtmlString> Render(ComponentModel componentModel)
         {
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                return await base.Render((GridModel)componentModel);
+                return new HtmlString(await base.Render((GridModel)componentModel));
             }
 
-            if (componentModel is SelectModel)
+            if (componentModel is SelectModel selectModel)
             {
-                return await base.Render((SelectModel)componentModel);
+                return new HtmlString(await base.Render((SelectModel)componentModel));
             }
 
-            if (componentModel is FormModel)
+            if (componentModel is FormModel formModel)
             {
-                return await base.Render((FormModel)componentModel);
+                return new HtmlString(await base.Render((FormModel)componentModel));
             }
 
             return new HtmlString(string.Empty);

@@ -3,28 +3,32 @@ using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Blazor
 {
-    public class Control : ComponentControl
+    public class Control : BaseComponentControl
     {
         public Control(HttpContext httpContext): base(httpContext)
         {
         }
 
-        public async Task<MarkupString> Render(ComponentModel componentModel)
+        public Control(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        {
+        }
+
+        public MarkupString Render(ComponentModel componentModel)
         {
             componentModel.IsBlazor = true;
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                return await base.Render((GridModel)componentModel);
+                return new MarkupString(base.Render(gridModel).Result);
             }
 
-            if (componentModel is SelectModel)
+            if (componentModel is SelectModel selectModel)
             {
-                return await base.Render((SelectModel)componentModel);
+                return new MarkupString(base.Render(selectModel).Result);
             }
 
-            if (componentModel is FormModel)
+            if (componentModel is FormModel formModel)
             {
-                return await base.Render((FormModel)componentModel);
+                return new MarkupString(base.Render(formModel).Result);
             }
 
             return new MarkupString(string.Empty);

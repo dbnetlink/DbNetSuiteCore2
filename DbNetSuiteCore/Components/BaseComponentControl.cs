@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Html;
-using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
@@ -12,6 +11,18 @@ namespace DbNetSuiteCore
         public BaseComponentControl(HttpContext httpContext)
         {
             _httpContext = httpContext;
+        }
+
+        public BaseComponentControl(IHttpContextAccessor httpContextAccessor)
+        {
+            if (httpContextAccessor.HttpContext != null)
+            {
+                _httpContext = httpContextAccessor.HttpContext;
+            }
+            else
+            {
+                throw new ArgumentException("HttpContext is null");
+            }
         }
 
         protected async Task<string> Render(GridModel gridModel)

@@ -1,4 +1,4 @@
-﻿@page "/Form/Customer_Form"
+﻿@page "/Form/Customers"
 @attribute [StreamRendering]
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Constants
@@ -25,4 +25,4 @@
         new FormColumn("Fax") };
 }
 
-@(new DbNetSuiteCore.Blazor.Control(httpContextAccessor.HttpContext).Render(customerForm).Result)
+@(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(customerForm))
