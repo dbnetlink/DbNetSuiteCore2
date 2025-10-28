@@ -7,6 +7,10 @@
 @using DbNetSuiteCore.Enums
 
 <div class="form-container" data-linkedcontrolids="@Model.LinkedControlIds">
+    @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
+    {
+        <div class="flex text-lg caption">@Model.FormModel.Caption</div>
+    }
     @await Html.PartialAsync("Form/__Form")
     @await Html.PartialAsync("__ToastMessage")
     @await Html.PartialAsync("Form/__ConfirmDialog")

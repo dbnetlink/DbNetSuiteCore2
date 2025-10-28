@@ -28,5 +28,10 @@ namespace DbNetSuiteCore
 
             return new HtmlString(string.Empty);
         }
+
+        public static Control Create(HttpContext httpContext)
+        {
+            return new Control(httpContext);
+        }
     }
 }

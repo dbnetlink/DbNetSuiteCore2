@@ -19,9 +19,9 @@
         new GridColumn("address", "Address"),
         new GridColumn("city", "City") { InitialSortOrder = SortOrder.Desc},
         new GridColumn("postalcode", "Post Code"),
-    }; ;
+    }; 
 
     customerGridModel.PageSize = 5;
 }
 
-@(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(customerGridModel))
+@DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(customerGridModel)

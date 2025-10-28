@@ -33,5 +33,10 @@ namespace DbNetSuiteCore.Blazor
 
             return new MarkupString(string.Empty);
         }
+
+        public static Control Create(IHttpContextAccessor httpContextAccessor)
+        {
+            return new Control(httpContextAccessor);
+        }
     }
 }
