@@ -131,7 +131,7 @@
         <div class="divider"></div>
         <div class="right-half">
             <div class="content">
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
             </div>
         </div>
     </div>

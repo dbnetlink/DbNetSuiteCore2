@@ -16,7 +16,7 @@
 
     <div style="display:flex; flex-direction:row;gap:20px;align-items:center">
         <div>
-            @(await new DbNetSuiteCore.Control(HttpContext).Render(categorySalesChartGrid))
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categorySalesChartGrid))
         </div>
         <div style="width: 600px;">
             <canvas id="salesByCategory"></canvas>

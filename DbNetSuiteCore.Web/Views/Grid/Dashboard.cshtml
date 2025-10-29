@@ -30,7 +30,7 @@
                     resultsGrid.HeadingMode = HeadingMode.Hidden;
                     resultsGrid.RowSelection = RowSelection.None;
 
-                    @(await new DbNetSuiteCore.Control(Context).Render(resultsGrid));
+                    @(await DbNetSuiteCore.Control.Create(Context).Render(resultsGrid));
                 }
             </div>
         }

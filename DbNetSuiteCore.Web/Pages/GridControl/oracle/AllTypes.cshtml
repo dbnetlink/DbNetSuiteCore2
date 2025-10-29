@@ -5,5 +5,5 @@
 
 @{
     var grid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "example_table");
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(grid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(grid))
 }

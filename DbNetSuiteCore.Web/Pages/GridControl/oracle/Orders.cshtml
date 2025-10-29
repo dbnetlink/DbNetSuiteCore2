@@ -25,5 +25,5 @@
 
     var ordersGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "Orders");
     ordersGrid.Columns = columns;
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
 }

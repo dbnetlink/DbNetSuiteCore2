@@ -23,5 +23,5 @@
         new FormColumn("Rowguid"),
         new FormColumn("ModifiedDate")
     };
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(employeesForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(employeesForm))
 }

@@ -24,7 +24,7 @@
 	productsGrid.Bind(GridClientEvent.RowTransform, "highlightGridLowStock");
 	productsGrid.Bind(GridClientEvent.ViewDialogUpdated, "highlightViewLowStock");
 
-	@(await new DbNetSuiteCore.Control(HttpContext).Render(productsGrid))
+	@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productsGrid))
 }
 <script>
 	//var unitsInStockName = "H4sIAAAAAAAACivNyywpzswrLslPzgYAxGA4xgwAAAA="

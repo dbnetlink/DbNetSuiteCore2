@@ -30,9 +30,9 @@
     };
     countrySelect.LinkedControl = stateSelect;
 }
-@(await new DbNetSuiteCore.Control(Context).Render(countrySelect))
-@(await new DbNetSuiteCore.Control(Context).Render(stateSelect))
-@(await new DbNetSuiteCore.Control(Context).Render(citySelect))
+@(await DbNetSuiteCore.Control.Create(Context).Render(countrySelect))
+@(await DbNetSuiteCore.Control.Create(Context).Render(stateSelect))
+@(await DbNetSuiteCore.Control.Create(Context).Render(citySelect))
 
 
 <script>

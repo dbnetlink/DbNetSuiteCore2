@@ -25,6 +25,6 @@
     };
 	productSelect.LinkedControl = productsGrid;
 
-	@(await new DbNetSuiteCore.Control(Context).Render(productSelect))
-	@(await new DbNetSuiteCore.Control(Context).Render(productsGrid))
+	@(await DbNetSuiteCore.Control.Create(Context).Render(productSelect))
+	@(await DbNetSuiteCore.Control.Create(Context).Render(productsGrid))
 }

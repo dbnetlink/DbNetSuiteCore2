@@ -17,7 +17,7 @@
             @* Pass the data source type, connection alias and table/view name to the constructor *@
             var customerGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
             @* Render the grid control *@
-            @(await new DbNetSuiteCore.Control(HttpContext).Render(customerGrid))
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGrid))
 }
     </main>
     @DbNetSuiteCore.Resources.ClientScript() @* Add the client-side library *@

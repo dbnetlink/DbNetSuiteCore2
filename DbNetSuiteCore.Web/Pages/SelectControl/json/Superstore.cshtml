@@ -50,5 +50,5 @@
     productSelect.LinkedControl = superstoreGrid;
 }
 
-@(await new DbNetSuiteCore.Control(HttpContext).Render(productSelect))
-@(await new DbNetSuiteCore.Control(HttpContext).Render(superstoreGrid))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productSelect))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(superstoreGrid))

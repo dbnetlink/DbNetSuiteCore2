@@ -28,5 +28,5 @@
     };
 
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(employeeGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(employeeGrid))
 }

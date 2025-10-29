@@ -63,13 +63,13 @@
 
 <div class="d-flex flex-column gap-3">
     <div>
-        @(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(customerGridModel))
+        @(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(customerGridModel))
     </div>
     <div>
-        @(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(invoiceGridModel))
+        @(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(invoiceGridModel))
     </div>
     <div>
-        @(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(invoiceLineGridModel))
+        @(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(invoiceLineGridModel))
     </div>
 </div>
 

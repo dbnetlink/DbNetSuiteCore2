@@ -25,5 +25,5 @@
         citySelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Distinct = true, Cache = true };
     }
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(citySelect))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(citySelect))
 }

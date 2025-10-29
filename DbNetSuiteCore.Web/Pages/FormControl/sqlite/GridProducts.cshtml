@@ -34,7 +34,7 @@
 
     productsGrid.LinkedControl = productForm;
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(productsGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productsGrid))
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productForm))
 }

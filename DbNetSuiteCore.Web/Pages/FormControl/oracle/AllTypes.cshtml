@@ -25,6 +25,6 @@
         new FormColumn("JSON_DATA"),
         new FormColumn("XML_DATA")
     };
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
 }
 

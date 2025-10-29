@@ -12,5 +12,5 @@
     };
     var employeeGrid = new GridModel(DataSourceType.MSSQL, "ESS_CH_283", "RPT_ScheduleHistory_SP", parameters) { };
   
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(employeeGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(employeeGrid))
 }

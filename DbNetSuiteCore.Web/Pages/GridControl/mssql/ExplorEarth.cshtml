@@ -88,12 +88,12 @@
                         switch (tab)
                         {
                             case "Cruises":
-                                @(await new DbNetSuiteCore.Control(HttpContext).Render(cruisesGrid))
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(cruisesGrid))
                                 break;
                             case "Fares":
-                                @(await new DbNetSuiteCore.Control(HttpContext).Render(fareSetsGrid))
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fareSetsGrid))
                                 <div style="height:20px;">&nbsp;</div>
-                                @(await new DbNetSuiteCore.Control(HttpContext).Render(faresGrid))
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(faresGrid))
                                 break;
                         }
                     }

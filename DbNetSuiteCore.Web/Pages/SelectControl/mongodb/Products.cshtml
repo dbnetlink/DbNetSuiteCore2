@@ -11,5 +11,5 @@
         new SelectColumn("CategoryID") {OptionGroup = true, Lookup = new Lookup("Categories", "CategoryID", "CategoryName")}
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(productSelect))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productSelect))
 }

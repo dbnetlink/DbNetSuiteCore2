@@ -11,5 +11,5 @@
         new SelectColumn(FileSystemColumn.Folder.ToString()) { OptionGroup = true}
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(fileSelect));
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileSelect));
 }

@@ -19,5 +19,5 @@
         new FormColumn("Phone") { Pattern = "^(?:\\+1)?\\s?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}$", HelpText = "Please enter a valid US phone number"},
         new FormColumn("Fax") };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
 }

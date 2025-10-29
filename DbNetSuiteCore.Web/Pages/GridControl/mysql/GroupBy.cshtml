@@ -16,5 +16,5 @@
 
     var invoiceGrid = new GridModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "Order_Details");
     invoiceGrid.Columns = invoiceColumns;
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(invoiceGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(invoiceGrid))
 }

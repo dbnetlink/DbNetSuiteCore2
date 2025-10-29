@@ -22,5 +22,5 @@
 	productsGrid.FixedFilter = "Unit_Price > :unitprice";
 	productsGrid.FixedFilterParameters.Add(new DbParameter(":unitprice", 50));
 
-	@(await new DbNetSuiteCore.Control(HttpContext).Render(productsGrid))
+	@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productsGrid))
 }

@@ -26,5 +26,5 @@
 
     var ordersGrid = new GridModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Orders");
     ordersGrid.Columns = columns;
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
 }

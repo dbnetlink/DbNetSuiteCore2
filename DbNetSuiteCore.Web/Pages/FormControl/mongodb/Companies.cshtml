@@ -26,7 +26,7 @@
 
     companiesForm.ClientEvents[FormClientEvent.ConfigureHtmlEditor] = "addLicenseKey";
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(companiesForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(companiesForm))
 }
 
 @section Styles {

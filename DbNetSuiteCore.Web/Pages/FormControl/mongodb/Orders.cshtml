@@ -25,5 +25,5 @@
         new FormColumn("ShipCountry")
     };
     
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersForm))
 }

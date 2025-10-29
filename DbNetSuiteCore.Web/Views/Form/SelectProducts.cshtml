@@ -23,7 +23,7 @@
 
     categorySelect.LinkedControl = productForm;
 
-    @(await new DbNetSuiteCore.Control(Context).Render(categorySelect))
+    @(await DbNetSuiteCore.Control.Create(Context).Render(categorySelect))
     <hr />
-    @(await new DbNetSuiteCore.Control(Context).Render(productForm))
+    @(await DbNetSuiteCore.Control.Create(Context).Render(productForm))
 }

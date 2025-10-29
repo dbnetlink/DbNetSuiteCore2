@@ -25,7 +25,7 @@
 
     categoryGrid.LinkedControl = productForm;
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(categoryGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categoryGrid))
     <hr />
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productForm))
 }

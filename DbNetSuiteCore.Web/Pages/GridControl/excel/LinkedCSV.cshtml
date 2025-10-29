@@ -59,7 +59,7 @@
     stateModel.AddLinkedControl(cityModel);
 }
 
-@(await new DbNetSuiteCore.Control(HttpContext).Render(countryModel))
-@(await new DbNetSuiteCore.Control(HttpContext).Render(stateModel))
-@(await new DbNetSuiteCore.Control(HttpContext).Render(cityModel))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(countryModel))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(stateModel))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(cityModel))
 

@@ -20,7 +20,7 @@
 
     productForm.Bind(FormClientEvent.ValidateUpdate,"validateReOrderLevel");
     productForm.Bind(FormClientEvent.ValidateDelete,"validateDelete");
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(productForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productForm))
 }
 
 <script>

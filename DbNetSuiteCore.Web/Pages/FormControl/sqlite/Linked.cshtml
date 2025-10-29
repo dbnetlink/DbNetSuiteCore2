@@ -40,6 +40,6 @@
 
     customerForm.LinkedControl = orderForm;
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderForm))
 }

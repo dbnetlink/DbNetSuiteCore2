@@ -25,5 +25,5 @@
 
     var ordersForm = new FormModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Orders");
     ordersForm.Columns = columns;
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersForm))
 }

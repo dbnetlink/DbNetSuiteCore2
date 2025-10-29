@@ -33,5 +33,5 @@
         new GridColumn("Set_Column"),
         new GridColumn("Json_Column")
     };
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGrid))
 }

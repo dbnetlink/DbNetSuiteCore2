@@ -6,5 +6,5 @@
 
 @{
     var fileGrid = new GridModel(DataSourceType.FileSystem, "/data/files") ;
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(fileGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileGrid))
 }

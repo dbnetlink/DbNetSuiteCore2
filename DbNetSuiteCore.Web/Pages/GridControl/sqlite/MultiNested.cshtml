@@ -34,6 +34,6 @@
     filmGrid.NestedGrid = actorsGrid;
     filmGrid.NestedGrid = categoryGrid;
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(filmGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(filmGrid))
 
 }

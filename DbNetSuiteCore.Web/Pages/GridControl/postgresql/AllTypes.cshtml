@@ -36,5 +36,5 @@
         new GridColumn("Id")
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
 }

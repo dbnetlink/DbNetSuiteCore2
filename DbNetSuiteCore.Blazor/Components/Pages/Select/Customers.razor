@@ -51,12 +51,12 @@
 }
 <div class="d-flex flex-column gap-3">
     <div>
-        @(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(customerSelect))
+        @(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(customerSelect))
     </div>
     <div>
-        @(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(ordersGrid))
+        @(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(ordersGrid))
     </div>
     <div>
-        @(new DbNetSuiteCore.Blazor.Control(httpContextAccessor).Render(orderDetailsGrid))
+        @(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(orderDetailsGrid))
     </div>
 </div>

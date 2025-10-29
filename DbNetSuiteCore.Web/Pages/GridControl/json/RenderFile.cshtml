@@ -17,5 +17,5 @@
                 Cache = true
             };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(model));
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(model));
 }

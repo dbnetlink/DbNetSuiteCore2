@@ -13,7 +13,7 @@
     gridModel.Columns = columns;
     gridModel.ClientEvents[GridClientEvent.CellTransform] = "createLink";
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel));
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel));
 }
 
 <script>

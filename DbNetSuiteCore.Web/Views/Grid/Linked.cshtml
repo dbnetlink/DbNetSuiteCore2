@@ -69,9 +69,9 @@
 </head>
 <body>
     <main style="padding:20px">
-        @(await new DbNetSuiteCore.Control(Context).Render(customerGridModel))
-        @(await new DbNetSuiteCore.Control(Context).Render(invoiceGridModel))
-        @(await new DbNetSuiteCore.Control(Context).Render(invoiceLineGridModel))
+        @(await DbNetSuiteCore.Control.Create(Context).Render(customerGridModel))
+        @(await DbNetSuiteCore.Control.Create(Context).Render(invoiceGridModel))
+        @(await DbNetSuiteCore.Control.Create(Context).Render(invoiceLineGridModel))
     </main>
     @DbNetSuiteCore.Resources.ClientScript()
 </body>

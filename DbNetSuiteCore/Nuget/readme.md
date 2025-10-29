@@ -41,7 +41,7 @@ You can then add a component to your Razor page as follows:
     <main>
 @{
     GridModel customerGrid = new GridModel(DataSourceType.SQLite, "Northwind", "Customers");
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGrid))
 }
     </main>
     @DbNetSuiteCore.Resources.ClientScript() @* Add the client-side library *@

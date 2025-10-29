@@ -15,7 +15,7 @@
     };
 
     deccoGrid.ClientEvents[GridClientEvent.CellTransform] = "makeHyperlink";
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(deccoGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(deccoGrid))
 }
 
 <script>

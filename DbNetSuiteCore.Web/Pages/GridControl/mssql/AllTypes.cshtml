@@ -39,5 +39,5 @@
         new GridColumn("VarcharMax"),
         new GridColumn("Xml")
     };
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customersForm))
 }

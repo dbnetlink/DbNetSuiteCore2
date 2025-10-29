@@ -50,13 +50,13 @@
                         @if (formModel != null)
             {
                             <div>
-                                @(await new DbNetSuiteCore.Control(HttpContext).Render(formModel!))
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(formModel!))
                             </div>
             }
                         @if (gridModel != null)
             {
                             <div>
-                                @(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel!))
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel!))
                             </div>
             }
                     </div>

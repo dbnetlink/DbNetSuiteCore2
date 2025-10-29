@@ -32,7 +32,7 @@
 
         @{
             <div class="flex">
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(rootFolder))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(rootFolder))
             </div>
 
 
@@ -42,7 +42,7 @@
                     @RightChevron()
                 </div>
                 <div class="flex">
-                    @(await new DbNetSuiteCore.Control(HttpContext).Render(subFolder))
+                    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(subFolder))
                 </div>
             }
         }

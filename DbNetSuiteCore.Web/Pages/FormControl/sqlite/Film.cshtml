@@ -23,5 +23,5 @@
         new FormColumn("Last_Update") { DataType = typeof(DateTime), ReadOnly = ReadOnlyMode.InsertAndUpdate}
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(filmForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(filmForm))
 }

@@ -11,5 +11,5 @@
         new GridColumn("UnitPrice", "Unit Price") { Format = "c" }, 
         new GridColumn("ExtendedPrice", "Ext. Price") { Format = "c" }
     };
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customersGrid))
 }

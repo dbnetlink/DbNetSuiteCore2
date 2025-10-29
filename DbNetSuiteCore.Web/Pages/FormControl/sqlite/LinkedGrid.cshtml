@@ -41,8 +41,8 @@
     customerForm.LinkedControl = ordersGrid;
 
     <div style="display:flex; flex-direction: column; gap:5px">
-        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))</div>
-        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))</div>
     </div>
     
     

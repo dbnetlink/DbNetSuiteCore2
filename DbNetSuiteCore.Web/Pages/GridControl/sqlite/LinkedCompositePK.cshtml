@@ -27,6 +27,6 @@
 
     orderItemsGrid.LinkedControl = orderItemsForm;
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderItemsGrid))
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderItemsForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderItemsGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderItemsForm))
 }

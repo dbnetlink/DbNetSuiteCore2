@@ -22,8 +22,8 @@
     rootFolder.LinkedControl = fileGrid;
 
     <div class="flex flex-column">
-        <div class="flex"> @(await new DbNetSuiteCore.Control(HttpContext).Render(rootFolder))</div>
-        <div class="flex"> @(await new DbNetSuiteCore.Control(HttpContext).Render(fileGrid))</div>
+        <div class="flex"> @(await DbNetSuiteCore.Control.Create(HttpContext).Render(rootFolder))</div>
+        <div class="flex"> @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileGrid))</div>
     </div>
    
 }

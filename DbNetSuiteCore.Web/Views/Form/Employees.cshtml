@@ -22,5 +22,5 @@
         new FormColumn("HomePhone"),
         new FormColumn("Extension")
     };
-    @(await new DbNetSuiteCore.Control(Context).Render(employeeForm))
+    @(await DbNetSuiteCore.Control.Create(Context).Render(employeeForm))
 }

@@ -23,7 +23,7 @@
         new GridColumn("Subregion") { Filter = FilterType.Distinct }
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(countriesGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(countriesGrid))
 }
 
 

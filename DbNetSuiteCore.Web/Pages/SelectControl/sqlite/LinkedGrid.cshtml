@@ -74,14 +74,14 @@
     customerSelect.LinkedControl = orderGrid;
 
     <div style="display:flex;flex-direction:column;row-gap:5px">
-        <div> @(await new DbNetSuiteCore.Control(HttpContext).Render(customerSelect))</div>
+        <div> @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))</div>
         <div style="display:flex;flex-direction:row;column-gap:5px">
-            <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(orderGrid))</div>
-            <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(orderForm))</div>
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderGrid))</div>
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderForm))</div>
         </div>
         <div style="display:flex;flex-direction:row;column-gap:5px">
-            <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(orderDetailsGrid))</div>
-            <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(orderDetailsForm))</div>
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderDetailsGrid))</div>
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderDetailsForm))</div>
         </div>
     </div>
 }

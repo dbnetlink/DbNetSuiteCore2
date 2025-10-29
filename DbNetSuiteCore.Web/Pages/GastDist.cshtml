@@ -54,13 +54,13 @@
 
     <div style="display:flex;flex-direction:column;gap-4">
         <div>
-            @(await new DbNetSuiteCore.Control(HttpContext).Render(ar20Grid))
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ar20Grid))
         </div>
         <div>
-            @(await new DbNetSuiteCore.Control(HttpContext).Render(leakReport))
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(leakReport))
         </div>
         <div>
-            @*   @(await new DbNetSuiteCore.Control(HttpContext).Render(genEventReadGrid))*@
+            @*   @(await DbNetSuiteCore.Control.Create(HttpContext).Render(genEventReadGrid))*@
         </div>
     </div>
 }

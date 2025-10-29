@@ -5,5 +5,5 @@
 @using DbNetSuiteCore.Models
 @{
     var customerSelect = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { DiagnosticsMode = true };
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerSelect))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))
 }

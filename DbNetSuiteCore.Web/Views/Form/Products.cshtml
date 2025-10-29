@@ -20,7 +20,7 @@
     productForm.FixedFilterParameters.Add(new DbParameter("@unitprice", 50));
 
     productForm.ClientEvents[FormClientEvent.ValidateUpdate] = "validateUpdate";
-    @(await new DbNetSuiteCore.Control(Context).Render(productForm))
+    @(await DbNetSuiteCore.Control.Create(Context).Render(productForm))
 }
 
 <script>

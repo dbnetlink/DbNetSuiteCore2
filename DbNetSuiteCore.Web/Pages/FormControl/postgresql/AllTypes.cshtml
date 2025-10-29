@@ -7,5 +7,5 @@
 @using DbNetSuiteCore.Web.Helpers
 @{
     var customerForm = new FormModel(DataSourceType.PostgreSql, "Northwind(postgresql)", "comprehensive_data_types") {Insert = true, Delete = true};
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
 }

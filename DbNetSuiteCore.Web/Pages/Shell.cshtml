@@ -79,13 +79,13 @@
 
         <div style="display:flex;flex-direction:column;gap-4;">
             <div>
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(shellGrid))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(shellGrid))
             </div>
             <div>
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(genEventGrid))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(genEventGrid))
             </div>
             <div>
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(genEventReadGrid))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(genEventReadGrid))
             </div>
         </div>
 }

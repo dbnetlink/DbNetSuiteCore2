@@ -15,5 +15,5 @@
         new GridColumn("unit_price * quantity", "Total Price") {DataType = typeof(Decimal), Format = "c"},
    };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(orderItemsGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderItemsGrid))
 }

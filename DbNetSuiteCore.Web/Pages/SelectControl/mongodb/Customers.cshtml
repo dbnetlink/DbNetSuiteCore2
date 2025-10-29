@@ -13,5 +13,5 @@
     };
 
  
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersSelect))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customersSelect))
 }

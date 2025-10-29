@@ -44,8 +44,8 @@
 <div class="row flex-grow-1">
     <div class="col-8 left-half" id="map"></div>
     <div class="col-4 right-half" style="display:none">
-        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel))</div>
-        <div>@(await new DbNetSuiteCore.Control(HttpContext).Render(formModel))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(formModel))</div>
     </div>
 </div>
 

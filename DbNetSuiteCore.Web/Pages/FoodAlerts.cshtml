@@ -50,7 +50,7 @@
         gridModel.ClientEvents[GridClientEvent.CellTransform] = "cellTransform";
     }
     <div class="container">
-        @(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel))
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
     </div>
     @DbNetSuiteCore.Resources.ClientScript()
     <script>

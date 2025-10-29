@@ -21,6 +21,6 @@
     };
 
     productGrid.CustomisationPlugin = typeof(ProductEditGridCustomisation);
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(productGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productGrid))
 }
 

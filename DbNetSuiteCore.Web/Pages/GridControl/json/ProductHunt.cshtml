@@ -16,7 +16,7 @@
         new GridColumn("PaymentStatus", "Status")
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/json/producthunt.json") { 
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/json/producthunt.json") { 
         Columns = columns,
         Cache = true
     }))

@@ -12,6 +12,6 @@
         new GridColumn(FileSystemColumn.Path.ToString()) {Format = FormatType.Url}
      };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(fileGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileGrid))
 
 }

@@ -55,7 +55,7 @@
         gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
         gridModel.Cache = true;
 
-        @(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel))
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
     };
 
 }

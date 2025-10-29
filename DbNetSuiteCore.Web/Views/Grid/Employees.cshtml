@@ -24,5 +24,5 @@
         new GridColumn("Notes"),
         new GridColumn("ReportsTo") {Lookup = new Lookup("employees","EmployeeID","LastName || ',' || FirstName"), Filter = FilterType.Default}
     };
-    @(await new DbNetSuiteCore.Control(Context).Render(employeeGrid))
+    @(await DbNetSuiteCore.Control.Create(Context).Render(employeeGrid))
 }

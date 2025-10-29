@@ -27,7 +27,7 @@ employeeSelect.Columns = new List<SelectColumn>()
 
 employeeSelect.ClientEvents[SelectClientEvent.OptionSelected] = "showEmployee";
 
-@(await new DbNetSuiteCore.Control(Context).Render(employeeSelect))
+@(await DbNetSuiteCore.Control.Create(Context).Render(employeeSelect))
 <hr />
 <table>
     @foreach (var column in employeeSelect.Columns.Skip(2).ToList())

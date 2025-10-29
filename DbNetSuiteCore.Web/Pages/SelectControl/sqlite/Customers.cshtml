@@ -13,5 +13,5 @@
         new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')") {DataType = typeof(String)}
     };
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customerSelect))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))
 }

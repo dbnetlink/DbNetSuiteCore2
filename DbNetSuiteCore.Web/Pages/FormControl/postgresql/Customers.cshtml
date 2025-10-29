@@ -7,5 +7,5 @@
 @using DbNetSuiteCore.Web.Helpers
 @{
     var customersForm = new FormModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "customer") { Insert = true, Delete = true};
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(customersForm))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customersForm))
 }

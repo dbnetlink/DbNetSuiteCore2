@@ -30,5 +30,5 @@
     ordersGrid.Columns = columns;
     ordersGrid.OptimizeForLargeDataset = true;
 
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
 }

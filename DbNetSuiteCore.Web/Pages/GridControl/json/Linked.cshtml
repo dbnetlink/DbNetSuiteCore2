@@ -63,8 +63,8 @@
 </head>
 <body>
     <main style="padding:20px">
-        @(await new DbNetSuiteCore.Control(HttpContext).Render(customerGridModel))
-        @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGridModel))
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGridModel))
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGridModel))
     </main>
     @DbNetSuiteCore.Resources.ClientScript()
 </body>

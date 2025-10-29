@@ -139,10 +139,10 @@
         <div class="divider"></div>
         <div class="right-half">
             <div>
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(selectModel))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(selectModel))
             </div>
             <div class="content">
-                @(await new DbNetSuiteCore.Control(HttpContext).Render(gridModel))
+                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
             </div>
         </div>
     </div>

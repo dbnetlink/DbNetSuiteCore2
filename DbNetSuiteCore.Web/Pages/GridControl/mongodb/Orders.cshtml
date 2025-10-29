@@ -25,5 +25,5 @@
     };
     
     ordersGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
-    @(await new DbNetSuiteCore.Control(HttpContext).Render(ordersGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
 }
