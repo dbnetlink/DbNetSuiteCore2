@@ -90,9 +90,12 @@
                         }
                         @foreach (GridColumnViewModel gridColumn in Model.VisibleColumns)
                         {
+                            var classes = new List<string>() { "text-base" };
+                            classes.Add(gridColumn.AlignmentClassName());
+
                             if (Model.GetDataColumn(gridColumn.Column) != null)
                             {
-                                <th class="text-base">@Model.RenderColumnFilter(gridColumn.Column)</th>
+                                <th @RazorHelper.CellDataAttributes(classes, string.Empty, string.Empty)>@Model.RenderColumnFilter(gridColumn.Column)</th>
                             }
                         }
                         @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)

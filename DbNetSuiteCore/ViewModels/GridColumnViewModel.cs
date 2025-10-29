@@ -38,5 +38,25 @@ namespace DbNetSuiteCore.ViewModels
         {
             return Column.TruncateValue(value);
         }
+        public string AlignmentClassName()
+        {
+            if (Column.DataType == typeof(Boolean) && (EnumOptions?.Any() ?? false) == false)
+            {
+                return "text-center";
+            }
+            else if (LookupOptions?.Any() ?? false) 
+            {
+                if (string.IsNullOrEmpty(Column.Lookup?.TableName) && EnumOptions == null && IsNumeric)
+                {
+                    return "text-right";
+                }
+            }
+            else if (IsNumeric)
+            {
+                return "text-right";
+            }
+
+            return string.Empty;
+        }
     }
 }

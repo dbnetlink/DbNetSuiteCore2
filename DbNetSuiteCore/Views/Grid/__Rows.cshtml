@@ -74,10 +74,7 @@
                     classes.Add("align-top");
                 }
 
-                if (column.Column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
-                {
-                    classes.Add("text-center");
-                }
+                classes.Add(column.AlignmentClassName());
 
                 @if (column.Editable && column.FormColumn != null && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
                 {
@@ -113,10 +110,6 @@
                 }
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
-                    if (string.IsNullOrEmpty(column.Column.Lookup?.TableName) && column.IsNumeric && column.EnumOptions == null)
-                    {
-                        classes.Add("text-right");
-                    }
                     <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
                         @Html.Raw(row[dataColumn])
                     </td>
@@ -134,11 +127,6 @@
                 }
                 else
                 {
-                    if (column.IsNumeric)
-                    {
-                        classes.Add("text-right");
-                    }
-
                     object? value = column.FormatValue(row[dataColumn]);
 
                     var stringValue = value?.ToString() ?? string.Empty;

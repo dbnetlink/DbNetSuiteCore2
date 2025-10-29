@@ -297,7 +297,8 @@ class ComponentControl {
             var selectedValues = Array.from(el.selectedOptions).map(({ value }) => value);
 
             if (el.dataset.dbdatatype = 'Array') {
-                return this.cleanString(el.dataset.value) != this.cleanString(selectedValues.join(''));
+                let dbValue = el.dataset.value.split(',').sort().join(',');
+                return this.cleanString(dbValue) != this.cleanString(selectedValues.join(''));
             }
             else {
                 return el.dataset.value != selectedValues.join(',');
