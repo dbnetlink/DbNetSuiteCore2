@@ -43,9 +43,7 @@ class SelectControl extends ComponentControl {
     }
 
     private updateLinkedChildControls(selectedIndex: string, url:string) {
-        if (this.select.dataset.linkedcontrolids) {
-            this.updateLinkedControls(this.select.dataset.linkedcontrolids, selectedIndex, url)
-        }
+        this.updateLinkedControls(this.getLinkedControlIds(), selectedIndex, url)
     }
 
     private checkForError() {
@@ -54,5 +52,10 @@ class SelectControl extends ComponentControl {
         if (error) {
             select.parentElement.nextElementSibling.after(error)
         }
+    }
+
+    public getSelectedOptions(): HTMLOptionElement[] {
+
+        return Array.from(this.select.selectedOptions);
     }
 }

@@ -142,6 +142,9 @@ class ComponentControl {
     }
 
     protected updateLinkedControls(linkedIds: string, selectedIndex: string = null, url: string = null) {
+        if (!linkedIds) {
+            return;
+        }
         var linkedIdArray = linkedIds.split(",");
 
         linkedIdArray.forEach(linkedId => {
@@ -274,7 +277,7 @@ class ComponentControl {
         return this.formBody.dataset.mode.toLowerCase();
     }
 
-    protected formModified() {
+    public formModified() {
         if (this.formMode() == "empty") {
             return false;
         }
@@ -327,6 +330,20 @@ class ComponentControl {
 
         selectors.forEach(s => { controlsInError += Array.from(container.querySelectorAll(s)).filter((e: HTMLElement) => { return (e.dataset.error == 'true'); }).length })
         return (controlsInError > 0);
+    }
+
+    protected getLinkedControlIds():string {
+        if (this instanceof GridControl) {
+            let table = this.controlElement("table") as HTMLElement;
+            return table.dataset.linkedcontrolids;
+        }
+        if (this instanceof FormControl) {
+            return (this as FormControl).formContainer.dataset.linkedcontrolids;
+        }
+        if (this instanceof SelectControl) {
+            return (this as SelectControl).select.dataset.linkedcontrolids;
+        }
+        return "";
     }
 
     protected triggerCommit() {
@@ -432,5 +449,41 @@ class ComponentControl {
         });
         rowModification.modified = rowModification.columns.length > 0;
         return rowModification;
+    }
+
+    protected warnIfFormModified(evt:Event = null): boolean {
+        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el, true) });
+        let modified = this.controlElements(".fc-control[data-modified='true']");
+
+        if (modified.length) {
+            if (evt) {
+                evt.preventDefault();
+            }
+            this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
+        }
+
+        return modified.length > 0;
+    }
+
+    protected warnIfLinkedFormModified(evt: Event): boolean {
+        let table = this.controlElement("table");
+        let linkedFormModified = false;
+        let linkedControlIds = this.getLinkedControlIds();
+        if (linkedControlIds) {
+            var linkedIdArray = linkedControlIds.split(",");
+            linkedIdArray.forEach(linkedId => {
+                if (document.querySelector(`#${linkedId}`)) {
+                    var linkedControl = DbNetSuiteCore.controlArray[linkedId];
+                    if (linkedControl instanceof FormControl) {
+                        var formControl = linkedControl as FormControl;
+                        if (formControl.formBody && formControl.checkIfFormModfied(evt)) {
+                            linkedFormModified = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        return linkedFormModified;
     }
 }

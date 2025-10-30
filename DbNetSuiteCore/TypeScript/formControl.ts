@@ -153,9 +153,7 @@ class FormControl extends ComponentControl {
     }
 
     private updateLinkedChildControls() {
-        if (this.formContainer.dataset.linkedcontrolids) {
-            this.updateLinkedControls(this.formContainer.dataset.linkedcontrolids)
-        }
+        this.updateLinkedControls(this.getLinkedControlIds())
     }
 
     private makeSelectReadonly(selectElement) {
@@ -216,7 +214,7 @@ class FormControl extends ComponentControl {
         });
     }
 
-    public beforeRequest(evt) {
+    public beforeRequest(evt:Event) {
         if (this.isControlEvent(evt) == false)
             return;
 
@@ -239,15 +237,16 @@ class FormControl extends ComponentControl {
                 return;
         }
 
-        if (this.formMode() != "empty") {
-            this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el, true) });
-            let modified = this.controlElements(".fc-control[data-modified='true']");
+        this.warnIfLinkedFormModified(evt);
+        this.checkIfFormModfied(evt);
+    }
 
-            if (modified.length) {
-                evt.preventDefault();
-                this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
-            }
+    public checkIfFormModfied(evt:Event = null): boolean {
+        if (this.formMode() != "empty") {
+            return this.warnIfFormModified(evt);
         }
+
+        return false;
     }
 
     public configureHtmlEditor(configuration: any, name: string) {

@@ -80,11 +80,11 @@
                                         @{
                                             if (Model.ControlType == typeof(GridModel))
                                             {
-                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { OptimizeForLargeDataset = true, DeferredLoad = true }))
+                                                @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { OptimizeForLargeDataset = true, DeferredLoad = true }))
                                             }
                                             if (Model.ControlType == typeof(FormModel))
                                             {
-                                                @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(new FormModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000, Insert = true, Delete = true }))
+                                                @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(new FormModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000, Insert = true, Delete = true }))
                                             }
                                         }
                                     </div>
@@ -100,12 +100,12 @@
                     {
                         GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, OptimizeForLargeDataset = true };
                         gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
-                        @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(gridModel))
+                        @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(gridModel))
                     }
                     if (Model.ControlType == typeof(FormModel))
                     {
                         FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 1000 };
-                        @(await new DbNetSuiteCore.Control(_httpContext.HttpContext).Render(formModel))
+                        @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(formModel))
                     }
                 }
             }

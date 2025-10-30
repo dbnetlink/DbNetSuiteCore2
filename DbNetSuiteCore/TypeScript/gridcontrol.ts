@@ -78,7 +78,15 @@ class GridControl extends ComponentControl {
                 });
             }
             else {
-                htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target as HTMLElement)) });
+                htmx.findAll(this.rowSelector()).forEach((e) => {
+                    e.addEventListener("click", (ev) => {
+                        if (this.warnIfLinkedFormModified(ev)) {
+                        }
+                        else {
+                            this.selectRow(ev.target as HTMLElement);
+                        }
+                    })
+                });
             }
         }
 
@@ -161,7 +169,7 @@ class GridControl extends ComponentControl {
         }
 
         const rect = cell.getBoundingClientRect();
-        popover.style.top = `${rect.bottom + window.scrollY - (rect.height -20)}px`;
+        popover.style.top = `${rect.bottom + window.scrollY - (rect.height - 20)}px`;
         popover.style.left = `${rect.left + 20 + window.scrollX}px`;
         popover.style.opacity = '1';
     }
@@ -247,7 +255,7 @@ class GridControl extends ComponentControl {
 
     private validateUpdate() {
         let inError = false;
-        var modifiedRows:Array<HTMLTableRowElement> = [];
+        var modifiedRows: Array<HTMLTableRowElement> = [];
         this.controlElements("tr.grid-row").forEach((row) => {
             let rowModification = this.getFormModification(row)
             if (rowModification.modified) {
@@ -268,13 +276,13 @@ class GridControl extends ComponentControl {
 
         this.currentValidationRow = null;
         this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
-        
+
         if (inError == false) {
             this.triggerCommit()
         }
     }
 
-    public beforeRequest(evt) {
+    public beforeRequest(evt:Event) {
         if (this.isControlEvent(evt) == false)
             return;
 
@@ -298,13 +306,8 @@ class GridControl extends ComponentControl {
                 return;
         }
 
-        this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el, true) });
-        let modified = this.controlElements(".fc-control[data-modified='true']");
-
-        if (modified.length) {
-            evt.preventDefault();
-            this.setMessage(this.formBody.dataset.unappliedmessage, 'warning')
-        }
+        this.warnIfLinkedFormModified(evt);
+        this.warnIfFormModified(evt);
     }
 
     private getModifiedRows() {
@@ -375,7 +378,7 @@ class GridControl extends ComponentControl {
         var args = { cell: cell, columnName: columnName }
 
         if (userDataType == "JsonDocument") {
-            try {args['json'] = JSON.parse(cell.innerText);} catch {}
+            try { args['json'] = JSON.parse(cell.innerText); } catch { }
         }
         this.invokeEventHandler('CellTransform', args)
     }
@@ -499,7 +502,6 @@ class GridControl extends ComponentControl {
 
     private selectRow(target: HTMLElement, multiSelect: boolean = false) {
         let tr = target.closest('tr')
-
         if (target.classList.contains("multi-select") == false) {
             if (tr.classList.contains(this.bgColourClass)) {
                 return;
@@ -537,11 +539,7 @@ class GridControl extends ComponentControl {
     }
 
     private updateLinkedGrids(rowIdx: string) {
-        let table = this.controlElement("table") as HTMLElement;
-
-        if (table.dataset.linkedcontrolids) {
-            this.updateLinkedControls(table.dataset.linkedcontrolids, rowIdx)
-        }
+        this.updateLinkedControls(this.getLinkedControlIds(), rowIdx)
     }
 
     private clearHighlighting(row: HTMLTableRowElement) {
@@ -700,7 +698,7 @@ class GridControl extends ComponentControl {
     }
 
     public heading(columnName): HTMLTableCellElement {
-        return this.controlElement(`th[data-columnname='${columnName}']`)  ?? this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
+        return this.controlElement(`th[data-columnname='${columnName}']`) ?? this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
     }
 
     public columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement {
@@ -720,7 +718,7 @@ class GridControl extends ComponentControl {
         if (datasetValue || datasetValue == '') {
             return datasetValue;
         }
-        let cell:HTMLTableCellElement = this.columnCell(columnName, row)
+        let cell: HTMLTableCellElement = this.columnCell(columnName, row)
 
         if (cell) {
             if (this.hasFormControl(cell)) {
@@ -749,7 +747,7 @@ class GridControl extends ComponentControl {
             row = this.currentValidationRow;
         }
         let cell: HTMLTableCellElement = this.columnCell(columnName, row)
-        let element:HTMLElement = cell;
+        let element: HTMLElement = cell;
         if (this.hasFormControl(cell)) {
             element = this.formControl(columnName, row);
         }
@@ -782,29 +780,29 @@ class GridControl extends ComponentControl {
             const textArray = [...select.options].map(opt => opt.text);
             let width = this.getTextWidth(textArray, select);
             if (width > select.offsetWidth && select.style.width == '') {
-                select.style.width = `${width+40}px`
+                select.style.width = `${width + 40}px`
             }
         });
 
         firstRow.querySelectorAll("input[type='text']").forEach((input: HTMLInputElement) => {
             const textArray = [];
             let cell = input.parentElement as HTMLTableCellElement
-            this.controlElements(`tr.grid-row td:nth-child(${cell.cellIndex+1})`).forEach((c:HTMLTableCellElement) => {
+            this.controlElements(`tr.grid-row td:nth-child(${cell.cellIndex + 1})`).forEach((c: HTMLTableCellElement) => {
                 if (c.children.length && c.children[0].tagName == "INPUT") {
                     textArray.push((c.children[0] as HTMLInputElement).value)
                 }
             });
             let width = this.getTextWidth(textArray, input);
             if (width > input.offsetWidth && input.style.width == '') {
-                input.style.width = `${width+10}px`
+                input.style.width = `${width + 10}px`
             }
         });
     }
 
-    private getTextWidth(text:string[], element:HTMLElement) {
+    private getTextWidth(text: string[], element: HTMLElement) {
         let width = 0;
 
-        const s:HTMLSpanElement = document.createElement('span');
+        const s: HTMLSpanElement = document.createElement('span');
         document.body.appendChild(s);
 
         s.style.visibility = 'hidden';
