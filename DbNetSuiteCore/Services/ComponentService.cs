@@ -29,8 +29,10 @@ namespace DbNetSuiteCore.Services
         protected HttpContext? _context;
         protected readonly IConfiguration _configuration;
         protected readonly IWebHostEnvironment _webHostEnvironment;
+        protected readonly ILoggerFactory? _loggerFactory = null;
+        protected readonly ILogger? _logger = null;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory? loggerFactory)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -44,8 +46,22 @@ namespace DbNetSuiteCore.Services
             _oracleRepository = oracleRepository;
             _configuration = configuration;
             _webHostEnvironment = webHostEnvironment;
+            if (loggerFactory != null)
+            {
+                _loggerFactory = loggerFactory;
+                _logger = loggerFactory.CreateLogger(nameof(DbNetSuiteCore));
+            }
         }
 
+        protected async Task<Byte[]> HandleError(Exception ex, HttpContext context)
+        {            
+            if (_logger != null)
+            {
+                _logger.LogError(ex, "Error processing DbNetSuiteCore control");
+            }
+            context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
+            return await View("__Error", ex);
+        }
         protected void ValidateModel(ComponentModel componentModel)
         {
             if (componentModel.TriggerName != TriggerNames.InitialLoad)
