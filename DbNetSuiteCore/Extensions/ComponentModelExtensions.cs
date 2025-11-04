@@ -23,9 +23,8 @@ namespace DbNetSuiteCore.Extensions
             string sql = $"select {Distinct(componentModel)}{Top(componentModel)}{AddSelectPart(componentModel)} from {componentModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = sql };
 
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                var gridModel = (GridModel)componentModel;
                 gridModel.AddFilterPart(query);
                 if (gridModel.IsGrouped)
                 {
@@ -36,16 +35,14 @@ namespace DbNetSuiteCore.Extensions
                 gridModel.AddPagination(query);
             }
 
-            if (componentModel is SelectModel)
+            if (componentModel is SelectModel selectModel)
             {
-                var selectModel = (SelectModel)componentModel;
                 selectModel.AddFilterPart(query);
                 selectModel.AddOrderPart(query);
             }
 
-            if (componentModel is FormModel)
+            if (componentModel is FormModel formModel)
             {
-                var formModel = (FormModel)componentModel;
                 formModel.AddFilterPart(query);
                 formModel.AddOrderPart(query);
             }
@@ -63,8 +60,10 @@ namespace DbNetSuiteCore.Extensions
         public static QueryCommandConfig BuildCountQuery(this ComponentModel componentModel)
         {
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select count(*) from {componentModel.TableName}" };
-            var gridModel = (GridModel)componentModel;
-            gridModel.AddFilterPart(query);
+            if (componentModel is GridModel gridModel)
+            {
+                gridModel.AddFilterPart(query);
+            }
             return query;
         }
 
@@ -76,8 +75,10 @@ namespace DbNetSuiteCore.Extensions
                 DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType)
             };
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {string.Join(",", columns)} from {componentModel.TableName}" };
-            var gridModel = (GridModel)componentModel;
-            gridModel.AddFilterPart(query);
+            if (componentModel is GridModel gridModel)
+            {
+                gridModel.AddFilterPart(query);
+            }
             query.Sql += " order by 1";
             return query;
         }
@@ -85,8 +86,11 @@ namespace DbNetSuiteCore.Extensions
         public static QueryCommandConfig BuildSubSelectQuery(this ComponentModel componentModel, ColumnModel column)
         {
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"select distinct {DbHelper.QualifyExpression(column.Expression, componentModel.DataSourceType)} from {componentModel.TableName}" };
-            var gridModel = (GridModel)componentModel;
-            gridModel.AddFilterPart(query);
+
+            if (componentModel is GridModel gridModel)
+            {
+                 gridModel.AddFilterPart(query);
+            }
             return query;
         }
 
@@ -154,9 +158,8 @@ namespace DbNetSuiteCore.Extensions
             {
                 ColumnModel colummnModel = componentModel.GetColumns().First(c => c.Key == searchFilterPart.ColumnKey);
 
-                if (colummnModel is GridColumn)
+                if (colummnModel is GridColumn gridColumn)
                 {
-                    GridColumn gridColumn = (GridColumn)colummnModel;
                     if (gridColumn.Aggregate == AggregateType.None == havingFilter)
                     {
                         continue;
@@ -256,9 +259,8 @@ namespace DbNetSuiteCore.Extensions
             string columnExpression = DbHelper.StripColumnRename(col.Expression);
 
 
-            if (col is GridColumn)
+            if (col is GridColumn gridCol)
             {
-                var gridCol = (GridColumn)col;
                 if (gridCol.Aggregate != AggregateType.None)
                 {
                     columnExpression = ComponentModelExtensions.AggregateExpression(gridCol);
@@ -308,7 +310,6 @@ namespace DbNetSuiteCore.Extensions
 
             if (primaryKeyValue is List<object> primaryKeyValueList)
             {
-
                 List<string> where = new List<string>();
                 foreach (var item in componentModel.GetColumns().Where(c => c.PrimaryKey).Select((value, index) => new { value, index }))
                 {
@@ -387,9 +388,8 @@ namespace DbNetSuiteCore.Extensions
             {
                 var columnExpression = column.Expression;
 
-                if (column is GridColumn)
+                if (column is GridColumn gridColumn)
                 {
-                    var gridColumn = (GridColumn)column;
                     if (gridColumn.Aggregate != AggregateType.None)
                     {
                         columnExpression = $"{AggregateExpression(gridColumn)} as {column.ColumnName}";
@@ -703,9 +703,9 @@ namespace DbNetSuiteCore.Extensions
 
         public static string Limit(ComponentModel componentModel)
         {
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                if (((GridModel)componentModel).OptimizeForLargeDataset)
+                if (gridModel.OptimizeForLargeDataset)
                 {
                     return string.Empty;
                 }

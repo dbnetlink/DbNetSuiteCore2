@@ -4,8 +4,8 @@ namespace DbNetSuiteCore
 {
     public static class Resources
     {
-        public const string ClientScriptHtml = "<script src=\"js.htmx\"></script>";
-        public const string ClientStyleHtml = "<link rel=\"stylesheet\" href=\"css.htmx\" />";
+        public static readonly string ClientScriptHtml = $"<script src=\"js{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}\"></script>";
+        public static readonly string ClientStyleHtml = $"<link rel=\"stylesheet\" href=\"css{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}\" />";
     
         public static HtmlString ClientScript()
         {

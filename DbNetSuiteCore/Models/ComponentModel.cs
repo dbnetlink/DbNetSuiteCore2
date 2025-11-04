@@ -120,7 +120,7 @@ namespace DbNetSuiteCore.Models
 
         public bool DeferredLoad { get; set; } = false;
         internal string HxFormTrigger => IsLinked || DeferredLoad ? "submit" : "load";
-        internal string PostUrl => $"{this.GetType().Name.Replace("Model", "control").ToLower()}.htmx";
+        internal string PostUrl => $"{this.GetType().Name.Replace("Model", "control").ToLower()}{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}";
         internal string TriggerName { get; set; } = string.Empty;
         /// <summary>
         /// Allows a fixed filter to be applied to the data source query.

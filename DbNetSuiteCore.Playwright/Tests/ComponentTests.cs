@@ -167,7 +167,7 @@ namespace DbNetSuiteCore.Playwright.Tests
                 throw new Exception($"Heading => {columnName} not found");
             }
             await heading.ClickAsync();
-            await Page.WaitForResponseAsync(r => r.Url.Contains("gridcontrol.htmx"));
+            await Page.WaitForResponseAsync(r => r.Url.Contains($"gridcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"));
 
             var firstColumnCell = Page.Locator($"tr.grid-row").Nth(0).Locator("td").Nth(cellIndex);
             await Expect(firstColumnCell).ToHaveTextAsync(value);
@@ -285,7 +285,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         private async Task TestRowCount(int expectedRowCount, string type = "row")
         {
-            await Page.WaitForResponseAsync(r => r.Url.Contains("control.htmx"));
+            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"));
             if (expectedRowCount == 0)
             {
                 await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();
@@ -299,7 +299,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         private async Task TestTagCount(Dictionary<string,int> tagCounts)
         {
-            await Page.WaitForResponseAsync(r => IsSelectUrl("selectcontrol.htmx"));
+            await Page.WaitForResponseAsync(r => IsSelectUrl($"selectcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"));
 
             foreach (var tag in tagCounts.Keys)
             {
@@ -317,7 +317,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         private bool IsSelectUrl(string url)
         {
-            return url.Contains("selectcontrol.htmx");
+            return url.Contains($"selectcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}");
         }
 
         private async Task<int> GetCellIndex(ILocator heading)
@@ -357,7 +357,7 @@ namespace DbNetSuiteCore.Playwright.Tests
         {
             await GoToPage(page, ComponentType.Form, mvc);
             await Page.GetByTestId("insert").ClickAsync();
-            await Page.WaitForResponseAsync(r => r.Url.Contains("control.htmx"));
+            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"));
 
             foreach (string columnName in values.Keys)
             {

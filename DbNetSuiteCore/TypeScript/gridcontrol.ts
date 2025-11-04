@@ -605,7 +605,7 @@ class GridControl extends ComponentControl {
 
         var exportOption = (this.controlElement('[name="exportformat"]') as HTMLSelectElement).value
 
-        fetch("gridcontrol.htmx", {
+        fetch("gridcontrol.dbnetsuite", {
             method: 'post',
             body: data,
             headers: {

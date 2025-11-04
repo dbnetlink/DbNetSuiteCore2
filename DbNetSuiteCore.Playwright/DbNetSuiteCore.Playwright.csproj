@@ -64,6 +64,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DbNetSuiteCore.Web\DbNetSuiteCore.Web.csproj" />
+    <ProjectReference Include="..\DbNetSuiteCore\DbNetSuiteCore.csproj" />
   </ItemGroup>
 
 </Project>

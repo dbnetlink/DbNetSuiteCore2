@@ -203,7 +203,7 @@ namespace DbNetSuiteCore.ViewModels
 
         private string PageUrl(int pageNumber)
         {
-            return $"/gridcontrol.htmx?page={pageNumber}";
+            return $"/gridcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}?page={pageNumber}";
         }
 
         public HtmlString RenderButton(string name, HtmlString icon, ResourceNames resourceName, bool disabled = false, string style = "")

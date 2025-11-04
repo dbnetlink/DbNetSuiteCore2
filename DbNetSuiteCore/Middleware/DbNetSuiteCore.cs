@@ -17,7 +17,7 @@ namespace DbNetSuiteCore.Middleware
     {
         private RequestDelegate _next;
 
-        private string _extension = ".htmx";
+        public static string Extension = ".dbnetsuite";
 
 
         public DbNetSuiteCore(RequestDelegate next)
@@ -27,7 +27,7 @@ namespace DbNetSuiteCore.Middleware
 
         public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
         {
-            if (context.Request.Path.ToString().EndsWith(_extension))
+            if (context.Request.Path.ToString().EndsWith(Extension))
             {
                 await GenerateResponse(context, resourceService, gridService, selectService, formService);
             }
@@ -42,7 +42,7 @@ namespace DbNetSuiteCore.Middleware
             var request = context.Request;
             var resp = context.Response;
 
-            string page = request.Path.ToString().Split('/').Last().Replace(_extension,string.Empty);
+            string page = request.Path.ToString().Split('/').Last().Replace(Extension, string.Empty);
 
             byte[]? response = null;
 
