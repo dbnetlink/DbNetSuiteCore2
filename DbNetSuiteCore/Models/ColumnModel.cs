@@ -325,7 +325,7 @@ namespace DbNetSuiteCore.Models
             {
                 if (dataColumn.ExtendedProperties["DataType"] is Type dataType)
                 {
-                    DataType = dataType;
+                    UserDataType = dataType.Name;
                 }
             }
         }

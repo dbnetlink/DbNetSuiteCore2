@@ -1,5 +1,5 @@
 ﻿using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;

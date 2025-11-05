@@ -1,4 +1,4 @@
-﻿using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+﻿using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Models;
 
 namespace DbNetSuiteCore.Web.Models

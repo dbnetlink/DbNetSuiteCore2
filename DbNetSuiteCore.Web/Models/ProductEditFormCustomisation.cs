@@ -1,4 +1,4 @@
-﻿using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+﻿using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Models;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using System.Diagnostics.Contracts;

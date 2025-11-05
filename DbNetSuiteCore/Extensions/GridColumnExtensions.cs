@@ -1,8 +1,9 @@
-﻿using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Constants;
-using System.Text.RegularExpressions;
-using DbNetSuiteCore.Helpers;
+﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using System;
+using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -41,10 +42,8 @@ namespace DbNetSuiteCore.Extensions
                     }
                     break;
                 case FormatType.Url:
-                    if (ValidationHelper.IsValidUri(value.ToString() ?? string.Empty))
-                    {
-                        value = $"<a target=\"_blank\" href=\"{value}\">{value}</a>";
-                    }
+                    string uris = (value?.ToString() ?? string.Empty);
+                    value = FormatUrls(uris);
                     break;
                 case FormatType.Image:
                     value = string.Join("",value.ToString()!.Split(',').ToList().Select(s => $"<img {(string.IsNullOrEmpty(gridColumn.Style) ? "" : $"style=\"{gridColumn.Style}\"")} src =\"{s}\"/>"));
@@ -61,6 +60,23 @@ namespace DbNetSuiteCore.Extensions
             return value;
         }
 
+        private static string FormatUrls(string uris)
+        {
+            List<string> links = new List<string>();
+            foreach (string uri in uris.Split(","))
+            {
+                if (ValidationHelper.IsValidUri(uri))
+                {
+                    string text = uri.Split("?").First().Split("/").Last();
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        text = uri;
+                    }
+                    links.Add($"<a target=\"_blank\" href=\"{uri}\">{text}</a>");
+                }
+            }
+            return string.Join(",",links);
+        }
         internal static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             return DateTime.UnixEpoch.AddSeconds(unixTimeStamp).ToLocalTime();

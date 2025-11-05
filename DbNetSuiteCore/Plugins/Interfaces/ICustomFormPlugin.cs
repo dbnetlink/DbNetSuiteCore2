@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace DbNetSuiteCore.CustomisationHelpers.Interfaces
+namespace DbNetSuiteCore.Plugins.Interfaces
 {
     public interface ICustomFormPlugin
     {

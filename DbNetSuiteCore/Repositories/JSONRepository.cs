@@ -1,16 +1,15 @@
 ﻿using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.CustomisationHelpers;
-using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+using DbNetSuiteCore.Plugins;
+using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.Extensions.Caching.Memory;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Text.Json;
+using System.Web;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -69,20 +68,17 @@ namespace DbNetSuiteCore.Repositories
 
         public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext? context)
         {
-            Dictionary<string, string>? apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context));
+            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context)) ?? new Dictionary<string, string>();
 
-            if (apiRequestParameters != null)
+            apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
+            foreach (string key in gridSelectModel.ApiRequestParameters.Keys)
             {
-                apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
-                foreach (string key in gridSelectModel.ApiRequestParameters.Keys)
+                if (apiRequestParameters.ContainsKey(key))
                 {
-                    if (apiRequestParameters.ContainsKey(key))
-                    {
-                        gridSelectModel.ApiRequestParameters[key] = apiRequestParameters[key];
-                    }
+                    gridSelectModel.ApiRequestParameters[key] = HttpUtility.UrlEncode(apiRequestParameters[key]);
                 }
             }
-        }
+          }
 
         private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext? httpContext)
         {
@@ -267,7 +263,10 @@ namespace DbNetSuiteCore.Repositories
                     trgArray.Add(cleanRow);
                 }
 
-                DataTable dataTable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString()) ?? new DataTable();
+                JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
+              //  jsonSerializerSettings.MaxDepth = 10;
+
+                DataTable dataTable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString(), jsonSerializerSettings) ?? new DataTable();
 
                 foreach (string columnName in dataTypes.Keys)
                 {

@@ -6,7 +6,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
-using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+using DbNetSuiteCore.Plugins.Interfaces;
 
 namespace DbNetSuiteCore.Models
 {

@@ -1,4 +1,4 @@
-﻿using DbNetSuiteCore.CustomisationHelpers.Interfaces;
+﻿using DbNetSuiteCore.Plugins.Interfaces;
 using System;
 using System.Reflection;
 using System.Text.Json;
@@ -40,9 +40,16 @@ namespace DbNetSuiteCore.Helpers
                 throw new InvalidOperationException($"Type {targetType.Name} does not have a public 'Transform' method.");
             }
 
-            object? transformedData = transformMethod.Invoke(instance, args);
-
-            return JsonSerializer.Serialize(transformedData, new JsonSerializerOptions { });
+            try
+            {
+                object? transformedData = transformMethod.Invoke(instance, args);
+                return JsonSerializer.Serialize(transformedData, new JsonSerializerOptions { });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         public static object? InvokeMethod(string typeName, string methodName, object[]? args = null)

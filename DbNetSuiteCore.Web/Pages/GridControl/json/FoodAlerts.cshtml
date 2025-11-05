@@ -1,99 +1,85 @@
 ﻿@page
+@using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Plugins
 
-<select id="alertType">
-    <option value="xxxxxxxxx">All</option>
-    <option value="AA">Allergy Alert</option>
-    <option value="PRIN">Product Recall Information Notice</option>
-    <option value="FAFA">Food Alert For Action</option>
-</select>
+<div style="display:flex;flex-direction:row;gap:10px;align-items:center;padding-bottom:10px">
+    <div><strong>Alert Type</strong></div>
+    <div>
+        <select id="alertType">
+            <option value="">All</option>
+            <option value="AA">Allergy Alert</option>
+            <option value="PRIN">Product Recall Information Notice</option>
+            <option value="FAFA">Food Alert For Action</option>
+        </select>
+    </div>
+    <div><strong>Period</strong></div>
+    <div>
+        <select id="period">
+            @{
+                for (int days = 120; days >= 30; days -= 30)
+                {
+                    <option value="@DateTime.Now.AddDays(0 - days).ToString("yyyy-MM-ddTHH:mm:ssZ")" @(days == 60 ? "selected" : string.Empty)>Last @days days</option>
+                }
+            }
+            </select>
+        </div>
+    </div>
+
 
 @{
     var gridModel = new GridModel(DataSourceType.JSON, "https://data.food.gov.uk/food-alerts/id")
     {
-        Caption = "Food Alerts in last 30 days"
+        Caption = "Food Alerts",
+        JsonTransformPlugin = typeof(FoodAlertsTransform)
+    };
+
+    gridModel.Columns = new List<GridColumn>()
+    {
+        new GridColumn("Title"),
+        new GridColumn("Notation"),
+        new GridColumn("Created"),
+        new GridColumn("Modified"),
+        new GridColumn("Type") { Format = FormatType.Url},
+        new GridColumn("ShortTitle"),
+        new GridColumn("Status"),
+        new GridColumn("AlertURL") { Format = FormatType.Url},
+        new GridColumn("ReportingBusiness") {Filter = FilterType.Distinct},
+        new GridColumn("Problem"),
+        new GridColumn("ProductDetails"),
+        new GridColumn("Country"),
     };
     gridModel.ApiRequestParameters["_limit"] = "100";
-    gridModel.ApiRequestParameters["since"] = DateTime.Now.AddDays(-30).ToString("yyyy-MM-ddTHH:mm:ssZ");
-    gridModel.ApiRequestParameters["type"] = "xxxxxxxxxxxxx";
+    gridModel.ApiRequestParameters["since"] = DateTime.Now.AddDays(-60).ToString("yyyy-MM-ddTHH:mm:ssZ");
+    gridModel.ApiRequestParameters["type"] = "";
 
-    gridModel.ClientEvents[GridClientEvent.CellTransform] = "transformLinks";
     gridModel.ClientEvents[GridClientEvent.Initialised] = "saveGridRef";
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel));
 }
 
 
 <script>
-    function updateParams(event)
+    function updateTypeParam(event)
     {       
         var params = {}
         params.type = event.target.value;
         window.foodAlertsGrid.updateApiRequestParameters(params);
     }
 
+    function updatePeriodParam(event)
+    {
+        var params = {}
+        params.since = event.target.value;
+        window.foodAlertsGrid.updateApiRequestParameters(params);
+    }
     function saveGridRef(sender, args)
     {
-        document.querySelector("#alertType").addEventListener("change", updateParams);
-        window.foodAlertsGrid = sender;
-    }
+        document.querySelector("#alertType").addEventListener("change", updateTypeParam);
+        document.querySelector("#period").addEventListener("change", updatePeriodParam);
 
-    function transformLinks(sender, args)
-    {
-        let names = [];
-        switch (args.columnName.toLowerCase())
-        {
-            case "type":
-                let links = [];
-                args.json.forEach((t) =>
-                    {
-                        links.push(`<a target='_blank' href=${t}>${t.split('/')[t.split('/').length-1]}</a>`)
-                    }
-                )
-                args.cell.innerHTML = links.join(', ');
-                break;
-            case "problem":
-                if (args.json && args.json.length)
-                {
-                    args.cell.innerHTML = args.json[0].riskStatement;
-                }
-                break;
-            case "status":
-                if (args.json)
-                {
-                    args.cell.innerHTML = args.json.label;
-                }
-                break;
-            case "reportingbusiness":
-                if (args.json)
-                {
-                    args.cell.innerHTML = args.json.commonName;
-                }
-                break;
-            case "productdetails":
-                if (args.json && args.json.length)
-                {
-                    args.json.forEach((p) =>
-                        {
-                            names.push(p.productName)
-                        }
-                    )
-                    args.cell.innerHTML = names.join(', ');
-                }
-                break;
-            case "country":
-                if (args.json && args.json.length)
-                {
-                    args.json.forEach((c) =>
-                        {
-                            names.push(c.label[0])
-                        }
-                    )
-                    args.cell.innerHTML = names.join(', ');
-                    break;
-                }
-       } 
+        window.foodAlertsGrid = sender;
     }
 </script>

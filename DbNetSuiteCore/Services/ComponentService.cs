@@ -235,48 +235,49 @@ namespace DbNetSuiteCore.Services
             {
                 var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
 
-                if (componentModel.DataSourceType == DataSourceType.FileSystem)
+                switch (componentModel.DataSourceType)
                 {
-                    foreach (ColumnModel column in componentModel.GetColumns())
-                    {
-                        column.Update(dataColumns.First(dc => dc.ColumnName == column.Expression), componentModel.DataSourceType);
-                    }
-                }
-                else
-                {
-                    switch (componentModel.DataSourceType)
-                    {
-                        case DataSourceType.MSSQL:
-                        case DataSourceType.MySql:
-                        case DataSourceType.PostgreSql:
-                        case DataSourceType.SQLite:
-                        case DataSourceType.Oracle:
-                            foreach (ColumnModel column in componentModel.GetColumns())
+                    case DataSourceType.FileSystem:
+                    case DataSourceType.JSON:
+                        foreach (ColumnModel column in componentModel.GetColumns())
+                        {
+                            DataColumn? dataColumn = dataColumns.FirstOrDefault(dc => dc.ColumnName.ToLower() == column.Expression.ToLower());
+                            if (dataColumn != null)
                             {
-                                DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
-                                if (dataRow != null)
-                                {
-                                    column.Update(dataRow, componentModel.DataSourceType);
-                                }
+                                column.Update(dataColumn, componentModel.DataSourceType);
                             }
-                            if (componentModel.GetColumns().Any(c => string.IsNullOrEmpty(c.Name)))
+                        }
+                        break;
+                    case DataSourceType.MSSQL:
+                    case DataSourceType.MySql:
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
+                    case DataSourceType.Oracle:
+                        foreach (ColumnModel column in componentModel.GetColumns())
+                        {
+                            DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
+                            if (dataRow != null)
                             {
-                                componentModel.IgnoreSchemaTable = true;
-                                schema = await GetColumns(componentModel);
-                                dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-                                for (var i = 0; i < dataColumns.Count; i++)
-                                {
-                                    componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
-                                }
+                                column.Update(dataRow, componentModel.DataSourceType);
                             }
-                            break;
-                        default:
+                        }
+                        if (componentModel.GetColumns().Any(c => string.IsNullOrEmpty(c.Name)))
+                        {
+                            componentModel.IgnoreSchemaTable = true;
+                            schema = await GetColumns(componentModel);
+                            dataColumns = schema.Columns.Cast<DataColumn>().ToList();
                             for (var i = 0; i < dataColumns.Count; i++)
                             {
                                 componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
                             }
-                            break;
-                    }
+                        }
+                        break;
+                    default:
+                        for (var i = 0; i < dataColumns.Count; i++)
+                        {
+                            componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
+                        }
+                        break;
                 }
             }
 
