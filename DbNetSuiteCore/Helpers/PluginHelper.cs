@@ -26,9 +26,9 @@ namespace DbNetSuiteCore.Helpers
 
         public static string TransformJson(string jsonString, Type targetType, object[]? args = null)
         {
-            object? instance = JsonSerializer.Deserialize(jsonString, targetType);
+            object? obj = JsonSerializer.Deserialize(jsonString, targetType);
 
-            if (instance == null)
+            if (obj == null)
             {
                 throw new ArgumentException("Failed to deserialize JSON string.");
             }
@@ -42,7 +42,7 @@ namespace DbNetSuiteCore.Helpers
 
             try
             {
-                object? transformedData = transformMethod.Invoke(instance, args);
+                object? transformedData = transformMethod.Invoke(obj, args);
                 return JsonSerializer.Serialize(transformedData, new JsonSerializerOptions { });
             }
             catch (Exception ex)

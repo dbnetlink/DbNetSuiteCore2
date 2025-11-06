@@ -9,7 +9,7 @@
 <div style="display:flex;flex-direction:row;gap:10px;align-items:center;padding-bottom:10px">
     <div><strong>Alert Type</strong></div>
     <div>
-        <select id="alertType">
+        <select id="alertType" data-param="type">
             <option value="">All</option>
             <option value="AA">Allergy Alert</option>
             <option value="PRIN">Product Recall Information Notice</option>
@@ -18,7 +18,7 @@
     </div>
     <div><strong>Period</strong></div>
     <div>
-        <select id="period">
+        <select id="period" data-param="since">
             @{
                 for (int days = 120; days >= 30; days -= 30)
                 {
@@ -34,19 +34,20 @@
     var gridModel = new GridModel(DataSourceType.JSON, "https://data.food.gov.uk/food-alerts/id")
     {
         Caption = "Food Alerts",
-        JsonTransformPlugin = typeof(FoodAlertsTransform)
+        JsonTransformPlugin = typeof(FoodAlertsTransform),
+        ViewDialog = new ViewDialog() { LayoutColumns = 2 }
     };
 
     gridModel.Columns = new List<GridColumn>()
     {
         new GridColumn("Title"),
-        new GridColumn("Notation"),
-        new GridColumn("Created"),
+        new GridColumn("Notation") {PrimaryKey = true},
+        new GridColumn("Created") { DataType = typeof(DateTime)},
         new GridColumn("Modified"),
         new GridColumn("Type") { Format = FormatType.Url},
         new GridColumn("ShortTitle"),
         new GridColumn("Status"),
-        new GridColumn("AlertURL") { Format = FormatType.Url},
+        new GridColumn("AlertURL", "Details") { Format = FormatType.Url},
         new GridColumn("ReportingBusiness") {Filter = FilterType.Distinct},
         new GridColumn("Problem"),
         new GridColumn("ProductDetails"),
@@ -60,25 +61,18 @@
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel));
 }
 
-
 <script>
-    function updateTypeParam(event)
+    function updateParam(event)
     {       
         var params = {}
-        params.type = event.target.value;
+        params[event.target.dataset.param] = event.target.value;
         window.foodAlertsGrid.updateApiRequestParameters(params);
     }
 
-    function updatePeriodParam(event)
-    {
-        var params = {}
-        params.since = event.target.value;
-        window.foodAlertsGrid.updateApiRequestParameters(params);
-    }
     function saveGridRef(sender, args)
     {
-        document.querySelector("#alertType").addEventListener("change", updateTypeParam);
-        document.querySelector("#period").addEventListener("change", updatePeriodParam);
+        document.querySelector("#alertType").addEventListener("change", updateParam);
+        document.querySelector("#period").addEventListener("change", updateParam);
 
         window.foodAlertsGrid = sender;
     }

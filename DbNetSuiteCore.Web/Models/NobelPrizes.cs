@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Models;
+using System.Collections;
 
 namespace DbNetSuiteCore.Web.Models
 {
@@ -7,14 +8,13 @@ namespace DbNetSuiteCore.Web.Models
     {
         public List<NobelPrize> prizes { get; set; }
 
-        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        public IEnumerable Transform(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
         {
             List<TransformedNobelPrizeList> list = prizes.Select(p => new TransformedNobelPrizeList(p.year, p.category, p.laureates) { }).ToList();
             return list;
         }
-
-
     }
+
     public class NobelPrize
     {
         public string year { get; set; }

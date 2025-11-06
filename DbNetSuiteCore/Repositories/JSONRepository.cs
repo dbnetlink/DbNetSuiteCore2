@@ -1,14 +1,15 @@
 ﻿using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Plugins;
-using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins;
+using DbNetSuiteCore.Plugins.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Web;
 
 namespace DbNetSuiteCore.Repositories
@@ -276,24 +277,138 @@ namespace DbNetSuiteCore.Repositories
                     }
                 }
 
-                if (componentModel.GetColumns().Any())
-                {
-                    List<string> columnNames = componentModel.GetColumns().Select(c => c.Expression).ToList();
-                    List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c, StringComparer.OrdinalIgnoreCase) == false).ToList();
-
-                    foreach (string columnName in missingColumnNames)
-                    {
-                        DataColumn Col = dataTable.Columns.Add(columnName, typeof(string));
-                        Col.SetOrdinal(columnNames.IndexOf(columnName));
-                    }
-
-                    dataTable = new DataView(dataTable).ToTable(false, columnNames.ToArray());
-                }
+                AddMissingColumns(componentModel, dataTable, dataColumnNames);
 
                 return dataTable;
             }
 
             return new DataTable();
         }
+
+        private void AddMissingColumns(ComponentModel componentModel, DataTable dataTable, List<string> dataColumnNames)
+        {
+            if (componentModel.GetColumns().Any())
+            {
+                List<string> columnNames = componentModel.GetColumns().Select(c => c.Expression).ToList();
+                List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c, StringComparer.OrdinalIgnoreCase) == false).ToList();
+
+                foreach (string columnName in missingColumnNames)
+                {
+                    DataColumn Col = dataTable.Columns.Add(columnName, typeof(string));
+                    Col.SetOrdinal(columnNames.IndexOf(columnName));
+                }
+
+                dataTable = new DataView(dataTable).ToTable(false, columnNames.ToArray());
+            }
+        }
+
+        // Experimental conversion of JSON to DataTable for System.Text.Json
+        /* 
+        private DataTable SystemTextJsonTabulate(string json, ComponentModel componentModel)
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            JsonElement root = document.RootElement;
+
+            if (componentModel is GridModel gridModel && string.IsNullOrEmpty(gridModel.JsonArrayProperty) == false)
+            {
+                root = root.GetProperty(gridModel.JsonArrayProperty);
+            }
+
+            if (root.ValueKind != JsonValueKind.Array)
+            {
+                foreach (JsonProperty property in root.EnumerateObject())
+                {
+
+                    if (property.Value.ValueKind == JsonValueKind.Array)
+                    {
+                        root = property.Value;
+                        break;
+                    }
+                }
+            }
+
+            Dictionary<string, Type> dataTypes = new Dictionary<string, Type>();
+            List<string> dataColumnNames = new List<string>();
+            JsonArray jsonArray = new JsonArray();
+
+            if (root.ValueKind != JsonValueKind.Array)
+            {
+                return new DataTable();
+            }
+            foreach (JsonElement jsonElement in root.EnumerateArray())
+            {
+                JsonNode? jsonNode = JsonNode.Parse(jsonElement.GetRawText());
+                if (jsonNode is JsonObject row)
+                {
+                    var cleanRow = new JsonObject();
+
+                    foreach (var kvp in row)
+                    {
+                        var columnName = kvp.Key;
+                        var columnValue = kvp.Value;
+
+                        cleanRow[columnName] = CopyJsonNode(columnValue);
+
+                        if (columnValue is not JsonValue)
+                        {
+                            dataTypes[columnName] = typeof(JsonDocument);
+                        }
+
+                        if (!dataColumnNames.Contains(columnName))
+                        {
+                            dataColumnNames.Add(columnName);
+                        }
+                    }
+
+                    jsonArray.Add(cleanRow);
+                }
+            }
+
+            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
+            //  jsonSerializerSettings.MaxDepth = 10;
+
+            DataTable dataTable = new DataTable();
+
+            foreach (string name in dataColumnNames)
+            {
+                dataTable.Columns.Add(new DataColumn(name));
+            }
+
+            foreach (JsonElement jsonObject in root.EnumerateArray())
+            {
+                DataRow newRow = dataTable.NewRow();
+                foreach (var property in jsonObject.EnumerateObject())
+                {
+                    if (dataTable.Columns.Contains(property.Name))
+                    {
+                        // Convert the JsonElement's value to a string for the DataRow
+                        newRow[property.Name] = property.Value.ToString();
+                    }
+                }
+                dataTable.Rows.Add(newRow);
+            }
+
+            AddMissingColumns(componentModel, dataTable, dataColumnNames);
+
+            return dataTable;
+
+        }
+
+        private JsonNode? CopyJsonNode(JsonNode? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            if (value is JsonValue)
+            {
+                return JsonValue.Create(value.GetValue<object>());
+            }
+            else
+            {
+                return JsonNode.Parse(value.ToJsonString());
+            }
+        }
+        */
     }
 }

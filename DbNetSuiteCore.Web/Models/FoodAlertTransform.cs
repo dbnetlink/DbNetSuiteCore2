@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Models;
+using System.Collections;
 using Humanizer;
 using System.Text.Json.Serialization;
 
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Web.Models
         public Meta meta { get; set; }
         public List<Item> items { get; set; }
 
-        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration _configuration)
+        public IEnumerable Transform(GridModel gridModel, HttpContext httpContext, IConfiguration _configuration)
         {
             return items.Select(i => new
             {
@@ -23,7 +24,7 @@ namespace DbNetSuiteCore.Web.Models
                 AlertURL = i.alertURL,
                 ActionTaken = i.actionTaken,
                 ConsumerAdvice = i.consumerAdvice,
-                Products = string.Join("", i.productDetails?.Select(pd => $"<p>{pd.productName}</p>").ToList()),
+                Products = string.Join("", i.productDetails?.Select(pd => $"<p>{pd.productName}</p>").ToList())
             });
         }
     }

@@ -1,8 +1,9 @@
-﻿using DbNetSuiteCore.Plugins.Interfaces;
-using Newtonsoft.Json;
-using DbNetSuiteCore.Models;
-
+﻿using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
+using System.Collections;
 using System.Diagnostics.Contracts;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 
 namespace DbNetSuiteCore.Web.Plugins
@@ -12,7 +13,7 @@ namespace DbNetSuiteCore.Web.Plugins
         public Meta meta { get; set; }
         public List<Item> items { get; set; }
 
-        public object Transform(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        public IEnumerable Transform(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
         {
             return items.Select(i => new
             {
@@ -41,21 +42,21 @@ namespace DbNetSuiteCore.Web.Plugins
 
     public class Allergen
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public string label { get; set; }
     }
 
     public class Country
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public List<string> label { get; set; }
     }
 
     public class Item
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public string title { get; set; }
         public string notation { get; set; }
@@ -73,7 +74,7 @@ namespace DbNetSuiteCore.Web.Plugins
 
     public class Meta
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public string publisher { get; set; }
         public string license { get; set; }
@@ -86,7 +87,7 @@ namespace DbNetSuiteCore.Web.Plugins
 
     public class Problem
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public string riskStatement { get; set; }
         public List<Allergen> allergen { get; set; }
@@ -94,7 +95,7 @@ namespace DbNetSuiteCore.Web.Plugins
 
     public class ProductDetail
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public string productName { get; set; }
     }
@@ -107,7 +108,7 @@ namespace DbNetSuiteCore.Web.Plugins
 
     public class Status
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string id { get; set; }
         public string label { get; set; }
     }
