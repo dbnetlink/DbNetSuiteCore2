@@ -1,14 +1,14 @@
 ﻿@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Timesheet.Constants
-@using DbNetSuiteCore.Web.Models
+@using DbNetSuiteCore.Timesheet.Plugins
 @model DbNetSuiteCore.Timesheet.ViewModels.BaseViewModel
 @{
     ViewData["Title"] = "Users";
 }
 
 @{
-    GridModel usersGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetUsers");
+    GridModel usersGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "Users");
     usersGrid.Caption = "Users";
     usersGrid.Columns = new List<GridColumn>()
     {
@@ -29,7 +29,7 @@
     };
 
 
-    FormModel usersForm = new FormModel("AspNetUsers") { LayoutColumns = 4, Delete = true };
+    FormModel usersForm = new FormModel("Users") { LayoutColumns = 4, Delete = true };
     usersForm.Columns = new List<FormColumn>()
     {
         new FormColumn("Id") {DataOnly = true, ForeignKey = true},
@@ -37,9 +37,9 @@
         new FormColumn("Email")
     };
     usersForm.Bind(FormClientEvent.RecordLoaded, "userControl.userSelected");
-    usersForm.CustomisationPlugin = typeof(AspNetUsersCustomisation);
+    usersForm.CustomisationPlugin = typeof(UserPlugin);
 
-    var userRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "AspNetRoles") { };
+    var userRolesGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "User_Roles") { };
     userRolesGrid.Columns = new List<GridColumn>()
     {
         new GridColumn("Name"),

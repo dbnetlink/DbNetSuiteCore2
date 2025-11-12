@@ -50,11 +50,11 @@ namespace DbNetSuiteCore.Timesheet.ApiControllers
                 CommandConfig commandConfig = new CommandConfig();
                 if (updateUserRoleDto.RoleSelected)
                 {
-                    commandConfig.Sql = "insert into AspNetUserRoles (UserId, RoleId) values (@UserId, @RoleId)";
+                    commandConfig.Sql = "insert into DbNetTime_UserRoles (UserId, RoleId) values (@UserId, @RoleId)";
                 }
                 else
                 {
-                    commandConfig.Sql = "delete from AspNetUserRoles where UserId = @UserId and RoleId = @RoleId";
+                    commandConfig.Sql = "delete from DbNetTime_UserRoles where UserId = @UserId and RoleId = @RoleId";
                 }
                 commandConfig.Params["UserId"] = userId;
                 commandConfig.Params["RoleId"] = roleId;
@@ -71,7 +71,7 @@ namespace DbNetSuiteCore.Timesheet.ApiControllers
             using (var connection = DbHelper.GetConnection(TimesheetConstants.ConnectionAlias, Enums.DataSourceType.MSSQL, _configuration))
             {
                 connection.Open();
-                QueryCommandConfig query = new QueryCommandConfig() { Sql = "select RoleId from AspNetUserRoles where UserId = @UserId" };
+                QueryCommandConfig query = new QueryCommandConfig() { Sql = "select RoleId from DbNetTime_UserRoles where UserId = @UserId" };
                 query.Params["UserId"] = userId;
                 var results = DbHelper.RunQuery(query, connection);
 

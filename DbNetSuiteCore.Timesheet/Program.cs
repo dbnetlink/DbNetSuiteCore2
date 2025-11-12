@@ -1,26 +1,25 @@
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Timesheet.Constants;
-using DbNetSuiteCore.Timesheet.Data;
-using DbNetSuiteCore.Timesheet.Data.Models;
 using DbNetSuiteCore.Timesheet.Helpers;
+using DbNetSuiteCore.Timesheet.Models;
+using DbNetSuiteCore.Timesheet.Stores;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString(TimesheetConstants.ConnectionAlias) ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+});
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
-    options.SignIn.RequireConfirmedAccount = true;
-}).AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddTransient<IUserStore<ApplicationUser>, UserStore>();
+builder.Services.AddTransient<IRoleStore<ApplicationRole>, RoleStore>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

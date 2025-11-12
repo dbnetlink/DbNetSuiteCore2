@@ -1,4 +1,3 @@
-using DbNetSuiteCore.Timesheet.Data.Models;
 using DbNetSuiteCore.Timesheet.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

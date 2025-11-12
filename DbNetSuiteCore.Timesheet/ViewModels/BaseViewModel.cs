@@ -1,5 +1,5 @@
 ﻿using DbNetSuiteCore.Timesheet.Constants;
-using DbNetSuiteCore.Timesheet.Data.Models;
+using DbNetSuiteCore.Timesheet.Models;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;

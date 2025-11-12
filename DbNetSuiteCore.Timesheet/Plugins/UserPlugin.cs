@@ -5,9 +5,9 @@ using DocumentFormat.OpenXml.Office2010.Excel;
 using System.Diagnostics.Contracts;
 using System.Text.Json.Serialization;
 
-namespace DbNetSuiteCore.Web.Models
+namespace DbNetSuiteCore.Timesheet.Plugins
 {
-    public class AspNetUsersCustomisation : ICustomFormPlugin
+    public class UserPlugin : ICustomFormPlugin
     {
         public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {

@@ -269,10 +269,22 @@ namespace DbNetSuiteCore.Extensions
                     if (dataColumn != null)
                     {
                         var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false && dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], gridColumn.DataType)).OrderBy(v => v).ToList();
-                        gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
+
+
+                        gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, LookupDescription(v, gridColumn))).ToList();
                     }
                 }
             }
+        }
+
+        private static string LookupDescription(object value, GridColumn gridColumn)
+        {
+            if (value == null || string.IsNullOrEmpty(gridColumn.Format))
+            {
+                return value?.ToString() ?? string.Empty;
+            }
+
+            return gridColumn.FormatValue(value)?.ToString() ?? string.Empty;
         }
 
         public static CommandConfig BuildUpdate(this GridModel gridModel, int r, object primaryKeyObject, List<string> columns)

@@ -1,13 +1,17 @@
-using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.AspNetCore.DataProtection;
+
+using StackExchange.Redis;
+using NRedisStack;
+using NRedisStack.RedisStackCommands;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
 
 string redisServer = builder.Configuration.GetConnectionString("RedisServer");
 
+/*
 if (string.IsNullOrEmpty(redisServer) == false)
 {
     builder.Services.AddStackExchangeRedisCache(options =>
@@ -15,6 +19,20 @@ if (string.IsNullOrEmpty(redisServer) == false)
         options.Configuration = redisServer;
         options.InstanceName = "DbNetSuiteCore";
     });
+}
+*/
+
+
+if (string.IsNullOrEmpty(redisServer) == false)
+{
+    var muxer = ConnectionMultiplexer.Connect(
+      new ConfigurationOptions
+      {
+          EndPoints = { { "redis-16198.c283.us-east-1-4.ec2.cloud.redislabs.com", 16198 } },
+          User = "default",
+          Password = "xfq5RSUQDSp0dDusLgU17iPmn8NrRnZt"
+      } );
+    builder.Services.AddDataProtection().PersistKeysToStackExchangeRedis(muxer, "DataProtection-Keys");
 }
 
 var app = builder.Build();

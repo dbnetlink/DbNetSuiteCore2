@@ -111,7 +111,15 @@
                 else if (column.LookupOptions != null && column.LookupOptions.Any())
                 {
                     <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
-                        @Html.Raw(row[dataColumn])
+
+                        @if (column.Column.Filter != FilterType.Distinct || string.IsNullOrEmpty(column.Column.Format))
+                        {
+                            @Html.Raw(row[dataColumn])
+                        }
+                        else
+                        {
+                            @(column.FormatValue(row[dataColumn])?.ToString() ?? string.Empty);
+                        }
                     </td>
                 }
                 else if (column.Image != null)

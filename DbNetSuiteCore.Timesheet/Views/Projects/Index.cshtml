@@ -7,7 +7,7 @@
 }
 
 @{
-    GridModel projectsGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "Project");
+    GridModel projectsGrid = new GridModel(DataSourceType.MSSQL, TimesheetConstants.ConnectionAlias, "Projects");
     projectsGrid.Columns = new List<GridColumn>()
     {
         new GridColumn("Id") {DataOnly = true},
@@ -15,14 +15,14 @@
     };
 
 
-    FormModel projectsForm = new FormModel("Project") { LayoutColumns = 4, Delete = true, Insert = true };
+    FormModel projectsForm = new FormModel("Projects") { LayoutColumns = 4, Delete = true, Insert = true };
     projectsForm.Columns = new List<FormColumn>()
     {
         new FormColumn("Id") {DataOnly = true, ForeignKey = true},
         new FormColumn("Name") {Unique = true }
     };
 
-    GridModel tasksGrid = new GridModel("Project_Task");
+    GridModel tasksGrid = new GridModel("Project_Tasks");
     tasksGrid.Columns = new List<GridColumn>()
     {
         new GridColumn("Id") {DataOnly = true},
@@ -31,7 +31,7 @@
     };
 
 
-    FormModel tasksForm = new FormModel("Project_Task") { LayoutColumns = 4, Delete = true, Insert = true };
+    FormModel tasksForm = new FormModel("Project_Tasks") { LayoutColumns = 4, Delete = true, Insert = true };
     tasksForm.Columns = new List<FormColumn>()
     {
         new FormColumn("Id") {DataOnly = true, PrimaryKey = true},

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using DbNetSuiteCore.Timesheet.Data.Models;
+using DbNetSuiteCore.Timesheet.Models;
 
 namespace DbNetSuiteCore.Timesheet.Areas.Identity.Pages.Account
 {

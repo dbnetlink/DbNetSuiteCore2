@@ -2,6 +2,6 @@
 {
     public static class TimesheetConstants
     {
-        public const string ConnectionAlias = "DefaultConnection";
+        public const string ConnectionAlias = "DbNetTime";
     }
 }
