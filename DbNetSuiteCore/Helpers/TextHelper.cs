@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Configuration;
 using System.IO.Compression;
@@ -50,6 +51,13 @@ namespace DbNetSuiteCore.Helpers
 
             if (httpContext != null)
             {
+                string aesPassword = GetAesPassword(httpContext);
+
+                if (string.IsNullOrEmpty(aesPassword) == false)
+                {
+                    return AesEncryptor.Encrypt(input,aesPassword);
+                }
+
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
                 {
@@ -70,6 +78,13 @@ namespace DbNetSuiteCore.Helpers
 
             if (httpContext != null)
             {
+                string aesPassword = GetAesPassword(httpContext);
+
+                if (string.IsNullOrEmpty(aesPassword) == false)
+                {
+                    return AesEncryptor.Decrypt(input, aesPassword);
+                }
+
                 DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
                 {
@@ -83,6 +98,17 @@ namespace DbNetSuiteCore.Helpers
             return Decompress(input);
         }
 
+        private static string GetAesPassword(HttpContext httpContext)
+        {
+            IConfiguration? configuration = httpContext.RequestServices.GetService<IConfiguration>();
+
+            if (configuration != null)
+            {
+                return configuration.ConfigValue(ConfigurationHelper.AppSetting.AesPassword);
+            }
+
+            return string.Empty;
+        }
         public static T? DeobfuscateKey<T>(string input)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(TextHelper.DeobfuscateString(input));
