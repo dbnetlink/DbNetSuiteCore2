@@ -8,7 +8,8 @@
             AllowConnectionString,
             UpdateDisabled,
             StateManagement,
-            UseDistributedServerCache
+            UseDistributedServerCache,
+            AesPassword
         }
 
         public static string ConfigValue(this IConfiguration configuration, AppSetting setting)
