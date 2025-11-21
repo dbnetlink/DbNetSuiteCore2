@@ -11,7 +11,7 @@ namespace DbNetSuiteCore.Web.Models
         public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
             var reorderLevel = Convert.ToInt32(formModel.FormValue("reorderlevel"));
-            var discontinued = Boolean.Parse(formModel.FormValue("discontinued").ToString());
+            var discontinued = Boolean.Parse(formModel.FormValue("discontinued")?.ToString() ?? string.Empty);
 
             if (discontinued && reorderLevel > 0)
             {
@@ -33,6 +33,10 @@ namespace DbNetSuiteCore.Web.Models
         }
         public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
+        }
+        public void CustomCommit(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        {
+            throw new NotImplementedException();
         }
     }
 }

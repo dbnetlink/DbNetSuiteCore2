@@ -1,10 +1,11 @@
 ﻿@page
+@using System.Net.Http
 @using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Web.Enums
 @using DbNetSuiteCore.Web.Models
-@using System.Net.Http
+@using DbNetSuiteCore.Web.Plugins
 
 @{
     var gridModel = new GridModel(DataSourceType.JSON, "https://api.nobelprize.org/v1/prize.json");

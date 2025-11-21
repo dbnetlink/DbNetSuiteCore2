@@ -112,25 +112,25 @@
 
         }
     </div>
+</div>
 
-    <script>
-        function setFileName(sender, args) {
-            args.link.download = "@(CleanTableName(Model.TableName))." + args.extension
-        }
-
-    </script>
-
-
-    @functions
-    {
-        string CleanTableName(string tableName)
-        {
-            if (string.IsNullOrEmpty(tableName) == false)
-            {
-                Regex rgx = new Regex(@"[^a-zA-Z0-9_]");
-                tableName = rgx.Replace(tableName.Split(".").Last(), "");
-            }
-
-            return tableName;
-        }
+<script>
+    function setFileName(sender, args) {
+        args.link.download = "@(CleanTableName(Model.TableName))." + args.extension
     }
+</script>
+
+
+@functions
+{
+    string CleanTableName(string tableName)
+    {
+        if (string.IsNullOrEmpty(tableName) == false)
+        {
+            Regex rgx = new Regex(@"[^a-zA-Z0-9_]");
+            tableName = rgx.Replace(tableName.Split(".").Last(), "");
+        }
+
+        return tableName;
+    }
+}

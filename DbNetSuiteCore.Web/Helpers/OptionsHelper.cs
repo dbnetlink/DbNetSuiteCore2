@@ -20,7 +20,7 @@ namespace DbNetSuiteCore.Web.Helpers
             {
                 case ProductEditForm:
                     var reorderLevel = Convert.ToInt32(formModel.FormValue("reorderlevel"));
-                    var discontinued = Boolean.Parse(formModel.FormValue("discontinued").ToString());
+                    var discontinued = Boolean.Parse(formModel.FormValue("discontinued")?.ToString() ?? string.Empty);
 
                     if (discontinued && reorderLevel > 0)
                     {

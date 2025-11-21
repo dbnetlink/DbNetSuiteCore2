@@ -33,6 +33,10 @@ namespace DbNetSuiteCore.Web.Models
         public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
         {
         }
+        public void CustomCommit(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

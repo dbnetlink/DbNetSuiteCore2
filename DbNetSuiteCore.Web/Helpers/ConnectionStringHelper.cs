@@ -24,7 +24,7 @@ namespace DbNetSuiteCore.Web.Helpers
         };
         public static string TestConnectionString(StringValues db, DataSourceType dataSourceType)
         {
-           return db == StringValues.Empty ? ConnectionAlias[dataSourceType] : string.Format(ConnectionString[dataSourceType], db);
+           return db == StringValues.Empty ? ConnectionAlias[dataSourceType] : string.Format(ConnectionString[dataSourceType], db.ToString());
         }
     }
 }

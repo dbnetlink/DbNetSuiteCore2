@@ -9,7 +9,7 @@ using NRedisStack.RedisStackCommands;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
 
-string redisServer = builder.Configuration.GetConnectionString("RedisServer");
+string? redisServer = builder.Configuration.GetConnectionString("RedisServer");
 
 /*
 if (string.IsNullOrEmpty(redisServer) == false)

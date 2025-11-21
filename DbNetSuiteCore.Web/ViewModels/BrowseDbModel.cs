@@ -89,7 +89,7 @@ namespace DbNetSuiteCore.Web.ViewModels
 
         protected List<string> GetSQLiteDatabases()
         {
-            var provider = new PhysicalFileProvider($"{env.WebRootPath}\\data\\sqlite");
+            var provider = new PhysicalFileProvider($"{env?.WebRootPath}\\data\\sqlite");
             var contents = provider.GetDirectoryContents(string.Empty);
 
             var databases = new List<string>();

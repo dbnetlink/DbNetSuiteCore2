@@ -11,9 +11,6 @@ namespace DbNetSuiteCore.Web.Pages.Oracle
     {
         public OracleBrowseDbModel(IConfiguration configuration) : base(configuration)
         {
-            OracleDbType OracleDbType = OracleDbType.BFile;
-
-
             DataSourceType = DataSourceType.Oracle;
             Connections = DbHelper.GetConnections(configuration).Where(c => c.Value.ToLower().Contains("localhost:1521")).Select(c => c.Key).ToList();
         }

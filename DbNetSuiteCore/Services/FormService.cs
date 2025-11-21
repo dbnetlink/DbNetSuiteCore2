@@ -173,17 +173,24 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                if (formModel.Mode == FormMode.Update)
+                if (CustomCommit(formModel))
                 {
-                    await UpdateRecord(formModel);
-                    formModel.FormValues = new Dictionary<string, string>();
-                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+
                 }
                 else
                 {
-                    await InsertRecord(formModel);
-                    formModel.PrimaryKeyValues = new List<List<object>>();
-                    formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Added);
+                    if (formModel.Mode == FormMode.Update)
+                    {
+                        await UpdateRecord(formModel);
+                        formModel.FormValues = new Dictionary<string, string>();
+                        formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                    }
+                    else
+                    {
+                        await InsertRecord(formModel);
+                        formModel.PrimaryKeyValues = new List<List<object>>();
+                        formModel.Message = ResourceHelper.GetResourceString(ResourceNames.Added);
+                    }
                 }
 
                 formModel.MessageType = MessageType.Success;
@@ -295,6 +302,31 @@ namespace DbNetSuiteCore.Services
             }
 
             return result;
+        }
+
+        private bool CustomCommit(FormModel formModel)
+        {
+            if (string.IsNullOrEmpty(formModel.CustomisationPluginName) || _context == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), new object[] { formModel, _context, _configuration });
+            }
+            catch (NotImplementedException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                formModel.Message = ex.Message;
+                formModel.MessageType = MessageType.Error;
+                return true;
+            }
+
+            return true;
         }
 
         private async Task<bool> ValidatePrimaryKey(FormModel formModel)
