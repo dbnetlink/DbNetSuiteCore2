@@ -149,7 +149,9 @@ namespace DbNetSuiteCore.Models
         internal MessageType MessageType = MessageType.None;
         internal bool IsParent => LinkedControlIds.Any();
         [JsonIgnore]
-        internal HttpContext? HttpContext { get; set; } = null;
+        public HttpContext? HttpContext { get; internal set; } = null;
+        [JsonIgnore]
+        public IConfiguration? Configuration => HttpContext?.RequestServices.GetService<IConfiguration>();
         public ComponentModel()
         {
             Id = GeneratedId();

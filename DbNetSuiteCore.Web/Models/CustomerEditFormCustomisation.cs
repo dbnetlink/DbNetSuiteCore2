@@ -9,19 +9,22 @@ namespace DbNetSuiteCore.Web.Models
 {
     public class CustomerEditFormCustomisation : ICustomFormPlugin
     {
-        public bool ValidateUpdate(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(FormModel formModel)
         {
             return true;
         }
 
-        public bool ValidateInsert(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateInsert(FormModel formModel)
         {
            return true;
         }
 
-        public bool ValidateDelete(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateDelete(FormModel formModel)
         {
-            var dataTable = DbHelper.GetRecord(formModel, httpContext);
+            var httpContext2 = formModel.HttpContext;
+            var configuration1 = formModel.Configuration;
+
+            var dataTable = DbHelper.GetRecord(formModel);
 
             if (dataTable.Rows[0]["CompanyName"].ToString() != "DbNetLink Limited")
             {
@@ -30,10 +33,10 @@ namespace DbNetSuiteCore.Web.Models
             }
             return true;
         }
-        public void Initialisation(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(FormModel formModel)
         {
         }
-        public void CustomCommit(FormModel formModel, HttpContext httpContext, IConfiguration configuration)
+        public void CustomCommit(FormModel formModel)
         {
             throw new NotImplementedException();
         }

@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.Plugins.Interfaces
 {
     public interface ICustomGridPlugin
     {
-        public bool ValidateUpdate(GridModel gridModel, HttpContext httpContext, IConfiguration configuration);
-        public void Initialisation(GridModel gridModel, HttpContext httpContext, IConfiguration configuration);
+        public bool ValidateUpdate(GridModel gridModel);
+        public void Initialisation(GridModel gridModel);
     }
 }

@@ -51,9 +51,9 @@ namespace DbNetSuiteCore.Helpers
             return QueryToDataTable(query, connection);
         }
 
-        public static DataTable GetRecord(FormModel formModel, HttpContext httpContext)
+        public static DataTable GetRecord(FormModel formModel)
         {
-            FormService? formService = httpContext.RequestServices.GetService<FormService>(); 
+            FormService? formService = formModel.HttpContext?.RequestServices.GetService<FormService>(); 
             if (formService == null)
             {
                 throw new Exception("FormService not registered with the dependency injection container.s");

@@ -3,7 +3,7 @@ using DbNetSuiteCore.Models;
 using System.Text.Json.Serialization;
 using System.Collections;
 
-namespace DbNetSuiteCore.Web.Plugins
+namespace DbNetSuiteCore.UnitTests.Plugins
 {
     public class OffshoreOilGasSiteSurveyTransform : IJsonTransformPlugin
     {

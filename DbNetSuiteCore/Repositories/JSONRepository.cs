@@ -168,7 +168,7 @@ namespace DbNetSuiteCore.Repositories
                     throw new Exception($"The <b>JsonTransformPlugin</b> property must implement the {nameof(IJsonTransformPlugin)} interface");
                 }
 
-                json = PluginHelper.TransformJson(json, PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName)!, new object[] { gridModel, httpContext, _configuration });
+                json = PluginHelper.TransformJson(json, PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName)!, gridModel);
             }
 
             DataTable? dataTable = new();

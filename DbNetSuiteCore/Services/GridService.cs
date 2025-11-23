@@ -1,11 +1,11 @@
 ﻿using ClosedXML.Excel;
 using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
@@ -15,6 +15,7 @@ using DocumentFormat.OpenXml.Office2010.Word;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text;
@@ -107,7 +108,18 @@ namespace DbNetSuiteCore.Services
 
                 if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
                 {
-                    PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), new object[] { gridModel, _context, _configuration });
+                    try
+                    {
+                        PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), gridModel);
+                    }
+                    catch (NotImplementedException) 
+                    {
+
+                    }
+                    if (string.IsNullOrEmpty(gridModel.Message) == false)
+                    {
+                        throw new Exception(gridModel.Message);
+                    }
                 }
             }
 
@@ -551,15 +563,22 @@ namespace DbNetSuiteCore.Services
 
             if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false && _context != null)
             {
-                result = (bool)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), new object[] { gridModel, _context, _configuration })!;
-
-                if (result == false)
+                try
                 {
-                    if (string.IsNullOrEmpty(gridModel.Message))
+                    result = (bool)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), gridModel)!;
+
+                    if (result == false)
                     {
-                        gridModel.Message = "Custom validation failed";
+                        if (string.IsNullOrEmpty(gridModel.Message))
+                        {
+                            gridModel.Message = "Custom validation failed";
+                        }
+                        gridModel.MessageType = MessageType.Error;
                     }
-                    gridModel.MessageType = MessageType.Error;
+                }
+                catch (NotImplementedException)
+                {
+                    return result;
                 }
             }
 

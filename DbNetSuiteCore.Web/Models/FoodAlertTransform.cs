@@ -11,7 +11,7 @@ namespace DbNetSuiteCore.Web.Models
         public Meta? meta { get; set; }
         public List<Item>? items { get; set; }
 
-        public IEnumerable Transform(GridModel gridModel, HttpContext httpContext, IConfiguration _configuration)
+        public IEnumerable Transform(GridModel gridModel)
         {
             return (items ?? new List<Item>()).Select(i => new
             {

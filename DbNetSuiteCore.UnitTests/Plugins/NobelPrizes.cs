@@ -3,7 +3,7 @@ using DbNetSuiteCore.Models;
 using System.Collections;
 using DocumentFormat.OpenXml.Office2016.Drawing.Command;
 
-namespace DbNetSuiteCore.Web.Plugins
+namespace DbNetSuiteCore.UnitTests.Plugins
 {
     public class NobelPrizeTransform : IJsonTransformPlugin
     {

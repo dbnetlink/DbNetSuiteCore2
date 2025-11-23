@@ -1,13 +1,11 @@
 ﻿using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Models;
-using System.Diagnostics.Contracts;
-using System.Text.Json.Serialization;
 
 namespace DbNetSuiteCore.Web.Models
 {
     public class ProductEditGridCustomisation : ICustomGridPlugin
     {
-        public bool ValidateUpdate(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        public bool ValidateUpdate(GridModel gridModel)
         {
             foreach (var row in gridModel.ModifiedRows.Keys)
             {
@@ -28,7 +26,7 @@ namespace DbNetSuiteCore.Web.Models
 
             return true;
         }
-        public void Initialisation(GridModel gridModel, HttpContext httpContext, IConfiguration configuration)
+        public void Initialisation(GridModel gridModel)
         {
         }
     }

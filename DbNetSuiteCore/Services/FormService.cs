@@ -290,18 +290,25 @@ namespace DbNetSuiteCore.Services
                 return true;
             }
 
-            bool result = (bool)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, new object[] { formModel, _context, _configuration })!;
-
-            if (result == false)
+            try
             {
-                if (string.IsNullOrEmpty(formModel.Message))
-                {
-                    formModel.Message = "Custom validation failed";
-                }
-                formModel.MessageType = MessageType.Error;
-            }
+                bool result = (bool)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, formModel, false)!;
 
-            return result;
+                if (result == false)
+                {
+                    if (string.IsNullOrEmpty(formModel.Message))
+                    {
+                        formModel.Message = "Custom validation failed";
+                    }
+                    formModel.MessageType = MessageType.Error;
+                }
+
+                return result;
+            }
+            catch (NotImplementedException)
+            {
+                return true;
+            }
         }
 
         private bool CustomCommit(FormModel formModel)
@@ -313,7 +320,7 @@ namespace DbNetSuiteCore.Services
 
             try
             {
-                PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), new object[] { formModel, _context, _configuration });
+                PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), formModel);
             }
             catch (NotImplementedException)
             {
