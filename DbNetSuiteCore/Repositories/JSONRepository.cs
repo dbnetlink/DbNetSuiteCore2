@@ -1,10 +1,12 @@
 ﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins;
 using DbNetSuiteCore.Plugins.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using MongoDB.Bson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
@@ -65,7 +67,6 @@ namespace DbNetSuiteCore.Repositories
             componentModel.Data = await BuildDataTable(componentModel, httpContext);
             return componentModel.Data;
         }
-
 
         public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext? context)
         {
@@ -163,12 +164,12 @@ namespace DbNetSuiteCore.Repositories
 
             if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && httpContext != null)
             {
-                if (PluginHelper.DoesTypeImplementInterface<IJsonTransformPlugin>(gridModel.JsonTransformPluginName) == false)
-                {
-                    throw new Exception($"The <b>JsonTransformPlugin</b> property must implement the {nameof(IJsonTransformPlugin)} interface");
-                }
+                json = PluginHelper.TransformJson(gridModel, json);
 
-                json = PluginHelper.TransformJson(json, PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName)!, gridModel);
+                if (string.IsNullOrEmpty(gridModel.Message) == false)
+                {
+                    throw new Exception(gridModel.Message);
+                }
             }
 
             DataTable? dataTable = new();

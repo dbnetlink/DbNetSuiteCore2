@@ -29,6 +29,10 @@ namespace DbNetSuiteCore.Web.Models
         public void Initialisation(GridModel gridModel)
         {
         }
+
+        public void TransformDataTable(GridModel gridModel)
+        {
+        }
     }
 }
 

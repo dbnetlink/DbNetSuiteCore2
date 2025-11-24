@@ -22,7 +22,7 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
-        internal DataTable Data { get; set; } = new DataTable();
+        public DataTable Data { get; internal set; } = new DataTable();
         [JsonIgnore]
         internal DataTable Record { get; set; } = new DataTable();
         /// <summary>

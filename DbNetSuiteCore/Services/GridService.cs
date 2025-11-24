@@ -18,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Data;
+using System.Reflection;
 using System.Text;
 
 namespace DbNetSuiteCore.Services
@@ -108,14 +109,9 @@ namespace DbNetSuiteCore.Services
 
                 if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
                 {
-                    try
-                    {
-                        PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), gridModel);
-                    }
-                    catch (NotImplementedException) 
-                    {
 
-                    }
+                    PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), gridModel);
+                 
                     if (string.IsNullOrEmpty(gridModel.Message) == false)
                     {
                         throw new Exception(gridModel.Message);
@@ -559,30 +555,22 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
-            bool result = true;
+            bool validated = true;
 
             if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false && _context != null)
             {
-                try
+                validated = (bool?)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), gridModel, false) ?? true;
+                if (validated == false)
                 {
-                    result = (bool)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), gridModel)!;
-
-                    if (result == false)
+                    if (string.IsNullOrEmpty(gridModel.Message))
                     {
-                        if (string.IsNullOrEmpty(gridModel.Message))
-                        {
-                            gridModel.Message = "Custom validation failed";
-                        }
-                        gridModel.MessageType = MessageType.Error;
+                        gridModel.Message = "Custom validation failed";
                     }
-                }
-                catch (NotImplementedException)
-                {
-                    return result;
+                    gridModel.MessageType = MessageType.Error;
                 }
             }
 
-            return result;
+            return validated;
         }
 
         private bool ValidateErrorType(GridModel gridModel, ResourceNames resourceName)

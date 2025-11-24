@@ -290,25 +290,18 @@ namespace DbNetSuiteCore.Services
                 return true;
             }
 
-            try
-            {
-                bool result = (bool)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, formModel, false)!;
+            bool validated = (bool?)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, formModel, false) ?? true;
 
-                if (result == false)
+            if (validated == false)
+            {
+                if (string.IsNullOrEmpty(formModel.Message))
                 {
-                    if (string.IsNullOrEmpty(formModel.Message))
-                    {
-                        formModel.Message = "Custom validation failed";
-                    }
-                    formModel.MessageType = MessageType.Error;
+                    formModel.Message = "Custom validation failed";
                 }
+                formModel.MessageType = MessageType.Error;
+            }
 
-                return result;
-            }
-            catch (NotImplementedException)
-            {
-                return true;
-            }
+            return validated;
         }
 
         private bool CustomCommit(FormModel formModel)
@@ -318,22 +311,19 @@ namespace DbNetSuiteCore.Services
                 return false;
             }
 
-            try
-            {
-                PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), formModel);
-            }
-            catch (NotImplementedException)
+            bool? committed = (bool?)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), formModel, false);
+
+            if (committed.HasValue == false)
             {
                 return false;
             }
-            catch (Exception ex)
+
+            if (committed.Value == false)
             {
-                formModel.Message = ex.Message;
-                formModel.MessageType = MessageType.Error;
-                return true;
+                throw new Exception(formModel.Message);
             }
 
-            return true;
+            return committed.Value;
         }
 
         private async Task<bool> ValidatePrimaryKey(FormModel formModel)

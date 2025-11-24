@@ -1,6 +1,4 @@
 ﻿using DbNetSuiteCore.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 
 namespace DbNetSuiteCore.Plugins.Interfaces
 {
@@ -8,5 +6,6 @@ namespace DbNetSuiteCore.Plugins.Interfaces
     {
         public bool ValidateUpdate(GridModel gridModel);
         public void Initialisation(GridModel gridModel);
+        public void TransformDataTable(GridModel gridModel);
     }
 }
