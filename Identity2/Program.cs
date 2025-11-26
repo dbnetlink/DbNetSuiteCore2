@@ -1,14 +1,8 @@
-using DbNetSuiteCore.Identity.Constants;
-using DbNetSuiteCore.Identity.Helpers;
 using DbNetSuiteCore.Identity.Models;
 using DbNetSuiteCore.Identity.Stores;
 using DbNetSuiteCore.Middleware;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.TagHelpers;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.DependencyInjection;
-using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +11,15 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
 });
+
+/*
+builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+.AddNegotiate();
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = options.DefaultPolicy;
+});
+*/
 
 builder.Services.AddTransient<IUserStore<ApplicationUser>, UserStore>();
 builder.Services.AddTransient<IRoleStore<ApplicationRole>, RoleStore>();

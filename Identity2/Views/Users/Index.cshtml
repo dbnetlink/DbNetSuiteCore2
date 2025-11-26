@@ -29,7 +29,11 @@
     };
 
 
-    FormModel usersForm = new FormModel("Users") { LayoutColumns = 4, Delete = true };
+    FormModel usersForm = new FormModel(DataSourceType.MSSQL, IdentityConstants.ConnectionAlias,"Users")
+    {
+        LayoutColumns = 4,
+        Delete = true
+    };
     usersForm.Columns = new List<FormColumn>()
     {
         new FormColumn("Id") {DataOnly = true, ForeignKey = true},
@@ -42,8 +46,8 @@
     var userRolesGrid = new GridModel(DataSourceType.MSSQL, IdentityConstants.ConnectionAlias, "User_Roles") { };
     userRolesGrid.Columns = new List<GridColumn>()
     {
-        new GridColumn("Name"),
-        new GridColumn("Id"){ DataOnly = true}
+        new GridColumn("UserId"){ DataOnly = true, ForeignKey = true },
+        new GridColumn("RoleId"){ Lookup = new Lookup("Roles","Id","Name")}
     };
     userRolesGrid.ToolbarPosition = ToolbarPosition.Hidden;
     userRolesGrid.Caption = "User Roles";
@@ -53,11 +57,12 @@
     userRolesGrid.Bind(GridClientEvent.Initialised, "userControl.saveGridReference");
 
     usersGrid.LinkedControl = usersForm;
+    usersForm.LinkedControl = userRolesGrid;
 
     <div class="flex flex-column gap-3">
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(usersGrid))</div>
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(usersForm))</div>
-        <div>@(await new DbNetSuiteCore.Control(Context).Render(userRolesGrid))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(Context).Render(usersGrid))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(Context).Render(usersForm))</div>
+        <div>@(await DbNetSuiteCore.Control.Create(Context).Render(userRolesGrid))</div>
     </div>
 
 }

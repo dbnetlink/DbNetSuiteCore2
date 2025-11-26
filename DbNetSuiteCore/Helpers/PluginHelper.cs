@@ -40,6 +40,10 @@ namespace DbNetSuiteCore.Helpers
 
         public static object? InvokeMethod(string typeName, string methodName, ComponentModel componentModel, object? defaultReturn = null)
         {
+            if (string.IsNullOrEmpty(typeName))
+            {
+                return null;
+            }
             Type? type = GetTypeFromName(typeName);
             if (type == null)
             {

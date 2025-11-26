@@ -458,8 +458,19 @@ namespace DbNetSuiteCore.Extensions
 
         public static bool IsCsvFile(ComponentModel componentModel)
         {
-            return componentModel.DataSourceType == DataSourceType.Excel && componentModel.Url.ToLower().Replace("]", string.Empty).EndsWith(".csv");
+            return HasExtension(componentModel, "csv");
         }
+
+        public static bool IsOdsFile(ComponentModel componentModel)
+        {
+            return HasExtension(componentModel, "ods");
+        }
+
+        private static bool HasExtension(ComponentModel componentModel, string ext)
+        {
+            return componentModel.DataSourceType == DataSourceType.Excel && componentModel.Url.ToLower().Replace("]", string.Empty).EndsWith($".{ext}");
+        }
+
         public static string Top(ComponentModel componentModel)
         {
             switch (componentModel.DataSourceType)

@@ -32,17 +32,22 @@ DbNetSuiteCore.assignClientControl = function (controlId: string, clientEvents: 
         }
         for (const [key, value] of Object.entries(clientEvents)) {
             const functionNameParts: Array<String> = value.toString().split('.') as Array<string>;
-            if (functionNameParts.length > 1) {
-                (clientControl as ComponentControl).eventHandlers[key] = {
-                    type: window[functionNameParts[0].toString()][functionNameParts[1].toString()],
-                    name: value.toString()
+            try {
+                if (functionNameParts.length > 1) {
+                    (clientControl as ComponentControl).eventHandlers[key] = {
+                        type: window[functionNameParts[0].toString()][functionNameParts[1].toString()],
+                        name: value.toString()
+                    }
+                }
+                else {
+                    (clientControl as ComponentControl).eventHandlers[key] = {
+                        type: window[functionNameParts[0].toString()],
+                        name: value.toString()
+                    }
                 }
             }
-            else {
-                (clientControl as ComponentControl).eventHandlers[key] = {
-                    type: window[functionNameParts[0].toString()],
-                    name: value.toString()
-                }
+            catch (ex) {
+                console.error(`Client-side event handler => ${value} not found`);
             }
         }
         DbNetSuiteCore.controlArray[controlId] = clientControl;
@@ -150,6 +155,9 @@ class ComponentControl {
         linkedIdArray.forEach(linkedId => {
             this.isElementLoaded(`#${linkedId}`).then((selector) => {
                 var linkedControl = DbNetSuiteCore.controlArray[linkedId];
+                if (!linkedControl) {
+                    return;
+                }
                 linkedControl.parentControl = this;
                 this.childControls[linkedId] = linkedControl;
                 var summaryModel = null;

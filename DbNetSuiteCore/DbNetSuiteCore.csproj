@@ -21,6 +21,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="build\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\componentControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\gridControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\formControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\selectControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Utilities\**" />
     <Content Remove="Utilities\**" />
     <EmbeddedResource Remove="Utilities\**" />
@@ -283,10 +291,12 @@
     <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="Sylvan.Data.Csv" Version="1.4.2" />
     <PackageReference Include="Sylvan.Data.Excel" Version="0.4.27" />
     <PackageReference Include="System.Management" Version="6.0.0" />

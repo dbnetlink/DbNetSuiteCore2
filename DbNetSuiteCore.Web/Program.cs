@@ -1,11 +1,11 @@
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
-using Microsoft.AspNetCore.DataProtection;
-
-using StackExchange.Redis;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
+
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var app = builder.Build();
 

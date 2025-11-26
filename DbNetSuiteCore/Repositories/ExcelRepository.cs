@@ -1,10 +1,13 @@
-﻿using DbNetSuiteCore.Models;
-using System.Data;
-using DbNetSuiteCore.Extensions;
+﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
-using Sylvan.Data.Excel;
-using Sylvan.Data.Csv;
+using DbNetSuiteCore.Models;
+using DocumentFormat.OpenXml;
+using ExcelDataReader;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Extensions.Caching.Memory;
+using Sylvan.Data.Csv;
+using System.Data;
+using System.Xml;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -66,6 +69,10 @@ namespace DbNetSuiteCore.Repositories
             {
                 dataTable = CsvToDataTable(componentModel);
             }
+            else if (ComponentModelExtensions.IsOdsFile(componentModel))
+            {
+                dataTable = OdsToDataTable(componentModel);
+            }
             else
             {
                 dataTable = LoadSpreadsheet(componentModel);
@@ -90,9 +97,28 @@ namespace DbNetSuiteCore.Repositories
             DataTable dataTable = new DataTable();
             try
             {
-                using ExcelDataReader edr = ExcelDataReader.Create(FilePath(componentModel.Url));
+                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.RelativeOrAbsolute))
                 {
-                    dataTable.Load(edr);
+                    using (HttpClient client = new HttpClient())
+                    using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
+                    {
+                        using (MemoryStream _ms = new MemoryStream())
+                        {
+                            stream.CopyTo(_ms);
+                            using (IExcelDataReader edr = ExcelReaderFactory.CreateReader(_ms))
+                            {
+                                dataTable.Load(edr);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
+                    using (IExcelDataReader edr = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        dataTable.Load(edr);
+                    }
                 }
                 foreach (ColumnModel column in componentModel.GetColumns())
                 {
@@ -102,9 +128,9 @@ namespace DbNetSuiteCore.Repositories
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception($"Unable to read the Excel file {componentModel.Url}");
+                throw new Exception($"Unable to read the Excel file {componentModel.Url} - {ex.Message}");
             }
 
             return dataTable;
@@ -129,9 +155,28 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
+        private DataTable OdsToDataTable(ComponentModel componentModel)
+        {
+            DataTable dataTable = new DataTable();
+            using (OdsReader cdr = new OdsReader())
+            {
+                dataTable = cdr.GetDataTableFromUrl(componentModel.Url);
+            }
+
+            foreach (ColumnModel column in componentModel.GetColumns())
+            {
+                if (column.DataType != typeof(string))
+                {
+                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                }
+            }
+
+            return dataTable;
+        }
+
         private string FilePath(string filePath)
         {
-            if (TextHelper.IsAbsolutePath(filePath))
+            if (TextHelper.IsAbsolutePath(filePath) || filePath.ToLower().StartsWith("https://"))
             {
                 return filePath;
 

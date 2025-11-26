@@ -197,6 +197,8 @@ namespace DbNetSuiteCore.Services
             }
 
             await GetRecords(gridModel);
+
+            PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.TransformDataTable), gridModel);
         }
 
         private async Task<Byte[]> ExportRecords(GridModel gridModel)

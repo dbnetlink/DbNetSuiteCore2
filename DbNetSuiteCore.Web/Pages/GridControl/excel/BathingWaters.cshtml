@@ -1,0 +1,16 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Plugins
+
+@{
+    var christmasGrid = new GridModel(DataSourceType.Excel, "https://assets.publishing.service.gov.uk/media/69205a9da0e0fb4c2936ab72/EMBARGOED_EA_National_Bathing_Waters_Classification_Results_2025.ods");
+
+    christmasGrid.CustomisationPlugin = typeof(BathingWatersPlugin);
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(christmasGrid))
+}
+
+

@@ -1,0 +1,30 @@
+declare class FormControl extends ComponentControl {
+    form: HTMLFormElement;
+    formContainer: HTMLElement;
+    confirmDialog: ConfirmDialog | null;
+    cachedMessage: string | null;
+    cachedMessageType: string | null;
+    htmlEditorArray: Dictionary<HtmlEditor>;
+    htmlEditorMissing: boolean;
+    constructor(formId: any);
+    afterRequest(evt: any): boolean;
+    afterSettle(evt: any): boolean;
+    private refreshParent;
+    private validateUpdate;
+    private validateDelete;
+    private initialise;
+    private transformText;
+    private updateLinkedChildControls;
+    private makeSelectReadonly;
+    private makeCheckboxReadonly;
+    highlightError(columnName: string, row?: HTMLTableRowElement): void;
+    confirmRequest(evt: any): void;
+    configRequest(evt: any): void;
+    beforeRequest(evt: Event): void;
+    checkIfFormModfied(evt?: Event): boolean;
+    configureHtmlEditor(configuration: any, name: string): void;
+    private setFocus;
+    private htmlEditorElements;
+    private configureHtmlEditors;
+    private initHtmlEditor;
+}

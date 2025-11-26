@@ -1,17 +1,12 @@
 ﻿using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Plugins;
-using DbNetSuiteCore.Plugins.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Web;
 
 namespace DbNetSuiteCore.Repositories
@@ -131,7 +126,7 @@ namespace DbNetSuiteCore.Repositories
                         url = url.Substring(1);
                     }
 
-                    if (url.StartsWith("http") == false && httpContext != null)
+                    if (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) == false && httpContext != null)
                     {
                         url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
                     }
