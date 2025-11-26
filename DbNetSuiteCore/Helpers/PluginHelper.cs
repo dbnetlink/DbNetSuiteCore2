@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
+using System.Collections;
 using System.Reflection;
 using System.Text.Json;
 
@@ -24,7 +25,7 @@ namespace DbNetSuiteCore.Helpers
             var targetType = PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName);
             object? obj = System.Text.Json.JsonSerializer.Deserialize(json, targetType!);
 
-            obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, obj);
+            obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, obj);
 
             if (obj == null)
             {
@@ -38,7 +39,7 @@ namespace DbNetSuiteCore.Helpers
             return type != null ? $"{type.FullName}, {type.Assembly.FullName}" : string.Empty;
         }
 
-        public static object? InvokeMethod(string typeName, string methodName, ComponentModel componentModel, object? defaultReturn = null)
+        public static object? InvokeMethod(string typeName, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null) 
         {
             if (string.IsNullOrEmpty(typeName))
             {
@@ -49,10 +50,10 @@ namespace DbNetSuiteCore.Helpers
             {
                 throw new ArgumentException($"Type '{typeName}' could not be found.");
             }
-            return InvokeMethod(type, methodName, componentModel, defaultReturn);
+            return InvokeMethod(type, methodName, componentModel, args, defaultReturn);
         }
 
-        public static object? InvokeMethod(Type type, string methodName, ComponentModel componentModel, object? defaultReturn = null)
+        public static object? InvokeMethod(Type type, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null)
         {
             try
             {
@@ -70,7 +71,14 @@ namespace DbNetSuiteCore.Helpers
                     throw new InvalidOperationException($"Type {type.Name} does not have a public '{methodName}' method.");
                 }
 
-                return method.Invoke(instance, new object[] { componentModel });
+                if (args == null)
+                {
+                    args = Array.Empty<object>();   
+                }
+
+                args = (new object[] { componentModel }).Concat(args).ToArray();
+
+                return method.Invoke(instance, args.ToArray());
             }
             catch (TargetInvocationException ex) when (ex.InnerException is NotImplementedException)
             {

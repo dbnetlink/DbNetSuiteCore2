@@ -296,7 +296,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="Sylvan.Data.Csv" Version="1.4.2" />
     <PackageReference Include="Sylvan.Data.Excel" Version="0.4.27" />
     <PackageReference Include="System.Management" Version="6.0.0" />

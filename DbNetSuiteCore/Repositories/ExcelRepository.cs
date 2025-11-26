@@ -1,13 +1,14 @@
 ﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
 using DocumentFormat.OpenXml;
 using ExcelDataReader;
-using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using Sylvan.Data.Csv;
 using System.Data;
-using System.Xml;
+using System.Reflection.Metadata;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -84,11 +85,17 @@ namespace DbNetSuiteCore.Repositories
                 dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
             }
 
-            if (componentModel.Cache)
+            if (componentModel is GridModel gridModel && gridModel.Uninitialised == false)
             {
-                _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
-            }
+                dataTable.AcceptChanges();
+                gridModel.Data = dataTable;
+                PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.TransformDataTable), gridModel);
 
+                if (componentModel.Cache)
+                {
+                    _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
+                }
+            }
             return dataTable;
         }
 
@@ -107,6 +114,13 @@ namespace DbNetSuiteCore.Repositories
                             stream.CopyTo(_ms);
                             using (IExcelDataReader edr = ExcelReaderFactory.CreateReader(_ms))
                             {
+                                DataSet dataSet = edr.AsDataSet();
+                                dataTable = dataSet.Tables[0];
+                                if (componentModel is GridModel gridModel)
+                                {
+                                    dataTable = dataSet.GetTable(gridModel.SheetName);
+                                }
+
                                 dataTable.Load(edr);
                             }
                         }
@@ -160,7 +174,8 @@ namespace DbNetSuiteCore.Repositories
             DataTable dataTable = new DataTable();
             using (OdsReader cdr = new OdsReader())
             {
-                dataTable = cdr.GetDataTableFromUrl(componentModel.Url);
+                string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
+                dataTable = cdr.GetDataTableFromUrl(componentModel.Url, sheetName);
             }
 
             foreach (ColumnModel column in componentModel.GetColumns())

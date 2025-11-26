@@ -1,8 +1,10 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
+﻿using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Models;
 using System.Data;
 using System.Globalization;
+using System.IO.Compression;
+using System.Reflection.Metadata;
 using System.Xml;
-
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -48,24 +50,26 @@ namespace DbNetSuiteCore.Repositories
             // Dispose of unmanaged resources if any
         }   
 
-        public DataTable GetDataTableFromUrl(string url)
+        public DataTable GetDataTableFromUrl(string url, string? sheetName )
         {
             using (HttpClient client = new HttpClient())
             using (Stream stream = client.GetStreamAsync(url).Result)
             {
-                using (MemoryStream _ms = new MemoryStream())
-                {
-                    stream.CopyTo(_ms);
-                    ZipFile zipFile = new ZipFile(_ms);
-                    XmlDocument xmlDocument = GetContentXmlFile(zipFile);
-                    DataSet dataSet = ReadOdsFile(zipFile);
 
-                    return dataSet.Tables[0];
+                using (var memoryStream = new MemoryStream())
+                {
+                    stream.CopyTo(memoryStream);
+                    using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read, false))
+                    {
+                        DataSet dataSet = ReadOdsFile(archive);
+                        DataTable dataTable = dataSet.GetTable(sheetName);
+                        return dataTable;
+                    }
                 }
             }
         }
 
-        private DataSet ReadOdsFile(ZipFile zipFile)
+        private DataSet ReadOdsFile(ZipArchive zipFile)
         {
             XmlDocument contentXml = this.GetContentXmlFile(zipFile);
 
@@ -80,14 +84,14 @@ namespace DbNetSuiteCore.Repositories
         }
 
 
-        private XmlDocument GetContentXmlFile(ZipFile zipFile)
+        private XmlDocument GetContentXmlFile(ZipArchive zipFile)
         {
             XmlDocument contentXml = new XmlDocument();
 
-            ZipEntry contentZipEntry = zipFile.GetEntry("content.xml");
+            ZipArchiveEntry? contentZipEntry = zipFile.GetEntry("content.xml");
             if (contentZipEntry != null)
             {
-                using (Stream contentStream = zipFile.GetInputStream(contentZipEntry))
+                using (Stream contentStream = contentZipEntry.Open())
                 {
                     contentXml.Load(contentStream);
                 }
@@ -192,12 +196,12 @@ namespace DbNetSuiteCore.Repositories
 
         private string ReadCellValue(XmlNode cell)
         {
-            XmlAttribute? cellVal = cell.Attributes?["office:value"];
+            XmlNode? cellVal = cell.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.Name.ToLower() == "text");
 
             if (cellVal == null)
                 return cell?.InnerText ?? string.Empty;
             else
-                return cellVal.Value;
+                return cellVal?.Value ?? string.Empty;
         }
     }
 }

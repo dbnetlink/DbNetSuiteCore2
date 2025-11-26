@@ -2,11 +2,8 @@
 using System.Data;
 using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
-using DocumentFormat.OpenXml.Spreadsheet;
-using System.Collections.Generic;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
-using DbNetSuiteCore.Plugins.Interfaces;
 
 namespace DbNetSuiteCore.Models
 {
@@ -181,6 +178,11 @@ namespace DbNetSuiteCore.Models
         /// Allows a user to see additional information about the selected row. By default columns are rendered in the View Dialog. Set the Viewable column property to false to remove from View Dialog. Set the DataOnly property to true for columns that should only render in the View Dialog
         /// </remarks>
         public ViewDialog? ViewDialog { get; set; }
+
+        /// <summary>
+        /// Specfies the name of the Sheet in the spreadsheet where there are multiple sheets and you want display the one that is not first. DataSourceType.Excel only.
+        /// </summary>
+        public string SheetName { get; set; } = string.Empty;
         public GridModel() : base()
         {
         }

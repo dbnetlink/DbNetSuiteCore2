@@ -1,5 +1,5 @@
-﻿using DbNetSuiteCore.Plugins.Interfaces;
-using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
 using System.Data;
 
 namespace DbNetSuiteCore.Web.Plugins
@@ -15,30 +15,100 @@ namespace DbNetSuiteCore.Web.Plugins
         }
         public void TransformDataTable(GridModel gridModel)
         {
-            foreach (DataRow dataRow in gridModel.Data.Rows)
+            DataTable dataTable = gridModel.Data;
+
+            foreach (DataRow dataRow in dataTable.Rows)
             {
-                if (dataRow.ItemArray[3] == DBNull.Value)
+                if (dataRow.ItemArray[1] == DBNull.Value)
                 {
                     dataRow.Delete();
+                    break;
                 }
+                dataRow.Delete();
             }
 
-            gridModel.Data.AcceptChanges();
+            dataTable.AcceptChanges();
 
+            switch (gridModel.SheetName)
+            {
+                case "Class_Results":
+                    ConfigureClassResults(gridModel, dataTable);
+                    break;
+                default:
+                    ConfigureClassSummary(gridModel, dataTable);
+                    break;
+            }
+
+            dataTable.Rows.RemoveAt(0);
+
+            gridModel.Columns.ToList().First().DataOnly = true;
+        }
+
+        private void ConfigureClassSummary(GridModel gridModel, DataTable dataTable)
+        {
             for (int c = 0; c < gridModel.Columns.Count(); c++)
             {
                 GridColumn gridColumn = gridModel.Columns.ToList()[c];
-                gridColumn.Label = gridModel.Data.Rows[0][c]?.ToString() ?? string.Empty;
+                gridColumn.Label = dataTable.Rows[0][c]?.ToString() ?? string.Empty;
 
-                if (gridColumn.Label.Contains("%"))
+                if (c > 1)
                 {
                     gridColumn.DataType = typeof(double);
                 }
+                if (gridColumn.Label.Contains("%"))
+                {
+                    gridColumn.Format = "p";
+                }
+
+                if (gridColumn.Label == "Total number of BWs classified")
+                {
+                    gridColumn.Label = "Total";
+                }
+                else if (gridColumn.Label.EndsWith("% Compliant Waters"))
+                {
+                    gridColumn.Label = "Compliant Waters %";
+                }
+                else if (gridColumn.Label.EndsWith("Compliant Waters"))
+                {
+                    gridColumn.Label = "Compliant Waters";
+                }
+
+                if (gridColumn.Label.StartsWith("Excellent"))
+                {
+                    gridColumn.Style = "background-color:skyblue";
+                }
+                if (gridColumn.Label.StartsWith("Good"))
+                {
+                    gridColumn.Style = "background-color:palegreen";
+                }
+                if (gridColumn.Label.StartsWith("Sufficient"))
+                {
+                    gridColumn.Style = "background-color:gold";
+                }
+                if (gridColumn.Label.StartsWith("Poor"))
+                {
+                    gridColumn.Style = "background-color:salmon";
+                }
             }
 
-            gridModel.Data.Rows.RemoveAt(0);
-            gridModel.Data.Columns.RemoveAt(0);
+            foreach (int i in Enumerable.Range(0, 3))
+            {
+                dataTable.Rows.RemoveAt(dataTable.Rows.Count - 1);
+            }
+        }
+
+        private void ConfigureClassResults(GridModel gridModel, DataTable dataTable)
+        {
+            for (int c = 0; c < gridModel.Columns.Count(); c++)
+            {
+                GridColumn gridColumn = gridModel.Columns.ToList()[c];
+                gridColumn.Label = dataTable.Rows[0][c]?.ToString() ?? string.Empty;
+
+                if (gridColumn.Label == "2025 Classification")
+                {
+                    gridColumn.Filter = DbNetSuiteCore.Enums.FilterType.Distinct;
+                }
+            }
         }
     }
-
 }

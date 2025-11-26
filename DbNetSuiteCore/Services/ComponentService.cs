@@ -7,9 +7,6 @@ using System.Text;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using NUglify.Helpers;
 
 namespace DbNetSuiteCore.Services
 {

@@ -87,11 +87,7 @@ namespace DbNetSuiteCore.Models
             set
             {
                 _DataType = value;
-
-                if (string.IsNullOrEmpty(UserDataType))
-                {
-                    UserDataType = value.Name;
-                };
+                UserDataType = value.Name;
             }
         }
         [JsonProperty]

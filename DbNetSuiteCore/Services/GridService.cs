@@ -3,22 +3,14 @@ using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Office2010.Word;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Data;
-using System.Reflection;
 using System.Text;
 
 namespace DbNetSuiteCore.Services
@@ -197,8 +189,6 @@ namespace DbNetSuiteCore.Services
             }
 
             await GetRecords(gridModel);
-
-            PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.TransformDataTable), gridModel);
         }
 
         private async Task<Byte[]> ExportRecords(GridModel gridModel)
@@ -561,7 +551,7 @@ namespace DbNetSuiteCore.Services
 
             if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false && _context != null)
             {
-                validated = (bool?)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), gridModel, false) ?? true;
+                validated = (bool?)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), gridModel, null, false) ?? true;
                 if (validated == false)
                 {
                     if (string.IsNullOrEmpty(gridModel.Message))

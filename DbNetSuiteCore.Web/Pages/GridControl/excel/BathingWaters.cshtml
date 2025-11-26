@@ -10,6 +10,9 @@
 
     christmasGrid.CustomisationPlugin = typeof(BathingWatersPlugin);
 
+    christmasGrid.SheetName = "Class_Comms";
+    //christmasGrid.Cache = true;
+
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(christmasGrid))
 }
 

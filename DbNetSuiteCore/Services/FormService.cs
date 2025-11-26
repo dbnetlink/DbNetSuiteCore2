@@ -290,7 +290,7 @@ namespace DbNetSuiteCore.Services
                 return true;
             }
 
-            bool validated = (bool?)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, formModel, false) ?? true;
+            bool validated = (bool?)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, methodName, formModel, null, false) ?? true;
 
             if (validated == false)
             {
@@ -311,7 +311,7 @@ namespace DbNetSuiteCore.Services
                 return false;
             }
 
-            bool? committed = (bool?)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), formModel, false);
+            bool? committed = (bool?)PluginHelper.InvokeMethod(formModel.CustomisationPluginName, nameof(ICustomFormPlugin.CustomCommit), formModel, null, false);
 
             if (committed.HasValue == false)
             {

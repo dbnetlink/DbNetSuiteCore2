@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Models;
+using System.Data;
 
 namespace DbNetSuiteCore.Plugins.Interfaces
 {
