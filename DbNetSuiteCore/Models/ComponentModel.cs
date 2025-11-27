@@ -174,8 +174,12 @@ namespace DbNetSuiteCore.Models
             TableName = tableName;
         }
 
-        internal DataColumn? GetDataColumn(ColumnModel column)
+        internal DataColumn? GetDataColumn(ColumnModel? column)
         {
+            if (column == null)
+            {
+                return null;
+            }
             return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower() || c.ColumnName.ToLower() == column.Expression.ToLower());
         }
 

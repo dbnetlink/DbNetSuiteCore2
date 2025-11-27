@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Models;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.IO.Compression;
 using System.Reflection.Metadata;
 using System.Xml;
@@ -48,23 +49,35 @@ namespace DbNetSuiteCore.Repositories
         public void Dispose()
         {
             // Dispose of unmanaged resources if any
-        }   
+        }
 
-        public DataTable GetDataTableFromUrl(string url, string? sheetName )
+        public DataTable GetDataTableFromUrl(string url, string? sheetName)
         {
             using (HttpClient client = new HttpClient())
             using (Stream stream = client.GetStreamAsync(url).Result)
             {
+                return GetDatTableFromStream(stream, sheetName);
+            }
+        }
 
-                using (var memoryStream = new MemoryStream())
+        public DataTable GetDataTableFromPath(string path, string? sheetName)
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                return GetDatTableFromStream(fileStream, sheetName);
+            }
+        }
+
+        private DataTable GetDatTableFromStream(Stream stream, string? sheetName)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                stream.CopyTo(memoryStream);
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read, false))
                 {
-                    stream.CopyTo(memoryStream);
-                    using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read, false))
-                    {
-                        DataSet dataSet = ReadOdsFile(archive);
-                        DataTable dataTable = dataSet.GetTable(sheetName);
-                        return dataTable;
-                    }
+                    DataSet dataSet = ReadOdsFile(archive);
+                    DataTable dataTable = dataSet.GetTable(sheetName);
+                    return dataTable;
                 }
             }
         }
@@ -72,7 +85,6 @@ namespace DbNetSuiteCore.Repositories
         private DataSet ReadOdsFile(ZipArchive zipFile)
         {
             XmlDocument contentXml = this.GetContentXmlFile(zipFile);
-
             XmlNamespaceManager nmsManager = this.InitializeXmlNamespaceManager(contentXml);
 
             DataSet odsFile = new DataSet();
@@ -196,12 +208,17 @@ namespace DbNetSuiteCore.Repositories
 
         private string ReadCellValue(XmlNode cell)
         {
-            XmlNode? cellVal = cell.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.Name.ToLower() == "text");
+            XmlAttribute? cellAttribute = cell.Attributes?["office:value"];
+            XmlNode? cellNode = null;
+            if (cell.ChildNodes.Count > 1)
+            {
+                cellNode = cell.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.Name.ToLower() == "text:p");
+            }
 
-            if (cellVal == null)
+            if (cellNode == null)
                 return cell?.InnerText ?? string.Empty;
             else
-                return cellVal?.Value ?? string.Empty;
+                return cellNode?.InnerText ?? string.Empty;
         }
     }
 }

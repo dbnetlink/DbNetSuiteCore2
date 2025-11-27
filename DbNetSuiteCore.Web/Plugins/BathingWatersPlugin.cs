@@ -34,14 +34,26 @@ namespace DbNetSuiteCore.Web.Plugins
                 case "Class_Results":
                     ConfigureClassResults(gridModel, dataTable);
                     break;
+                case "Class_Comms":
+                    ConfigureClassComms(gridModel, dataTable);
+                    break;
                 default:
                     ConfigureClassSummary(gridModel, dataTable);
                     break;
             }
 
             dataTable.Rows.RemoveAt(0);
+            gridModel.Columns.First().Visible = false;
 
-            gridModel.Columns.ToList().First().DataOnly = true;
+            while (dataTable.Rows.Count > 0)
+            {
+                DataRow dataRow = dataTable.Rows.Cast<DataRow>().Last();
+                if (dataRow[1] != DBNull.Value)
+                {
+                    break;
+                }
+                dataTable.Rows.Remove(dataRow);
+            }
         }
 
         private void ConfigureClassSummary(GridModel gridModel, DataTable dataTable)
@@ -59,7 +71,7 @@ namespace DbNetSuiteCore.Web.Plugins
                 {
                     gridColumn.Format = "p";
                 }
-
+                /*
                 if (gridColumn.Label == "Total number of BWs classified")
                 {
                     gridColumn.Label = "Total";
@@ -72,6 +84,7 @@ namespace DbNetSuiteCore.Web.Plugins
                 {
                     gridColumn.Label = "Compliant Waters";
                 }
+                */
 
                 if (gridColumn.Label.StartsWith("Excellent"))
                 {
@@ -95,6 +108,7 @@ namespace DbNetSuiteCore.Web.Plugins
             {
                 dataTable.Rows.RemoveAt(dataTable.Rows.Count - 1);
             }
+
         }
 
         private void ConfigureClassResults(GridModel gridModel, DataTable dataTable)
@@ -108,6 +122,16 @@ namespace DbNetSuiteCore.Web.Plugins
                 {
                     gridColumn.Filter = DbNetSuiteCore.Enums.FilterType.Distinct;
                 }
+            }
+        }
+
+        private void ConfigureClassComms(GridModel gridModel, DataTable dataTable)
+        {
+            for (int c = 0; c < gridModel.Columns.Count(); c++)
+            {
+                GridColumn gridColumn = gridModel.Columns.ToList()[c];
+                gridColumn.Label = dataTable.Rows[0][c]?.ToString() ?? string.Empty;
+                gridColumn.Filter = DbNetSuiteCore.Enums.FilterType.Distinct;
             }
         }
     }

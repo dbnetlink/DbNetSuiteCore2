@@ -11,6 +11,7 @@ namespace DbNetSuiteCore.Enums
         PostgreSql,
         Excel,
         MongoDB,
-        Oracle
+        Oracle,
+        OpenDocumentSpreadsheet
     };
 }

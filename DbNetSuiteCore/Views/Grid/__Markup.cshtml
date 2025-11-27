@@ -35,7 +35,7 @@
                 {
                     if (Model.GetDataColumn(gridColumn.Column) != null)
                     {
-                        <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" data-userdatatype="@gridColumn.UserDataType" />
+                        <col data-datatype="@gridColumn.DataTypeName" data-dbdatatype="@gridColumn.DbDataType" data-userdatatype="@gridColumn.UserDataType" style="visibility:@(gridColumn.Column.Visible ? "visible" : "collapse")" />
                     }
                 }
                 @if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)

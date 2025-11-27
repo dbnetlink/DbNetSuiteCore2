@@ -5,10 +5,8 @@ using DbNetSuiteCore.Plugins.Interfaces;
 using DocumentFormat.OpenXml;
 using ExcelDataReader;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Tokens;
 using Sylvan.Data.Csv;
 using System.Data;
-using System.Reflection.Metadata;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -104,7 +102,7 @@ namespace DbNetSuiteCore.Repositories
             DataTable dataTable = new DataTable();
             try
             {
-                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.RelativeOrAbsolute))
+                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
                 {
                     using (HttpClient client = new HttpClient())
                     using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
@@ -172,12 +170,24 @@ namespace DbNetSuiteCore.Repositories
         private DataTable OdsToDataTable(ComponentModel componentModel)
         {
             DataTable dataTable = new DataTable();
-            using (OdsReader cdr = new OdsReader())
+            if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
             {
-                string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
-                dataTable = cdr.GetDataTableFromUrl(componentModel.Url, sheetName);
+                using (OdsReader cdr = new OdsReader())
+                {
+                    string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
+                    dataTable = cdr.GetDataTableFromUrl(componentModel.Url, sheetName);
+                }
             }
+            else
+            {
+                using (OdsReader cdr = new OdsReader())
+                {
+                    string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
+                    dataTable = cdr.GetDataTableFromPath(FilePath(componentModel.Url), sheetName);
+                }
 
+
+            }
             foreach (ColumnModel column in componentModel.GetColumns())
             {
                 if (column.DataType != typeof(string))

@@ -87,7 +87,10 @@ namespace DbNetSuiteCore.Models
         /// Should be used in conjucntion with the DataType property to coerce the column value to the new type. For example,  {DataType = typeof(DateTime), ParseFormat="yyyyMMdd"}
         /// </remarks>
         public string ParseFormat { get; set; } = string.Empty;
-
+        /// <summary>
+        /// Controls the visibility of a column in the grid. Default is true.
+        /// </summary>
+        public bool Visible { get; set; } = true;
 
         public GridColumn()
         {

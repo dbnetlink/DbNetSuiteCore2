@@ -6,14 +6,61 @@
 @using DbNetSuiteCore.Web.Plugins
 
 @{
-    var christmasGrid = new GridModel(DataSourceType.Excel, "https://assets.publishing.service.gov.uk/media/69205a9da0e0fb4c2936ab72/EMBARGOED_EA_National_Bathing_Waters_Classification_Results_2025.ods");
-
-    christmasGrid.CustomisationPlugin = typeof(BathingWatersPlugin);
-
-    christmasGrid.SheetName = "Class_Comms";
-    //christmasGrid.Cache = true;
-
-    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(christmasGrid))
+    var sheets = new Dictionary<string, string> { { "Class_Summary", "Classifications Summary" }, { "Class_Results", "Individual Bathing Water Classifications" }, { "Class_Comms", "Individual Bathing Water Classifications By Area" } };
 }
 
+<ul class="nav nav-tabs">
+    @{
+        foreach (string tab in sheets.Keys)
+        {
+            <li class="nav-item">
+                <button class="nav-link @(tab == sheets.Keys.First() ? "active" : string.Empty)" id="@(tab)-tab" data-bs-toggle="tab" data-bs-target="#@(tab)-pane" type="button" role="tab" aria-controls="@tab" aria-selected="true">@sheets[tab]</button>
+            </li>
+        }
+    }
+</ul>
 
+<div class="tab-content" id="tabContent" style="padding-top:10px">
+@foreach (string tab in sheets.Keys)
+{
+   // var bathingStatsGrid = new GridModel(DataSourceType.Excel, "https://assets.publishing.service.gov.uk/media/69205a9da0e0fb4c2936ab72/EMBARGOED_EA_National_Bathing_Waters_Classification_Results_2025.ods");
+        var bathingStatsGrid = new GridModel(DataSourceType.Excel, "/data/ods/EA_National_Bathing_Waters_Classification_Results_2025.ods");
+
+    bathingStatsGrid.CustomisationPlugin = typeof(BathingWatersPlugin);
+    bathingStatsGrid.SheetName = tab;
+    bathingStatsGrid.DeferredLoad = true;
+    bathingStatsGrid.Cache = true;
+    bathingStatsGrid.Bind(GridClientEvent.CellTransform, "highlightQuality");
+
+    <div class="tab-pane fade @(tab == sheets.Keys.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(bathingStatsGrid))
+    </div>
+}
+</div>
+
+    <script>
+        function highlightQuality(sender, args) {
+            var cell = args.cell;
+            let colour = null;
+            switch (cell.innerText) {
+                case "Excellent":
+                    colour = "skyblue";
+                    break;
+                case "Good":
+                    colour = "palegreen";
+                    break;
+                case "Sufficient":
+                    colour = "gold";
+                    break;
+                case "Poor":
+                    colour = "salmon";
+                    break;
+                default:
+                    break;
+            }
+
+            if (colour) {
+                cell.style.backgroundColor = colour;
+            }
+        }
+    </script>
