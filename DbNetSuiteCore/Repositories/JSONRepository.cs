@@ -83,9 +83,9 @@ namespace DbNetSuiteCore.Repositories
             {
                 if (componentModel.TriggerName == TriggerNames.ApiRequestParameters)
                 {
-                    _memoryCache.Remove(componentModel.Id);
+                    _memoryCache.Remove(componentModel.CacheKey);
                 }
-                else if (_memoryCache.TryGetValue(componentModel.Id, out DataTable? cachedDataTable))
+                else if (_memoryCache.TryGetValue(componentModel.CacheKey, out DataTable? cachedDataTable))
                 {
                     if (cachedDataTable != null)
                     {
@@ -98,7 +98,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (componentModel.Cache)
             {
-                _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
+                _memoryCache.Set(componentModel.CacheKey, dataTable, GetCacheOptions());
             }
 
             return dataTable;

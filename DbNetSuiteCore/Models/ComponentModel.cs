@@ -1,9 +1,9 @@
-﻿using System.Data;
+﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
 using DbNetSuiteCore.Enums;
-using MongoDB.Bson;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Spreadsheet;
+using MongoDB.Bson;
 using Newtonsoft.Json;
+using System.Data;
 
 namespace DbNetSuiteCore.Models
 {
@@ -11,6 +11,7 @@ namespace DbNetSuiteCore.Models
     {
         protected RowSelection _RowSelection = RowSelection.None;
         private string _Url = string.Empty;
+        private string _CacheKey = string.Empty;
         [JsonProperty]
         internal string Id { get; set; } = string.Empty;
         /// <summary>
@@ -137,6 +138,20 @@ namespace DbNetSuiteCore.Models
         /// When set to true the data retrieved from the data source will be cached for subsequent requests. Only valid for Excel and JSON data sources.
         /// </summary>
         public bool Cache { get; set; } = false;
+        /// <summary>
+        /// Enable caching across multiple instances of the component dataset using the supplied key 
+        /// </summary>
+        public string CacheKey
+        {
+            get
+            {
+                return string.IsNullOrEmpty(_CacheKey) ? Id : _CacheKey;
+            }
+            set
+            {
+                _CacheKey = value;
+            }
+        }
         /// <summary>
         /// Restricts the number of records returned from the data source query. Only valid for SQL based data sources.
         /// </summary>

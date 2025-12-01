@@ -79,6 +79,11 @@ namespace DbNetSuiteCore
                 {
                     gridModel.QueryLimit = -1;
                 }
+
+                if (gridModel.ApiRequestParameters.Keys.Any() )
+                {
+                    gridModel.CacheKey = string.Empty; // Disable shared caching when API request parameters are used
+                }
             }
         }
 

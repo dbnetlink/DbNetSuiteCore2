@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Data\NobelLaureates.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

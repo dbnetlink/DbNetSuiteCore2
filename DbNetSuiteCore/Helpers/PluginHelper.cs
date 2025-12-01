@@ -23,9 +23,9 @@ namespace DbNetSuiteCore.Helpers
         public static string TransformJson(GridModel gridModel, string json)
         {
             var targetType = PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName);
-            object? obj = System.Text.Json.JsonSerializer.Deserialize(json, targetType!);
+            object? instance = System.Text.Json.JsonSerializer.Deserialize(json, targetType!);
 
-            obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, obj);
+            object? obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, instance, instance);
 
             if (obj == null)
             {
@@ -39,7 +39,7 @@ namespace DbNetSuiteCore.Helpers
             return type != null ? $"{type.FullName}, {type.Assembly.FullName}" : string.Empty;
         }
 
-        public static object? InvokeMethod(string typeName, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null) 
+        public static object? InvokeMethod(string typeName, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null, object? instance = null) 
         {
             if (string.IsNullOrEmpty(typeName))
             {
@@ -50,14 +50,17 @@ namespace DbNetSuiteCore.Helpers
             {
                 throw new ArgumentException($"Type '{typeName}' could not be found.");
             }
-            return InvokeMethod(type, methodName, componentModel, args, defaultReturn);
+            return InvokeMethod(type, methodName, componentModel, args, defaultReturn, instance);
         }
 
-        public static object? InvokeMethod(Type type, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null)
+        public static object? InvokeMethod(Type type, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null, object? instance = null)
         {
             try
             {
-                object? instance = Activator.CreateInstance(type);
+                if (instance == null)
+                {
+                    instance = Activator.CreateInstance(type);
+                }
 
                 if (instance == null)
                 {

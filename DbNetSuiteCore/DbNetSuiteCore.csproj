@@ -291,13 +291,12 @@
     <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ExcelDataReader" Version="3.8.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Sylvan.Data.Csv" Version="1.4.2" />
-    <PackageReference Include="Sylvan.Data.Excel" Version="0.4.27" />
     <PackageReference Include="System.Management" Version="6.0.0" />
   </ItemGroup>
 

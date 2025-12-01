@@ -32,7 +32,7 @@
         new GridColumn("Profit") { Format = "c", Filter = FilterType.Default,DataType = typeof(Decimal)}
     };
 
-    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Columns = columns, Cache = true, ViewDialog = new ViewDialog() };
+    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { };
 }
 
 @(await DbNetSuiteCore.Control.Create(HttpContext).Render(superstoreGrid))

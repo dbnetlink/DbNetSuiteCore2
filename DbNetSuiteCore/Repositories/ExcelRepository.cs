@@ -5,8 +5,8 @@ using DbNetSuiteCore.Plugins.Interfaces;
 using DocumentFormat.OpenXml;
 using ExcelDataReader;
 using Microsoft.Extensions.Caching.Memory;
-using Sylvan.Data.Csv;
 using System.Data;
+using System.Text;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -56,7 +56,7 @@ namespace DbNetSuiteCore.Repositories
 
         private DataTable BuildDataTable(ComponentModel componentModel)
         {
-            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.Id, out DataTable? dataTable))
+            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.CacheKey, out DataTable? dataTable))
             {
                 if (dataTable != null)
                 {
@@ -77,6 +77,14 @@ namespace DbNetSuiteCore.Repositories
                 dataTable = LoadSpreadsheet(componentModel);
             }
 
+            foreach (ColumnModel column in componentModel.GetColumns())
+            {
+                if (column.DataType != typeof(string))
+                {
+                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                }
+            }
+
             if (componentModel.GetColumns().Any())
             {
                 string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression.Replace("[", string.Empty).Replace("]", string.Empty)).ToArray();
@@ -91,7 +99,7 @@ namespace DbNetSuiteCore.Repositories
 
                 if (componentModel.Cache)
                 {
-                    _memoryCache.Set(componentModel.Id, dataTable, GetCacheOptions());
+                    _memoryCache.Set(componentModel.CacheKey, dataTable, GetCacheOptions());
                 }
             }
             return dataTable;
@@ -107,36 +115,18 @@ namespace DbNetSuiteCore.Repositories
                     using (HttpClient client = new HttpClient())
                     using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
                     {
-                        using (MemoryStream _ms = new MemoryStream())
+                        using (MemoryStream ms = new MemoryStream())
                         {
-                            stream.CopyTo(_ms);
-                            using (IExcelDataReader edr = ExcelReaderFactory.CreateReader(_ms))
-                            {
-                                DataSet dataSet = edr.AsDataSet();
-                                dataTable = dataSet.Tables[0];
-                                if (componentModel is GridModel gridModel)
-                                {
-                                    dataTable = dataSet.GetTable(gridModel.SheetName);
-                                }
-
-                                dataTable.Load(edr);
-                            }
+                            stream.CopyTo(ms);
+                            dataTable = GetDataTableFromStream(ms, componentModel);
                         }
                     }
                 }
                 else
                 {
                     using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
-                    using (IExcelDataReader edr = ExcelReaderFactory.CreateReader(stream))
                     {
-                        dataTable.Load(edr);
-                    }
-                }
-                foreach (ColumnModel column in componentModel.GetColumns())
-                {
-                    if (column.DataType != typeof(string))
-                    {
-                        dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                        dataTable = GetDataTableFromStream(stream, componentModel);
                     }
                 }
             }
@@ -148,55 +138,98 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
+        private DataTable GetDataTableFromStream(Stream stream, ComponentModel componentModel)
+        {
+            using (var reader = ExcelReaderFactory.CreateReader(stream, new ExcelReaderConfiguration
+            {
+                FallbackEncoding = System.Text.Encoding.GetEncoding(1252)
+            }))
+            {
+                new ExcelDataSetConfiguration()
+                {
+                    ConfigureDataTable = _ => new ExcelDataTableConfiguration
+                    {
+                        UseHeaderRow = true
+                    }
+                };
+                DataSet dataSet = reader.AsDataSet();
+                DataTable dataTable = dataSet.Tables[0];
+                if (componentModel is GridModel gridModel)
+                {
+                    dataTable = dataSet.GetTable(gridModel.SheetName);
+                }
+
+                return dataTable;
+            }
+        }
+
         private DataTable CsvToDataTable(ComponentModel componentModel)
         {
-            DataTable dataTable = new DataTable();
-            using CsvDataReader cdr = CsvDataReader.Create(FilePath(componentModel.Url));
+            if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
             {
-                dataTable.Load(cdr);
-            }
-
-            foreach (ColumnModel column in componentModel.GetColumns())
-            {
-                if (column.DataType != typeof(string))
+                using (HttpClient client = new HttpClient())
+                using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
+                using (MemoryStream ms = new MemoryStream())
                 {
-                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                    stream.CopyTo(ms);
+                    ms.Position = 0;
+                    return CsvStreamToDataTable(ms);
                 }
             }
+            else
+            {
+                using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
+                return CsvStreamToDataTable(stream);
+            }
+        }
 
-            return dataTable;
+        private DataTable CsvStreamToDataTable(Stream stream)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Step 3: Create the CsvReader from the stream
+            using (var reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
+            {
+                // Optional configuration for CSV
+                // Default: cp1252 (Good fallback for older CSVs)
+                FallbackEncoding = Encoding.GetEncoding(1252),
+
+                // Optional: specify delimiter candidates if the CSV might use separators other than comma
+                // AutodetectSeparators = new char[] { ',', ';', '\t', '|', '#' } 
+            }))
+            {
+                // Step 4: Convert the IExcelDataReader to a DataSet
+                var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                {
+                    ConfigureDataTable = (tableReader) => new ExcelDataTableConfiguration()
+                    {
+                        // Use the first row of the CSV as the column names in the DataTable
+                        UseHeaderRow = true
+                    }
+                });
+
+                return result.Tables[0];
+            }
         }
 
         private DataTable OdsToDataTable(ComponentModel componentModel)
         {
             DataTable dataTable = new DataTable();
-            if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
+
+            using (OdsReader cdr = new OdsReader())
             {
-                using (OdsReader cdr = new OdsReader())
+                string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
+                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
                 {
-                    string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
                     dataTable = cdr.GetDataTableFromUrl(componentModel.Url, sheetName);
                 }
-            }
-            else
-            {
-                using (OdsReader cdr = new OdsReader())
+                else
                 {
-                    string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
                     dataTable = cdr.GetDataTableFromPath(FilePath(componentModel.Url), sheetName);
                 }
 
-
+                return dataTable;
             }
-            foreach (ColumnModel column in componentModel.GetColumns())
-            {
-                if (column.DataType != typeof(string))
-                {
-                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
-                }
-            }
-
-            return dataTable;
         }
 
         private string FilePath(string filePath)

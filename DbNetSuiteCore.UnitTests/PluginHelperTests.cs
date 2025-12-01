@@ -2,11 +2,15 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
+using DbNetSuiteCore.UnitTests.Models;
 using DbNetSuiteCore.UnitTests.Plugins.CustomFormPlugin;
 using DbNetSuiteCore.UnitTests.Plugins.CustomGridPlugin;
 using DbNetSuiteCore.UnitTests.Plugins.JsonTransformPlugin;
+using DbNetSuiteCore.Web.Plugins;
 using Newtonsoft.Json;
 using System.Data;
+using System.Reflection;
+using System.Text;
 
 
 namespace DbNetSuiteCore.UnitTests
@@ -69,6 +73,17 @@ namespace DbNetSuiteCore.UnitTests
 
             json = JsonConvert.SerializeObject(jsonTransformPluginSortDesc.Items!.OrderByDescending(i => i).ToList());
             Assert.True(json == transformedJson);
+        }
+
+        [Test]
+        public void JsonTransformPluginDataTest()
+        {
+            string json = Encoding.UTF8.GetString(GetResource("Data.NobelLaureates.json"));
+            string transformedJson = PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(NobelLaureatesPlugin) }, json);
+
+            List<LaureateModel>? laureates = JsonConvert.DeserializeObject<List<LaureateModel>>(transformedJson);
+
+            Assert.True((laureates ?? new List<LaureateModel>()).Count == 682);
         }
 
         [Test]
@@ -181,6 +196,19 @@ namespace DbNetSuiteCore.UnitTests
                         Assert.IsTrue(returnValue.HasValue && returnValue.Value == false);
                         break;
                 }
+            }
+        }
+
+        private Byte[] GetResource(string name)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = $"{assembly.FullName!.Split(",").First()}.{name}";
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
+            using (var binaryReader = new BinaryReader(stream))
+            {
+                var bytes = binaryReader.ReadBytes((int)stream.Length);
+                return bytes;
             }
         }
     }

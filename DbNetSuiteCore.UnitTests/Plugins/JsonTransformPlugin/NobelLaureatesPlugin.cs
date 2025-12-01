@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace DbNetSuiteCore.Web.Plugins
 {
-    public class NobelPrizeTransform : IJsonTransformPlugin
+    public class NobelLaureatesPlugin : IJsonTransformPlugin
     {
         public List<NobelPrize>? prizes { get; set; }
 

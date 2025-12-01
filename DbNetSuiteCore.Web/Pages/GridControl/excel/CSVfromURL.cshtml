@@ -1,0 +1,113 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var gridModel = new GridModel(DataSourceType.Excel, "http://ccgbcodni-cbcni.opendata.arcgis.com/datasets/42b6ad70a304442dbdb963974d44b433_0.csv") { Cache = true, CacheKey = "dd2ce447-589c-45aa-be9f-0b600b6466e4" };
+
+    gridModel.Columns = new List<GridColumn>()
+    {
+        new GridColumn("X") { DataOnly = true},
+        new GridColumn("Y") { DataOnly = true},
+        new GridColumn("OBJECTID") { DataOnly = true},
+        new GridColumn("Name"),
+        new GridColumn("Address"),
+        new GridColumn("Postcode"),
+        new GridColumn("Town"),
+        new GridColumn("Website") {Format = FormatType.Url }
+    };
+}
+
+<div class="row flex-grow-1">
+    <div class="col-4 left-half" id="viewDiv"></div>
+    <div class="col-8 right-half">
+        <div>
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+    <script src="https://js.arcgis.com/4.28/"></script>
+    <script>
+              require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/Graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/geometry/Circle"
+        ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, Circle) {
+
+            // Set the ArcGIS API key for accessing services
+            esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurLGmz8Xa_xil726lBBYQxOOosl3feoCQCyUhcbJcnIfVCUzCe2Fx_wa2KVqJWkulhcep7S_VN5v9dgZingl8MPgKcWDSY-egzsFANDNzPo5GXpFdHKxy16fTbXsFoIieUlGlNjh_gGgcrNvtcrfKlOQeutcQ6BB04HcDFCO1eWEBHgUCzIQRor5GivTW1WI8P3MurAx8R_4ue3xDwSY0g-c.AT1_z0JxEzxl";
+
+            // Create a new GraphicsLayer to hold the circle graphic
+            const graphicsLayer = new GraphicsLayer();
+
+            // Create a new Map instance with the graphics layer
+            const map = new Map({
+                basemap: "arcgis-streets",
+                layers: [graphicsLayer] // Add the graphics layer to the map
+            });
+
+            // Create a MapView to display the map
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-6.69, 54.61],
+                zoom: 6
+            });
+
+            // Add a click event handler to the view
+            view.on("click", function(event) {
+                // Clear any existing graphics before adding the new one
+                graphicsLayer.removeAll();
+
+                // The point of the click
+                const point = event.mapPoint;
+
+                // Define a symbol for the circle
+                const circleSymbol = {
+                    type: "simple-fill",
+                    color: [51, 153, 255, 0.5], // Light blue with transparency
+                    outline: {
+                        color: [255, 255, 255],
+                        width: 1
+                    }
+                };
+
+                // Create a Circle geometry
+                const circleGeometry = new Circle({
+                    center: point,
+                    geodesic: true,
+                    radius: 10,
+                    radiusUnit: "miles"
+                });
+
+                // Create a Graphic from the geometry and symbol
+                // The Graphic class can accept a Circle geometry directly.
+                const circleGraphic = new Graphic({
+                    geometry: circleGeometry,
+                    symbol: circleSymbol
+                });
+
+                // Add the graphic to the graphics layer to display it on the map
+                graphicsLayer.add(circleGraphic);
+
+                console.log("Circle drawn at: ", point.longitude, point.latitude);
+
+                window.updateParams(point.longitude, point.latitude);
+            });
+        });
+
+    </script>
+}
