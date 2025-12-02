@@ -494,13 +494,13 @@ namespace DbNetSuiteCore.Extensions
             {
                 componentModel.ParentModel = JsonConvert.DeserializeObject<SummaryModel>(json);
 
-                if (componentModel.ParentModel is SummaryModel)
+                if (componentModel.ParentModel is SummaryModel summaryModel)
                 {
                     string rowIndex = RequestHelper.FormValue("rowindex", string.Empty, context);
 
                     if (string.IsNullOrEmpty(rowIndex) == false)
                     {
-                        componentModel.ParentModel.RowIdx = int.Parse(rowIndex);
+                        summaryModel.RowIdx = int.Parse(rowIndex);
                     }
                 }
             }

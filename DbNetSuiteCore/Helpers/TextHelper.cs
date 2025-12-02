@@ -44,6 +44,8 @@ namespace DbNetSuiteCore.Helpers
 
         public static string ObfuscateString(string input, HttpContext? httpContext = null)
         {
+            return input;
+            /*
             if (string.IsNullOrEmpty(input))
             {
                 return string.Empty;
@@ -67,10 +69,13 @@ namespace DbNetSuiteCore.Helpers
              }
 
             return Compress(input);
+            */
         }
 
         public static string DeobfuscateString(string input, HttpContext? httpContext = null)
         {
+            return input;
+            /*
             if (string.IsNullOrEmpty(input))
             {
                 return string.Empty;
@@ -96,6 +101,7 @@ namespace DbNetSuiteCore.Helpers
                 }
             }
             return Decompress(input);
+            */
         }
 
         private static string GetAesPassword(HttpContext httpContext)

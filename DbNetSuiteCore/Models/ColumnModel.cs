@@ -2,7 +2,6 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
 using Microsoft.AspNetCore.Html;
-using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -74,7 +73,8 @@ namespace DbNetSuiteCore.Models
                 if (string.IsNullOrEmpty(LookupEnumTypeName) == false && _EnumOptions == null)
                 {
                     _EnumOptions = EnumHelper.GetEnumOptions(PluginHelper.GetTypeFromName(LookupEnumTypeName)!, DataType);
-                };
+                }
+
                 return _EnumOptions;
             }
             set { _EnumOptions = value; }
@@ -83,11 +83,15 @@ namespace DbNetSuiteCore.Models
         [JsonIgnore]
         public Type DataType
         {
-            get { return String.IsNullOrEmpty(UserDataType) ? _DataType ?? typeof(string) : Type.GetType($"System.{UserDataType}") ?? typeof(string); }
+            get { return String.IsNullOrEmpty(UserDataType) ? _DataType ?? typeof(DBNull) : Type.GetType($"System.{UserDataType}") ?? typeof(DBNull); }
             set
             {
                 _DataType = value;
-                UserDataType = value.Name;
+
+                if (string.IsNullOrEmpty(UserDataType))
+                {
+                    UserDataType = value.Name;
+                }
             }
         }
         [JsonProperty]
@@ -186,7 +190,8 @@ namespace DbNetSuiteCore.Models
                 if (_searchControlType == SearchControlType.Text)
                 {
                     _searchControlType = value;
-                };
+                }
+                ;
             }
         }
         [JsonProperty]

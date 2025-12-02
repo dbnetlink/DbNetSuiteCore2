@@ -20,7 +20,7 @@
         new GridColumn("Country"){ Filter = FilterType.Distinct},
         new GridColumn("City"){ Filter = FilterType.Distinct},
         new GridColumn("State"){ Filter = FilterType.Distinct},
-        new GridColumn("Postal Code"),
+        new GridColumn("Postal Code") { DataType = typeof(String)},
         new GridColumn("Region"){ Filter = FilterType.Distinct},
         new GridColumn("Product ID"),
         new GridColumn("Category"){ Filter = FilterType.Distinct},
@@ -32,7 +32,7 @@
         new GridColumn("Profit") { Format = "c", Filter = FilterType.Default,DataType = typeof(Decimal)}
     };
 
-    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { };
+    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Columns = columns };
 }
 
 @(await DbNetSuiteCore.Control.Create(HttpContext).Render(superstoreGrid))

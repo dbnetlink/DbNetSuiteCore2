@@ -75,7 +75,7 @@ namespace DbNetSuiteCore.Repositories
                     gridSelectModel.ApiRequestParameters[key] = HttpUtility.UrlEncode(apiRequestParameters[key]);
                 }
             }
-          }
+        }
 
         private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext? httpContext)
         {
@@ -114,47 +114,42 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                if (TextHelper.IsAbsolutePath(componentModel.Url))
+                var url = componentModel.Url;
+
+                if (url.StartsWith("/") && httpContext != null)
                 {
-                    json = File.ReadAllText(componentModel.Url);
+                    url = url.Substring(1);
+                    url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
                 }
-                else
+
+                if (Uri.IsWellFormedUriString(url, UriKind.Absolute) == false)
                 {
-                    var url = componentModel.Url;
-                    if (url.StartsWith("/"))
-                    {
-                        url = url.Substring(1);
-                    }
-
-                    if (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) == false && httpContext != null)
-                    {
-                        url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
-                    }
-
-                    string token = string.Empty;
-
-                    _httpClient.DefaultRequestHeaders.Clear();
-
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-                    }
-
-                    if (componentModel is GridSelectModel gridSelectModel)
-                    {
-                        if (gridSelectModel.ApiRequestParameters.Keys.Any())
-                        {
-                            url = UpdateUrlParameters(url, gridSelectModel.ApiRequestParameters);
-                        }
-
-                        foreach (var key in gridSelectModel.ApiRequestHeaders.Keys)
-                        {
-                            _httpClient.DefaultRequestHeaders.Add(key, gridSelectModel.ApiRequestHeaders[key]);
-                        }
-                    }
-
-                    json = await _httpClient.GetStringAsync(url);
+                    throw new Exception($"Url is not well formed => {url}");
                 }
+
+                string token = string.Empty;
+
+                _httpClient.DefaultRequestHeaders.Clear();
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+                }
+
+                if (componentModel is GridSelectModel gridSelectModel)
+                {
+                    if (gridSelectModel.ApiRequestParameters.Keys.Any())
+                    {
+                        url = UpdateUrlParameters(url, gridSelectModel.ApiRequestParameters);
+                    }
+
+                    foreach (var key in gridSelectModel.ApiRequestHeaders.Keys)
+                    {
+                        _httpClient.DefaultRequestHeaders.Add(key, gridSelectModel.ApiRequestHeaders[key]);
+                    }
+                }
+
+                json = await _httpClient.GetStringAsync(url);
             }
 
             if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && httpContext != null)
@@ -261,7 +256,7 @@ namespace DbNetSuiteCore.Repositories
                 }
 
                 JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
-              //  jsonSerializerSettings.MaxDepth = 10;
+                //  jsonSerializerSettings.MaxDepth = 10;
 
                 DataTable dataTable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString(), jsonSerializerSettings) ?? new DataTable();
 

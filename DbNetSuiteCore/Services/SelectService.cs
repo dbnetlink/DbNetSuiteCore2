@@ -65,7 +65,7 @@ namespace DbNetSuiteCore.Services
                 selectViewModel.Diagnostics = RequestHelper.Diagnostics(_context, _configuration, _webHostEnvironment);
             }
 
-            selectModel.SummaryModel = new SummaryModel(selectModel);
+            //selectModel.SummaryModel = new SummaryModel(selectModel);
 
             return selectViewModel;
         }

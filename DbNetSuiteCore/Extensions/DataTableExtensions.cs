@@ -63,7 +63,7 @@ namespace DbNetSuiteCore.Extensions
         public static void ParseColumnDataType(this DataTable dataTable, DataColumn dataColumn, GridColumn gridColumn, GridModel gridModel)
         {
             var columnName = dataColumn.ColumnName;
-            using (DataColumn dc = new DataColumn($"{columnName}_new", gridColumn.DataType))
+            using (DataColumn dc = new DataColumn($"{columnName}_new", gridColumn.DataType == typeof(DBNull) ? typeof(string) : gridColumn.DataType))
             {
                 int ordinal = dataColumn.Ordinal;
                 dataTable.Columns.Add(dc);

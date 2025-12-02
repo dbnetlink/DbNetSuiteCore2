@@ -4,26 +4,15 @@
 @using Microsoft.Extensions.Primitives
 @using System.Net.Http
 @{
-
     var columns = new List<SelectColumn>() {
-        new SelectColumn("City"),
-        new SelectColumn("State") {OptionGroup = true}
+        new SelectColumn("CityId"),
+        new SelectColumn("CityName"),
+        new SelectColumn("StateName") {OptionGroup = true}
     };
 
-    var mode = Request.Query["mode"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["string"];
-    var url = mode == "string" ? "/data/json/superstore.json" : $"/superstore";
+    var url = "/cities";
 
-    SelectModel citySelect;
-    if (mode == "string")
-    {
-        HttpClient client = new HttpClient();
-        string json = await client.GetStringAsync(url);
-        citySelect = new SelectModel(DataSourceType.JSON, json) { Columns = columns, Searchable = true, Distinct = true,  Cache = true };
-    }
-    else
-    {
-        citySelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Distinct = true, Cache = true };
-    }
+    SelectModel citySelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Distinct = true, Cache = true };
 
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(citySelect))
 }

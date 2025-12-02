@@ -79,7 +79,7 @@ namespace DbNetSuiteCore.Repositories
 
             foreach (ColumnModel column in componentModel.GetColumns())
             {
-                if (column.DataType != typeof(string))
+                if (column.DataType != typeof(DBNull))
                 {
                     dataTable.UpdateColumnDataType(column.Expression, column.DataType);
                 }
@@ -152,7 +152,7 @@ namespace DbNetSuiteCore.Repositories
                         UseHeaderRow = true
                     }
                 };
-                DataSet dataSet = reader.AsDataSet();
+                DataSet dataSet = reader.AsDataSet(DataSetReaderConfiguration());
                 DataTable dataTable = dataSet.Tables[0];
                 if (componentModel is GridModel gridModel)
                 {
@@ -190,7 +190,6 @@ namespace DbNetSuiteCore.Repositories
             // Step 3: Create the CsvReader from the stream
             using (var reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
             {
-                // Optional configuration for CSV
                 // Default: cp1252 (Good fallback for older CSVs)
                 FallbackEncoding = Encoding.GetEncoding(1252),
 
@@ -199,17 +198,22 @@ namespace DbNetSuiteCore.Repositories
             }))
             {
                 // Step 4: Convert the IExcelDataReader to a DataSet
-                var result = reader.AsDataSet(new ExcelDataSetConfiguration()
-                {
-                    ConfigureDataTable = (tableReader) => new ExcelDataTableConfiguration()
-                    {
-                        // Use the first row of the CSV as the column names in the DataTable
-                        UseHeaderRow = true
-                    }
-                });
+                var result = reader.AsDataSet(DataSetReaderConfiguration());
 
                 return result.Tables[0];
             }
+        }
+
+        private ExcelDataSetConfiguration DataSetReaderConfiguration()
+        {
+            return new ExcelDataSetConfiguration()
+            {
+                ConfigureDataTable = (tableReader) => new ExcelDataTableConfiguration()
+                {
+                    // Use the first row of the CSV as the column names in the DataTable
+                    UseHeaderRow = true
+                }
+            };
         }
 
         private DataTable OdsToDataTable(ComponentModel componentModel)

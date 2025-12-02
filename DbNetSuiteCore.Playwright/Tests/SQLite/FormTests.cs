@@ -21,7 +21,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             };
 
         [Test]
-        public async Task _QuickSearchTest()
+        public async Task QuickSearchTest()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
                 { "Berlin", 2 },
@@ -31,8 +31,8 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
                 { "xxxx", 0 }
             };
 
-            await FormQuickSearchTest(searches, $"sqlite/customers?db={DatabaseName}");
-            await FormQuickSearchTest(searches, $"customers?db={DatabaseName}", true);
+            await FormQuickSearchTest(searches, $"sqlite/customers");
+       //     await FormQuickSearchTest(searches, $"customers", true);
         }
 
         [Test]

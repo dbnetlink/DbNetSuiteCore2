@@ -285,7 +285,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         private async Task TestRowCount(int expectedRowCount, string type = "row")
         {
-            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"));
+            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"),new PageWaitForResponseOptions() { Timeout = 3000});
             if (expectedRowCount == 0)
             {
                 await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();

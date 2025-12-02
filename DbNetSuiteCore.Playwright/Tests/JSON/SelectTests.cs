@@ -15,21 +15,19 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
             };
 
             await SelectSearchTest(searches, "json/customers");
-          //  await SelectSearchTest(searches, $"json/customers?mode=api");
-          //  await SelectSearchTest(searches, $"json/customers?mode=string");
+         //   await SelectSearchTest(searches, $"json/customers?mode=api");
+       //     await SelectSearchTest(searches, $"json/customers?mode=string");
         }
 
         [Test]
         public async Task GroupTest()
         {
             Dictionary<string, KeyValuePair<int, int>> searches = new Dictionary<string, KeyValuePair<int, int>>() {
-                { "wood", new KeyValuePair<int, int>(14,10) },
-                { "", new KeyValuePair<int, int>(604,49) }
+                { "aip", new KeyValuePair<int, int>(3,2) },
+                { "", new KeyValuePair<int, int>(158,17) }
             };
 
             await SelectGroupTest(searches, "json/cities");
-            await SelectGroupTest(searches, $"json/cities?model=api");
-            await SelectGroupTest(searches, $"json/cities?mode=string");
         }
     }
 }
