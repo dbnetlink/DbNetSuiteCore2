@@ -94,7 +94,6 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-
         public static void UpdateColumnDataType(this DataTable dt, string colName, Type dataType)
         {
             DataColumn? dataColumn = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == colName.ToLower());
@@ -102,6 +101,12 @@ namespace DbNetSuiteCore.Extensions
             {
                 return;
             }
+
+            UpdateColumnDataType(dt, dataColumn, dataType);
+        }
+
+        public static void UpdateColumnDataType(this DataTable dt, DataColumn dataColumn, Type dataType)
+        {
             var columnName = dataColumn.ColumnName;
             using (DataColumn dc = new DataColumn($"{columnName}_new", dataType))
             {
@@ -111,7 +116,7 @@ namespace DbNetSuiteCore.Extensions
                 foreach (DataRow dr in dt.Rows)
                 {
                     var value = dr[columnName];
-                    if (value == DBNull.Value)
+                    if (value == DBNull.Value || String.IsNullOrEmpty(value?.ToString()))
                     {
                         continue;
                     }

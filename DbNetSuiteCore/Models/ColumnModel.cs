@@ -97,7 +97,7 @@ namespace DbNetSuiteCore.Models
         [JsonProperty]
         internal string DbDataType { get; set; } = string.Empty;
         [JsonProperty]
-        internal string UserDataType { get; set; } = string.Empty;
+        public string UserDataType { get; set; } = string.Empty;
         /// <summary>
         /// Specified a standard C# formatting string for data/time and numerical values
         /// </summary>

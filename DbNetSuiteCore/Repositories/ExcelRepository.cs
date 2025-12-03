@@ -71,6 +71,7 @@ namespace DbNetSuiteCore.Repositories
             else if (ComponentModelExtensions.IsOdsFile(componentModel))
             {
                 dataTable = OdsToDataTable(componentModel);
+               // dataTable = LoadSpreadsheet(componentModel);
             }
             else
             {

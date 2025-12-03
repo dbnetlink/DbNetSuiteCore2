@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
+using DbNetSuiteCore.Extensions;
 using System.Data;
 
 namespace DbNetSuiteCore.Web.Plugins
@@ -17,17 +18,6 @@ namespace DbNetSuiteCore.Web.Plugins
         {
             DataTable dataTable = gridModel.Data;
 
-            foreach (DataRow dataRow in dataTable.Rows)
-            {
-                if (dataRow.ItemArray[1] == DBNull.Value)
-                {
-                    dataRow.Delete();
-                    break;
-                }
-                dataRow.Delete();
-            }
-
-            dataTable.AcceptChanges();
 
             switch (gridModel.SheetName)
             {
@@ -44,20 +34,58 @@ namespace DbNetSuiteCore.Web.Plugins
 
             dataTable.Rows.RemoveAt(0);
             gridModel.Columns.First().Visible = false;
-
+            gridModel.Columns.Last().Visible = false;
             while (dataTable.Rows.Count > 0)
             {
                 DataRow dataRow = dataTable.Rows.Cast<DataRow>().Last();
-                if (dataRow[1] != DBNull.Value)
+                if (dataRow[1] != DBNull.Value && string.IsNullOrEmpty(dataRow.ItemArray[1]?.ToString()) == false)
                 {
                     break;
                 }
                 dataTable.Rows.Remove(dataRow);
             }
+
+            switch (gridModel.SheetName)
+            {
+                case "Class_Summary":
+                    foreach (DataRow dataRow in dataTable.Rows)
+                    {
+                        foreach (DataColumn dataColumn in dataTable.Columns)
+                        {
+                            var strValue = dataRow[dataColumn]?.ToString() ?? string.Empty;
+                            if (strValue.EndsWith("%"))
+                            {
+                                dataRow[dataColumn] = (Double.Parse(strValue.Replace("%", string.Empty)) / 100).ToString();
+                            }
+                        }
+                    }
+                    foreach (DataColumn dataColumn in dataTable.Columns.Cast<DataColumn>().Skip(2).ToList())
+                    {
+                        dataTable.UpdateColumnDataType(dataColumn, typeof(double));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void DeleteUpToHeadings(string heading, DataTable dataTable)
+        {
+            foreach (DataRow dataRow in dataTable.Rows)
+            {
+                if (dataRow.ItemArray[1]?.ToString() == heading)
+                {
+                    break;
+                }
+                dataRow.Delete();
+            }
+
+            dataTable.AcceptChanges();
         }
 
         private void ConfigureClassSummary(GridModel gridModel, DataTable dataTable)
         {
+            DeleteUpToHeadings("EA Areas", dataTable);
             for (int c = 0; c < gridModel.Columns.Count(); c++)
             {
                 GridColumn gridColumn = gridModel.Columns.ToList()[c];
@@ -65,26 +93,12 @@ namespace DbNetSuiteCore.Web.Plugins
 
                 if (c > 1)
                 {
-                    gridColumn.DataType = typeof(double);
+                    gridColumn.UserDataType = typeof(double).Name;
                 }
                 if (gridColumn.Label.Contains("%"))
                 {
                     gridColumn.Format = "p";
                 }
-                /*
-                if (gridColumn.Label == "Total number of BWs classified")
-                {
-                    gridColumn.Label = "Total";
-                }
-                else if (gridColumn.Label.EndsWith("% Compliant Waters"))
-                {
-                    gridColumn.Label = "Compliant Waters %";
-                }
-                else if (gridColumn.Label.EndsWith("Compliant Waters"))
-                {
-                    gridColumn.Label = "Compliant Waters";
-                }
-                */
 
                 if (gridColumn.Label.StartsWith("Excellent"))
                 {
@@ -103,16 +117,17 @@ namespace DbNetSuiteCore.Web.Plugins
                     gridColumn.Style = "background-color:salmon";
                 }
             }
-
+            
             foreach (int i in Enumerable.Range(0, 3))
             {
                 dataTable.Rows.RemoveAt(dataTable.Rows.Count - 1);
             }
-
         }
 
         private void ConfigureClassResults(GridModel gridModel, DataTable dataTable)
         {
+            DeleteUpToHeadings("Bathing Water Reference", dataTable);
+
             for (int c = 0; c < gridModel.Columns.Count(); c++)
             {
                 GridColumn gridColumn = gridModel.Columns.ToList()[c];
@@ -127,6 +142,7 @@ namespace DbNetSuiteCore.Web.Plugins
 
         private void ConfigureClassComms(GridModel gridModel, DataTable dataTable)
         {
+            DeleteUpToHeadings("EA Area", dataTable);
             for (int c = 0; c < gridModel.Columns.Count(); c++)
             {
                 GridColumn gridColumn = gridModel.Columns.ToList()[c];
