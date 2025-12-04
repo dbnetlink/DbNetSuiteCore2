@@ -351,10 +351,10 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static QueryCommandConfig BuildProcedureCall(this GridSelectModel componentModel)
+        public static QueryCommandConfig BuildProcedureCall(this GridSelectModel gridSelectModel)
         {
-            QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = $"{componentModel.ProcedureName}" };
-            AssignParameters(query, componentModel.ProcedureParameters);
+            QueryCommandConfig query = new QueryCommandConfig(gridSelectModel.DataSourceType) { Sql = $"{gridSelectModel.ProcedureName}" };
+            AssignParameters(query, gridSelectModel.ProcedureParameters);
             return query;
         }
 

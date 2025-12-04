@@ -352,9 +352,9 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.PostgreSql:
                     return await _postgreSqlRepository.GetColumns(componentModel);
                 case DataSourceType.JSON:
-                    return await _jsonRepository.GetColumns(componentModel, _context);
+                    return await _jsonRepository.GetColumns((GridSelectModel)componentModel, _context);
                 case DataSourceType.Excel:
-                    return _excelRepository.GetColumns(componentModel);
+                    return _excelRepository.GetColumns((GridSelectModel)componentModel);
                 case DataSourceType.FileSystem:
                     return _fileSystemRepository.GetColumns(componentModel);
                 case DataSourceType.MongoDB:
@@ -380,10 +380,10 @@ namespace DbNetSuiteCore.Services
                     await _postgreSqlRepository.GetRecords(componentModel);
                     break;
                 case DataSourceType.JSON:
-                    await _jsonRepository.GetRecords(componentModel, _context);
+                    await _jsonRepository.GetRecords((GridSelectModel)componentModel, _context);
                     break;
                 case DataSourceType.Excel:
-                    _excelRepository.GetRecords(componentModel);
+                    _excelRepository.GetRecords((GridSelectModel)componentModel);
                     break;
                 case DataSourceType.FileSystem:
                     _fileSystemRepository.GetRecords(componentModel);
@@ -452,10 +452,10 @@ namespace DbNetSuiteCore.Services
                     await _postgreSqlRepository.GetRecord(componentModel);
                     break;
                 case DataSourceType.JSON:
-                    await _jsonRepository.GetRecord(componentModel, _context);
+                    await _jsonRepository.GetRecord((GridSelectModel)componentModel, _context);
                     break;
                 case DataSourceType.Excel:
-                    _excelRepository.GetRecord(componentModel);
+                    _excelRepository.GetRecord((GridSelectModel)componentModel);
                     break;
                 case DataSourceType.MongoDB:
                     await _mongoDbRepository.GetRecord(componentModel);

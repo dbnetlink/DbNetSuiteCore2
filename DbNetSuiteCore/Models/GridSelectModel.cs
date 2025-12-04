@@ -4,6 +4,9 @@ namespace DbNetSuiteCore.Models
 {
     public abstract class GridSelectModel : ComponentModel
     {
+        private bool _cache = false;
+        private string _cacheKey = string.Empty;
+
         /// <summary>
         /// Allows custom headers to be added to API requests when using an API JSON data source.
         /// </summary>
@@ -25,6 +28,35 @@ namespace DbNetSuiteCore.Models
         public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
         [JsonProperty]
         internal bool IsStoredProcedure { get; set; } = false;
+        /// <summary>
+        /// When set to true the data retrieved from the data source will be cached for subsequent requests. Only valid for Excel and JSON data sources.
+        /// </summary>
+        public bool Cache
+        {
+            get
+            {
+                return _cache || string.IsNullOrEmpty(_cacheKey) == false;
+            }
+            set
+            {
+                _cache = value;
+            }
+        }
+        /// <summary>
+        /// Enable caching across multiple instances of the component dataset using the supplied unique key (typicaly a GUID).
+        /// </summary>
+        public string CacheKey
+        {
+            get
+            {
+                return string.IsNullOrEmpty(_cacheKey) ? Id : _cacheKey;
+            }
+            set
+            {
+                _cacheKey = value;
+            }
+        }
+
         public GridSelectModel() : base()
         {
         }

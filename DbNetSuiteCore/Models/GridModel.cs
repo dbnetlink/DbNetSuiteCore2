@@ -192,8 +192,13 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         /// <param name="DataSourceType dataSourceType">Must be one of JSON, FileSystem or Excel</param>
         /// <param name="string url">The path to the JSON, Excel,CSV or Folder.</param>
-        public GridModel(DataSourceType dataSourceType, string url) :base(dataSourceType,url)
+        /// <param name="string sheetName">The name of the worksheet in the spreadsheet (optional).</param>
+        public GridModel(DataSourceType dataSourceType, string url, string? sheetName = null) :base(dataSourceType,url)
         {
+            if (dataSourceType == DataSourceType.Excel && string.IsNullOrEmpty(sheetName) == false)
+            {
+                SheetName = sheetName;
+            }
         }
 
         /// <summary>

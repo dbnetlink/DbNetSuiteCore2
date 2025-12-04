@@ -5,9 +5,9 @@ namespace DbNetSuiteCore.Repositories
 {
     public interface IJSONRepository
     {
-        public Task GetRecords(ComponentModel componentModel, HttpContext? httpContext);
-        public Task GetRecord(ComponentModel componentModel, HttpContext? httpContext);
-        public Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext? httpContext);
-        public void UpdateApiRequestParameters(GridSelectModel componentModel, HttpContext? context);
+        public Task GetRecords(GridSelectModel gridSelectModel, HttpContext? httpContext);
+        public Task GetRecord(GridSelectModel gridSelectModel, HttpContext? httpContext);
+        public Task<DataTable> GetColumns(GridSelectModel gridSelectModel, HttpContext? httpContext);
+        public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext? context);
     }
 }

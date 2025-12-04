@@ -20,17 +20,17 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public void GetRecords(ComponentModel componentModel)
+        public void GetRecords(GridSelectModel gridSelectModel)
         {
-            var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : BuildDataTable(componentModel);
-            if (componentModel is GridModel gridModel)
+            var dataTable = gridSelectModel.Data.Columns.Count > 0 ? gridSelectModel.Data : BuildDataTable(gridSelectModel);
+            if (gridSelectModel is GridModel gridModel)
             {
                 dataTable.FilterAndSort(gridModel);
                 gridModel.ConvertEnumLookups();
                 gridModel.GetDistinctLookups();
             }
 
-            if (componentModel is SelectModel selectModel)
+            if (gridSelectModel is SelectModel selectModel)
             {
                 if (selectModel.Distinct)
                 {
@@ -42,43 +42,44 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public void GetRecord(ComponentModel componentModel)
+        public void GetRecord(GridSelectModel gridSelectModel)
         {
-            var dataTable = BuildDataTable(componentModel);
-            dataTable.FilterWithPrimaryKey(componentModel);
-            componentModel.ConvertEnumLookups();
+            var dataTable = BuildDataTable(gridSelectModel);
+            dataTable.FilterWithPrimaryKey(gridSelectModel);
+            gridSelectModel.ConvertEnumLookups();
         }
 
-        public DataTable GetColumns(ComponentModel componentModel)
+        public DataTable GetColumns(GridSelectModel gridSelectModel)
         {
-            return BuildDataTable(componentModel);
+            return BuildDataTable(gridSelectModel);
         }
 
-        private DataTable BuildDataTable(ComponentModel componentModel)
+        private DataTable BuildDataTable(GridSelectModel gridSelectModel)
         {
-            if (componentModel.Cache && _memoryCache.TryGetValue(componentModel.CacheKey, out DataTable? dataTable))
-            {
-                if (dataTable != null)
+            DataTable? dataTable = null;
+                if (gridSelectModel.Cache && _memoryCache.TryGetValue(gridSelectModel.CacheKey, out dataTable))
                 {
-                    return dataTable;
+                    if (dataTable != null)
+                    {
+                        return dataTable;
+                    }
                 }
-            }
 
-            if (ComponentModelExtensions.IsCsvFile(componentModel))
+            if (ComponentModelExtensions.IsCsvFile(gridSelectModel))
             {
-                dataTable = CsvToDataTable(componentModel);
+                dataTable = CsvToDataTable(gridSelectModel);
             }
-            else if (ComponentModelExtensions.IsOdsFile(componentModel))
+            else if (ComponentModelExtensions.IsOdsFile(gridSelectModel))
             {
-                dataTable = OdsToDataTable(componentModel);
+                dataTable = OdsToDataTable(gridSelectModel);
                // dataTable = LoadSpreadsheet(componentModel);
             }
             else
             {
-                dataTable = LoadSpreadsheet(componentModel);
+                dataTable = LoadSpreadsheet(gridSelectModel);
             }
 
-            foreach (ColumnModel column in componentModel.GetColumns())
+            foreach (ColumnModel column in gridSelectModel.GetColumns())
             {
                 if (column.DataType != typeof(DBNull))
                 {
@@ -86,21 +87,21 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (componentModel.GetColumns().Any())
+            if (gridSelectModel.GetColumns().Any())
             {
-                string[] selectedColumns = componentModel.GetColumns().Select(c => c.Expression.Replace("[", string.Empty).Replace("]", string.Empty)).ToArray();
+                string[] selectedColumns = gridSelectModel.GetColumns().Select(c => c.Expression.Replace("[", string.Empty).Replace("]", string.Empty)).ToArray();
                 dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
             }
 
-            if (componentModel is GridModel gridModel && gridModel.Uninitialised == false)
+            if (gridSelectModel is GridModel gridModel && gridModel.Uninitialised == false)
             {
                 dataTable.AcceptChanges();
                 gridModel.Data = dataTable;
                 PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.TransformDataTable), gridModel);
 
-                if (componentModel.Cache)
+                if (gridModel.Cache)
                 {
-                    _memoryCache.Set(componentModel.CacheKey, dataTable, GetCacheOptions());
+                    _memoryCache.Set(gridModel.CacheKey, dataTable, GetCacheOptions());
                 }
             }
             return dataTable;

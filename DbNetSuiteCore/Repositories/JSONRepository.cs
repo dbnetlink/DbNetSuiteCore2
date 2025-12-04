@@ -24,12 +24,12 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(ComponentModel componentModel, HttpContext? httpContext)
+        public async Task GetRecords(GridSelectModel gridSelectModel, HttpContext? httpContext)
         {
-            componentModel.Data = await BuildDataTable(componentModel, httpContext);
+            gridSelectModel.Data = await BuildDataTable(gridSelectModel, httpContext);
 
-            var dataTable = componentModel.Data;
-            if (componentModel is GridModel gridModel)
+            var dataTable = gridSelectModel.Data;
+            if (gridSelectModel is GridModel gridModel)
             {
                 if (gridModel.Data.Rows.Count > 0)
                 {
@@ -39,7 +39,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (componentModel is SelectModel selectModel)
+            if (gridSelectModel is SelectModel selectModel)
             {
                 if (selectModel.Distinct)
                 {
@@ -50,17 +50,17 @@ namespace DbNetSuiteCore.Repositories
                 selectModel.ConvertEnumLookups();
             }
         }
-        public async Task GetRecord(ComponentModel componentModel, HttpContext? httpContext)
+        public async Task GetRecord(GridSelectModel gridSelectModel, HttpContext? httpContext)
         {
-            var dataTable = await BuildDataTable(componentModel, httpContext);
-            dataTable.FilterWithPrimaryKey(componentModel);
-            componentModel.ConvertEnumLookups();
+            var dataTable = await BuildDataTable(gridSelectModel, httpContext);
+            dataTable.FilterWithPrimaryKey(gridSelectModel);
+            gridSelectModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(ComponentModel componentModel, HttpContext? httpContext)
+        public async Task<DataTable> GetColumns(GridSelectModel gridSelectModel, HttpContext? httpContext)
         {
-            componentModel.Data = await BuildDataTable(componentModel, httpContext);
-            return componentModel.Data;
+            gridSelectModel.Data = await BuildDataTable(gridSelectModel, httpContext);
+            return gridSelectModel.Data;
         }
 
         public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext? context)
@@ -77,15 +77,15 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private async Task<DataTable> BuildDataTable(ComponentModel componentModel, HttpContext? httpContext)
+        private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel, HttpContext? httpContext)
         {
-            if (componentModel.Cache)
+            if (gridSelectModel.Cache)
             {
-                if (componentModel.TriggerName == TriggerNames.ApiRequestParameters)
+                if (gridSelectModel.TriggerName == TriggerNames.ApiRequestParameters)
                 {
-                    _memoryCache.Remove(componentModel.CacheKey);
+                    _memoryCache.Remove(gridSelectModel.CacheKey);
                 }
-                else if (_memoryCache.TryGetValue(componentModel.CacheKey, out DataTable? cachedDataTable))
+                else if (_memoryCache.TryGetValue(gridSelectModel.CacheKey, out DataTable? cachedDataTable))
                 {
                     if (cachedDataTable != null)
                     {
@@ -94,11 +94,11 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            DataTable dataTable = await JsonToDataTable(componentModel, httpContext);
+            DataTable dataTable = await JsonToDataTable(gridSelectModel, httpContext);
 
-            if (componentModel.Cache)
+            if (gridSelectModel.Cache)
             {
-                _memoryCache.Set(componentModel.CacheKey, dataTable, GetCacheOptions());
+                _memoryCache.Set(gridSelectModel.CacheKey, dataTable, GetCacheOptions());
             }
 
             return dataTable;

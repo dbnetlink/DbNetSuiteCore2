@@ -5,8 +5,8 @@ namespace DbNetSuiteCore.Repositories
 {
     public interface IExcelRepository
     {
-        public void GetRecords(ComponentModel componentModel);
-        public DataTable GetColumns(ComponentModel componentModel);
-        public void GetRecord(ComponentModel componentModel);
+        public void GetRecords(GridSelectModel gridSelectModel);
+        public DataTable GetColumns(GridSelectModel gridSelectModel);
+        public void GetRecord(GridSelectModel gridSelectModel);
     }
 }
