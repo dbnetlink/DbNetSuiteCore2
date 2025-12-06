@@ -20,7 +20,7 @@ Currently the components support the following data sources:
 https://dbnetsuitecore.com
 
 ### For information about installation and usage see the docs ###
-https://dbnetsuitecore.document360.io/docs
+https://github.com/dbnetlink/DbNetSuiteCore2/wiki
 
 ### To download some working samples ###
 https://github.com/dbnetlink/DbNetSuiteCore.Templates
