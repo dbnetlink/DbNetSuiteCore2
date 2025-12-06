@@ -11,6 +11,7 @@ Currently the components support the following data sources:
  - Oracle
  - MongoDB
  - Excel
+ - Open Document Spreadsheet
  - CSV
  - JSON
  - File System
