@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.AspNetCore.Html;
 
 namespace DbNetSuiteCore.ViewModels
@@ -28,12 +27,12 @@ namespace DbNetSuiteCore.ViewModels
             }
         }
 
-        public object? FormatValue(object value)
+        public object FormatValue(object value)
         {
             return Column.FormatValue(value);
         }
 
-        public object? RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex = null)
+        public object RenderControl(string value, string dbValue, ComponentModel componentModel, int? rowIndex = null)
         {
             return Column.RenderControl(value, dbValue, componentModel, rowIndex);
         }

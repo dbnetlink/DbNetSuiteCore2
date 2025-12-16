@@ -94,7 +94,7 @@ namespace DbNetSuiteCore.Extensions
             return query;
         }
 
-        public static QueryCommandConfig BuildRecordQuery(this ComponentModel componentModel, object? primaryKeyValue = null)
+        public static QueryCommandConfig BuildRecordQuery(this ComponentModel componentModel, object primaryKeyValue = null)
         {
             string sql = $"select {AddSelectPart(componentModel, true)} from {componentModel.TableName}";
             QueryCommandConfig query = new QueryCommandConfig(componentModel.DataSourceType) { Sql = sql };
@@ -221,7 +221,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static object? SearchFilterParam(SearchOperator searchOperator, object? value)
+        public static object SearchFilterParam(SearchOperator searchOperator, object value)
         {
             string template = string.Empty;
             switch (searchOperator)
@@ -438,7 +438,7 @@ namespace DbNetSuiteCore.Extensions
         {
             foreach (var column in componentModel.GetColumns().Where(c => c.LookupOptions != null && c.Lookup == null))
             {
-                DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                DataColumn dataColumn = componentModel.GetDataColumn(column);
                 componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
             }
 
@@ -446,7 +446,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 foreach (var column in gridModel.Columns.Where(c => string.IsNullOrEmpty(c.ParseFormat) == false))
                 {
-                    DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                    DataColumn dataColumn = componentModel.GetDataColumn(column);
                     if (dataColumn == null)
                     {
                         continue;
@@ -487,7 +487,7 @@ namespace DbNetSuiteCore.Extensions
             return (componentModel is SelectModel selectModel && selectModel.Distinct ? "distinct " : string.Empty);
         }
 
-        public static void AssignParentModel(this ComponentModel componentModel, HttpContext? context, IConfiguration configuration, string key = "parentModel")
+        public static void AssignParentModel(this ComponentModel componentModel, HttpContext context, IConfiguration configuration, string key = "parentModel")
         {
             string json = StateHelper.GetSerialisedModel(context, configuration, key);
             if (string.IsNullOrEmpty(json) == false)
@@ -506,7 +506,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static object? ParamValue(object? val, ColumnModel column, DataSourceType dataSourceType, bool gridColumnFilter = false)
+        public static object ParamValue(object val, ColumnModel column, DataSourceType dataSourceType, bool gridColumnFilter = false)
         {
             var dataType = column.DataTypeName;
             if (val == null)
@@ -529,7 +529,7 @@ namespace DbNetSuiteCore.Extensions
                 return DBNull.Value;
             }
 
-            object? paramValue = valueString;
+            object paramValue = valueString;
             try
             {
                 switch (dataType)
@@ -707,7 +707,7 @@ namespace DbNetSuiteCore.Extensions
             Int32.TryParse(intString, out value);
             return value;
         }
-        private static Type? GetColumnType(string typeName)
+        private static Type GetColumnType(string typeName)
         {
             return Type.GetType("System." + typeName);
         }

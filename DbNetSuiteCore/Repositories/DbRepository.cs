@@ -112,7 +112,7 @@ namespace DbNetSuiteCore.Repositories
                     {
                         continue;
                     }
-                    DataColumn? dataColumn = componentModel.GetDataColumn(column);
+                    DataColumn dataColumn = componentModel.GetDataColumn(column);
                     componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
                 }
             }
@@ -128,7 +128,7 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
         {
-            object? primaryKeyValue = null;
+            object primaryKeyValue = null;
             if (componentModel is FormModel)
             {
                 primaryKeyValue = ((FormModel)componentModel).RecordId as List<object> ?? new List<object>();
@@ -251,7 +251,7 @@ namespace DbNetSuiteCore.Repositories
             switch(formModel.DataSourceType)
             {
                 case DataSourceType.Oracle:
-                    FormColumn? sequenceColumn = formModel.Columns.FirstOrDefault(c => string.IsNullOrEmpty(c.SequenceName) == false);
+                    FormColumn sequenceColumn = formModel.Columns.FirstOrDefault(c => string.IsNullOrEmpty(c.SequenceName) == false);
 
                     if (sequenceColumn != null)
                     {
@@ -362,7 +362,7 @@ namespace DbNetSuiteCore.Repositories
         {
             var lookup = column.Lookup!;
 
-            DataColumn? dataColumn = componentModel.GetDataColumn(column);
+            DataColumn dataColumn = componentModel.GetDataColumn(column);
 
             if (dataColumn == null || componentModel.Data.Rows.Count == 0)
             {
@@ -392,7 +392,7 @@ namespace DbNetSuiteCore.Repositories
         {
             var lookup = column.Lookup!;
 
-            DataColumn? dataColumn = componentModel.GetDataColumn(column);
+            DataColumn dataColumn = componentModel.GetDataColumn(column);
 
             if (dataColumn == null || componentModel.Data.Rows.Count == 0)
             {
@@ -523,7 +523,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public async Task<object?> ExecuteScalar(QueryCommandConfig query, ComponentModel componentModel)
+        public async Task<object> ExecuteScalar(QueryCommandConfig query, ComponentModel componentModel)
         {
             using (IDbConnection connection = GetConnection(componentModel.ConnectionAlias))
             {

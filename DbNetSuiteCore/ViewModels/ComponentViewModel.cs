@@ -29,12 +29,12 @@ namespace DbNetSuiteCore.ViewModels
             }
         }
 
-        protected ColumnModel? _GetColumnInfo(DataColumn column, IEnumerable<ColumnModel> columns)
+        protected ColumnModel _GetColumnInfo(DataColumn column, IEnumerable<ColumnModel> columns)
         {
             return columns.FirstOrDefault(c => c.Name == column.ColumnName || c.Name.Split(".").Last() == column.ColumnName);
         }
 
-        public DataColumn? GetDataColumn(ColumnModel column)
+        public DataColumn GetDataColumn(ColumnModel column)
         {
             return _componentModel.GetDataColumn(column);
         }

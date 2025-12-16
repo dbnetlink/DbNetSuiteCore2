@@ -8,7 +8,7 @@ namespace DbNetSuiteCore.Services
    public interface ICacheService
     {
         Task SetAsync(string key, string value);
-        Task<string?> GetAsync(string key);
+        Task<string> GetAsync(string key);
     }
 
     public class CacheService : ICacheService
@@ -28,7 +28,7 @@ namespace DbNetSuiteCore.Services
             await _cache.SetStringAsync(key, value, options);
         }
 
-        public async Task<string?> GetAsync(string key)
+        public async Task<string> GetAsync(string key)
         {
             return await _cache.GetStringAsync(key);
         }

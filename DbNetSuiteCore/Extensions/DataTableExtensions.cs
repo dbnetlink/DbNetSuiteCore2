@@ -11,7 +11,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class DataTableExtensions
     {
-        public static void ConvertLookupColumn(this DataTable dataTable, DataColumn? currentColumn, ColumnModel gridColumnModel, ComponentModel gridModel)
+        public static void ConvertLookupColumn(this DataTable dataTable, DataColumn currentColumn, ColumnModel gridColumnModel, ComponentModel gridModel)
         {
             if (currentColumn == null)
             {
@@ -96,7 +96,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static void UpdateColumnDataType(this DataTable dt, string colName, Type dataType)
         {
-            DataColumn? dataColumn = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == colName.ToLower());
+            DataColumn dataColumn = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == colName.ToLower());
             if (dataColumn == null)
             {
                 return;

@@ -14,7 +14,7 @@ namespace DbNetSuiteCore.Models
         private bool _suggest = false;
         public ReadOnlyMode? ReadOnly { get; set; } = null;
         public bool Disabled { get; set; } = false;
-        public object? InitialValue { get; set; } = null;
+        public object InitialValue { get; set; } = null;
         public bool Autoincrement { get; set; } = false;
         public bool PrimaryKeyRequired => PrimaryKey && Autoincrement == false;
         public string DateTimeFormat => GetDateTimeFormat(ControlType.ToString());
@@ -63,14 +63,14 @@ namespace DbNetSuiteCore.Models
         public bool SelectControlType => (ControlType == FormControlType.Auto && Suggest == false) || ControlType == FormControlType.SelectMultiple;
         public string SequenceName { get; set; } = string.Empty;
 
-        private object? _minValue { get; set; } = null;
-        private object? _maxValue { get; set; } = null;
+        private object _minValue { get; set; } = null;
+        private object _maxValue { get; set; } = null;
         public FormControlType ControlType { get; set; } = FormControlType.Auto;
         public bool Required { get; set; } = false;
         [JsonIgnore]
         public bool InError { get; set; } = false;
 
-        public object? MinValue
+        public object MinValue
         {
             get
             {
@@ -88,7 +88,7 @@ namespace DbNetSuiteCore.Models
             }
             set { _minValue = value; }
         }
-        public object? MaxValue
+        public object MaxValue
         {
             get
             {
@@ -109,7 +109,7 @@ namespace DbNetSuiteCore.Models
         public TextTransform? TextTransform { get; set; } = null;
         public int? MaxLength { get; set; } = null;
         public int? MinLength { get; set; } = null;
-        public string? Pattern { get; set; } = null;
+        public string Pattern { get; set; } = null;
         public string HelpText { get; set; } = string.Empty;
         public bool Unique { get; set; } = false;
 
@@ -281,7 +281,7 @@ namespace DbNetSuiteCore.Models
             return new HtmlString($"<input {RazorHelper.Attributes(attributes)} {Attributes(componentModel)} />{HelpTextElement()}{dataList}");
         }
 
-        private void AddAttribute(Dictionary<string, string> attributes, object? attrValue , string attrName)
+        private void AddAttribute(Dictionary<string, string> attributes, object attrValue , string attrName)
         {
             if (DataType == typeof(string) && attrValue != null)
             {
@@ -431,7 +431,7 @@ namespace DbNetSuiteCore.Models
             return string.Join(" ", classes);
         }
 
-        string Attributes(ComponentModel componentModel, List<string>? attr = null)
+        string Attributes(ComponentModel componentModel, List<string> attr = null)
         {
             List<string> attributes = new List<string>();
             if (Disable(componentModel))
@@ -485,7 +485,7 @@ namespace DbNetSuiteCore.Models
             return (PrimaryKey || ForeignKey || Disabled || mode == FormMode.Empty);
         }
 
-        void SetMinMax(Dictionary<string, string> attributes, string attrName, object? attrValue)
+        void SetMinMax(Dictionary<string, string> attributes, string attrName, object attrValue)
         {
             if (attrValue == null)
             {

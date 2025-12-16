@@ -3,7 +3,7 @@
 
     public static class StateHelper
     {
-        public static string GetSerialisedModel(HttpContext? httpContext, IConfiguration configuration, string name = "model")
+        public static string GetSerialisedModel(HttpContext httpContext, IConfiguration configuration, string name = "model")
         {
             if (httpContext == null)
             {

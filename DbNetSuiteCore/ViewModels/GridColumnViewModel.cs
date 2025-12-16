@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.ViewModels
     public class GridColumnViewModel : ColumnViewModel
     {
         public GridColumn Column { get; set; }
-        private FormColumnViewModel? _formColumn = null;
+        private FormColumnViewModel _formColumn = null;
         public GridColumnViewModel(GridColumn column) : base(column)
         {
             Column = column;
@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.ViewModels
         public bool Editable => Column.Editable;
         public bool Sortable => Column.Sortable;
         public string FilterError => Column.FilterError;
-        public FormColumnViewModel? FormColumn 
+        public FormColumnViewModel FormColumn 
         {
             get
             {
@@ -27,10 +27,10 @@ namespace DbNetSuiteCore.ViewModels
             }
         }
         public List<bool> LineInError => Column.LineInError;
-        public Image? Image => Column.Image;
+        public Image Image => Column.Image;
         public string Style => Column.Style;
 
-        public object? FormatValue(object value)
+        public object FormatValue(object value)
         {
             return Column.FormatValue(value);
         }

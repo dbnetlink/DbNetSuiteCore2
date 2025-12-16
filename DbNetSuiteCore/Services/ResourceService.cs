@@ -8,7 +8,7 @@ namespace DbNetSuiteCore.Services
 {
     public class ResourceService : IResourceService
     {
-        private HttpContext? _context = null;
+        private HttpContext _context = null;
 
         public ResourceService()
         {

@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.Helpers
             return typeof(TInterface).IsAssignableFrom(type) && !type.IsInterface;
         }
 
-        public static Type? GetTypeFromName(string typeName)
+        public static Type GetTypeFromName(string typeName)
         {
             return String.IsNullOrEmpty(typeName) ? null : Type.GetType(typeName);
         }
@@ -23,9 +23,9 @@ namespace DbNetSuiteCore.Helpers
         public static string TransformJson(GridModel gridModel, string json)
         {
             var targetType = PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName);
-            object? instance = System.Text.Json.JsonSerializer.Deserialize(json, targetType!);
+            object instance = System.Text.Json.JsonSerializer.Deserialize(json, targetType!);
 
-            object? obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, instance, instance);
+            object obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, instance, instance);
 
             if (obj == null)
             {
@@ -34,18 +34,18 @@ namespace DbNetSuiteCore.Helpers
             return System.Text.Json.JsonSerializer.Serialize(obj, new JsonSerializerOptions { });
         }
 
-        public static string GetNameFromType(Type? type)
+        public static string GetNameFromType(Type type)
         {
             return type != null ? $"{type.FullName}, {type.Assembly.FullName}" : string.Empty;
         }
 
-        public static object? InvokeMethod(string typeName, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null, object? instance = null) 
+        public static object InvokeMethod(string typeName, string methodName, ComponentModel componentModel, IEnumerable<object> args = null, object defaultReturn = null, object instance = null) 
         {
             if (string.IsNullOrEmpty(typeName))
             {
                 return null;
             }
-            Type? type = GetTypeFromName(typeName);
+            Type type = GetTypeFromName(typeName);
             if (type == null)
             {
                 throw new ArgumentException($"Type '{typeName}' could not be found.");
@@ -53,7 +53,7 @@ namespace DbNetSuiteCore.Helpers
             return InvokeMethod(type, methodName, componentModel, args, defaultReturn, instance);
         }
 
-        public static object? InvokeMethod(Type type, string methodName, ComponentModel componentModel, IEnumerable<object>? args = null, object? defaultReturn = null, object? instance = null)
+        public static object InvokeMethod(Type type, string methodName, ComponentModel componentModel, IEnumerable<object> args = null, object defaultReturn = null, object instance = null)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace DbNetSuiteCore.Helpers
                     throw new InvalidOperationException($"Unable to create instance of '{type.Name}'.");
                 }
 
-                MethodInfo? method = type.GetMethod(methodName);
+                MethodInfo method = type.GetMethod(methodName);
 
                 if (method == null)
                 {

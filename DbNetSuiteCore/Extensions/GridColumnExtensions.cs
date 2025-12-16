@@ -9,7 +9,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class GridColumnExtensions
     {
-        internal static object? FormatValue(this GridColumn gridColumn, object value)
+        internal static object FormatValue(this GridColumn gridColumn, object value)
         {
             if (string.IsNullOrEmpty(value?.ToString()) || value == DBNull.Value || gridColumn.NoFormat)
             {

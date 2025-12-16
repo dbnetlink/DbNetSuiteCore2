@@ -1,12 +1,6 @@
-﻿using Amazon.Util.Internal;
-using DbNetSuiteCore.Extensions;
-using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Extensions;
 using System.Data;
-using System.Globalization;
-using System.IO;
 using System.IO.Compression;
-using System.Reflection.Metadata;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace DbNetSuiteCore.Repositories
@@ -22,7 +16,7 @@ namespace DbNetSuiteCore.Repositories
             // Dispose of unmanaged resources if any
         }
 
-        public DataTable GetDataTableFromUrl(string url, string? sheetName)
+        public DataTable GetDataTableFromUrl(string url, string sheetName)
         {
             using (HttpClient client = new HttpClient())
             using (Stream stream = client.GetStreamAsync(url).Result)
@@ -31,7 +25,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public DataTable GetDataTableFromPath(string path, string? sheetName)
+        public DataTable GetDataTableFromPath(string path, string sheetName)
         {
             using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
@@ -39,7 +33,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private DataTable GetDatTableFromStream(Stream stream, string? sheetName)
+        private DataTable GetDatTableFromStream(Stream stream, string sheetName)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -53,7 +47,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public DataSet LoadOdsToDataSet(ZipArchiveEntry? contentEntry)
+        public DataSet LoadOdsToDataSet(ZipArchiveEntry contentEntry)
         {
             DataSet dataSet = new DataSet();
 
@@ -103,12 +97,12 @@ namespace DbNetSuiteCore.Repositories
                         int columnIndex = 0;
                         foreach (XElement cell in cells)
                         {
-                            XAttribute? repeatAttr = cell.Attribute(tableNs + "number-columns-repeated");
+                            XAttribute repeatAttr = cell.Attribute(tableNs + "number-columns-repeated");
                             int repeatCount = repeatAttr != null ? int.Parse(repeatAttr.Value) : 1;
 
 
                             string cellValue = cell.Descendants(textNs + "p").FirstOrDefault()?.Value ?? "";
-                            XNode? lastNode = cell.LastNode;
+                            XNode lastNode = cell.LastNode;
 
                             if (lastNode != null)
                             {

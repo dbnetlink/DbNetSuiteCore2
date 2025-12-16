@@ -15,7 +15,7 @@ namespace DbNetSuiteCore.Helpers
 {
     public static class DbHelper
     {
-        public static IDbConnection GetConnection(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment? webHostEnvironment = null)
+        public static IDbConnection GetConnection(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment webHostEnvironment = null)
         {
             string connectionString = GetConnectionString(connectionAlias, configuration);
             IDbConnection connection;
@@ -53,7 +53,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static DataTable GetRecord(FormModel formModel)
         {
-            FormService? formService = formModel.HttpContext?.RequestServices.GetService<FormService>(); 
+            FormService formService = formModel.HttpContext?.RequestServices.GetService<FormService>(); 
             if (formService == null)
             {
                 throw new Exception("FormService not registered with the dependency injection container.s");
@@ -91,7 +91,7 @@ namespace DbNetSuiteCore.Helpers
             return connectionString;
         }
 
-        public static string MapDatabasePath(string? connectionString, IWebHostEnvironment env)
+        public static string MapDatabasePath(string connectionString, IWebHostEnvironment env)
         {
             if (string.IsNullOrEmpty(connectionString))
                 return string.Empty;
@@ -148,7 +148,7 @@ namespace DbNetSuiteCore.Helpers
             {
                 throw new Exception($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}. {ex.Message}");
             }
-            Type? connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
+            Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
 
             if (connectionType == null)
             {
@@ -275,7 +275,7 @@ namespace DbNetSuiteCore.Helpers
             return client.GetDatabase(database).ListCollectionNames().ToList();
         }
 
-        public static List<string> GetTables(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment? webHostEnvironment = null)
+        public static List<string> GetTables(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment webHostEnvironment = null)
         {
             List<string> tables = new List<string>();
 

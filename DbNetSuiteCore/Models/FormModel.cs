@@ -1,11 +1,7 @@
-﻿using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Plugins.Interfaces;
-using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Spreadsheet;
 using MongoDB.Bson;
-using MongoDB.Driver;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -23,7 +19,7 @@ namespace DbNetSuiteCore.Models
         /// Defines the columns that should appear in the form.
         /// </summary>
         public IEnumerable<FormColumn> Columns { get; set; } = new List<FormColumn>();
-        internal override FormColumn? SortColumn => null;
+        internal override FormColumn SortColumn => null;
         internal override SortOrder? SortSequence { get; set; }
         [JsonProperty]
         internal int CurrentRecord { get; set; } = 1;
@@ -53,7 +49,7 @@ namespace DbNetSuiteCore.Models
         [JsonProperty]
         internal FormMode? CommitType { get; set; }
         [JsonProperty]
-        internal object? RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : null;
+        internal object RecordId => Mode == FormMode.Update ? PrimaryKeyValues[CurrentRecord - 1] : null;
         /// <summary>
         /// Controls the number of columns in the form layout
         /// </summary>
@@ -70,7 +66,7 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Use this property to specify the type of a class that implements the ICustomFormPlugin interface which at runtime will be instantiated and used to provide runtime initialisation customisation and/or custom server-side validation for forms.
         /// </summary>
-        public Type? CustomisationPlugin
+        public Type CustomisationPlugin
         {
             set { CustomisationPluginName = PluginHelper.GetNameFromType(value); }
         }

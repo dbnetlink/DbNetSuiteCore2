@@ -28,7 +28,7 @@ namespace DbNetSuiteCore.Helpers
             return RedisCacheObject(summaryModel, $"{componentModel.Id}Summary", componentModel.HttpContext);
         }
 
-        private static string CacheObject(object obj, string key, HttpContext? httpContext)
+        private static string CacheObject(object obj, string key, HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -37,7 +37,7 @@ namespace DbNetSuiteCore.Helpers
             string serialisedModel = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
             serialisedModel = TextHelper.Compress(serialisedModel);
 
-            IMemoryCache? memoryCache = httpContext.RequestServices.GetService<IMemoryCache>();
+            IMemoryCache memoryCache = httpContext.RequestServices.GetService<IMemoryCache>();
 
             if (memoryCache == null)
             {
@@ -48,7 +48,7 @@ namespace DbNetSuiteCore.Helpers
             return TextHelper.ObfuscateString(key);
         }
 
-        private static string RedisCacheObject(object obj, string key, HttpContext? httpContext)
+        private static string RedisCacheObject(object obj, string key, HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -57,7 +57,7 @@ namespace DbNetSuiteCore.Helpers
             string serialisedModel = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
             serialisedModel = TextHelper.Compress(serialisedModel);
 
-            ICacheService? cacheService = httpContext.RequestServices.GetService<ICacheService>();
+            ICacheService cacheService = httpContext.RequestServices.GetService<ICacheService>();
 
             if (cacheService == null)
             {
@@ -77,13 +77,13 @@ namespace DbNetSuiteCore.Helpers
             }   
             cacheKey = TextHelper.DeobfuscateString(cacheKey);
 
-            IMemoryCache? memoryCache = httpContext.RequestServices.GetService<IMemoryCache>();
+            IMemoryCache memoryCache = httpContext.RequestServices.GetService<IMemoryCache>();
 
             if (memoryCache == null)
             {
                 throw new Exception("MemoryCache service is not available.");
             }
-            if (memoryCache.TryGetValue(cacheKey, out object? serialisedModelObj) && serialisedModelObj is string serialisedModel)
+            if (memoryCache.TryGetValue(cacheKey, out object serialisedModelObj) && serialisedModelObj is string serialisedModel)
             {
                 return TextHelper.Decompress(serialisedModel);
             }
@@ -99,7 +99,7 @@ namespace DbNetSuiteCore.Helpers
             }
             cacheKey = TextHelper.DeobfuscateString(cacheKey);
 
-            ICacheService? cacheService = httpContext.RequestServices.GetService<ICacheService>();
+            ICacheService cacheService = httpContext.RequestServices.GetService<ICacheService>();
 
             if (cacheService == null)
             {

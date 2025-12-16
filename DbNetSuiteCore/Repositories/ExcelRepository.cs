@@ -56,7 +56,7 @@ namespace DbNetSuiteCore.Repositories
 
         private DataTable BuildDataTable(GridSelectModel gridSelectModel)
         {
-            DataTable? dataTable = null;
+            DataTable dataTable = null;
                 if (gridSelectModel.Cache && _memoryCache.TryGetValue(gridSelectModel.CacheKey, out dataTable))
                 {
                     if (dataTable != null)
@@ -224,7 +224,7 @@ namespace DbNetSuiteCore.Repositories
 
             using (OdsReader cdr = new OdsReader())
             {
-                string? sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
+                string sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
                 if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
                 {
                     dataTable = cdr.GetDataTableFromUrl(componentModel.Url, sheetName);

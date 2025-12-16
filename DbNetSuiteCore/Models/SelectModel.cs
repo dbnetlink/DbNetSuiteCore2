@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Enums;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -58,7 +57,7 @@ namespace DbNetSuiteCore.Models
         /// When set to true will only return distinct values of the selected columns
         /// </summary>
         public bool Distinct { get; set; } = false;
-        internal override SelectColumn? SortColumn => DescriptionColumn;
+        internal override SelectColumn SortColumn => DescriptionColumn;
         internal override SortOrder? SortSequence
         {
             get { return _SortSequence; }

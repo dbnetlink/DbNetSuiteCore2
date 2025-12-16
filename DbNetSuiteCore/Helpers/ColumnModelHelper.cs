@@ -5,12 +5,12 @@ namespace DbNetSuiteCore.Helpers
     public static class ColumnModelHelper
     {
 
-        public static object? TypedValue(ColumnModel columnModel, object value)
+        public static object TypedValue(ColumnModel columnModel, object value)
         {
             return TypedValue(columnModel.DataType.Name, value);
         }
 
-        public static object? TypedValue(string dataTypeName, object value)
+        public static object TypedValue(string dataTypeName, object value)
         {
             switch (dataTypeName)
             {

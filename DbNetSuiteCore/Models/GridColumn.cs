@@ -55,7 +55,7 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Provides configuration information for a column to render and image from binary data.
         /// </summary>
-        public Image? Image { get; set; }
+        public Image Image { get; set; }
         /// <summary>
         /// Specifies the maximum number of characters shown in cell beyond which the value will be truncated.
         /// </summary>
@@ -79,7 +79,7 @@ namespace DbNetSuiteCore.Models
         /// <remarks>
         /// The constructor for the FormColumn object should be left empty as these properties are inhertited from the GridColumn
         /// </remarks>
-        public FormColumn? FormColumn { get; set; } = null;
+        public FormColumn FormColumn { get; set; } = null;
         /// <summary>
         /// Specifies a custom parsing format for string values that should be treated as dates or numbers.
         /// </summary>

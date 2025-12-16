@@ -23,13 +23,13 @@ namespace DbNetSuiteCore.Services
         protected readonly IMongoDbRepository _mongoDbRepository;
         protected readonly IOracleRepository _oracleRepository;
 
-        protected HttpContext? _context;
+        protected HttpContext _context;
         protected readonly IConfiguration _configuration;
         protected readonly IWebHostEnvironment _webHostEnvironment;
-        protected readonly ILoggerFactory? _loggerFactory = null;
-        protected readonly ILogger? _logger = null;
+        protected readonly ILoggerFactory _loggerFactory = null;
+        protected readonly ILogger _logger = null;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory? loggerFactory)
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -238,7 +238,7 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.JSON:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
-                            DataColumn? dataColumn = dataColumns.FirstOrDefault(dc => dc.ColumnName.ToLower() == column.Expression.ToLower());
+                            DataColumn dataColumn = dataColumns.FirstOrDefault(dc => dc.ColumnName.ToLower() == column.Expression.ToLower());
                             if (dataColumn != null)
                             {
                                 column.Update(dataColumn, componentModel.DataSourceType);
@@ -252,7 +252,7 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.Oracle:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
-                            DataRow? dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
+                            DataRow dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
                             if (dataRow != null)
                             {
                                 column.Update(dataRow, componentModel.DataSourceType);
@@ -294,7 +294,7 @@ namespace DbNetSuiteCore.Services
             {
                 return true;
             }
-            DataColumn? dataColumn = dataRow.Table.Columns["IsHidden"];
+            DataColumn dataColumn = dataRow.Table.Columns["IsHidden"];
             if (dataColumn != null)
             {
                 if (dataRow[dataColumn] != DBNull.Value)
@@ -527,7 +527,7 @@ namespace DbNetSuiteCore.Services
                 }
 
                 var searchDialogFilter = new SearchDialogFilter() { Operator = Enum.Parse<SearchOperator>(operatorList[i]), ColumnKey = keyList[i] };
-                ColumnModel? columnModel = componentModel.GetColumns().FirstOrDefault(c => c.Key == searchDialogFilter.ColumnKey);
+                ColumnModel columnModel = componentModel.GetColumns().FirstOrDefault(c => c.Key == searchDialogFilter.ColumnKey);
 
                 if (columnModel == null)
                 {
@@ -588,7 +588,7 @@ namespace DbNetSuiteCore.Services
 
         protected void ValidateFormValue(FormColumn formColumn, string value, ResourceNames resourceName, ComponentModel componentModel)
         {
-            object? paramValue;
+            object paramValue;
 
             switch (resourceName)
             {
@@ -693,7 +693,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected void CheckForLengthError(ResourceNames resourceName, int? length, object? paramValue, FormColumn formColumn, ComponentModel componentModel)
+        protected void CheckForLengthError(ResourceNames resourceName, int? length, object paramValue, FormColumn formColumn, ComponentModel componentModel)
         {
             if (length.HasValue)
             {
@@ -707,7 +707,7 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-        protected void CheckForUniqueness(ResourceNames resourceName, object? paramValue, FormColumn formColumn, FormModel formModel)
+        protected void CheckForUniqueness(ResourceNames resourceName, object paramValue, FormColumn formColumn, FormModel formModel)
         {
             if (ValueIsUnique(formModel, formColumn).Result == false)
             {

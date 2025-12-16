@@ -24,7 +24,7 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(GridSelectModel gridSelectModel, HttpContext? httpContext)
+        public async Task GetRecords(GridSelectModel gridSelectModel, HttpContext httpContext)
         {
             gridSelectModel.Data = await BuildDataTable(gridSelectModel, httpContext);
 
@@ -50,20 +50,20 @@ namespace DbNetSuiteCore.Repositories
                 selectModel.ConvertEnumLookups();
             }
         }
-        public async Task GetRecord(GridSelectModel gridSelectModel, HttpContext? httpContext)
+        public async Task GetRecord(GridSelectModel gridSelectModel, HttpContext httpContext)
         {
             var dataTable = await BuildDataTable(gridSelectModel, httpContext);
             dataTable.FilterWithPrimaryKey(gridSelectModel);
             gridSelectModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(GridSelectModel gridSelectModel, HttpContext? httpContext)
+        public async Task<DataTable> GetColumns(GridSelectModel gridSelectModel, HttpContext httpContext)
         {
             gridSelectModel.Data = await BuildDataTable(gridSelectModel, httpContext);
             return gridSelectModel.Data;
         }
 
-        public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext? context)
+        public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext context)
         {
             Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context)) ?? new Dictionary<string, string>();
 
@@ -77,7 +77,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel, HttpContext? httpContext)
+        private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel, HttpContext httpContext)
         {
             if (gridSelectModel.Cache)
             {
@@ -85,7 +85,7 @@ namespace DbNetSuiteCore.Repositories
                 {
                     _memoryCache.Remove(gridSelectModel.CacheKey);
                 }
-                else if (_memoryCache.TryGetValue(gridSelectModel.CacheKey, out DataTable? cachedDataTable))
+                else if (_memoryCache.TryGetValue(gridSelectModel.CacheKey, out DataTable cachedDataTable))
                 {
                     if (cachedDataTable != null)
                     {
@@ -104,7 +104,7 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext? httpContext)
+        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext httpContext)
         {
             string json = string.Empty;
 
@@ -162,7 +162,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            DataTable? dataTable = new();
+            DataTable dataTable = new();
             if (string.IsNullOrWhiteSpace(json))
             {
                 return dataTable;
@@ -206,7 +206,7 @@ namespace DbNetSuiteCore.Repositories
 
         private DataTable Tabulate(string json, ComponentModel componentModel)
         {
-            JToken? jToken = JToken.Parse(json);
+            JToken jToken = JToken.Parse(json);
 
             if (componentModel is GridModel gridModel && string.IsNullOrEmpty(gridModel.JsonArrayProperty) == false)
             {

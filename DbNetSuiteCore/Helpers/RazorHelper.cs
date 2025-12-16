@@ -55,7 +55,7 @@ namespace DbNetSuiteCore.Helpers
 
             foreach (SelectColumn selectColumn in selectModel.Columns)
             {
-                DataColumn? dataColumn = selectModel.GetDataColumn(selectColumn);
+                DataColumn dataColumn = selectModel.GetDataColumn(selectColumn);
                 if (dataColumn != null)
                 {
                     dataAttributes.Add(Attribute($"data-{dataColumn.ColumnName.ToLower()}", selectColumn.FormatValue(row[dataColumn])?.ToString() ?? string.Empty));
@@ -77,7 +77,7 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString($"{name}=\"{HtmlEncoder.Default.Encode(attrValue)}\"");
         }
 
-        public static double? JavaScriptDateTime(object? dateTime)
+        public static double? JavaScriptDateTime(object dateTime)
         {
             if (string.IsNullOrEmpty(dateTime?.ToString()) == false)
             {
@@ -90,7 +90,7 @@ namespace DbNetSuiteCore.Helpers
             return null;
         }
 
-        public static HtmlString IconButton(string type, HtmlString icon, Dictionary<string, string>? attributes = null)
+        public static HtmlString IconButton(string type, HtmlString icon, Dictionary<string, string> attributes = null)
         {
             if (attributes == null)
             {

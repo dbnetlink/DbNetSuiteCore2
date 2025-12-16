@@ -3,11 +3,6 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
 using System.Data;
 using DbNetSuiteCore.Helpers;
-using Amazon.Runtime.Internal.Util;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System.Reflection.Metadata;
-using DbNetSuiteCore.Constants;
-using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -117,7 +112,7 @@ namespace DbNetSuiteCore.Extensions
                 if (columnFilter != null)
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
-                    object? paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType, true);
+                    object paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType, true);
 
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
@@ -265,7 +260,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 foreach (var gridColumn in gridModel.Columns.Where(c => c.DistinctLookup))
                 {
-                    DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
+                    DataColumn dataColumn = gridModel.GetDataColumn(gridColumn);
                     if (dataColumn != null)
                     {
                         var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false && dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], gridColumn.DataType)).OrderBy(v => v).ToList();

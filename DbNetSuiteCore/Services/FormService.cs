@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Services
 {
     public class FormService : ComponentService, IComponentService
     {
-        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory? loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -114,7 +114,7 @@ namespace DbNetSuiteCore.Services
         private List<object> PrimaryKeyValue(DataRow dataRow)
         {
             List<object> primaryKeyValues = new List<object>();
-            foreach (object? value in (dataRow.ItemArray ?? new object[] { }))
+            foreach (object value in (dataRow.ItemArray ?? new object[] { }))
             {
                 if (value == null)
                 {
@@ -270,7 +270,7 @@ namespace DbNetSuiteCore.Services
                 return;
             }
 
-            foreach (FormColumn? formColumn in formModel.Columns.Where(c => c.PrimaryKeyRequired && c.DataType == typeof(Guid)))
+            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.PrimaryKeyRequired && c.DataType == typeof(Guid)))
             {
                 var columnName = formColumn.ColumnName;
 
@@ -346,7 +346,7 @@ namespace DbNetSuiteCore.Services
 
         private bool ValidateErrorType(FormModel formModel, ResourceNames resourceName)
         {
-            foreach (FormColumn? formColumn in formModel.Columns.Where(c => c.DataOnly == false))
+            foreach (FormColumn formColumn in formModel.Columns.Where(c => c.DataOnly == false))
             {
                 if (formModel.Mode == FormMode.Update && formColumn.PrimaryKey)
                 {

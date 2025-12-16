@@ -2,7 +2,7 @@
 {
     public static class AttributeHelper
     {
-        public static T? GetAttribute<T>(this Enum enumVal) where T : System.Attribute
+        public static T GetAttribute<T>(this Enum enumVal) where T : System.Attribute
         {
             var type = enumVal.GetType();
             var memInfo = type.GetMember(enumVal.ToString());

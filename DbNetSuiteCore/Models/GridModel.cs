@@ -32,9 +32,9 @@ namespace DbNetSuiteCore.Models
         internal SortOrder? CurrentSortSequence { get; set; }
         [JsonProperty]
         internal bool CurrentSortAscending => SortSequence == SortOrder.Asc;
-        internal override GridColumn? SortColumn => (Columns.FirstOrDefault(c => c.Key == CurrentSortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
-        internal GridColumn? CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
-        internal GridColumn? InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
+        internal override GridColumn SortColumn => (Columns.FirstOrDefault(c => c.Key == CurrentSortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
+        internal GridColumn CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
+        internal GridColumn InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
         internal override SortOrder? SortSequence 
         { 
             get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; } 
@@ -85,12 +85,12 @@ namespace DbNetSuiteCore.Models
         [JsonProperty]
         internal List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         [JsonProperty]
-        internal List<ModifiedRow>? RowsModified { get; set; } = new List<ModifiedRow>();
+        internal List<ModifiedRow> RowsModified { get; set; } = new List<ModifiedRow>();
         [JsonIgnore]
         /// <summary>
         /// Use this property to specify the type of a class that implements the IJsonTransformPlugin interface which at runtime will be instantiated and used to provide runtime transformation of teh selected JSON based data source.
         /// </summary>
-        public Type? JsonTransformPlugin
+        public Type JsonTransformPlugin
         {
             set 
             {
@@ -104,7 +104,7 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Use this property to specify the type of a class that implements the ICustomGridPlugin interface which at runtime will be instantiated and used to provide runtime initialisation customisation and/or custom server-side validation for editable grids.
         /// </summary>
-        public Type? CustomisationPlugin
+        public Type CustomisationPlugin
         {
             set{ CustomisationPluginName = PluginHelper.GetNameFromType(value);}
         }
@@ -177,7 +177,7 @@ namespace DbNetSuiteCore.Models
         /// <remarks>
         /// Allows a user to see additional information about the selected row. By default columns are rendered in the View Dialog. Set the Viewable column property to false to remove from View Dialog. Set the DataOnly property to true for columns that should only render in the View Dialog
         /// </remarks>
-        public ViewDialog? ViewDialog { get; set; }
+        public ViewDialog ViewDialog { get; set; }
 
         /// <summary>
         /// Specfies the name of the Sheet in the spreadsheet where there are multiple sheets and you want display the one that is not first. DataSourceType.Excel only.
@@ -185,20 +185,6 @@ namespace DbNetSuiteCore.Models
         public string SheetName { get; set; } = string.Empty;
         public GridModel() : base()
         {
-        }
-
-        /// <summary>
-        /// This constructor can be used for file/api based data sources 
-        /// </summary>
-        /// <param name="DataSourceType dataSourceType">Must be one of JSON, FileSystem or Excel</param>
-        /// <param name="string url">The path to the JSON, Excel,CSV or Folder.</param>
-        /// <param name="string sheetName">The name of the worksheet in the spreadsheet (optional).</param>
-        public GridModel(DataSourceType dataSourceType, string url, string? sheetName = null) :base(dataSourceType,url)
-        {
-            if (dataSourceType == DataSourceType.Excel && string.IsNullOrEmpty(sheetName) == false)
-            {
-                SheetName = sheetName;
-            }
         }
 
         /// <summary>
@@ -294,7 +280,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        internal object? PrimaryKeyValue(DataRow dataRow)
+        internal object PrimaryKeyValue(DataRow dataRow)
         {
             if (DataSourceType == DataSourceType.FileSystem)
             {

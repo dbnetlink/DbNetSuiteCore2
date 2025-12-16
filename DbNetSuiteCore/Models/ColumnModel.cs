@@ -12,8 +12,8 @@ namespace DbNetSuiteCore.Models
     public class ColumnModel
     {
         private List<string> _numericDataTypes = new List<string>() { nameof(Decimal), nameof(Double), nameof(Single), nameof(Int64), nameof(Int32), nameof(Int16), nameof(Byte), nameof(SByte) };
-        private Type? _DataType = null;
-        private List<KeyValuePair<string, string>>? _EnumOptions;
+        private Type _DataType = null;
+        private List<KeyValuePair<string, string>> _EnumOptions;
         private SearchControlType _searchControlType = SearchControlType.Text;
         /// <summary>
         /// Specifies the label/heading associated with the column.
@@ -35,11 +35,11 @@ namespace DbNetSuiteCore.Models
         [JsonProperty]
         internal string BaseTableName { get; set; } = string.Empty;
         internal bool IsNumeric => _numericDataTypes.Contains(DataTypeName);
-        internal List<KeyValuePair<string, string>>? LookupOptions => GetLookupOptions();
+        internal List<KeyValuePair<string, string>> LookupOptions => GetLookupOptions();
         [JsonProperty]
-        internal List<KeyValuePair<string, string>>? DbLookupOptions { get; set; } = null;
+        internal List<KeyValuePair<string, string>> DbLookupOptions { get; set; } = null;
         [JsonIgnore]
-        public Type? LookupEnum
+        public Type LookupEnum
         {
             set
             {
@@ -50,23 +50,23 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Allows for a Lookup list to be supplied as a List of strings
         /// </summary>
-        public List<string>? LookupList { get; set; }
+        public List<string> LookupList { get; set; }
         /// <summary>
         /// Allows for a Lookup list to be supplied as a numerical range
         /// </summary>
         /// <remarks>
         /// For example, {Required = true,InitialValue = 0, MaxValue = 50, LookupRange = Enumerable.Range(0,50) }
         /// </remarks>
-        public IEnumerable<Int32>? LookupRange { get; set; }
+        public IEnumerable<Int32> LookupRange { get; set; }
         /// <summary>
         /// Allows for a Lookup list to be supplied as a Dictionary
         /// </summary>
-        public Dictionary<string, string>? LookupDictionary { get; set; }
+        public Dictionary<string, string> LookupDictionary { get; set; }
         internal string ParamName => $"Param{Ordinal}";
         [JsonProperty]
         internal int Ordinal { get; set; }
         [JsonProperty]
-        internal List<KeyValuePair<string, string>>? EnumOptions
+        internal List<KeyValuePair<string, string>> EnumOptions
         {
             get
             {
@@ -112,7 +112,7 @@ namespace DbNetSuiteCore.Models
         /// <remarks>
         /// For example, { Lookup = new Lookup("shippers", "id", "company")} performs a lookup against the "shippers" table using the "id" column and replaces it with the "company" value
         /// </remarks>
-        public Lookup? Lookup { get; set; }
+        public Lookup Lookup { get; set; }
         internal bool DistinctLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName);
         internal bool SearchLookup => Lookup != null && string.IsNullOrEmpty(Lookup.TableName) == false;
         /// <summary>
@@ -249,7 +249,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        private List<KeyValuePair<string, string>>? GetLookupOptions()
+        private List<KeyValuePair<string, string>> GetLookupOptions()
         {
             return ((DbLookupOptions ?? EnumOptions) ?? GetListOptions()) ?? GetDictionaryOptions() ?? GetRangeOptions();
         }
@@ -278,7 +278,7 @@ namespace DbNetSuiteCore.Models
             }
         }
 
-        private List<KeyValuePair<string, string>>? GetListOptions()
+        private List<KeyValuePair<string, string>> GetListOptions()
         {
             if (LookupList == null)
             {
@@ -287,7 +287,7 @@ namespace DbNetSuiteCore.Models
             return LookupList.OrderBy(o => o).Select(o => new KeyValuePair<string, string>(o, o)).ToList();
         }
 
-        private List<KeyValuePair<string, string>>? GetRangeOptions()
+        private List<KeyValuePair<string, string>> GetRangeOptions()
         {
             if (LookupRange == null)
             {
@@ -296,7 +296,7 @@ namespace DbNetSuiteCore.Models
             return LookupRange.Select(o => new KeyValuePair<string, string>(o.ToString(), o.ToString())).ToList();
         }
 
-        private List<KeyValuePair<string, string>>? GetDictionaryOptions()
+        private List<KeyValuePair<string, string>> GetDictionaryOptions()
         {
             if (LookupDictionary == null)
             {
@@ -330,7 +330,7 @@ namespace DbNetSuiteCore.Models
                 }
             }
         }
-        internal string ToStringOrEmpty(object? value)
+        internal string ToStringOrEmpty(object value)
         {
             return value?.ToString() ?? string.Empty;
         }
@@ -555,7 +555,7 @@ namespace DbNetSuiteCore.Models
             return string.Join(string.Empty, dataList);
         }
 
-        protected List<string> OptionsList(List<string>? values = null, bool dataList = true)
+        protected List<string> OptionsList(List<string> values = null, bool dataList = true)
         {
             List<string> options = new List<string>();
 

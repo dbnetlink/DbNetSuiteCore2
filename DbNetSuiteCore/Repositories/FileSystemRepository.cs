@@ -161,7 +161,7 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private void AddRow(IFileInfo file, DataTable dataTable, IEnumerable<GridColumn>? contentColumns = null)
+        private void AddRow(IFileInfo file, DataTable dataTable, IEnumerable<GridColumn> contentColumns = null)
         {
             DataRow dataRow = dataTable.NewRow();
             dataRow[FileSystemColumn.Icon.ToString()] = file.IsDirectory;
@@ -202,7 +202,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private string GetPath(string? physicalPath)
+        private string GetPath(string physicalPath)
         {
             if (physicalPath == null)
             {

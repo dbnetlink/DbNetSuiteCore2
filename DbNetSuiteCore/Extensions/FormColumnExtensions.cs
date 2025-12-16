@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class FormColumnExtensions
     {
-        public static object? FormatValue(this FormColumn formColumn, object value)
+        public static object FormatValue(this FormColumn formColumn, object value)
         {
             if (string.IsNullOrEmpty(value?.ToString()) || value == DBNull.Value)
             {

@@ -51,15 +51,15 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public string Caption { get; set; } = string.Empty;
         internal bool IgnoreSchemaTable { get; set; } = false;
-        internal ColumnModel? PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
+        internal ColumnModel PrimaryKeyColumn => GetColumns().FirstOrDefault(c => c.PrimaryKey);
         internal abstract IEnumerable<ColumnModel> SearchableColumns { get; }
         [JsonIgnore]
         internal LicenseInfo LicenseInfo { get; set; } = new LicenseInfo();
         internal List<SearchDialogFilter> SearchDialogFilter { get; set; } = new List<SearchDialogFilter>();
         [JsonProperty]
-        internal SummaryModel? ParentModel { get; set; }
+        internal SummaryModel ParentModel { get; set; }
         [JsonProperty]
-        internal SummaryModel? SummaryModel { get; set; }
+        internal SummaryModel SummaryModel { get; set; }
         [JsonProperty]
         internal bool IsBlazor { get; set; } = false;
         [JsonProperty]
@@ -144,9 +144,9 @@ namespace DbNetSuiteCore.Models
         internal MessageType MessageType = MessageType.None;
         internal bool IsParent => LinkedControlIds.Any();
         [JsonIgnore]
-        public HttpContext? HttpContext { get; internal set; } = null;
+        public HttpContext HttpContext { get; internal set; } = null;
         [JsonIgnore]
-        public IConfiguration? Configuration => HttpContext?.RequestServices.GetService<IConfiguration>();
+        public IConfiguration Configuration => HttpContext?.RequestServices.GetService<IConfiguration>();
         public ComponentModel()
         {
             Id = GeneratedId();
@@ -169,7 +169,7 @@ namespace DbNetSuiteCore.Models
             TableName = tableName;
         }
 
-        internal DataColumn? GetDataColumn(ColumnModel? column)
+        internal DataColumn GetDataColumn(ColumnModel column)
         {
             if (column == null)
             {
@@ -178,7 +178,7 @@ namespace DbNetSuiteCore.Models
             return Data.Columns.Cast<DataColumn>().FirstOrDefault(c => c.ColumnName.ToLower() == column.Name.ToLower() || c.ColumnName.ToLower() == column.ColumnName.ToLower() || c.ColumnName.ToLower() == column.Expression.ToLower());
         }
 
-        internal ColumnModel? GetColumn(string columnName)
+        internal ColumnModel GetColumn(string columnName)
         {
             return GetColumns().FirstOrDefault(c => c.ColumnName.ToLower() == columnName.ToLower() || c.Name.ToLower() == columnName.ToLower() || c.Expression.ToLower() == columnName.ToLower());
         }
@@ -283,7 +283,7 @@ namespace DbNetSuiteCore.Models
         internal abstract ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType);
         internal abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
         internal abstract ColumnModel NewColumn(BsonElement element);
-        internal abstract ColumnModel? SortColumn { get; }
+        internal abstract ColumnModel SortColumn { get; }
         internal abstract SortOrder? SortSequence { get; set; }
       
     }

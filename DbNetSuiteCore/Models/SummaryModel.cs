@@ -19,7 +19,7 @@ namespace DbNetSuiteCore.Models
         public Dictionary<string,object> ParentRow => RowIdx < 0 ? new Dictionary<string, object>() : Data.Keys.ToDictionary(k => k, k => Data[k][RowIdx],StringComparer.CurrentCultureIgnoreCase);
         public string Name => ParentRow.Keys.Contains("name") ? ParentRow["name"]?.ToString() ?? string.Empty : string.Empty;
         [JsonIgnore]
-        public HttpContext? HttpContext { get; set; } = null;
+        public HttpContext HttpContext { get; set; } = null;
         public SummaryModel()
         {
         }

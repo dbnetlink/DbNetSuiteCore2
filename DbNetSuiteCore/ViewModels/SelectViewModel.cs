@@ -3,7 +3,6 @@ using System.Data;
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.EMMA;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -31,7 +30,7 @@ namespace DbNetSuiteCore.ViewModels
             return RowValue(dataRow,GetDataColumn(Columns.Where(c => c.Column.OptionGroup).Select(c => c.Column).First()));
         }
 
-        private string RowValue(DataRow dataRow, DataColumn? dataColumn)
+        private string RowValue(DataRow dataRow, DataColumn dataColumn)
         {
             return dataRow[dataColumn!]?.ToString() ?? string.Empty;
         }
@@ -46,7 +45,7 @@ namespace DbNetSuiteCore.ViewModels
             _selectModel = selectModel;
         }
 
-        public SelectColumn? GetColumnInfo(DataColumn column)
+        public SelectColumn GetColumnInfo(DataColumn column)
         {
             return _GetColumnInfo(column, _selectModel.Columns.Cast<ColumnModel>()) as SelectColumn;
         }

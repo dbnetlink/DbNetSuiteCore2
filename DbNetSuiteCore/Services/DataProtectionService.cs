@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Services
             return _protector.Protect(plaintext);
         }
 
-        public string? Decrypt(string ciphertext)
+        public string Decrypt(string ciphertext)
         {
             try
             {

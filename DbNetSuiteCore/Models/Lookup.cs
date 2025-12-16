@@ -7,7 +7,7 @@
         public string DescriptionColumn { get; set; } = string.Empty;
         public string Filter { get; set; } = string.Empty;
         public Lookup() { }
-        public Lookup(string tableName, string keyColumn, string descriptionColumn, string? filter = null)
+        public Lookup(string tableName, string keyColumn, string descriptionColumn, string filter = null)
         {
             TableName = tableName;
             KeyColumn = keyColumn;

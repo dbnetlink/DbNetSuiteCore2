@@ -9,6 +9,7 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text;
@@ -17,7 +18,7 @@ namespace DbNetSuiteCore.Services
 {
     public class GridService : ComponentService, IComponentService
     {
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory? loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -221,7 +222,7 @@ namespace DbNetSuiteCore.Services
 
                 foreach (GridColumn columnModel in gridModel.Columns)
                 {
-                    DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
+                    DataColumn dataColumn = gridModel.GetDataColumn(columnModel);
 
                     if (dataColumn != null)
                     {
@@ -245,7 +246,7 @@ namespace DbNetSuiteCore.Services
                 IEnumerable<string> fields = new List<string>();
                 foreach (GridColumn columnModel in gridModel.Columns)
                 {
-                    DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
+                    DataColumn dataColumn = gridModel.GetDataColumn(columnModel);
 
                     if (dataColumn != null)
                     {
@@ -260,7 +261,7 @@ namespace DbNetSuiteCore.Services
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
-        private void SetMimeType(HttpContext? httpContext, string extension)
+        private void SetMimeType(HttpContext httpContext, string extension)
         {
             if (httpContext != null)
             {
@@ -330,7 +331,7 @@ namespace DbNetSuiteCore.Services
 
                     foreach (var column in gridModel.Columns)
                     {
-                        DataColumn? dataColumn = gridModel.GetDataColumn(column);
+                        DataColumn dataColumn = gridModel.GetDataColumn(column);
 
                         if (dataColumn == null)
                         {
@@ -415,9 +416,9 @@ namespace DbNetSuiteCore.Services
 
                 return gridModel;
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-                return new GridModel();
+                throw new Exception(ex.Message);
             }
         }
 
@@ -463,7 +464,7 @@ namespace DbNetSuiteCore.Services
 
             var provider = new FileExtensionContentTypeProvider();
 
-            if (!provider.TryGetContentType(extension, out string? contentType))
+            if (!provider.TryGetContentType(extension, out string contentType))
             {
                 contentType = defaultContentType;
             }
@@ -569,7 +570,7 @@ namespace DbNetSuiteCore.Services
         {
             int rows = gridModel.FormValues[gridModel.FirstEditableColumnName].Count;
 
-            foreach (GridColumn? gridColumn in gridModel.Columns.Where(c => c.Editable))
+            foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
             {
                 gridColumn.LineInError = new List<bool>();
                 for (var r = 0; r < rows; r++)
@@ -580,7 +581,7 @@ namespace DbNetSuiteCore.Services
 
             for (var r = 0; r < rows; r++)
             {
-                foreach (GridColumn? gridColumn in gridModel.Columns.Where(c => c.Editable))
+                foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
                 {
 
                     if (gridColumn.FormColumn == null)

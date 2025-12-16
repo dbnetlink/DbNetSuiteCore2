@@ -30,7 +30,7 @@
 </div>
 
 @functions {
-    public HtmlString? Multiple()
+    public HtmlString Multiple()
     {
         return (Model.SelectModel.Size > 0 && Model.SelectModel.RowSelection == RowSelection.Multiple) ? new HtmlString("multiple") : null;
     }

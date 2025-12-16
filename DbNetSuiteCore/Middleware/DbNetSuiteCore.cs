@@ -44,7 +44,7 @@ namespace DbNetSuiteCore.Middleware
 
             string page = request.Path.ToString().Split('/').Last().Replace(Extension, string.Empty);
 
-            byte[]? response = null;
+            byte[] response = null;
 
             switch(page.ToLower())
             {

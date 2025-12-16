@@ -7,7 +7,7 @@ namespace DbNetSuiteCore.Extensions
 {
     public static class SelectColumnExtensions
     {
-        public static object? FormatValue(this SelectColumn selectColumn, object value)
+        public static object FormatValue(this SelectColumn selectColumn, object value)
         {
             if (string.IsNullOrEmpty(value?.ToString()) || value == DBNull.Value)
             {

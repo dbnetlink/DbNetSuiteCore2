@@ -222,7 +222,7 @@ namespace DbNetSuiteCore.Repositories
             return values;
         }
 
-        private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, ComponentModel componentModel, object? recordId = null)
+        private async Task<DataTable> CreateDataTableFromPipeline(IMongoDatabase database, ComponentModel componentModel, object recordId = null)
         {
             var collection = database.GetCollection<BsonDocument>(componentModel.TableName);
             var pipeline = new List<BsonDocument>();
@@ -351,7 +351,7 @@ namespace DbNetSuiteCore.Repositories
 
         private async Task GetLookupOptions(ComponentModel componentModel, ColumnModel column, IMongoDatabase database)
         {
-            DataColumn? dataColumn = componentModel.GetDataColumn(column);
+            DataColumn dataColumn = componentModel.GetDataColumn(column);
 
             if (dataColumn == null || componentModel.Data.Rows.Count == 0)
             {
@@ -361,7 +361,7 @@ namespace DbNetSuiteCore.Repositories
             if (column.LookupOptions == null)
             {
                 column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-                List<object>? lookupValues = null;
+                List<object> lookupValues = null;
 
                 if (componentModel is GridModel)
                 {
@@ -378,7 +378,7 @@ namespace DbNetSuiteCore.Repositories
             componentModel.Data.ConvertLookupColumn(dataColumn, column, componentModel);
         }
 
-        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, Lookup lookup, List<object>? values)
+        private async Task<DataTable> CreateLookupOptionsFromPipeline(IMongoDatabase database, Lookup lookup, List<object> values)
         {
             var collection = database.GetCollection<BsonDocument>(lookup.TableName);
 
@@ -464,7 +464,7 @@ namespace DbNetSuiteCore.Repositories
 
         private IMongoDatabase GetDatabase(ComponentModel componentModel)
         {
-            string? connectionString = _configuration.GetConnectionString(componentModel.ConnectionAlias);
+            string connectionString = _configuration.GetConnectionString(componentModel.ConnectionAlias);
 
             if (connectionString == null)
             {
@@ -586,7 +586,7 @@ namespace DbNetSuiteCore.Repositories
             return filter;
         }
 
-        private BsonDocument BuildMatchStage(FormModel formModel, object? recordId = null)
+        private BsonDocument BuildMatchStage(FormModel formModel, object recordId = null)
         {
             var filter = new BsonDocument();
 
@@ -633,7 +633,7 @@ namespace DbNetSuiteCore.Repositories
             return new BsonDocument(column.Expression, new BsonDocument(GetFilterOperator(columnFilter.Operator), columnFilter.Value));
         }
 
-        private static ColumnFilter? ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
+        private static ColumnFilter ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
         {
             MongoDbFilterOperator comparisionOperator = MongoDbFilterOperator.eq;
 
@@ -699,7 +699,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public static BsonValue? TypedValue(string dataTypeName, object value)
+        public static BsonValue TypedValue(string dataTypeName, object value)
         {
             try
             {
@@ -795,7 +795,7 @@ namespace DbNetSuiteCore.Repositories
             return project;
         }
 
-        private BsonDocument BuildProjectStage(FormModel formModel, object? recordId = null)
+        private BsonDocument BuildProjectStage(FormModel formModel, object recordId = null)
         {
             var project = new BsonDocument();
 
@@ -809,13 +809,13 @@ namespace DbNetSuiteCore.Repositories
 
     public class ColumnFilter
     {
-        public ColumnFilter(MongoDbFilterOperator @operator, BsonValue? value)
+        public ColumnFilter(MongoDbFilterOperator @operator, BsonValue value)
         {
             Operator = @operator;
             Value = value;
         }
 
         public MongoDbFilterOperator Operator { get; set; } = MongoDbFilterOperator.eq;
-        public BsonValue? Value { get; set; }
+        public BsonValue Value { get; set; }
     }
 }

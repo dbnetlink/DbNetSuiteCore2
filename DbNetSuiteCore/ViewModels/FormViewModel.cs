@@ -40,20 +40,20 @@ namespace DbNetSuiteCore.ViewModels
             _formModel = formModel;
         }
 
-        public SelectColumn? GetColumnInfo(DataColumn column)
+        public SelectColumn GetColumnInfo(DataColumn column)
         {
             return _GetColumnInfo(column, _formModel.Columns.Cast<ColumnModel>()) as SelectColumn;
         }
 
         public KeyValuePair<string, string> GetColumnValues(FormColumn formColumn)
         {
-            object? value = null;
-            object? dbValue = null;
+            object value = null;
+            object dbValue = null;
 
             switch (FormModel.Mode)
             {
                 case FormMode.Update:
-                    DataColumn? dataColumn = GetDataColumn(formColumn);
+                    DataColumn dataColumn = GetDataColumn(formColumn);
                     dbValue = (dataColumn == null) ? string.Empty : formColumn.FormatValue(Record[dataColumn]);
                     value = dbValue;
                     break;

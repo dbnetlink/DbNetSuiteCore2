@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Html;
 using System.Data;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Constants;
-using DocumentFormat.OpenXml.Office.CoverPageProps;
 using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.ViewModels
@@ -57,7 +56,7 @@ namespace DbNetSuiteCore.ViewModels
 
             foreach (DataColumn column in DataColumns)
             {
-                ColumnModel? columnInfo = GetColumnInfo(column);
+                ColumnModel columnInfo = GetColumnInfo(column);
 
                 if (columnInfo != null)
                 {
@@ -69,7 +68,7 @@ namespace DbNetSuiteCore.ViewModels
             }
         }
 
-        public GridColumn? GetColumnInfo(DataColumn column)
+        public GridColumn GetColumnInfo(DataColumn column)
         {
             return _GetColumnInfo(column, _gridModel.Columns.Cast<ColumnModel>()) as GridColumn;
         }
@@ -113,7 +112,7 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString($"<span data-key=\"{gridColumn.Key}\">{gridColumn.FilterError}</span>");
         }
 
-        public HtmlString RenderColumnFilter(GridColumn? gridColumn)
+        public HtmlString RenderColumnFilter(GridColumn gridColumn)
         {
             if (gridColumn == null)
             {

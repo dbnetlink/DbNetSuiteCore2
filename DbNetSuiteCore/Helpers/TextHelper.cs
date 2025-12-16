@@ -1,9 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Configuration;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -42,10 +39,8 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static string ObfuscateString(string input, HttpContext? httpContext = null)
+        public static string ObfuscateString(string input, HttpContext httpContext = null)
         {
-            return input;
-            /*
             if (string.IsNullOrEmpty(input))
             {
                 return string.Empty;
@@ -60,7 +55,7 @@ namespace DbNetSuiteCore.Helpers
                     return AesEncryptor.Encrypt(input,aesPassword);
                 }
 
-                DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
+                DataProtectionService dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
                 {
                     string text = dataProtectionService.Encrypt(input);
@@ -69,13 +64,10 @@ namespace DbNetSuiteCore.Helpers
              }
 
             return Compress(input);
-            */
         }
 
-        public static string DeobfuscateString(string input, HttpContext? httpContext = null)
+        public static string DeobfuscateString(string input, HttpContext httpContext = null)
         {
-            return input;
-            /*
             if (string.IsNullOrEmpty(input))
             {
                 return string.Empty;
@@ -90,10 +82,10 @@ namespace DbNetSuiteCore.Helpers
                     return AesEncryptor.Decrypt(input, aesPassword);
                 }
 
-                DataProtectionService? dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
+                DataProtectionService dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
                 if (dataProtectionService != null)
                 {
-                    string? text = dataProtectionService.Decrypt(input);
+                    string text = dataProtectionService.Decrypt(input);
                     if (text != null)
                     {
                         return text;
@@ -101,12 +93,11 @@ namespace DbNetSuiteCore.Helpers
                 }
             }
             return Decompress(input);
-            */
         }
 
         private static string GetAesPassword(HttpContext httpContext)
         {
-            IConfiguration? configuration = httpContext.RequestServices.GetService<IConfiguration>();
+            IConfiguration configuration = httpContext.RequestServices.GetService<IConfiguration>();
 
             if (configuration != null)
             {
@@ -115,7 +106,7 @@ namespace DbNetSuiteCore.Helpers
 
             return string.Empty;
         }
-        public static T? DeobfuscateKey<T>(string input)
+        public static T DeobfuscateKey<T>(string input)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(TextHelper.DeobfuscateString(input));
         }
