@@ -11,20 +11,20 @@ namespace DbNetSuiteCore.Models
     {
         private string _SortKey = string.Empty;
         private SortOrder? _SortSequence = null;
-		[JsonIgnore]
-		internal IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
-		[JsonIgnore]
-		internal IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
-		[JsonIgnore]
-		internal IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
-		[JsonIgnore]
-		internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
+        [JsonIgnore]
+        internal IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
+        [JsonIgnore]
+        internal IEnumerable<GridColumn> FilterColumns => Columns.Where(c => c.Filter != FilterType.None);
+        [JsonIgnore]
+        internal IEnumerable<GridColumn> DataOnlyColumns => Columns.Where(c => c.DataOnly);
+        [JsonIgnore]
+        internal IEnumerable<GridColumn> ContentColumns => Columns.Where(c => c.Expression.StartsWith(FileSystemColumn.Content.ToString()) && string.IsNullOrEmpty(c.RegularExpression) == false);
         [JsonProperty]
         internal int CurrentPage { get; set; } = 1;
-         internal string SortKey  
-        { 
-            get { return string.IsNullOrEmpty(_SortKey) ? InitalSortColumn?.Key ?? string.Empty : _SortKey; } 
-            set { _SortKey = value; } 
+        internal string SortKey
+        {
+            get { return string.IsNullOrEmpty(_SortKey) ? InitalSortColumn?.Key ?? string.Empty : _SortKey; }
+            set { _SortKey = value; }
         }
         [JsonProperty]
         internal string CurrentSortKey { get; set; } = string.Empty;
@@ -35,10 +35,10 @@ namespace DbNetSuiteCore.Models
         internal override GridColumn SortColumn => (Columns.FirstOrDefault(c => c.Key == CurrentSortKey) ?? CurrentSortColumn) ?? InitalSortColumn;
         internal GridColumn CurrentSortColumn => Columns.FirstOrDefault(c => c.Key == CurrentSortKey);
         internal GridColumn InitalSortColumn => Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue) ?? Columns.FirstOrDefault(c => c.Sortable);
-        internal override SortOrder? SortSequence 
-        { 
-            get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; } 
-            set { _SortSequence = value; } 
+        internal override SortOrder? SortSequence
+        {
+            get { return _SortSequence == null ? (Columns.FirstOrDefault(c => c.InitialSortOrder.HasValue)?.InitialSortOrder ?? SortOrder.Asc) : _SortSequence; }
+            set { _SortSequence = value; }
         }
         internal string ExportFormat { get; set; } = string.Empty;
         internal List<string> ColumnFilter { get; set; } = new List<string>();
@@ -81,7 +81,7 @@ namespace DbNetSuiteCore.Models
         public Dictionary<string, List<string>> FormValues { get; internal set; } = new Dictionary<string, List<string>>();
         internal string FirstEditableColumnName => Columns.Where(c => c.Editable).First().ColumnName;
         [JsonIgnore]
-        internal IEnumerable<DataRow> Rows => OptimizeForLargeDataset? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+        internal IEnumerable<DataRow> Rows => OptimizeForLargeDataset ? Data.AsEnumerable() : Data.AsEnumerable().Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         [JsonProperty]
         internal List<object> PrimaryKeyValues => Rows.Select(row => PrimaryKeyValue(row) ?? DBNull.Value).ToList();
         [JsonProperty]
@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public Type JsonTransformPlugin
         {
-            set 
+            set
             {
                 JsonTransformPluginName = PluginHelper.GetNameFromType(value);
             }
@@ -106,7 +106,7 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public Type CustomisationPlugin
         {
-            set{ CustomisationPluginName = PluginHelper.GetNameFromType(value);}
+            set { CustomisationPluginName = PluginHelper.GetNameFromType(value); }
         }
         [JsonProperty]
         internal string CustomisationPluginName { get; set; } = string.Empty;
@@ -136,13 +136,14 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Controls the ability to select none, one or multiple rows. 
         /// </summary>
-        public RowSelection RowSelection { 
-            get 
-            { 
+        public RowSelection RowSelection
+        {
+            get
+            {
                 return _RowSelection;
-            } 
-            set 
-            {   
+            }
+            set
+            {
                 _RowSelection = value;
                 if (_RowSelection == RowSelection.Multiple)
                 {
@@ -155,7 +156,7 @@ namespace DbNetSuiteCore.Models
                 {
                     MultiRowSelectLocation = MultiRowSelectLocation.None;
                 }
-            } 
+            }
         }
 
         /// <summary>
@@ -199,6 +200,15 @@ namespace DbNetSuiteCore.Models
         }
 
         /// <summary>
+        /// This constructor can be used for file/api based data sources 
+        /// </summary>
+        /// <param name="DataSourceType dataSourceType">Must be one of JSON, FileSystem or Excel</param>
+        /// <param name="string url">The path to the JSON, Excel,CSV or Folder.</param>
+        public GridModel(DataSourceType dataSourceType, string url) : base(dataSourceType, url)
+        {
+        }
+
+        /// <summary>
         /// This constructor can be used for a stored procedure with parameters
         /// </summary>
         /// <param name="DataSourceType dataSourceType">The database type.</param>
@@ -228,8 +238,8 @@ namespace DbNetSuiteCore.Models
         }
 
         internal override ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType)
-        { 
-            return new GridColumn(dataRow, dataSourceType); 
+        {
+            return new GridColumn(dataRow, dataSourceType);
         }
         internal override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
@@ -355,6 +365,6 @@ namespace DbNetSuiteCore.Models
         {
             ClientEvents[clientEvent] = functionName;
         }
-     
+
     }
 }
