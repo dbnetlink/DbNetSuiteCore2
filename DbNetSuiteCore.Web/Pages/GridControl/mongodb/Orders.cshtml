@@ -11,7 +11,7 @@
         new GridColumn("OrderID"),
         new GridColumn("CustomerID") { Lookup = new Lookup("Customers", "CustomerID", "CompanyName") },
         new GridColumn("EmployeeID") { Lookup = new Lookup("Employees", "EmployeeID", "LastName:, :FirstName") },
-        new GridColumn("OrderDate"),
+        new GridColumn("OrderDate") { DataType = typeof(DateTime)},
         new GridColumn("RequiredDate") { DataType = typeof(DateTime)},
         new GridColumn("ShippedDate") { DataType = typeof(DateTime)},
         new GridColumn("ShipVia") { Lookup = new Lookup("Shippers", "ShipperID", "CompanyName") },

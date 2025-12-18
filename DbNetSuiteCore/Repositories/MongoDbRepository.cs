@@ -286,11 +286,16 @@ namespace DbNetSuiteCore.Repositories
                 {
                     foreach (var column in columns)
                     {
+                        if (column.DataType == typeof(DBNull))
+                        {
+                            column.DataType = typeof(string);
+                        }
                         var value = document.GetValue(column.ColumnAlias, BsonNull.Value);
                         dataTable.Columns.Add(column.ColumnAlias, GetColumnDataType(value, column));
                     }
                 }
 
+                
                 var row = dataTable.NewRow();
                 foreach (var column in columns)
                 {
