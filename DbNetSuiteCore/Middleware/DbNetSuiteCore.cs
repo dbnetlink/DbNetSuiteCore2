@@ -82,7 +82,9 @@ namespace DbNetSuiteCore.Middleware
     {
         public static IServiceCollection AddDbNetSuiteCore(this IServiceCollection services)
         {
+#pragma warning disable ASPDEPR003
             services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
+#pragma warning restore ASPDEPR003
             {
                 //options.FileProviders.Clear();
                 var embeddedFileProvider = new EmbeddedFileProvider(typeof(DbNetSuiteCore).Assembly);

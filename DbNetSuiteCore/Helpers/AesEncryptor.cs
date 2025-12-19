@@ -44,7 +44,9 @@ namespace DbNetSuiteCore.Helpers
 
             // 2. Derive the key from the password and salt
             // We use Rfc2898DeriveBytes which implements PBKDF2
+#pragma warning disable SYSLIB0060
             using (var kdf = new Rfc2898DeriveBytes(password, salt, DerivationIterations, HashAlgorithmName.SHA256))
+#pragma warning restore SYSLIB0060
             {
                 byte[] key = kdf.GetBytes(KeySize / 8); // 256 bits / 8 = 32 bytes
 
@@ -111,7 +113,9 @@ namespace DbNetSuiteCore.Helpers
             Buffer.BlockCopy(fullCipher, SaltSize, iv, 0, iv.Length);
 
             // 3. Derive the key *using the extracted salt*
+#pragma warning disable SYSLIB0060
             using (var kdf = new Rfc2898DeriveBytes(password, salt, DerivationIterations, HashAlgorithmName.SHA256))
+#pragma warning restore SYSLIB0060
             {
                 byte[] key = kdf.GetBytes(KeySize / 8);
 
