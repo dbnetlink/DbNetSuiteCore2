@@ -184,8 +184,14 @@ class GridControl extends ComponentControl {
 
     private initialise() {
         if (this.toolbarExists()) {
-            this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
-            this.getButton("export").addEventListener("click", ev => this.download())
+            let copyBtn = this.getButton("copy");
+            if (copyBtn) {
+                copyBtn.addEventListener("click", ev => this.copyTableToClipboard())
+            }
+            let exportBtn = this.getButton("export");
+            if (exportBtn) {
+                exportBtn.addEventListener("click", ev => this.download())
+            }
         }
 
         var viewDialog = this.controlElement(".view-dialog");

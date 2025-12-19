@@ -87,11 +87,15 @@ class FormControl extends ComponentControl {
                 }
 
                 if (this.formBody.dataset.committype) {
+                    let eventType = this.formBody.dataset.committype.toLowerCase() == "update" ?  "RecordUpdated" : "RecordInserted";
+                    this.invokeEventHandler(eventType)
                     this.refreshParent();
                 }
                 break;
             case "delete":
+                this.invokeEventHandler('RecordDeleted');
                 this.refreshParent();
+
                 break;
         }
     }

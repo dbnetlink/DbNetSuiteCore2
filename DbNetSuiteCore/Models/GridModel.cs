@@ -184,6 +184,14 @@ namespace DbNetSuiteCore.Models
         /// Specfies the name of the Sheet in the spreadsheet where there are multiple sheets and you want display the one that is not first. DataSourceType.Excel only.
         /// </summary>
         public string SheetName { get; set; } = string.Empty;
+        /// <summary>
+        /// Shows/Hides the Export button in the toolbar.
+        /// </summary>
+        public bool Export { get; set; } = true;
+        /// <summary>
+        /// Shows/Hides the Copy to clipboard button in the toolbar.
+        /// </summary>
+        public bool Copy { get; set; } = true;
         public GridModel() : base()
         {
         }

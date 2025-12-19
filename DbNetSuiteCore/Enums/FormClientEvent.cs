@@ -6,6 +6,9 @@
         RecordLoaded,
         ValidateUpdate,
         ValidateDelete,
-        ConfigureHtmlEditor
+        ConfigureHtmlEditor,
+        RecordUpdated,
+        RecordInserted,
+        RecordDeleted
     };
 }
