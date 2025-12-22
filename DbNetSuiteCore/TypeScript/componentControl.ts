@@ -358,7 +358,7 @@ class ComponentControl {
         let applyBtn = this.getButton("apply");
         htmx.trigger(applyBtn, "click");
     }
-
+  
     public formControlValue(columnName: string, row: HTMLTableRowElement = null) {
         return this.elementValue(columnName, false, row);
     }
@@ -379,6 +379,18 @@ class ComponentControl {
             }
             return db ? el.dataset.value : el.value;
         }
+    }
+
+    public formElementValue(columnName: string, row: HTMLTableRowElement = null) {
+        return this.formControlValue(columnName, row);
+    }
+
+    public formElementDbValue(columnName: string, row: HTMLTableRowElement = null) {
+        return this.formControlDbValue(columnName, row);
+    }
+
+    public formElement(columnName: string, row: HTMLTableRowElement = null) {
+        return this.formControl(columnName, row);
     }
 
     public formControl(columnName: string, row: HTMLTableRowElement = null) {

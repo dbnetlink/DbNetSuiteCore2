@@ -48,6 +48,9 @@ declare class ComponentControl {
     formControlValue(columnName: string, row?: HTMLTableRowElement): any;
     formControlDbValue(columnName: string, row?: HTMLTableRowElement): any;
     private elementValue;
+    formElementValue(columnName: string, row?: HTMLTableRowElement): any;
+    formElementDbValue(columnName: string, row?: HTMLTableRowElement): any;
+    formElement(columnName: string, row?: HTMLTableRowElement): HTMLFormElement;
     formControl(columnName: string, row?: HTMLTableRowElement): HTMLFormElement;
     protected getElementName(el: HTMLFormElement): string;
     protected cleanString(value: any): any;

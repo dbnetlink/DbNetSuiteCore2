@@ -122,15 +122,14 @@ namespace DbNetSuiteCore.Models
         {
             switch (DbDataType)
             {
-                case nameof(MSSQLDataTypes.Xml):
-                case nameof(MSSQLDataTypes.Text):
-            //    case nameof(MSSQLDataTypes.Ntext):
-                case nameof(PostgreSqlDataTypes.Json):
-                case nameof(OracleDataTypes.Clob):
-                case nameof(OracleDataTypes.Blob):
-                case nameof(OracleDataTypes.NClob):
-                case nameof(OracleDataTypes.XmlType):
-                case nameof(OracleDataTypes.Raw):
+                case nameof(MSSQLDataTypes.Xml) when DataSource == DataSourceType.MSSQL:
+                case nameof(MSSQLDataTypes.Text) when DataSource == DataSourceType.MSSQL:
+                case nameof(PostgreSqlDataTypes.Json) when DataSource == DataSourceType.PostgreSql:
+                case nameof(OracleDataTypes.Clob) when DataSource == DataSourceType.Oracle:
+                case nameof(OracleDataTypes.Blob) when DataSource == DataSourceType.Oracle:
+                case nameof(OracleDataTypes.NClob) when DataSource == DataSourceType.Oracle:
+                case nameof(OracleDataTypes.XmlType) when DataSource == DataSourceType.Oracle:
+                case nameof(OracleDataTypes.Raw) when DataSource == DataSourceType.Oracle:
                         return false;
             }
 
