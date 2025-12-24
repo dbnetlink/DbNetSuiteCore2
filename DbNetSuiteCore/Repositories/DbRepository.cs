@@ -260,10 +260,23 @@ namespace DbNetSuiteCore.Repositories
                     break;
             }
 
-            CommandConfig update = formModel.BuildInsert();
+            bool executeScalar = false;
+            CommandConfig insert = formModel.BuildInsert(ref executeScalar);
             var connection = GetConnection(formModel.ConnectionAlias);
             connection.Open();
-            await ExecuteUpdate(update, connection);
+            if (executeScalar)
+            {
+                using (IDbCommand command = DbHelper.ConfigureCommand(insert, connection, CommandType.Text))
+                {
+                    var result = await ((DbCommand)command).ExecuteScalarAsync();
+                    formModel.AutoincrementValue = Convert.ToInt64(result);
+                }
+            }
+            else
+            {
+                await ExecuteUpdate(insert, connection);
+            }
+                
             connection.Close();
         }
 

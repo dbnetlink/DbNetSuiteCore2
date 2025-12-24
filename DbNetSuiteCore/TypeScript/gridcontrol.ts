@@ -26,7 +26,10 @@ class GridControl extends ComponentControl {
         }
 
         let rowIndex = null;
-        switch (this.triggerName(evt)) {
+
+        let triggerName = this.triggerName(evt);
+
+        switch (triggerName) {
             case "viewdialogcontent":
                 this.viewDialog.show();
                 this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
@@ -45,7 +48,7 @@ class GridControl extends ComponentControl {
         this.configureNavigation()
         this.configureSortIcon()
 
-        if (this.triggerName(evt) == "initialload") {
+        if (triggerName == "initialload") {
             this.initialise()
         }
 
@@ -254,6 +257,9 @@ class GridControl extends ComponentControl {
             case "apply":
                 if (this.formBody.dataset.validationpassed == "True") {
                     this.validateUpdate()
+                }
+                else {
+                    this.invokeEventHandler("RecordsUpdated")
                 }
                 break;
         }

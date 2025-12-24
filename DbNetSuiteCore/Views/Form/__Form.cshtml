@@ -15,7 +15,7 @@
     {
         @await Html.PartialAsync("Form/__Toolbar")
     }
-    <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-onetoone="@Model.OneToOne" data-mode="@Model.Mode" data-validationpassed="@Model.ValidationPassed" data-committype="@Model.CommitType">
+    <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-onetoone="@Model.OneToOne" data-mode="@Model.Mode" data-validationpassed="@Model.ValidationPassed" data-committype="@Model.CommitType" data-autoincrementvalue="@Model.AutoincrementValue">
 
         <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
             @foreach (FormColumnViewModel formColumn in Model.Columns.Where(c => c.DataOnly == false && c.Autoincrement == false))

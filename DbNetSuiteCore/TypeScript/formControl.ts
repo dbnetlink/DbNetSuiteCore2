@@ -185,6 +185,10 @@ class FormControl extends ComponentControl {
         }
     }
 
+    public getAutoIncrementValue() {
+        return this.formBody.dataset.autoincrementvalue;
+    }
+
     public confirmRequest(evt) {
         if (this.isControlEvent(evt) == false || evt.target.hasAttribute('hx-confirm-dialog') == false) {
             return;

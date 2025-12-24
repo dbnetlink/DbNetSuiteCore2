@@ -18,6 +18,7 @@ declare class FormControl extends ComponentControl {
     private makeSelectReadonly;
     private makeCheckboxReadonly;
     highlightError(columnName: string, row?: HTMLTableRowElement): void;
+    getAutoIncrementValue(): string;
     confirmRequest(evt: any): void;
     configRequest(evt: any): void;
     beforeRequest(evt: Event): void;

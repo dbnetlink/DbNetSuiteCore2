@@ -10,6 +10,7 @@
         SelectedRowsUpdated,
 		ViewDialogUpdated,
         FileDownload,
-        ValidateUpdate
+        ValidateUpdate,
+        RecordsUpdated
 	};
 }

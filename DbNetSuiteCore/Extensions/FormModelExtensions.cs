@@ -113,7 +113,7 @@ namespace DbNetSuiteCore.Extensions
             commandConfig.Sql += $" where {string.Join(" and ", where)}";
         }
 
-        public static CommandConfig BuildInsert(this FormModel formModel)
+        public static CommandConfig BuildInsert(this FormModel formModel, ref bool executeScalar)
         {
             CommandConfig insert = new CommandConfig(formModel.DataSourceType);
 
@@ -126,7 +126,6 @@ namespace DbNetSuiteCore.Extensions
                 {
                     continue;
                 }
-                ;
 
                 if (formModel.FormValues.Keys.Contains(formColumn.ColumnName))
                 {
@@ -140,6 +139,21 @@ namespace DbNetSuiteCore.Extensions
             }
 
             insert.Sql = $"insert into {formModel.TableName} ({string.Join(",", columnNames)}) values ({string.Join(",", paramNames)})";
+
+            if (formModel.Columns.Any(c => c.Autoincrement))
+            {
+                switch (formModel.DataSourceType)
+                {
+                    case Enums.DataSourceType.PostgreSql:
+                        insert.Sql += " returning id";
+                        executeScalar = true;
+                        break;
+                    case Enums.DataSourceType.MSSQL:
+                        insert.Sql += "; SELECT CONVERT(int, SCOPE_IDENTITY())";
+                        executeScalar = true;
+                        break;
+                }
+            }
             return insert;
         }
 

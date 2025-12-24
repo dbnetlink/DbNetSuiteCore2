@@ -325,7 +325,14 @@ namespace DbNetSuiteCore.Models
 
                 if (primaryKeyValues.Any())
                 {
-                    return primaryKeyValues;
+                    if (primaryKeyValues.Count() == 1)
+                    {
+                        return primaryKeyValues.First();
+                    }
+                    else
+                    {
+                        return JsonConvert.SerializeObject(primaryKeyValues);
+                    }
                 }
 
                 return null;

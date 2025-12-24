@@ -72,6 +72,7 @@ namespace DbNetSuiteCore.Models
         }
         [JsonProperty]
         internal string CustomisationPluginName { get; set; } = string.Empty;
+        internal long? AutoincrementValue { get; set; } = null;
 
         public FormModel() : base()
         {
