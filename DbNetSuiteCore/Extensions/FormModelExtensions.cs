@@ -145,13 +145,19 @@ namespace DbNetSuiteCore.Extensions
                 switch (formModel.DataSourceType)
                 {
                     case Enums.DataSourceType.PostgreSql:
-                        insert.Sql += " returning id";
+                    case Enums.DataSourceType.SQLite:
+                        insert.Sql += $" returning {formModel.Columns.First(c => c.Autoincrement).ColumnName}";
                         executeScalar = true;
                         break;
                     case Enums.DataSourceType.MSSQL:
                         insert.Sql += "; SELECT CONVERT(int, SCOPE_IDENTITY())";
                         executeScalar = true;
                         break;
+                    case Enums.DataSourceType.MySql:
+                        insert.Sql += "; SELECT LAST_INSERT_ID()";
+                        executeScalar = true;
+                        break;
+                        
                 }
             }
             return insert;

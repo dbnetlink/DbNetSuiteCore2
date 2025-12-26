@@ -255,7 +255,8 @@ namespace DbNetSuiteCore.Repositories
 
                     if (sequenceColumn != null)
                     {
-                        formModel.FormValues[sequenceColumn.ColumnName] = (await GetOracleSequenceValue(sequenceColumn.SequenceName, formModel.ConnectionAlias)).ToString();
+                        formModel.AutoincrementValue = await GetOracleSequenceValue(sequenceColumn.SequenceName, formModel.ConnectionAlias);
+                        formModel.FormValues[sequenceColumn.ColumnName] = formModel.AutoincrementValue.ToString();
                     }
                     break;
             }

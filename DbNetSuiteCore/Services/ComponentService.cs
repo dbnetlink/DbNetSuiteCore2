@@ -226,6 +226,11 @@ namespace DbNetSuiteCore.Services
                         break;
                 }
 
+                if (componentModel is FormModel formModel)
+                {   
+                    formModel.Columns = formModel.Columns.Where(c => c.DataType != typeof(Byte[]));
+                }
+
                 ColumnsHelper.QualifyColumnExpressions(componentModel.GetColumns(), componentModel.DataSourceType);
             }
             else
