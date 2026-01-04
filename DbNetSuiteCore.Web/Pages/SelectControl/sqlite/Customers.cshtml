@@ -1,0 +1,17 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customerSelect = new SelectModel(DataSourceType.SQLite, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.SQLite), "customers") { EmptyOption = "Please select a customer", Searchable = true };
+
+    customerSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("CustomerID"),
+        new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')") {DataType = typeof(String)}
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))
+}

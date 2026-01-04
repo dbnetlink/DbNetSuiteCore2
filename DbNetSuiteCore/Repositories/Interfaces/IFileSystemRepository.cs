@@ -5,7 +5,7 @@ namespace DbNetSuiteCore.Repositories
 {
     public interface IFileSystemRepository
     {
-        public Task GetRecords(GridModel gridModel, HttpContext httpContext);
-        public Task<DataTable> GetColumns(GridModel gridModel, HttpContext httpContext);
+        public void GetRecords(ComponentModel componentModel);
+        public DataTable GetColumns(ComponentModel componentModel);
     }
 }

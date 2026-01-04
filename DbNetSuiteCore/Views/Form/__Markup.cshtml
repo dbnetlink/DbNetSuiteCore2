@@ -1,0 +1,21 @@
+﻿@model DbNetSuiteCore.ViewModels.FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="form-container" data-linkedcontrolids="@Model.LinkedControlIds">
+    @if (string.IsNullOrEmpty(Model.FormModel.Caption) == false)
+    {
+        <div class="flex text-lg caption">@Model.FormModel.Caption</div>
+    }
+    @await Html.PartialAsync("Form/__Form")
+    @await Html.PartialAsync("__ToastMessage")
+    @await Html.PartialAsync("Form/__ConfirmDialog")
+    @if (Model.SearchDialog)
+    {
+        @await Html.PartialAsync("Shared/__SearchDialog", Model)
+    }
+</div>

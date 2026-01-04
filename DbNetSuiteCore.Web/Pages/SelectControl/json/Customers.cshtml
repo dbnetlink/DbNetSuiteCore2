@@ -1,0 +1,30 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using System.Net.Http
+@{
+    var columns = new List<SelectColumn>() {
+        new SelectColumn("CustomerID"),
+        new SelectColumn("CompanyName")
+    };
+
+    var mode = Request.Query["mode"] == StringValues.Empty ? new StringValues(string.Empty) : Request.Query["string"];
+    var url = mode == "string" ? "/data/json/customers.json" : $"/customers";
+
+    SelectModel customerSelect;
+    if (mode == "string")
+    {
+        HttpClient client = new HttpClient();
+        string json = await client.GetStringAsync(url);
+        customerSelect = new SelectModel(DataSourceType.JSON, json) { Columns = columns, Searchable = true, Cache = false };
+    }
+    else
+    {
+        customerSelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Cache = false };
+    }
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))
+}

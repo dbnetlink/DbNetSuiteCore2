@@ -1,0 +1,12 @@
+﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Constants
+@using Newtonsoft.Json
+<form class="dbnetsuite dbnetsuite-select" hx-post="@Model.PostUrl" hx-trigger="@Model.HxFormTrigger" hx-indicator="next .htmx-indicator" hx-target="this" id="@Model.Id" name="@TriggerNames.InitialLoad" style="display:none" data-datasourcetype="@Model.SelectModel.DataSourceType">
+    @await Html.PartialAsync("Select/__Hidden",Model)
+</form>
+@await Html.PartialAsync("__HxIndicator")
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.SelectModel.ClientEvents))); });
+</script>

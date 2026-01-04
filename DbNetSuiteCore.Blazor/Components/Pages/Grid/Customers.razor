@@ -1,0 +1,27 @@
+﻿@page "/Grid/Customers"
+@attribute [StreamRendering]
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@inject IHttpContextAccessor httpContextAccessor
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Customers</PageTitle>
+
+@{
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook", "Customers");
+    customerGridModel.Columns = new List<GridColumn>
+    {
+        new GridColumn("customerid", "CustomerID") {PrimaryKey = true },
+        new GridColumn("firstname", "Forename"),
+        new GridColumn("lastname", "Surname"),
+        new GridColumn("email", "Email Address") {Format = FormatType.Email },
+        new GridColumn("address", "Address"),
+        new GridColumn("city", "City") { InitialSortOrder = SortOrder.Desc},
+        new GridColumn("postalcode", "Post Code"),
+    }; 
+
+    customerGridModel.PageSize = 5;
+}
+
+@DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(customerGridModel)

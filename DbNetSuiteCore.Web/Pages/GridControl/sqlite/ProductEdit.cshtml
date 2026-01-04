@@ -1,0 +1,26 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Models
+@{
+    var productGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Caption = "Product Edit"};
+    productGrid.Columns = new List<GridColumn>() {
+        new GridColumn("ProductID","ID") { DataOnly = true},
+        new GridColumn("ProductName", "Name", "Name") {FormColumn = new FormColumn() { Required = true, MinLength = 3, MaxLength = 50 } },
+        new GridColumn("SupplierID","Supplier") {Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),FormColumn = new FormColumn() {Required = true } },
+        new GridColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),FormColumn = new FormColumn() {Required = true, HelpText = "Select a category for the product" } },
+        new GridColumn("QuantityPerUnit", "Qty"){ },
+        new GridColumn("UnitPrice", "Price") { FormColumn = new FormColumn() {Required = false, Format = "c" } },
+        new GridColumn("UnitsInStock", "Stock") { FormColumn = new FormColumn() {Required = false, MinValue = 0 } },
+        new GridColumn("UnitsOnOrder", "On Order") {FormColumn = new FormColumn() { Required = false } },
+        new GridColumn("ReorderLevel", "Re-order Level", "Level") {FormColumn = new FormColumn() { Required = true, MaxValue = 50, LookupRange = Enumerable.Range(0,50) } },
+        new GridColumn("Discontinued","", "NotActive") {DataType = typeof(bool), FormColumn = new FormColumn() { HelpText = "Discontinued products must have a re-order level of 0" } }
+    };
+
+    productGrid.CustomisationPlugin = typeof(ProductEditGridCustomisation);
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productGrid))
+}
+

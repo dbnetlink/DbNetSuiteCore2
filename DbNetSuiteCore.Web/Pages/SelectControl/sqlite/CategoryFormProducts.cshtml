@@ -1,0 +1,57 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var categorySelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Categories") { Caption = "Categories", Searchable = true, Layout = LayoutType.Row };
+    categorySelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("CategoryId"),
+        new SelectColumn("CategoryName")
+    };
+    categorySelect.Bind(SelectClientEvent.OptionSelected, "updateFormCaption");
+    categorySelect.Bind(SelectClientEvent.Initialised, "saveSelectReference");
+
+    var productForm = new FormModel("Products") { Insert = true, Delete = true, ToolbarPosition = ToolbarPosition.Bottom, Caption = "Products" };
+    productForm.Columns = new List<FormColumn>()
+    {
+        new FormColumn("ProductID","ID"),
+        new FormColumn("ProductName", "Name"),
+        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, ForeignKey = true },
+        new FormColumn("QuantityPerUnit", "Qty"){ InitialValue = 0},
+        new FormColumn("UnitPrice", "Price") {Required = true,InitialValue = 0, MinValue = 0, MaxValue = 100 },
+        new FormColumn("UnitsInStock", "Stock") {Required = true,InitialValue = 0, MinValue = 0 },
+        new FormColumn("UnitsOnOrder", "On Order") {Required = true,InitialValue = 0 },
+        new FormColumn("ReorderLevel", "Re-order Level") {Required = true,InitialValue = 0, MaxValue = 50 },
+        new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true}
+    };
+    productForm.Bind(FormClientEvent.Initialised, "saveFormReference");
+
+    categorySelect.LinkedControl = productForm;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categorySelect))
+    <hr />
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productForm))
+}
+
+<script>
+    function saveSelectReference(select) {
+        window.categoryProductsSelect = select;
+    }
+    function saveFormReference(form) {
+        window.categoryProductsForm = form;
+        if (window.categoryProductsSelect) {
+            let select = window.categoryProductsSelect
+            updateFormCaption(select, {selectedOptions : select.getSelectedOptions()})
+        }
+    }
+    function updateFormCaption(select, args) {
+        var categoryName = args.selectedOptions[0].text;
+        if (window.categoryProductsForm) {
+            window.categoryProductsForm.setCaption(`Products (${categoryName})`);
+        }
+    }
+</script>

@@ -1,0 +1,15 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var fileSelect = new SelectModel(DataSourceType.FileSystem, "/data") {  Searchable = true};
+    fileSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn(FileSystemColumn.Name.ToString()),
+        new SelectColumn(FileSystemColumn.Folder.ToString()) { OptionGroup = true}
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileSelect));
+}

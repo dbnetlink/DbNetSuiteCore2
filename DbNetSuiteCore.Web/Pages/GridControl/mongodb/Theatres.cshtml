@@ -1,0 +1,21 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@{
+    var theatresGrid = new GridModel(DataSourceType.MongoDB, "MongoDb(remote)", "theaters") { DatabaseName = "sample_mflix" };
+
+    theatresGrid.Columns = new List<GridColumn>() {
+        new GridColumn("_id"),
+        new GridColumn("theaterId"),
+        new GridColumn("location.address.street1"),
+        new GridColumn("location.address.city"),
+        new GridColumn("location.address.state") { Lookup = new Lookup()},
+        new GridColumn("location.address.zipcode")
+    };
+
+    theatresGrid.Columns.ToList().ForEach(c => c.Filter = FilterType.Default);
+
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(theatresGrid))
+}

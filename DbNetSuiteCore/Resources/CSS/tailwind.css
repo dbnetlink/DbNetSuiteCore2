@@ -16,19 +16,28 @@
     .dbnetsuite [type="tel"],
     .dbnetsuite [type="time"],
     .dbnetsuite [type="week"],
+    .dbnetsuite [type="color"],
     .dbnetsuite [multiple],
     .dbnetsuite textarea,
     .dbnetsuite select {
-        @apply border-gray-300 rounded-lg shadow-sm focus:border-cyan-700 focus:ring-cyan-700 py-1 px-1 font-normal;
+        @apply border-gray-300 rounded-lg shadow-sm text-black focus:border-cyan-700 focus:ring-cyan-700 py-1 px-1 font-normal;
     }
 
-        .dbnetsuite select.column-filter {
-            @apply pr-8;
+        .dbnetsuite select.column-filter,
+        .dbnetsuite select.search-operator,
+        .dbnetsuite select.conjunction,
+        .dbnetsuite-form select,
+        .dbnetsuite-grid select {
+            @apply pr-8 !important;
         }
 
     .dbnetsuite [type="checkbox"],
     .dbnetsuite [type="radio"] {
-        @apply border-gray-300 rounded text-cyan-700 focus:ring-cyan-700 py-1 px-1;
+        @apply border-gray-300 rounded text-cyan-700 focus:ring-cyan-700 py-1 px-1 mt-2 mb-2;
+    }
+
+    .dbnetsuite small {
+        @apply text-slate-500;
     }
 
     form.dbnetsuite {
@@ -37,6 +46,11 @@
 
     .dbnetsuite .toast-message {
         @apply flex bg-sky-200 border border-solid border-sky-600 text-sky-800 rounded py-3 px-3;
+    }
+
+    .dbnetsuite .form-container,
+    .dbnetsuite .grid-container {
+        @apply m-1 relative;
     }
 
     .dbnetsuite a {
@@ -55,7 +69,8 @@
             @apply bg-slate-100 border border-solid border-slate-200;
         }
 
-    .dbnetsuite td, .dbnetsuite th {
+    .dbnetsuite .grid-table td, 
+    .dbnetsuite .grid-table th {
         @apply border-y border-slate-300 py-0.5 px-0.5;
     }
 

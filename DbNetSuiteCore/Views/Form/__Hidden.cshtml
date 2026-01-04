@@ -1,0 +1,16 @@
+﻿@model FormViewModel
+@inject IConfiguration Configuration
+@using Microsoft.Extensions.Configuration
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.ViewModels
+@RazorHelper.ModelState(Model.FormModel, Configuration)
+@if (Model.IsParent)
+{
+    @RazorHelper.ModelSummaryState(Model.FormModel, Configuration)
+}
+<input type="hidden" name="validationPassed" value="@Model.ValidationPassed" />
+@if (string.IsNullOrEmpty(Model.JSON) == false)
+{
+    <input type="hidden" name="json" value="@TextHelper.Compress(Model.JSON)" />
+}

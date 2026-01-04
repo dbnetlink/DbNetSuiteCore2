@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var ordersForm = new FormModel(DataSourceType.MongoDB, "MongoDb(local)", "Orders") { DatabaseName = "Northwind"};
+
+    ordersForm.Columns = new List<FormColumn>() {
+        new FormColumn("_id"),
+        new FormColumn("OrderID"),
+        new FormColumn("CustomerID") { Lookup = new Lookup("Customers", "CustomerID", "CompanyName") },
+        new FormColumn("EmployeeID") { Lookup = new Lookup("Employees", "EmployeeID", "LastName:, :FirstName") },
+        new FormColumn("OrderDate"),
+        new FormColumn("RequiredDate") { DataType = typeof(DateTime)},
+        new FormColumn("ShippedDate") { DataType = typeof(DateTime)},
+        new FormColumn("ShipVia") { Lookup = new Lookup("Shippers", "ShipperID", "CompanyName") },
+        new FormColumn("Freight") { Format = "c"},
+        new FormColumn("ShipName"),
+        new FormColumn("ShipAddress"),
+        new FormColumn("ShipCity"),
+        new FormColumn("ShipRegion"),
+        new FormColumn("ShipPostalCode"),
+        new FormColumn("ShipCountry")
+    };
+    
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersForm))
+}

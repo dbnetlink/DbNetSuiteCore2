@@ -1,0 +1,21 @@
+﻿@model GridViewModel
+@inject IConfiguration Configuration
+@using Microsoft.Extensions.Configuration
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.ViewModels
+@using DbNetSuiteCore.Enums
+@RazorHelper.ModelState(Model.GridModel, Configuration)
+@if (Model.IsParent || Model.HasNestedGrids)
+{
+    @RazorHelper.ModelSummaryState(Model.GridModel, Configuration)
+}
+<input type="hidden" name="validationPassed" value="@Model.ValidationPassed" />
+@if (string.IsNullOrEmpty(Model.JSON) == false)
+{
+    <input type="hidden" name="json" value="@TextHelper.Compress(Model.JSON)" />
+}
+@if (Model.DataSourceType == DataSourceType.JSON)
+{   
+    <input type="hidden" name="@TriggerNames.ApiRequestParameters" value="" hx-post="@Model.PostUrl" hx-trigger="changed" hx-target="closest tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML"/>
+}   

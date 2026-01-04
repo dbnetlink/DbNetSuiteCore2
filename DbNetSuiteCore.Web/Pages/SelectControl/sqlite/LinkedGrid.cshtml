@@ -1,0 +1,87 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var orderDetailsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[Order Details]");
+    orderDetailsGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("OrderId", "Invoice Line ID") {ForeignKey = true },
+        new GridColumn("ProductID", "Product")  {Lookup = new Lookup("Products","ProductID","ProductName")},
+        new GridColumn("UNitPrice", "Price") { Format = "c"},
+        new GridColumn("QUantity", "Quantity"),
+        new GridColumn("UnitPrice*Quantity", "Cost") { Format = "c", DataType = typeof(Decimal)},
+        new GridColumn("Discount", "Discount") { Format = "p"},
+        new GridColumn( "UnitPrice*Quantity* (1-Discount)", "Net Cost") { Format = "c", DataType = typeof(Decimal)},
+    };
+
+    orderDetailsGrid.Caption = "Order Details";
+    orderDetailsGrid.PageSize = 5;
+
+    var orderDetailsForm = new FormModel(DataSourceType.SQLite, "Northwind(sqlite)", "[Order Details]");
+    orderDetailsForm.Columns = new List<FormColumn>
+    {
+        new FormColumn("OrderId", "Invoice Line ID") {ForeignKey = true },
+        new FormColumn("ProductID", "Product")  {Lookup = new Lookup("Products","ProductID","ProductName")},
+        new FormColumn("UnitPrice", "Price") { Format = "c"},
+        new FormColumn("QUantity", "Quantity"),
+        new FormColumn("UnitPrice*Quantity", "Cost") { Format = "c", DataType = typeof(Decimal)},
+        new FormColumn("Discount", "Discount") { Format = "p"}
+    };
+    orderDetailsForm.Caption = "Order Line";
+    orderDetailsForm.LayoutColumns = 3;
+
+    orderDetailsGrid.LinkedControl = orderDetailsForm;
+
+    var orderGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Orders");
+    orderGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("OrderId", "Order ID") {PrimaryKey = true },
+        new GridColumn("customerid", "Customer ID") {ForeignKey = true, DataOnly = true },
+        new GridColumn("employeeid", "Employee") { Lookup = new Lookup("Employees","EmployeeID","coalesce(LastName,'') || ', ' || coalesce(FirstName,'')" ) },
+        new GridColumn("OrderDate", "Ordered"),
+        new GridColumn("RequiredDate", "Required"),
+        new GridColumn("ShippedDate", "Shipped"),
+        new GridColumn("Freight", "Cost") { Format = "c"}
+    };
+    orderGrid.LinkedControl = orderDetailsGrid;
+    orderGrid.Caption = "Orders";
+    orderGrid.PageSize = 5;
+
+    var orderForm = new FormModel(DataSourceType.SQLite, "Northwind(sqlite)", "Orders");
+    orderForm.Columns = new List<FormColumn>
+    {
+        new FormColumn("OrderId", "Order ID") {PrimaryKey = true },
+        new FormColumn("employeeid", "Employee") { Lookup = new Lookup("Employees","EmployeeID","coalesce(LastName,'') || ', ' || coalesce(FirstName,'')" ) },
+        new FormColumn("OrderDate", "Ordered"),
+        new FormColumn("RequiredDate", "Required"),
+        new FormColumn("ShippedDate", "Shipped"),
+        new FormColumn("Freight", "Cost") { Format = "c"}
+    }; 
+    orderForm.Caption = "Order";
+
+    orderGrid.LinkedControl = orderForm;
+    orderForm.LayoutColumns = 3;
+
+    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { Caption = "Customers", EmptyOption = "Please select a customer", Searchable = true };
+
+    customerSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("CustomerID"),
+        new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')") {DataType = typeof(String)}
+    };
+    customerSelect.LinkedControl = orderGrid;
+
+    <div style="display:flex;flex-direction:column;row-gap:5px">
+        <div> @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))</div>
+        <div style="display:flex;flex-direction:row;column-gap:5px">
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderGrid))</div>
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderForm))</div>
+        </div>
+        <div style="display:flex;flex-direction:row;column-gap:5px">
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderDetailsGrid))</div>
+            <div>@(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderDetailsForm))</div>
+        </div>
+    </div>
+}

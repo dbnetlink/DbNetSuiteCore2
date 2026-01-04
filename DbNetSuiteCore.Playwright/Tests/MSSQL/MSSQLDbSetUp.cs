@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Web.Helpers;
+using DbNetSuiteCore.Enums;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
@@ -11,7 +12,7 @@ namespace DbNetSuiteCore.Playwright.Tests.MSSQL
         public MSSQLDbSetUp()
         {
             MasterConnectionString = "Server=localhost;Database=master;Trusted_Connection=True;TrustServerCertificate=True;";
-            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, Enums.DataSourceType.MSSQL);
+            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, DataSourceType.MSSQL);
         }
 
         [OneTimeSetUp]

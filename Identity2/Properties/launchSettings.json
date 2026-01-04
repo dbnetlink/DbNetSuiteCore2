@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "DbNetSuiteCore.Identity": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": ""
+    }
+  }
+}

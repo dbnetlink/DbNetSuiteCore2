@@ -1,167 +1,251 @@
-﻿using DbNetSuiteCore.Models;
-using System.Data;
-using DbNetSuiteCore.Extensions;
-using System.Data.OleDb;
-using CsvHelper;
-using System.Globalization;
-using CsvHelper.Configuration;
-using Microsoft.Extensions.Caching.Memory;
-using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
+using DocumentFormat.OpenXml;
+using ExcelDataReader;
+using Microsoft.Extensions.Caching.Memory;
+using System.Data;
+using System.Text;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class ExcelRepository : IExcelRepository
+    public class ExcelRepository : FileRepository, IExcelRepository
     {
-        private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
         private readonly IMemoryCache _memoryCache;
 
-        public ExcelRepository(IConfiguration configuration, IWebHostEnvironment env, IMemoryCache memoryCache)
+        public ExcelRepository(IWebHostEnvironment env, IMemoryCache memoryCache)
         {
-            _configuration = configuration;
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(GridModel gridModel)
+        public void GetRecords(GridSelectModel gridSelectModel)
         {
-            QueryCommandConfig query = gridModel.BuildQuery();
-            gridModel.Data = await BuildDataTable(gridModel, query);
-            gridModel.ConvertEnumLookups();
-            gridModel.GetDistinctLookups();
-        }
-
-        public async Task GetRecord(GridModel gridModel)
-        {
-            QueryCommandConfig query = gridModel.BuildRecordQuery();
-            gridModel.Data = await BuildDataTable(gridModel, query);
-            gridModel.ConvertEnumLookups();
-        }
-
-        public async Task<DataTable> GetColumns(GridModel gridModel)
-        {
-            if (string.IsNullOrEmpty(gridModel.TableName))
+            var dataTable = gridSelectModel.Data.Columns.Count > 0 ? gridSelectModel.Data : BuildDataTable(gridSelectModel);
+            if (gridSelectModel is GridModel gridModel)
             {
-                AssignTableName(gridModel);
+                dataTable.FilterAndSort(gridModel);
+                gridModel.ConvertEnumLookups();
+                gridModel.GetDistinctLookups();
             }
 
-            gridModel.TableName = TextHelper.DelimitColumn(gridModel.TableName, DataSourceType.Excel);
-
-            QueryCommandConfig query = gridModel.BuildEmptyQuery();
-
-            return await BuildDataTable(gridModel, query);
+            if (gridSelectModel is SelectModel selectModel)
+            {
+                if (selectModel.Distinct)
+                {
+                    var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
+                    dataTable = dataTable.DefaultView.ToTable(true, columnNames);
+                }
+                dataTable.FilterAndSort(selectModel);
+                selectModel.ConvertEnumLookups();
+            }
         }
 
-        private async Task<DataTable> BuildDataTable(GridModel gridModel, QueryCommandConfig query)
+        public void GetRecord(GridSelectModel gridSelectModel)
         {
-            return await LoadSpreadsheet(gridModel, query);
+            var dataTable = BuildDataTable(gridSelectModel);
+            dataTable.FilterWithPrimaryKey(gridSelectModel);
+            gridSelectModel.ConvertEnumLookups();
         }
 
-        private async Task<DataTable> LoadSpreadsheet(GridModel gridModel, QueryCommandConfig query)
+        public DataTable GetColumns(GridSelectModel gridSelectModel)
         {
-            DataTable dataTable;
+            return BuildDataTable(gridSelectModel);
+        }
+
+        private DataTable BuildDataTable(GridSelectModel gridSelectModel)
+        {
+            DataTable dataTable = null;
+                if (gridSelectModel.Cache && _memoryCache.TryGetValue(gridSelectModel.CacheKey, out dataTable))
+                {
+                    if (dataTable != null)
+                    {
+                        return dataTable;
+                    }
+                }
+
+            if (ComponentModelExtensions.IsCsvFile(gridSelectModel))
+            {
+                dataTable = CsvToDataTable(gridSelectModel);
+            }
+            else if (ComponentModelExtensions.IsOdsFile(gridSelectModel))
+            {
+                dataTable = OdsToDataTable(gridSelectModel);
+               // dataTable = LoadSpreadsheet(componentModel);
+            }
+            else
+            {
+                dataTable = LoadSpreadsheet(gridSelectModel);
+            }
+
+            foreach (ColumnModel column in gridSelectModel.GetColumns())
+            {
+                if (column.DataType != typeof(DBNull))
+                {
+                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+                }
+            }
+
+            if (gridSelectModel.GetColumns().Any())
+            {
+                string[] selectedColumns = gridSelectModel.GetColumns().Select(c => c.Expression.Replace("[", string.Empty).Replace("]", string.Empty)).ToArray();
+                dataTable = new DataView(dataTable).ToTable(false, selectedColumns);
+            }
+
+            if (gridSelectModel is GridModel gridModel && gridModel.Uninitialised == false)
+            {
+                dataTable.AcceptChanges();
+                gridModel.Data = dataTable;
+                PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.TransformDataTable), gridModel);
+
+                if (gridModel.Cache)
+                {
+                    _memoryCache.Set(gridModel.CacheKey, dataTable, GetCacheOptions());
+                }
+            }
+            return dataTable;
+        }
+
+        private DataTable LoadSpreadsheet(ComponentModel componentModel)
+        {
+            DataTable dataTable = new DataTable();
             try
             {
-                using (OleDbConnection connection = GetConnection(gridModel.Url))
+                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
                 {
-                    connection.Open();
-
-                    dataTable = new DataTable();
-
-                    string columns = gridModel.Columns.Any() ? String.Join(",", gridModel.Columns.Select(c => c.Expression)) : "*";
-
-                    OleDbCommand command = new OleDbCommand(query.Sql, connection);
-                    DbHelper.AddCommandParameters(command, query.Params);
-                    dataTable.Load(await command.ExecuteReaderAsync());
-                    connection.Close();
+                    using (HttpClient client = new HttpClient())
+                    using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
+                    {
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            stream.CopyTo(ms);
+                            dataTable = GetDataTableFromStream(ms, componentModel);
+                        }
+                    }
+                }
+                else
+                {
+                    using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
+                    {
+                        dataTable = GetDataTableFromStream(stream, componentModel);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                /*
-            if (gridModel.Url.ToLower().EndsWith(".csv"))
-            {
-                dataTable = CsvToDataTable(gridModel);
-            }
-            else
-            {
-                throw new Exception($"Unable too read the Excel file {gridModel.TableName}");
-            }
-            */
-                throw new Exception($"Unable to read the Excel file {gridModel.TableName}", ex);
+                throw new Exception($"Unable to read the Excel file {componentModel.Url} - {ex.Message}");
             }
 
             return dataTable;
         }
 
-        private DataTable CsvToDataTable(GridModel gridModel)
+        private DataTable GetDataTableFromStream(Stream stream, ComponentModel componentModel)
         {
-            DataTable dt = new DataTable();
-            List<string> badData = new List<string>();
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            using (var reader = ExcelReaderFactory.CreateReader(stream, new ExcelReaderConfiguration
             {
-                BadDataFound = null
-            };
-            using (var reader = new StreamReader(FilePath(gridModel.Url)))
-            using (var csv = new CsvReader(reader, config))
+                FallbackEncoding = System.Text.Encoding.GetEncoding(1252)
+            }))
             {
-                using (var dr = new CsvDataReader(csv))
+                new ExcelDataSetConfiguration()
                 {
-                    dt.Load(dr);
+                    ConfigureDataTable = _ => new ExcelDataTableConfiguration
+                    {
+                        UseHeaderRow = true
+                    }
+                };
+                DataSet dataSet = reader.AsDataSet(DataSetReaderConfiguration());
+                DataTable dataTable = dataSet.Tables[0];
+                if (componentModel is GridModel gridModel)
+                {
+                    dataTable = dataSet.GetTable(gridModel.SheetName);
                 }
+
+                return dataTable;
             }
-
-            badData.Clear();
-
-            return dt;
         }
 
-        private async Task AssignTableName(GridModel gridModel)
+        private DataTable CsvToDataTable(ComponentModel componentModel)
         {
-            if (gridModel.Url.ToLower().EndsWith(".csv"))
+            if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
             {
-                gridModel.TableName = FilePath(gridModel.Url).Split("\\").Last();
+                using (HttpClient client = new HttpClient())
+                using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    stream.CopyTo(ms);
+                    ms.Position = 0;
+                    return CsvStreamToDataTable(ms);
+                }
             }
             else
             {
-                using (OleDbConnection connection = GetConnection(gridModel.Url))
-                {
-                    connection.Open();
-                    DataTable tables = connection.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-                    gridModel.TableName = tables.Rows[0]["TABLE_NAME"].ToString();
-                    connection.Close();
-                }
+                using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
+                return CsvStreamToDataTable(stream);
             }
         }
 
-        public OleDbConnection GetConnection(string filePath)
+        private DataTable CsvStreamToDataTable(Stream stream)
         {
-            return new OleDbConnection(ExcelConnectionString(filePath));
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Step 3: Create the CsvReader from the stream
+            using (var reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
+            {
+                // Default: cp1252 (Good fallback for older CSVs)
+                FallbackEncoding = Encoding.GetEncoding(1252),
+
+                // Optional: specify delimiter candidates if the CSV might use separators other than comma
+                // AutodetectSeparators = new char[] { ',', ';', '\t', '|', '#' } 
+            }))
+            {
+                // Step 4: Convert the IExcelDataReader to a DataSet
+                var result = reader.AsDataSet(DataSetReaderConfiguration());
+
+                return result.Tables[0];
+            }
+        }
+
+        private ExcelDataSetConfiguration DataSetReaderConfiguration()
+        {
+            return new ExcelDataSetConfiguration()
+            {
+                ConfigureDataTable = (tableReader) => new ExcelDataTableConfiguration()
+                {
+                    // Use the first row of the CSV as the column names in the DataTable
+                    UseHeaderRow = true
+                }
+            };
+        }
+
+        private DataTable OdsToDataTable(ComponentModel componentModel)
+        {
+            DataTable dataTable = new DataTable();
+
+            using (OdsReader cdr = new OdsReader())
+            {
+                string sheetName = componentModel is GridModel gridModel ? gridModel.SheetName : null;
+                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
+                {
+                    dataTable = cdr.GetDataTableFromUrl(componentModel.Url, sheetName);
+                }
+                else
+                {
+                    dataTable = cdr.GetDataTableFromPath(FilePath(componentModel.Url), sheetName);
+                }
+
+                return dataTable;
+            }
         }
 
         private string FilePath(string filePath)
         {
-            if (TextHelper.IsAbsolutePath(filePath))
+            if (TextHelper.IsAbsolutePath(filePath) || filePath.ToLower().StartsWith("https://"))
             {
                 return filePath;
-                
+
             }
-            return $"{_env.WebRootPath}{filePath.Replace("/", "\\")}".Replace("//", "/");
-        }
-
-        private string ExcelConnectionString(string filePath)
-        {
-            string properties = filePath.ToLower().EndsWith(".csv") ? "Text;FORMAT=Delimited;" : "Excel 12.0;";
-            properties = $"{properties}HDR=Yes;characterset=65001";
-
-            filePath = FilePath(filePath);
-
-            if (filePath.ToLower().EndsWith(".csv"))
-            {
-                string separator = "\\";
-                filePath = string.Join(separator, filePath.Split(separator).Reverse().Skip(1).Reverse().ToArray());
-            }
-            return $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={filePath};Extended Properties=\"{properties}\";";
+            return $"{_env.WebRootPath}{filePath.Replace("/", @"\")}".Replace("//", "/");
         }
     }
 }

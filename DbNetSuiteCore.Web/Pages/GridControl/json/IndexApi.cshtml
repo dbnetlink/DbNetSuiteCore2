@@ -1,0 +1,44 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var employeeColumns = new List<GridColumn>
+    {
+        new GridColumn("ParentEmployeeKey", "Id"),
+        new GridColumn("EmployeeNationalIDAlternateKey", "National Id"),
+        new GridColumn("SalesTerritoryKey", "Sales Territory"),
+        new GridColumn("FirstName", "Forename"),
+        new GridColumn("MiddleName", "Middle Name"),
+        new GridColumn("LastName", "Surname") {InitialSortOrder = SortOrder.Asc},
+        new GridColumn("Title", "Title"),
+        new GridColumn("HireDate", "Hire Date"),
+        new GridColumn("BirthDate", "Birth Date"),
+        new GridColumn("LoginID", "Login Id"),
+        new GridColumn("EmailAddress", "Email"),
+        new GridColumn("Phone", "Phone"),
+        new GridColumn("MaritalStatus", "Marital Status") {LookupEnum = typeof(MaritalStatusEnum)},
+        new GridColumn("EmergencyContactName", "Contact Name"),
+        new GridColumn("EmergencyContactPhone", "Contact Phone"),
+        new GridColumn("SalariedFlag", "Salaried"),
+        new GridColumn("Gender", "Gender") {LookupEnum = typeof(GenderEnum)},
+        new GridColumn("PayFrequency", "Pay Frequency") {LookupEnum = typeof(PaymentEnum), DataType = typeof(Int32)},
+        new GridColumn("BaseRate", "Base Rate"),
+        new GridColumn("VacationHours", "Vacation Hours"),
+        new GridColumn("SickLeaveHours", "Sick Leave Hours"),
+        new GridColumn("CurrentFlag", "Current"),
+        new GridColumn("SalesPersonFlag", "Sales Person"),
+        new GridColumn("DepartmentName", "Department"),
+        new GridColumn("StartDate", "Started"),
+        new GridColumn("Status", "Status")
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.JSON, "https://localhost:7243/employees")
+{
+        Columns = employeeColumns,
+        Caption = "Employees"
+    }))
+}
+

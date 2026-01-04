@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Web.Helpers;
+using DbNetSuiteCore.Enums;
 using Npgsql;
 using NUnit.Framework;
 
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
         public PostgreSqlDbSetUp()
         {
             MasterConnectionString = "Host=localhost;Username=postgres;Password=password1234;Database=postgres;pooling=false;";
-            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, Enums.DataSourceType.PostgreSql);
+            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, DataSourceType.PostgreSql);
         }
 
         [OneTimeSetUp]

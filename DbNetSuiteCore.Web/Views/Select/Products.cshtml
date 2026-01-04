@@ -1,0 +1,14 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Helpers
+
+@{
+    var productSelect = new SelectModel(DataSourceType.SQLite, ConnectionStringHelper.TestConnectionString(Context.Request.Query["db"], DataSourceType.SQLite), "Products join Categories on Products.CategoryID = Categories.CategoryID") { Searchable = true };
+    productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("ProductID"),
+        new SelectColumn("ProductName"),
+        new SelectColumn("CategoryName") {OptionGroup = true}
+    };
+    @(await DbNetSuiteCore.Control.Create(Context).Render(productSelect))
+}

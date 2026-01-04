@@ -1,0 +1,16 @@
+﻿
+@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+<p data-summary>At it's most basic you can generate a grid by simply <b>specifying</b> the connection alias and the name of the table or view. Default functionality includes a search box that will perform a wildcard search against all string based columns in the dataset, the ability to sort on any column by clicking on the heading, a copy page button and an option to export the data in HTML, Excel, CSV and PDF formats.</p>
+@{
+    var parameters = new List<DbParameter>()
+    {
+        new DbParameter("nSchellId_In", 583266),
+        new DbParameter("nInspectionTypeId_In", 43)
+    };
+    var employeeGrid = new GridModel(DataSourceType.MSSQL, "ESS_CH_283", "RPT_ScheduleHistory_SP", parameters) { };
+  
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(employeeGrid))
+}

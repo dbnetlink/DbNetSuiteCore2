@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@using Microsoft.AspNetCore.Html
+
+@{
+    var fileGrid = new GridModel(DataSourceType.FileSystem, "/data") { FixedFilter = "IsDirectory = 1" };
+    fileGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn(FileSystemColumn.Name.ToString()),
+        new GridColumn(FileSystemColumn.Path.ToString()) {Format = FormatType.Url}
+     };
+
+    var rootFolder = new SelectModel(DataSourceType.FileSystem, "/data") { Searchable = false };
+    rootFolder.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn(FileSystemColumn.Name.ToString())
+    };
+
+    rootFolder.LinkedControl = fileGrid;
+
+    <div class="flex flex-column">
+        <div class="flex"> @(await DbNetSuiteCore.Control.Create(HttpContext).Render(rootFolder))</div>
+        <div class="flex"> @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileGrid))</div>
+    </div>
+   
+}

@@ -1,0 +1,42 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var customerSelect1 = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { 
+        EmptyOption = "Please select a customer", 
+        Caption = "Customers", Searchable = true,
+        Layout = LayoutType.Column,
+        Columns = new List<SelectColumn>
+        {
+            new SelectColumn("CustomerID"),
+            new SelectColumn("CompanyName")
+        }
+    };
+
+    var customerSelect2 = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers")
+            {
+                EmptyOption = "Please select a customer",
+                Caption = "Customers",
+                Searchable = true,
+                Layout = LayoutType.Row,
+                Columns = new List<SelectColumn>
+        {
+            new SelectColumn("CustomerID"),
+            new SelectColumn("CompanyName")
+        }
+            };
+
+
+    <div class="flex flex-row">
+        <div class="flex">
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect1))
+        </div>
+        <div class="flex">
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect2))
+        </div>
+    </div>
+
+
+}

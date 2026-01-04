@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Library</OutputType>
@@ -19,7 +18,18 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IsPackable>true</IsPackable>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
+  
+  
+
+  <ItemGroup>
+    <Content Include="build\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\componentControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\gridControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\formControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+    <Content Include="build\selectControl.d.ts" Pack="true" PackagePath="buildTransitive\$(TargetFramework)\" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Utilities\**" />
@@ -43,13 +53,26 @@
   <ItemGroup>
     <Content Remove="bundleconfig.json" />
     <Content Remove="package.json" />
-    <Content Remove="Views\Error.cshtml" />
+    <Content Remove="Views\Form\__ControlForm.cshtml" />
+    <Content Remove="Views\Form\__Form.cshtml" />
+    <Content Remove="Views\Form\__Hidden.cshtml" />
+    <Content Remove="Views\Form\__Markup.cshtml" />
+    <Content Remove="Views\Form\__Toolbar.cshtml" />
     <Content Remove="Views\GridExport.cshtml" />
     <Content Remove="Views\GridRows.cshtml" />
     <Content Remove="Views\GridToolbar.cshtml" />
-    <Content Remove="Views\Grid\Hidden.cshtml" />
-    <Content Remove="Views\Grid\ViewDialog.cshtml" />
-    <Content Remove="Views\Grid\ViewDialogContent.cshtml" />
+    <Content Remove="Views\Grid\Markup - Copy.cshtml" />
+    <Content Remove="Views\Grid\Rows - Copy.cshtml" />
+    <Content Remove="Views\Grid\__Hidden.cshtml" />
+    <Content Remove="Views\Grid\__SearchDialog.cshtml" />
+    <Content Remove="Views\Grid\__ViewDialog.cshtml" />
+    <Content Remove="Views\Grid\__ViewDialogContent.cshtml" />
+    <Content Remove="Views\Select\__ControlForm.cshtml" />
+    <Content Remove="Views\Select\__Hidden.cshtml" />
+    <Content Remove="Views\__Error.cshtml" />
+    <Content Remove="Views\__LicenseInfo.cshtml" />
+    <Content Remove="Views\__QueryLimitWarning.cshtml" />
+    <Content Remove="Views\__ToastMessage.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,10 +82,13 @@
     <None Remove="Resources\CSS\tailwind.css" />
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
+    <None Remove="Resources\JS\blazor.js" />
     <None Remove="Resources\JS\bundle.js" />
     <None Remove="Resources\JS\bundle.min.js" />
+    <None Remove="Resources\JS\componentControl.js" />
     <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridControl.js" />
+    <None Remove="Resources\JS\htmlEditor.js" />
     <None Remove="Resources\JS\htmx.js" />
     <None Remove="Resources\JS\htmx.min.js" />
     <None Remove="Resources\JS\jquery.min.js" />
@@ -70,8 +96,12 @@
     <None Remove="Resources\JS\tailwindcss.js" />
     <None Remove="Resources\JS\viewDialog.js" />
     <None Remove="Resources\SVG\spinner.svg" />
+    <None Remove="TypeScript\confirmDialog.ts" />
     <None Remove="TypeScript\draggableDialog.ts" />
+    <None Remove="TypeScript\formControl.ts" />
     <None Remove="TypeScript\gridcontrol.ts" />
+    <None Remove="TypeScript\HtmlEditor.ts" />
+    <None Remove="TypeScript\selectControl.ts" />
     <None Remove="TypeScript\viewDialog.ts" />
   </ItemGroup>
 
@@ -88,44 +118,91 @@
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
+    <EmbeddedResource Include="Resources\JS\blazor.js" />
     <EmbeddedResource Include="Resources\JS\bundle.js" />
     <EmbeddedResource Include="Resources\JS\bundle.min.js" />
+    <EmbeddedResource Include="Resources\JS\componentControl.js" />
     <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
     <EmbeddedResource Include="Resources\JS\gridControl.js" />
+    <EmbeddedResource Include="Resources\JS\htmlEditor.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
     <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
+    <EmbeddedResource Include="TypeScript\blazor.ts" />
+    <EmbeddedResource Include="TypeScript\formControl.ts" />
+    <EmbeddedResource Include="TypeScript\dialog.ts" />
+    <EmbeddedResource Include="TypeScript\lookupDialog.ts" />
+    <EmbeddedResource Include="TypeScript\selectControl.ts" />
+    <EmbeddedResource Include="TypeScript\confirmDialog.ts" />
+    <EmbeddedResource Include="TypeScript\htmlEditor.ts" />
+    <EmbeddedResource Include="TypeScript\searchDialog.ts" />
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
-    <EmbeddedResource Include="Views\Grid\Hidden.cshtml">
+    <EmbeddedResource Include="Views\Shared\__SearchDialog.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\ViewDialog.cshtml">
+    <EmbeddedResource Include="Views\__LicenseInfo.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Toolbar.cshtml">
+    <EmbeddedResource Include="Views\__QueryLimitWarning.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Rows.cshtml">
+    <EmbeddedResource Include="Views\Form\__ControlForm.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Nested.cshtml">
+    <EmbeddedResource Include="Views\Form\__Hidden.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\ControlForm.cshtml">
+    <EmbeddedResource Include="Views\Form\__Form.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Export.cshtml">
+    <EmbeddedResource Include="Views\Form\__Markup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\Markup.cshtml">
+    <EmbeddedResource Include="Views\Form\__Toolbar.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Error.cshtml">
+    <EmbeddedResource Include="Views\Grid\__Hidden.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Grid\ViewDialogContent.cshtml" />
-    <EmbeddedResource Include="Views\HxIndicator.cshtml">
+    <EmbeddedResource Include="Views\Form\__ConfirmDialog.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\__ToastMessage.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Select\__Options.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Select\__Markup.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__ViewDialog.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__Toolbar.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__Rows.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__Nested.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__ControlForm.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__Export.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__Markup.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\__Error.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Grid\__ViewDialogContent.cshtml" />
+    <EmbeddedResource Include="Views\__HxIndicator.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\ICO\favicon.ico" />
@@ -135,6 +212,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\JS\surreal.js" />
     <EmbeddedResource Include="Resources\JS\tailwindcss.js" />
+    <EmbeddedResource Include="Views\Select\__ControlForm.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Select\__Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -146,47 +229,77 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
-    <PackageReference Include="ClosedXML" Version="0.104.1" />
-    <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.15" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.15" />
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.15" />
-    <PackageReference Include="MongoDB.Driver" Version="2.23.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="RazorEngineCore" Version="2022.1.2" />
-    <PackageReference Include="System.Data.OleDb" Version="7.0.0" />
-  </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
-    <PackageReference Include="ClosedXML" Version="0.104.1" />
-    <PackageReference Include="CsvHelper" Version="33.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.10" />
-    <PackageReference Include="MongoDB.Driver" Version="2.30.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
-    <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
-  </ItemGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
+    <TypeScriptTarget>ES6</TypeScriptTarget>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
+    <TypeScriptTarget>ES6</TypeScriptTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0|AnyCPU'">
+    <TypeScriptTarget>ES6</TypeScriptTarget>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0|AnyCPU'">
+    <TypeScriptTarget>ES6</TypeScriptTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TypeScriptToolsVersion>5.9.3</TypeScriptToolsVersion>
+  </PropertyGroup>
 
   <!-- Conditional compilation example -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <DefineConstants>NET8_0</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0|AnyCPU'">
+    <WarningLevel>9999</WarningLevel>
+  </PropertyGroup>
+    <ItemGroup>
+    <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
   </ItemGroup>
 
   <ItemGroup>
-    <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
+    <Folder Include="Resources\Blazor\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="ExcelDataReader" Version="3.8.0" />
+    <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.1" />
+    <PackageReference Include="MongoDB.Driver" Version="3.5.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation">
+      <Version>10.0.1</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation">
+      <Version>8.0.22</Version>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Build">

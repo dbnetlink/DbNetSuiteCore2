@@ -1,0 +1,65 @@
+﻿@page "/Grid/Nested"
+@attribute [StreamRendering]
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@inject IHttpContextAccessor httpContextAccessor
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Customers</PageTitle>
+
+<p data-summary>Grid controls can be nested by specifying the primary and foreign keys</p>
+@{
+    var customerColumns = new List<GridColumn>
+    {
+        new GridColumn("customerid", "CustomerID") {PrimaryKey = true },
+        new GridColumn("firstname", "Forename"),
+        new GridColumn("lastname", "Surname"),
+        new GridColumn("email", "Email Address") {Format = FormatType.Email },
+        new GridColumn("address", "Address"),
+        new GridColumn("city", "City") { InitialSortOrder = SortOrder.Desc},
+        new GridColumn("postalcode", "Post Code"),
+    };
+
+    var invoiceColumns = new List<GridColumn>
+    {
+        new GridColumn("invoiceid", "Invoice ID") {PrimaryKey = true },
+        new GridColumn("customerid", "Customer ID") {ForeignKey = true, DataOnly = true },
+        new GridColumn("invoicedate", "Date"),
+        new GridColumn("billingaddress", "Address"),
+        new GridColumn("billingcity", "City"),
+        new GridColumn("billingstate", "State"),
+        new GridColumn("billingcountry", "Country"),
+        new GridColumn("billingpostalcode", "Post Code"),
+    };
+
+    var invoiceItemColumns = new List<GridColumn>
+    {
+        new GridColumn("invoicelineid", "Line ID"),
+        new GridColumn("invoiceid", "Invoice ID") {ForeignKey = true, DataOnly = true },
+        new GridColumn("trackid", "Track") { Lookup = new Lookup("tracks","trackid","name")},
+        new GridColumn("unitprice", "Price") { Format = "c"},
+        new GridColumn("quantity", "Qty"),
+    };
+
+    var invoiceLineGridModel = new GridModel("Invoice_items");
+    invoiceLineGridModel.Columns = invoiceItemColumns;
+    invoiceLineGridModel.Caption = "Invoice Lines";
+    //invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+
+    var invoiceGridModel = new GridModel("Invoices");
+    invoiceGridModel.Columns = invoiceColumns;
+    invoiceGridModel.NestedGrid = invoiceLineGridModel;
+    invoiceGridModel.Caption = "Invoices";
+    //  invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook", "Customers") { Caption = "Customer List" };
+    customerGridModel.Columns = customerColumns;
+    customerGridModel.NestedGrid = invoiceGridModel;
+}
+
+@(DbNetSuiteCore.Blazor.Control.Create(httpContextAccessor).Render(customerGridModel))
+
+
+
+

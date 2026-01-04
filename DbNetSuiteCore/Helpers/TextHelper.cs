@@ -1,5 +1,8 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Services;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -10,7 +13,7 @@ namespace DbNetSuiteCore.Helpers
         static public string GenerateLabel(string label)
         {
             label = label.Split(".").Last();
-            label = label.Replace("[",string.Empty).Replace("]", string.Empty);
+            label = label.Replace("[", string.Empty).Replace("]", string.Empty);
             label = Regex.Replace(label, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
             return Capitalise(label.Replace("_", " ").Replace(".", " "));
         }
@@ -18,26 +21,94 @@ namespace DbNetSuiteCore.Helpers
         {
             return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(text);
         }
-        public static string ObfuscateString(string input)
+
+        public static string ObfuscateString(ComponentModel componentModel)
         {
-       //     return Compress(input);
-            byte[] bytes = Encoding.ASCII.GetBytes(input);
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA
-            }
-            return Convert.ToBase64String(bytes);
+            return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(componentModel), componentModel.HttpContext);
         }
 
-        public static string DeobfuscateString(string input)
+        public static string ObfuscateString(SummaryModel summaryModel)
         {
-     //       return Decompress(input);
-            byte[] bytes = Convert.FromBase64String(input);
-            for (int i = 0; i < bytes.Length; i++)
+            if (summaryModel != null)
             {
-                bytes[i] = (byte)(bytes[i] ^ 0xAA); // XOR with 0xAA again to reverse
+                return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(summaryModel), summaryModel.HttpContext);
             }
-            return Encoding.ASCII.GetString(bytes);
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        public static string ObfuscateString(string input, HttpContext httpContext = null)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            if (httpContext != null)
+            {
+                string aesPassword = GetAesPassword(httpContext);
+
+                if (string.IsNullOrEmpty(aesPassword) == false)
+                {
+                    return AesEncryptor.Encrypt(input,aesPassword);
+                }
+
+                DataProtectionService dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
+                if (dataProtectionService != null)
+                {
+                    string text = dataProtectionService.Encrypt(input);
+                    return text;
+                }
+             }
+
+            return Compress(input);
+        }
+
+        public static string DeobfuscateString(string input, HttpContext httpContext = null)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return string.Empty;
+            }
+
+            if (httpContext != null)
+            {
+                string aesPassword = GetAesPassword(httpContext);
+
+                if (string.IsNullOrEmpty(aesPassword) == false)
+                {
+                    return AesEncryptor.Decrypt(input, aesPassword);
+                }
+
+                DataProtectionService dataProtectionService = httpContext.RequestServices.GetService<DataProtectionService>();
+                if (dataProtectionService != null)
+                {
+                    string text = dataProtectionService.Decrypt(input);
+                    if (text != null)
+                    {
+                        return text;
+                    }
+                }
+            }
+            return Decompress(input);
+        }
+
+        private static string GetAesPassword(HttpContext httpContext)
+        {
+            IConfiguration configuration = httpContext.RequestServices.GetService<IConfiguration>();
+
+            if (configuration != null)
+            {
+                return configuration.ConfigValue(ConfigurationHelper.AppSetting.AesPassword);
+            }
+
+            return string.Empty;
+        }
+        public static T DeobfuscateKey<T>(string input)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(TextHelper.DeobfuscateString(input));
         }
 
         public static string DelimitColumn(string columnName, DataSourceType dataSourceType)
@@ -53,7 +124,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static bool IsAlphaNumeric(string text)
         {
-            return text.All(c => char.IsLetterOrDigit(c) ||  c == '_');
+            return text.All(c => char.IsLetterOrDigit(c) || c == '_');
         }
 
         public static string Compress(string text)
@@ -79,7 +150,14 @@ namespace DbNetSuiteCore.Helpers
 
         public static bool IsAbsolutePath(string path)
         {
-            return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+            }
+            else
+            {
+                return path.StartsWith("/");
+            }
         }
     }
 }

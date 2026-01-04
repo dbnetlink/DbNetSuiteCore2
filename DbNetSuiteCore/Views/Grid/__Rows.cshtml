@@ -1,0 +1,220 @@
+﻿@model GridViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.ViewModels
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Extensions
+@using Microsoft.AspNetCore.Html
+
+<tbody id="@Model.HxIdTarget.Replace("#", "")" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.Message)" data-messagetype="@Model.MessageType" data-validationpassed="@Model.ValidationPassed">
+    @{
+        int rowIndex = -1;
+    }
+    @foreach (DataRow row in Model.Rows)
+    {
+        rowIndex++;
+
+        List<string> rowClasses = new List<string>() { "grid-row" };
+
+        if (Model.GridModel.ModifiedRows.ContainsKey(rowIndex) && Model.GridModel.ModifiedRows[rowIndex].InError)
+        {
+            rowClasses.Add("in-error");
+        }
+
+        <tr style="cursor:pointer" class="@(String.Join(" ", rowClasses))" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
+            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+            {
+                if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)
+                {
+                    <td class="text-base"><input class="multi-select" type="checkbox" /></td>
+                }
+                if (Model.HasNestedGrids)
+                {
+                    if (Model.DataSourceType == DataSourceType.FileSystem)
+                    {
+                        <td class="text-base w-12" data-isfolder="@Model.IsFolder(row).ToString().ToLower()">
+                            @if (Model.IsFolder(row))
+                            {
+                                @Model.RenderNestedButtons(row, IconHelper.Folder(), IconHelper.FolderOpen())
+                            }
+                            else
+                            {
+                                @IconHelper.Document()
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="text-base w-12">
+                            @{
+                                @Model.RenderNestedButtons(row, IconHelper.ExpandDown(), IconHelper.ExpandUp())
+                            }
+                        </td>
+                    }
+                }
+            }
+            @foreach (GridColumnViewModel column in Model.VisibleColumns)
+            {
+                DataColumn dataColumn = Model.GetDataColumn(column.Column);
+
+                if (dataColumn == null)
+                {
+                    continue;
+                }
+
+                var classes = new List<string>() { "text-base" };
+
+                @if (Model.Editable)
+                {
+                    classes.Add("align-middle");
+                }
+                else
+                {
+                    classes.Add("align-top");
+                }
+
+                classes.Add(column.AlignmentClassName());
+
+                @if (column.Editable && column.FormColumn != null && Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+                {
+                    if (column.LineInError.Count == Model.Rows.Count())
+                    {
+                        column.FormColumn.InError = column.LineInError[rowIndex];
+                    }
+
+                    string dbValue = column.ToStringOrEmpty((dataColumn == null) ? string.Empty : (column.Editable ? column.FormColumn.FormatValue(row[dataColumn]) : column.FormatValue(row[dataColumn])));
+                    string value = dbValue;
+
+                    if (Model.FormValues.ContainsKey(column.ColumnName))
+                    {
+                        value = Model.FormValues[column.ColumnName][rowIndex];
+                    }
+
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Column.Style)> @column.FormColumn.RenderControl(value, dbValue, Model.GridModel, rowIndex)</td>
+                    continue;
+                }
+
+                if (row[dataColumn] == System.DBNull.Value || row[dataColumn] == null)
+                {
+                    <td @RazorHelper.CellDataAttributes(classes, "", column.Column.Style)>&nbsp;</td>
+                    continue;
+                }
+
+                if (column.Column.DataType == typeof(Boolean) && (column.EnumOptions?.Any() ?? false) == false)
+                {
+                    var boolValue = Convert.ToBoolean(Convert.ToInt16(row[dataColumn]));
+                    <td @RazorHelper.CellDataAttributes(classes, boolValue, column.Style)>
+                        <div class="flex justify-center items-center">@(boolValue? IconHelper.Checked() : IconHelper.Unchecked())</div>
+                    </td>
+                }
+                else if (column.LookupOptions != null && column.LookupOptions.Any())
+                {
+                    <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Style)>
+
+                        @if (column.Column.Filter != FilterType.Distinct || string.IsNullOrEmpty(column.Column.Format))
+                        {
+                            @Html.Raw(row[dataColumn])
+                        }
+                        else
+                        {
+                            @(column.FormatValue(row[dataColumn])?.ToString() ?? string.Empty);
+                        }
+                    </td>
+                }
+                else if (column.Image != null)
+                {
+                    <td @RazorHelper.CellDataAttributes(classes, new Byte[0], column.Style)>
+                        <div class="border-solid border-2 rounded-sm border-slate-400">
+                            @if (row[dataColumn] is byte[] byteArray)
+                            {
+                                @Html.Raw(column.Image.Img(byteArray))
+                            }
+                        </div>
+                    </td>
+                }
+                else
+                {
+                    object value = column.FormatValue(row[dataColumn]);
+
+                    var stringValue = value?.ToString() ?? string.Empty;
+                    if (column.Column.DataType == typeof(string) && column.Column.MaxChars < stringValue.Length)
+                    {
+                        value = column.TruncateValue(stringValue);
+                        classes.Add("tooltip-text");
+                    }
+                    <td @RazorHelper.CellDataAttributes(classes, row[dataColumn], column.Column.Style)>@Html.Raw(value)</td>
+                }
+            }
+
+            @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+            {
+                if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Right)
+                {
+                    <td class="text-base"><input class="multi-select" type="checkbox" /></td>
+                }
+            }
+        </tr>
+    }
+
+    @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
+    {
+        <tr style="display:none">
+            <td colspan="@Model.ColSpan">
+                <div>
+                    @await Html.PartialAsync("Grid/__Hidden", Model)
+                    <span style="display:none" id="sortIcon">@Model.SortIcon</span>
+                    @{
+                        var attributes = new Dictionary<string, string>();
+                        attributes["type"] = "hidden";
+                        attributes["hx-trigger"] = "changed";
+                        attributes["hx-post"] = Model.SubmitUrl;
+                        attributes["hx-target"] = "closest tbody";
+                        attributes["hx-swap"] = "outerHTML";
+                        attributes["hx-indicator"] = "next .htmx-indicator";
+                    }
+                    @if (Model.IsLinked)
+                    {
+                        <input name="@TriggerNames.ParentKey" @RazorHelper.Attributes(attributes) />
+                    }
+                    <input name="@TriggerNames.Refresh" @RazorHelper.Attributes(attributes) />
+                </div>
+            </td>
+
+        </tr>
+
+        @if ((Model.IsLinked && Model.TriggerName == TriggerNames.ParentKey) || Model.TriggerName == TriggerNames.ApiRequestParameters)
+        {
+            <tr style="display:none" class="lookup-refresh">
+                <td colspan="@Model.ColSpan">
+                    @foreach (var gridColumn in Model.Columns.Where(c => c.Column.Lookup != null))
+                    {
+                        @Model.RenderLookupOptions(gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>(), gridColumn.Key)
+                    }
+                </td>
+            </tr>
+        }
+
+        @if (Model.Columns.Any(c => string.IsNullOrEmpty(c.FilterError) == false))
+        {
+            <tr style="display:none" class="column-filter-error">
+                <td colspan="@Model.ColSpan">
+                    @foreach (var gridColumn in Model.Columns.Where(c => string.IsNullOrEmpty(c.FilterError) == false))
+                    {
+                        @Model.RenderColumnFilterError(gridColumn.Column)
+                    }
+                </td>
+            </tr>
+        }
+
+        @if (string.IsNullOrEmpty(Model.JsonData) == false)
+        {
+            <tr>
+                <td style="display:none" colspan="@Model.ColSpan">
+                    <textarea style="display:none" id="jsonData">@Model.JsonData</textarea>
+                </td>
+            </tr>
+        }
+    }
+
+</tbody>

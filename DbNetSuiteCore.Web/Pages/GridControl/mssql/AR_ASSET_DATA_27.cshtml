@@ -1,0 +1,37 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var assetGrid = new GridModel(DataSourceType.MSSQL, "ESS_CH_283", "AR_ASSET_DATA_27") { OptimizeForLargeDataset = true };
+    assetGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn("ASSET_ID"),
+        new GridColumn("GLOG"),
+        new GridColumn("FACILITYEXPOSED"),
+        new GridColumn("LEADER"),
+        new GridColumn("FOREMAN"),
+        new GridColumn("OPERATINGDISTRICT"),
+        new GridColumn("POLITICALDISTRICT"),
+        new GridColumn("ADDRESS"),
+        new GridColumn("CITY_STATE"),
+        new GridColumn("STREETINTERSECTION"),
+        new GridColumn("LATTITUDE"),
+        new GridColumn("LONGITUDE"),
+        new GridColumn("LINE"),
+        new GridColumn("SKETCHNAME"),
+        new GridColumn("ATTACHJPG"),
+        new GridColumn("ATTACHJGW"),
+        new GridColumn("ATTACHXML"),
+        new GridColumn("XCOORDINATE"),
+        new GridColumn("YCOORDINATE"),
+        new GridColumn("APPROVALSTATUS"),
+        new GridColumn("GISUPDATE"),
+        new GridColumn("COMMENTS"),
+        new GridColumn("EXPOSUREDATE")
+    };
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(assetGrid))
+}

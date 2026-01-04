@@ -1,0 +1,21 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using Microsoft.Extensions.Primitives
+
+@{
+    StringValues fileName;
+    if (Request.Query.TryGetValue("name", out fileName) == false)
+    {
+        fileName = "cities.csv";
+    }
+    var model = new GridModel(DataSourceType.Excel, $"/data/excel/{fileName}")
+            {
+                Caption = fileName.ToString(),
+                Cache = true
+            };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(model));
+}

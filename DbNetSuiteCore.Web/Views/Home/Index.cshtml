@@ -1,0 +1,34 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    <p style="width:700px; padding-bottom:20px">These are MVC samples. Razor Page samples <a href="/">here</a></p>
+
+    var samplesGrid = new GridModel(DataSourceType.FileSystem, "../Views") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml','index.cshtml')" };
+    samplesGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn(FileSystemColumn.Name.ToString()),
+        new GridColumn(FileSystemColumn.Content.ToString(), "Summary") { RegularExpression = "<p data-summary>(.*?)</p>"}
+    };
+    samplesGrid.ToolbarPosition = ToolbarPosition.Hidden;
+    samplesGrid.ClientEvents[GridClientEvent.CellTransform] = "createLink";
+
+    @(await DbNetSuiteCore.Control.Create(Context).Render(samplesGrid))
+}
+<script>
+    function createLink(gridControl, args) {
+        var tbody = args.cell.closest("tbody")
+        var url = tbody.dataset.url.toString().toLowerCase().replace('../views', '')
+
+        switch (args.columnName.toLowerCase())
+        {
+            case "name":
+                var name = args.cell.dataset.value.toString()
+                if (name.endsWith(".cshtml") && name.startsWith("_") == false) {
+                    args.cell.innerHTML = `<a target='_blank' href='${url}/${name.replace(".cshtml", "")}'>${name.replace(".cshtml", "")}</a>`
+                }
+                break;
+        }
+    }
+</script>

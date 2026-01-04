@@ -1,0 +1,73 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@{
+
+    var companiesForm = new FormModel(DataSourceType.MongoDB, "MongoDb(remote)", "companies") { DatabaseName = "sample_training", QueryLimit = 10, Insert = true, Delete = true };
+
+    companiesForm.Columns = new List<FormColumn>() {
+        new FormColumn("_id"),
+        new FormColumn("name"),
+        new FormColumn("permalink"),
+        new FormColumn("twitter_username") { HelpText = "This is some help text ..."},
+        new FormColumn("crunchbase_url") {ColSpan = 2},
+        new FormColumn("homepage_url"){ColSpan = 2},
+        new FormColumn("blog_url"){ColSpan = 2},
+        new FormColumn("blog_feed_url"){ColSpan = 2},
+        new FormColumn("category_code"),
+        new FormColumn("number_of_employees"),
+        new FormColumn("tag_list"){ColSpan = 4},
+        new FormColumn("email_address"),
+        new FormColumn("phone_number"),
+        new FormColumn("description"){ColSpan = 2},
+        new FormColumn("overview") {ColSpan = 4, HtmlEditor = HtmlEditor.TinyMCE }
+    };
+
+    companiesForm.ClientEvents[FormClientEvent.ConfigureHtmlEditor] = "addLicenseKey";
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(companiesForm))
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.0.0/ckeditor5.css" />
+    <link href="https://cdn.jsdelivr.net/npm/froala-editor@latest/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
+
+    <style>
+        .ck-editor {
+            max-width: initial;
+        }
+        .ck-editor__editable_inline {
+            max-height: 200px;
+            max-width: initial;
+        }
+    </style>
+}
+
+@section Libraries {
+    <script src="https://cdn.ckeditor.com/ckeditor5/44.0.0/ckeditor5.umd.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/froala-editor@latest/js/froala_editor.pkgd.min.js"></script>
+    <script src="~/js/tinymce/tinymce.min.js"></script>
+}
+
+@section Scripts {
+    <script>
+
+        function addLicenseKey(formControl, args) {
+            args.configuration.licenseKey = "gpl";
+        }
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

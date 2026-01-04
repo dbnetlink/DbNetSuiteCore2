@@ -15,68 +15,134 @@
 
   <ItemGroup>
     <Content Remove="appsettings.json" />
-    <Content Remove="Pages\mongodb\BrowseDb.cshtml" />
-    <Content Remove="Pages\mssql\BrowseDb.cshtml" />
-    <Content Remove="Pages\mysql\BrowseDb.cshtml" />
-    <Content Remove="Pages\postgresql\BrowseDb.cshtml" />
+    <Content Remove="Pages\Accounts.cshtml" />
+    <Content Remove="Pages\FormControl\mssql\BrowseDb.cshtml" />
+    <Content Remove="Pages\FormControl\oracle\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\mongodb\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\mysql\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\oracle\BrowseDb.cshtml" />
+    <Content Remove="Pages\GridControl\postgresql\BrowseDb.cshtml" />
     <Content Remove="wwwroot\css\boostrap.icons.min.css" />
     <Content Remove="wwwroot\css\bootstrap.min.css" />
+    <Content Remove="wwwroot\Data\sqlite\new_northwind.db" />
     <Content Remove="wwwroot\js\bootstrap.min.js" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="appsettings.json" />
-    <None Include="Pages\mongodb\BrowseDb.cshtml" />
-    <None Include="Pages\mssql\BrowseDb.cshtml" />
-    <None Include="Pages\mysql\BrowseDb.cshtml" />
-    <None Include="Pages\postgresql\BrowseDb.cshtml" />
+    <None Include="Pages\Accounts.cshtml" />
+    <None Include="Pages\FormControl\mssql\BrowseDb.cshtml" />
+    <None Include="Pages\FormControl\oracle\BrowseDb.cshtml" />
+    <None Include="Pages\form_layout.cshtml" />
+    <None Include="Pages\GridControl\mongodb\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\mssql\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\mysql\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\oracle\BrowseDb.cshtml" />
+    <None Include="Pages\GridControl\postgresql\BrowseDb.cshtml" />
     <None Include="wwwroot\css\bootstrap.min.css" />
+    <None Include="wwwroot\Data\sqlite\new_northwind.db" />
     <None Include="wwwroot\js\bootstrap.min.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DbNetSuiteCore\DbNetSuiteCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="appsettings.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Content Update="Pages\RPT_ScheduleHistory_SP.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\json\JsonString.cshtml">
+    <Content Update="Pages\FormControl\mongodb\Customers.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\mongodb\Customers.cshtml">
+    <Content Update="Pages\FormControl\mongodb\Orders.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\postgresql\StoredProc.cshtml">
+    <Content Update="Pages\FormControl\mssql\DeccoBK.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Dashboard.cshtml">
+    <Content Update="Pages\FormControl\mssql\Products.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\MultiNested.cshtml">
+    <Content Update="Pages\FormControl\sqlite\CustomerColumns.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\MultiLinked.cshtml">
+    <Content Update="Pages\FormControl\sqlite\Employees.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Linked.cshtml">
+    <Content Update="Pages\FormControl\sqlite\SelectProducts.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Invoices.cshtml">
+    <Content Update="Pages\GridControl\filesystem\simple.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Pages\sqlite\Employees.cshtml">
+    <Content Update="Pages\GridControl\json\JsonString.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\mongodb\Customers.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\oracle\ProductsEdit.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\postgresql\StoredProc.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\sqlite\Dashboard.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\sqlite\MultiNested.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\sqlite\MultiLinked.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\sqlite\Linked.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\sqlite\Invoices.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\GridControl\sqlite\Employees.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\SelectControl\excel\Cities.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\SelectControl\sqlite\Customers.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\SelectControl\sqlite\Linked.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\CultureTest.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Views\Grid\ChartMultiSeries.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Views\Grid\Chart.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -87,17 +153,36 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UpToDateCheckInput Remove="Pages\mssql\BrowseDb.cshtml" />
+    <UpToDateCheckInput Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\mssql\BrowseDb.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Humanizer" Version="2.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MySqlConnector" Version="2.3.7" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Npgsql" Version="8.0.5" />
+    <PackageReference Include="NRedisStack" Version="1.1.1" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.7.0" />
+    <PackageReference Include="System.IO.Packaging" Version="8.0.1" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DbNetSuiteCore\DbNetSuiteCore.csproj" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://www.schemastore.org/asmdef.json" /></VisualStudio></ProjectExtensions>
 
 </Project>

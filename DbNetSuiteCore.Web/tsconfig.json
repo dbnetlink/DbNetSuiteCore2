@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es2022",
+    //  "allowJs": true,
+    "esModuleInterop": true,
+    "lib": [ "DOM", "ES2020" ],
+    "outDir": "./wwwroot/js",
+    "moduleResolution": "node",
+    "types": [ "arcgis-js-api" ]
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}

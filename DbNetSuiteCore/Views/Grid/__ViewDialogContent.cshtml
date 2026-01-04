@@ -1,0 +1,72 @@
+﻿@namespace DbNetSuiteCore.ViewModels
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Extensions
+@using DbNetSuiteCore.Helpers
+@using System.Data
+@model GridViewDialogViewModel
+
+@{
+    int layoutColumns = Model.GridViewModel.ViewDialog!.LayoutColumns < Model.ColumnCount ? Model.GridViewModel.ViewDialog!.LayoutColumns : Model.ColumnCount;
+    int remainder = Model.ColumnCount % layoutColumns;
+    int rows = Math.Abs(Model.ColumnCount / layoutColumns) + (remainder == 0 ? 0 : 1);
+}
+
+<table class="table-auto border-collapse m-1" @RazorHelper.RowDataAttributes(Model.Record, Model.GridViewModel.GridModel)>
+    <tbody>
+        @for (int r = 0; r < rows; r++)
+        {
+            <tr>
+                @for (int c = 1; c <= layoutColumns; c++)
+                {
+                    int i = r + ((c - 1) * rows);
+                    @if (i < Model.ColumnCount)
+                    {
+                        GridColumnViewModel gridColumn = Model.Columns.ToList()[i];
+                        DataColumn? dataColumn = Model.GridViewModel.GetDataColumn(gridColumn.Column);
+                        var classes = new List<string>() { "text-base", "view-cell" };
+                        var value = Model.Record[dataColumn!];
+                        var formattedvalue = gridColumn.FormatValue(value);
+
+                        if ((gridColumn.LookupOptions == null || gridColumn.LookupOptions.Any() == false) && gridColumn.IsNumeric)
+                        {
+                            classes.Add("text-right");
+                        }
+
+                        <td class="font-bold whitespace-nowrap">@(gridColumn.Label)</td>
+                        <td>
+                            <div data-columnname="@gridColumn.ColumnName.ToLower()" @RazorHelper.CellDataAttributes(classes, value, gridColumn.Style) data-userdatatype="@gridColumn.UserDataType">
+                                @if (gridColumn.Column.DataType == typeof(Boolean) && (gridColumn.EnumOptions?.Any() ?? false) == false)
+                                {
+                                    var boolValue = Convert.ToBoolean(Convert.ToInt16(value));
+                                    @(boolValue ? IconHelper.Checked() : IconHelper.Unchecked())
+                                }
+                                else if (gridColumn.Image != null && value is Byte[] byteArray)
+                                {
+                                    @Html.Raw(gridColumn.Image.Img(byteArray))
+                                }
+                                else
+                                {
+                                    @Html.Raw(string.IsNullOrEmpty(formattedvalue?.ToString()) ? "&nbsp" : formattedvalue)
+                                }
+                            </div>
+                        </td>
+
+                        if (c > 0 && c < layoutColumns)
+                        {
+                            <td>&nbsp;</td>
+                        }
+                    }
+                    else
+                    {
+                        if (remainder > 0)
+                        {
+                            <td colspan="2"></td>
+                        }
+                    }
+                }
+
+            </tr>
+        }
+    </tbody>
+</table>
+

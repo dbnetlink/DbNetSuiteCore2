@@ -1,0 +1,54 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using Microsoft.Extensions.Primitives;
+
+@{
+    var columns = new List<GridColumn>
+    {
+ new GridColumn("Row ID"){ Filter = FilterType.Default },
+        new GridColumn("Order ID"){ Filter = FilterType.Default },
+        new GridColumn("Order Date"){ Filter = FilterType.Default },
+        new GridColumn("Ship Date"),
+        new GridColumn("Ship Mode") { Filter = FilterType.Distinct},
+        new GridColumn("Customer ID"),
+        new GridColumn("Customer Name"),
+        new GridColumn("Segment"){ Filter = FilterType.Distinct},
+        new GridColumn("Country"){ Filter = FilterType.Distinct},
+        new GridColumn("City"){ Filter = FilterType.Distinct},
+        new GridColumn("State"){ Filter = FilterType.Distinct},
+        new GridColumn("Postal Code"),
+        new GridColumn("Region"){ Filter = FilterType.Distinct},
+        new GridColumn("Product ID") {ForeignKey = true},
+        new GridColumn("Category"){ Filter = FilterType.Distinct},
+        new GridColumn("Sub-Category"){ Filter = FilterType.Distinct},
+        new GridColumn("Product Name"),
+        new GridColumn("Sales") { Format = "c",Filter = FilterType.Default},
+        new GridColumn("Quantity") { Filter = FilterType.Default},
+        new GridColumn("Discount") { Format = "p", Filter = FilterType.Default},
+        new GridColumn("Profit") { Format = "c", Filter = FilterType.Default}
+    };
+
+    var superstoreGrid = new GridModel(DataSourceType.JSON, $"/data/json/superstore.json") { Columns = columns, Caption = "Products", Cache = true };
+
+    var productSelect = new SelectModel(DataSourceType.JSON, $"/data/json/superstore.json")
+            {
+                Columns = new List<SelectColumn>
+        {
+            new SelectColumn("Product ID"),
+            new SelectColumn("Product Name")
+        },
+                Distinct = true,
+                Searchable = true,
+                Caption = "Products",
+                Cache = true
+
+            };
+
+    productSelect.LinkedControl = superstoreGrid;
+}
+
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productSelect))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(superstoreGrid))

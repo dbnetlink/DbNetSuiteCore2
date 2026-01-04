@@ -1,0 +1,24 @@
+﻿@page
+@using System.Net.Http
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Models
+@using DbNetSuiteCore.Web.Plugins
+
+@{
+    var gridModel = new GridModel(DataSourceType.JSON, "https://api.nobelprize.org/v1/prize.json");
+
+    gridModel.Columns = new List<GridColumn>()
+    {
+            new GridColumn("Year") { Filter = FilterType.Distinct},
+            new GridColumn("Category") {  Filter = FilterType.Distinct},
+            new GridColumn("Laureates")
+    };
+
+    gridModel.JsonTransformPlugin = typeof(NobelPrizeTransform);
+    gridModel.Cache = true;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
+}

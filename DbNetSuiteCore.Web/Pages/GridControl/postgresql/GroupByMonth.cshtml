@@ -1,0 +1,38 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var invoiceColumns = new List<GridColumn>
+    {
+        new GridColumn("ProductId", "Product Name") {Lookup = new Lookup("Product", "ProductId", "Productname")}
+    };
+
+    for (var i =1; i<=12; i++)
+    {
+        var monthName = new DateTime(2024, i, 1).ToString("MMMM");
+        var column = new GridColumn($"(case when EXTRACT(month FROM orderdate) = {i} then Qty else 0 end) as {monthName.ToLower()}", monthName) { Aggregate = AggregateType.Sum, Format = "####0" };
+        invoiceColumns.Add(column);
+    }
+
+    var invoiceGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(Postgresql)", "OrderDetail join SalesOrder on SalesOrder.OrderId = OrderDetail.Orderid");
+    invoiceGrid.Columns = invoiceColumns;
+    invoiceGrid.ClientEvents[GridClientEvent.CellTransform] = "highlightQuantity";
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(invoiceGrid))
+}
+
+<script>
+    function highlightQuantity(gridControl, args) {
+        switch (args.columnName.toLowerCase()) {
+            case "ProductName":
+                break;
+            default:
+                var qty = Number(args.cell.dataset.value)
+                if (qty > 100) {
+                    args.cell.style = 'background-color:salmon'
+                }
+                break;
+        }
+    }
+</script>

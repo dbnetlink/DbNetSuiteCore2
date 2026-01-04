@@ -1,12 +1,11 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Extensions;
-using DocumentFormat.OpenXml.Spreadsheet;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.Configuration;
-using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver;
-using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Reflection;
@@ -16,35 +15,83 @@ namespace DbNetSuiteCore.Helpers
 {
     public static class DbHelper
     {
-        public static IDbConnection GetConnection(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment? webHostEnvironment = null)
+        public static IDbConnection GetConnection(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment webHostEnvironment = null)
         {
             string connectionString = GetConnectionString(connectionAlias, configuration);
             IDbConnection connection;
 
-            switch (dataSourceType)
+            try
             {
-                case DataSourceType.SQLite:
-                    connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
-                    connection = new SqliteConnection(connectionString);
-                    break;
-                case DataSourceType.PostgreSql:
-                case DataSourceType.MySql:
-                    connection = GetCustomDbConnection(dataSourceType, connectionString);
-                    break;
-                default:
-                    connection = new SqlConnection(connectionString);
-                    break;
+                switch (dataSourceType)
+                {
+                    case DataSourceType.SQLite:
+                        connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
+                        connection = new SqliteConnection(connectionString);
+                        break;
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.MySql:
+                    case DataSourceType.Oracle:
+                        connection = GetCustomDbConnection(dataSourceType, connectionString);
+                        break;
+                    default:
+                        connection = new SqlConnection(connectionString);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error connecting to data source => {ex.Message}");
             }
 
             return connection;
         }
 
-        public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
+        public static DataTable RunQuery(QueryCommandConfig query, IDbConnection connection)
         {
-            return configuration.GetConnectionString(connectionAlias) ?? connectionAlias;
+            return QueryToDataTable(query, connection);
         }
 
-        public static string MapDatabasePath(string? connectionString, IWebHostEnvironment env)
+        public static DataTable GetRecord(FormModel formModel)
+        {
+            FormService formService = formModel.HttpContext?.RequestServices.GetService<FormService>(); 
+            if (formService == null)
+            {
+                throw new Exception("FormService not registered with the dependency injection container.s");
+            }
+            return formService.GetRecordDataTable(formModel).Result;
+        }
+
+        public static bool RecordExists(QueryCommandConfig query, string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration)
+        {
+            using (var connection = GetConnection(connectionAlias, dataSourceType, configuration))
+            {
+                connection.Open();
+                DataTable dataTable = DbHelper.RunQuery(query, connection);
+                return (dataTable.Rows.Count > 0);
+            }
+        }
+
+
+        public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
+        {
+            var connectionString = configuration.GetConnectionString(connectionAlias);
+
+            if (connectionString == null)
+            {
+                if (configuration.ConfigValue(ConfigurationHelper.AppSetting.AllowConnectionString).ToLower() == "true")
+                {
+                    return connectionAlias;
+                }
+                else
+                {
+                    throw new Exception($"Connection alias <b>{connectionAlias}</b> not found. To allow direct connection string use set appSetting <b>AllowConnectionString</b> to <b>true</b>");
+                }
+            }
+            
+            return connectionString;
+        }
+
+        public static string MapDatabasePath(string connectionString, IWebHostEnvironment env)
         {
             if (string.IsNullOrEmpty(connectionString))
                 return string.Empty;
@@ -85,9 +132,9 @@ namespace DbNetSuiteCore.Helpers
                     assemblyName = "MySqlConnector";
                     connectionName = "MySqlConnection";
                     break;
-                case DataSourceType.Excel:
-                    assemblyName = "System.Data.OleDb";
-                    connectionName = "OleDbConnection";
+                case DataSourceType.Oracle:
+                    assemblyName = "Oracle.ManagedDataAccess";
+                    connectionName = "Client.OracleConnection";
                     break;
                 default:
                     throw new NotImplementedException($"Custom connection not supported for {dataSourceType} data source type");
@@ -103,41 +150,76 @@ namespace DbNetSuiteCore.Helpers
             }
             Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
 
+            if (connectionType == null)
+            {
+                throw new Exception($"Unable to find connection type ({connectionName}) in data provider ({assemblyName}).");
+            }
+
             Object[] args = new Object[1];
             args[0] = connectionString;
 
-            return (IDbConnection)Activator.CreateInstance(connectionType!, args);
+            try
+            {
+                var instance = Activator.CreateInstance(connectionType, args) as IDbConnection;
+
+                if (instance == null)
+                {
+                    throw new Exception($"Unable to create instance of connection type ({connectionName}) in data provider ({assemblyName}).");
+                }
+
+                return instance;
+            }
+            catch (Exception)
+            {
+                throw new Exception($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>");
+            }
         }
 
-        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, Dictionary<string, object>? @params = null, CommandType commandType = CommandType.Text)
+        public static IDbCommand ConfigureCommand(CommandConfig commandConfig, IDbConnection connection, CommandType commandType = CommandType.Text)
         {
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = sql.Trim();
+            command.CommandText = commandConfig.Sql.Trim();
             command.CommandType = commandType;
             command.Parameters.Clear();
-            command.CommandText = sql.Trim();
-            AddCommandParameters(command, @params);
+            AddCommandParameters(command, commandConfig);
             return command;
         }
 
-        public static void AddCommandParameters(IDbCommand command, Dictionary<string, object>? @params)
+        public static IDbCommand ConfigureCommand(string sql, IDbConnection connection, CommandType commandType = CommandType.Text)
         {
-            if (@params == null)
+            IDbCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandType = commandType;
+            return command;
+        }
+
+        public static string StripColumnRename(string columnExpression)
+        {
+            string[] columnParts = columnExpression.Split(')');
+            columnParts[columnParts.Length - 1] = Regex.Replace(columnParts[columnParts.Length - 1], " as .*", "", RegexOptions.IgnoreCase);
+            columnParts[0] = Regex.Replace(columnParts[0], "unique |distinct ", "", RegexOptions.IgnoreCase);
+
+            return String.Join(")", columnParts);
+        }
+
+        public static void AddCommandParameters(IDbCommand command, CommandConfig commandConfig)
+        {
+            if (commandConfig.Params == null)
                 return;
 
-            foreach (string key in @params.Keys)
+            foreach (string key in commandConfig.Params.Keys)
             {
                 IDbDataParameter dbParam;
 
-                if (@params[key] is IDbDataParameter)
+                if (commandConfig.Params[key] is IDbDataParameter)
                 {
-                    dbParam = (IDbDataParameter)@params[key];
+                    dbParam = (IDbDataParameter)commandConfig.Params[key];
                 }
                 else
                 {
                     dbParam = command.CreateParameter();
-                    dbParam.ParameterName = ParameterName(key);
-                    dbParam.Value = @params[key];
+                    dbParam.ParameterName = ParameterName(key, commandConfig.DataSourceType);
+                    dbParam.Value = commandConfig.Params[key];
                 }
 
                 if (dbParam.Value == null)
@@ -149,9 +231,16 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-        public static string ParameterName(string key, bool parameterValue = false)
+        public static string ParameterName(string key, DataSourceType dataSourceType, bool parameterValue = false)
         {
             var template = "@{0}";
+
+            switch(dataSourceType)
+            {
+                case DataSourceType.Oracle:
+                    template = ":{0}";
+                    break;
+            }
             if (key.Length > 0)
                 if (template.Substring(0, 1) == key.Substring(0, 1))
                     return key;
@@ -183,26 +272,27 @@ namespace DbNetSuiteCore.Helpers
         {
             string connectionString = GetConnectionString(connectionAlias, configuration);
             var client = new MongoClient(connectionString);
-            return client.GetDatabase(database).ListCollectionNames().ToList(); 
+            return client.GetDatabase(database).ListCollectionNames().ToList();
         }
 
-        public static List<string> GetTables(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment? webHostEnvironment = null)
+        public static List<string> GetTables(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment webHostEnvironment = null)
         {
             List<string> tables = new List<string>();
 
-            var connection = GetConnection(connectionAlias, dataSourceType, configuration, webHostEnvironment);
-            connection.Open();
-            switch (dataSourceType)
+            using (var connection = GetConnection(connectionAlias, dataSourceType, configuration, webHostEnvironment))
             {
-                case DataSourceType.MSSQL:
-                    tables = LoadMSSQLTables(connection as SqlConnection);
-                    break;
-                default:
-                    tables = LoadSchemaTables(dataSourceType, connection);
-                    break;
-            }
+                connection.Open();
 
-            connection.Close();
+                if (connection is SqlConnection sqlConnection)
+                {
+                    tables = LoadMSSQLTables(sqlConnection);
+                }
+                else
+                {
+                    tables = LoadSchemaTables(dataSourceType, connection);
+                }
+                connection.Close();
+            }
 
             return tables;
         }
@@ -226,6 +316,13 @@ namespace DbNetSuiteCore.Helpers
             if (userDefined && TextHelper.IsAlphaNumeric(expression))
             {
                 return expression;
+            }
+
+            switch (dataSourceType)
+            {
+                case DataSourceType.PostgreSql:
+                    expression = expression.ToLower();
+                    break;
             }
 
             return QualifyTemplate(dataSourceType).Replace("@", expression);
@@ -277,12 +374,13 @@ namespace DbNetSuiteCore.Helpers
                 case DataSourceType.MySql:
                     sql = "SELECT CONCAT(`table_schema`,'.',`table_name`) AS name  FROM information_schema.tables order by 1";
                     break;
+                case DataSourceType.Oracle:
+                    sql = "select table_name as name from user_tables union select view_name as name from user_views order by 1";
+                    break;
             }
-            var command = ConfigureCommand(sql, connection);
-
-            DataTable schemaTable = new DataTable();
-            schemaTable.Load(command.ExecuteReader(CommandBehavior.Default));
-
+           
+            DataTable schemaTable = QueryToDataTable(new QueryCommandConfig() { Sql = sql },connection);
+ 
             foreach (DataRow dataRow in schemaTable.Rows)
             {
                 tables.Add($"{dataRow[0]}");
@@ -294,6 +392,14 @@ namespace DbNetSuiteCore.Helpers
             }
 
             return tables;
+        }
+
+        private static DataTable QueryToDataTable(QueryCommandConfig query, IDbConnection connection)
+        {
+            var command = ConfigureCommand(query, connection);
+            DataTable dataTable = new DataTable();
+            dataTable.Load(command.ExecuteReader(CommandBehavior.Default));
+            return dataTable;
         }
         private static void LoadMongoDBCollections(IMongoDatabase database, List<string> tables)
         {

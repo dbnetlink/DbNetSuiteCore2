@@ -50,7 +50,7 @@ public class RazorViewToStringRenderer
         }
     }
 
-    public async Task<string> RenderPageToStringAsync<TModel>(string viewName, TModel model )
+    public async Task<string> RenderPageToStringAsync<TModel>(string viewName, TModel model)
     {
         return await RenderViewToStringAsync(viewName, model, true);
     }

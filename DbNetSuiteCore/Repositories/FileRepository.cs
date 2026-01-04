@@ -5,7 +5,7 @@ namespace DbNetSuiteCore.Repositories
 {
     public class FileRepository
     { 
-        protected MemoryCacheEntryOptions GetCacheOptions(GridModel gridModel)
+        protected MemoryCacheEntryOptions GetCacheOptions()
         {
             return new MemoryCacheEntryOptions()
                        .SetSlidingExpiration(TimeSpan.FromMinutes(1))

@@ -1,0 +1,757 @@
+﻿using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Repositories;
+using System.Data;
+using System.Text;
+using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Extensions;
+using System.Text.RegularExpressions;
+
+namespace DbNetSuiteCore.Services
+{
+    public class ComponentService
+    {
+        protected readonly IMSSQLRepository _msSqlRepository;
+        protected readonly ISQLiteRepository _sqliteRepository;
+        protected readonly RazorViewToStringRenderer _razorRendererService;
+        protected readonly IJSONRepository _jsonRepository;
+        protected readonly IFileSystemRepository _fileSystemRepository;
+        protected readonly IMySqlRepository _mySqlRepository;
+        protected readonly IPostgreSqlRepository _postgreSqlRepository;
+        protected readonly IExcelRepository _excelRepository;
+        protected readonly IMongoDbRepository _mongoDbRepository;
+        protected readonly IOracleRepository _oracleRepository;
+
+        protected HttpContext _context;
+        protected readonly IConfiguration _configuration;
+        protected readonly IWebHostEnvironment _webHostEnvironment;
+        protected readonly ILoggerFactory _loggerFactory = null;
+        protected readonly ILogger _logger = null;
+
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory)
+        {
+            _msSqlRepository = msSqlRepository;
+            _razorRendererService = razorRendererService;
+            _sqliteRepository = sqliteRepository;
+            _jsonRepository = jsonRepository;
+            _fileSystemRepository = fileSystemRepository;
+            _mySqlRepository = mySqlRepository;
+            _postgreSqlRepository = postgreSqlRepository;
+            _excelRepository = excelRepository;
+            _mongoDbRepository = mongoDbRepository;
+            _oracleRepository = oracleRepository;
+            _configuration = configuration;
+            _webHostEnvironment = webHostEnvironment;
+            if (loggerFactory != null)
+            {
+                _loggerFactory = loggerFactory;
+                _logger = loggerFactory.CreateLogger(nameof(DbNetSuiteCore));
+            }
+        }
+
+        protected async Task<Byte[]> HandleError(Exception ex, HttpContext context)
+        {            
+            if (_logger != null)
+            {
+                _logger.LogError(ex, "Error processing DbNetSuiteCore control");
+            }
+            context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
+            return await View("__Error", ex);
+        }
+        protected void ValidateModel(ComponentModel componentModel)
+        {
+            if (componentModel.TriggerName != TriggerNames.InitialLoad)
+            {
+                return;
+            }
+
+            if (componentModel is GridModel)
+            {
+                var gridModel = (GridModel)componentModel;
+
+                var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
+                if (primaryKeyAssigned == false)
+                {
+                    if (gridModel.ViewDialog != null)
+                    {
+                        throw new Exception("A column designated as a <b>PrimaryKey</b> is required for the view dialog");
+                    }
+
+                    if (gridModel.GetLinkedControlIds().Any())
+                    {
+                        throw new Exception("A parent control must have a column designated as a <b>PrimaryKey</b>");
+                    }
+                }
+
+                if (gridModel.GetLinkedControlIds().Any())
+                {
+                    if (gridModel.RowSelection != RowSelection.Single)
+                    {
+                        throw new Exception("A parent grid control must have <b>RowSelection</b> set to <b>Single</b>");
+                    }
+                }
+
+                switch (componentModel.DataSourceType)
+                {
+                    case DataSourceType.JSON:
+                    case DataSourceType.FileSystem:
+                    case DataSourceType.Excel:
+                        gridModel.Columns.ToList().ForEach(c => c.Editable = false);
+                        break;
+                }
+            }
+
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.MongoDB:
+                case DataSourceType.SQLite:
+                case DataSourceType.MSSQL:
+                case DataSourceType.MySql:
+                case DataSourceType.PostgreSql:
+                case DataSourceType.Oracle:
+                    if (string.IsNullOrEmpty(componentModel.ConnectionAlias) && componentModel.IsLinked == false)
+                    {
+                        throw new Exception($"The ConnectionAlias must be specified if the control is not linked to a parent control (<b>{componentModel.TableName}</b>)");
+                    }
+                    break;
+            }
+
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.MongoDB:
+                    if (string.IsNullOrEmpty(componentModel.DatabaseName))
+                    {
+                        throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
+                    }
+                    break;
+            }
+
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.FileSystem:
+                    break;
+                default:
+                    if (componentModel.IsLinked && componentModel.GetColumns().Any(c => c.ForeignKey) == false && ((componentModel as FormModel)?.OneToOne ?? false == false) == false)
+                    {
+                        throw new Exception("A linked control must have a column designated as a <b>ForeignKey</b>");
+                    }
+                    break;
+            }
+        }
+
+        protected void AssignParentModel(ComponentModel componentModel)
+        {
+            componentModel.HttpContext = _context;
+            var primaryKey = RequestHelper.FormValue("primaryKey", string.Empty, _context);
+            var foreignKey = RequestHelper.FormValue("foreignKey", string.Empty, _context);
+
+            try
+            {
+                componentModel.AssignParentModel(_context, _configuration);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error parsing page data: {ex.Message}", ex);
+            }
+
+
+            if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)
+            {
+                componentModel.Url = primaryKey;
+            }
+            else
+            {
+            //    componentModel.ParentKey = primaryKey ?? string.Empty;
+            }
+
+            if (componentModel.IsLinked && componentModel is FormModel)
+            {
+                var formModel = (componentModel as FormModel)!;
+                var foreignKeyColumn = formModel.Columns.FirstOrDefault(c => c.ForeignKey);
+                if (foreignKeyColumn != null)
+                {
+                    switch (componentModel.TriggerName)
+                    {
+                        case TriggerNames.Apply:
+                        case TriggerNames.Insert:
+                            if (formModel.Mode == FormMode.Insert)
+                            {
+                                if (foreignKeyColumn.InitialValue != null)
+                                {
+                                    formModel.FormValues[foreignKeyColumn.ColumnName] = foreignKeyColumn.InitialValue?.ToString() ?? string.Empty;
+                                }
+                            }
+                            break;
+                        default:
+                            if (string.IsNullOrEmpty(foreignKey) == false)
+                            {
+                                var foreignKeyValue = TextHelper.DeobfuscateKey<List<string>>(foreignKey ?? string.Empty);
+
+                                if ((foreignKeyValue ?? new List<string>()).Any())
+                                {
+                                    foreignKeyColumn.InitialValue = foreignKeyValue!.First();
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        protected async Task<Byte[]> View<TModel>(string viewName, TModel model)
+        {
+            return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
+        }
+
+        protected async Task ConfigureColumns(ComponentModel componentModel)
+        {
+            componentModel.SetColumns(ColumnsHelper.MoveDataOnlyColumnsToEnd(componentModel.GetColumns()).ToList());
+
+            DataTable schema = await GetColumns(componentModel);
+
+            if (componentModel.GetColumns().Any() == false)
+            {
+                switch (componentModel.DataSourceType)
+                {
+                    case DataSourceType.MSSQL:
+                    case DataSourceType.MySql:
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
+                    case DataSourceType.Oracle:
+                        componentModel.SetColumns(schema.Rows.Cast<DataRow>().Where(r => IsRowHidden(r) == false).Select(r => componentModel.NewColumn(r, componentModel.DataSourceType)).Where(c => c.Valid).ToList());
+                        break;
+                    default:
+                        componentModel.SetColumns(schema.Columns.Cast<DataColumn>().Select(c => componentModel.NewColumn(c, componentModel.DataSourceType)).ToList());
+                        break;
+                }
+
+                if (componentModel is FormModel formModel)
+                {   
+                    formModel.Columns = formModel.Columns.Where(c => c.DataType != typeof(Byte[]));
+                }
+
+                ColumnsHelper.QualifyColumnExpressions(componentModel.GetColumns(), componentModel.DataSourceType);
+            }
+            else
+            {
+                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+
+                switch (componentModel.DataSourceType)
+                {
+                    case DataSourceType.FileSystem:
+                    case DataSourceType.JSON:
+                        foreach (ColumnModel column in componentModel.GetColumns())
+                        {
+                            DataColumn dataColumn = dataColumns.FirstOrDefault(dc => dc.ColumnName.ToLower() == column.Expression.ToLower());
+                            if (dataColumn != null)
+                            {
+                                column.Update(dataColumn, componentModel.DataSourceType);
+                            }
+                        }
+                        break;
+                    case DataSourceType.MSSQL:
+                    case DataSourceType.MySql:
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
+                    case DataSourceType.Oracle:
+                        foreach (ColumnModel column in componentModel.GetColumns())
+                        {
+                            DataRow dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
+                            if (dataRow != null)
+                            {
+                                column.Update(dataRow, componentModel.DataSourceType);
+                            }
+                        }
+                        if (componentModel.GetColumns().Any(c => string.IsNullOrEmpty(c.Name)))
+                        {
+                            componentModel.IgnoreSchemaTable = true;
+                            schema = await GetColumns(componentModel);
+                            dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+                            for (var i = 0; i < dataColumns.Count; i++)
+                            {
+                                componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
+                            }
+                        }
+                        break;
+                    default:
+                        for (var i = 0; i < dataColumns.Count; i++)
+                        {
+                            componentModel.GetColumns().ToList()[i].Update(dataColumns[i], componentModel.DataSourceType);
+                        }
+                        break;
+                }
+            }
+
+            componentModel.SetColumns(componentModel.GetColumns().Where(c => c.Valid));
+
+            for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
+            {
+                componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
+            }
+
+            ValidateModel(componentModel);
+        }
+
+        private bool IsRowHidden(DataRow dataRow)
+        {
+            if (string.IsNullOrEmpty((string)dataRow["ColumnName"]))
+            {
+                return true;
+            }
+            DataColumn dataColumn = dataRow.Table.Columns["IsHidden"];
+            if (dataColumn != null)
+            {
+                if (dataRow[dataColumn] != DBNull.Value)
+                {
+                    return (bool)dataRow["IsHidden"];
+                }
+            }
+            return false;
+        }
+
+        protected void ConfigureColumnsForStoredProcedure(ComponentModel componentModel)
+        {
+            DataTable schema = componentModel.Data;
+
+            if (componentModel.GetColumns().Any() == false)
+            {
+                componentModel.SetColumns(schema.Columns.Cast<DataColumn>().Select(dc => componentModel.NewColumn(dc, componentModel.DataSourceType)).ToList());
+                ColumnsHelper.QualifyColumnExpressions(componentModel.GetColumns(), componentModel.DataSourceType);
+            }
+            else
+            {
+                var columns = componentModel.GetColumns();
+                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
+
+                for (var i = 0; i < dataColumns.Count; i++)
+                {
+                    var dataColumn = dataColumns[i];
+                    var column = columns.FirstOrDefault(c => c.Expression.ToLower() == dataColumn.ColumnName.ToLower());
+
+                    if (column == null)
+                    {
+                        column = componentModel.NewColumn(dataColumn, componentModel.DataSourceType);
+                    }
+                    else
+                    {
+                        column.Update(dataColumn, componentModel.DataSourceType);
+                    }
+                    componentModel.SetColumns(componentModel.GetColumns().Append(column));
+                }
+            }
+            for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
+            {
+                componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
+            }
+        }
+
+        private async Task<DataTable> GetColumns(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.GetColumns(componentModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.GetColumns(componentModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.GetColumns(componentModel);
+                case DataSourceType.JSON:
+                    return await _jsonRepository.GetColumns((GridSelectModel)componentModel, _context);
+                case DataSourceType.Excel:
+                    return _excelRepository.GetColumns((GridSelectModel)componentModel);
+                case DataSourceType.FileSystem:
+                    return _fileSystemRepository.GetColumns(componentModel);
+                case DataSourceType.MongoDB:
+                    return await _mongoDbRepository.GetColumns(componentModel);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.GetColumns(componentModel);
+                default:
+                    return await _msSqlRepository.GetColumns(componentModel);
+            }
+        }
+
+        protected async Task GetRecords(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.JSON:
+                    await _jsonRepository.GetRecords((GridSelectModel)componentModel, _context);
+                    break;
+                case DataSourceType.Excel:
+                    _excelRepository.GetRecords((GridSelectModel)componentModel);
+                    break;
+                case DataSourceType.FileSystem:
+                    _fileSystemRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecords(componentModel);
+                    break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.GetRecords(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetRecords(componentModel);
+                    break;
+            }
+        }
+
+        protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.PrimaryKeyExists(componentModel);
+                case DataSourceType.MSSQL:
+                    return await _msSqlRepository.PrimaryKeyExists(componentModel);
+            }
+
+            return false;
+        }
+
+        protected async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
+        {
+            switch (formModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.ValueIsUnique(formModel, formColumn);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.ValueIsUnique(formModel, formColumn);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.ValueIsUnique(formModel, formColumn);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.ValueIsUnique(formModel, formColumn);
+                case DataSourceType.MSSQL:
+                    return await _msSqlRepository.ValueIsUnique(formModel, formColumn);
+                default:
+                    return true;
+            }
+        }
+
+        protected async Task GetRecord(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.JSON:
+                    await _jsonRepository.GetRecord((GridSelectModel)componentModel, _context);
+                    break;
+                case DataSourceType.Excel:
+                    _excelRepository.GetRecord((GridSelectModel)componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.GetRecord(componentModel);
+                    break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.GetRecord(componentModel);
+                    break;
+                default:
+                    await _msSqlRepository.GetRecord(componentModel);
+                    break;
+            }
+        }
+
+        internal async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    return await _sqliteRepository.GetRecordDataTable(componentModel);
+                case DataSourceType.MySql:
+                    return await _mySqlRepository.GetRecordDataTable(componentModel);
+                case DataSourceType.PostgreSql:
+                    return await _postgreSqlRepository.GetRecordDataTable(componentModel);
+                case DataSourceType.Oracle:
+                    return await _oracleRepository.GetRecordDataTable(componentModel);
+                default:
+                    return await _msSqlRepository.GetRecordDataTable(componentModel);
+            }
+        }
+
+
+        protected async Task GetLookupOptions(ComponentModel componentModel)
+        {
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.MySql:
+                    await _mySqlRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.GetLookupOptions(componentModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    break;
+                default:
+                    await _msSqlRepository.GetLookupOptions(componentModel);
+                    break;
+            }
+        }
+
+        protected void AssignSearchDialogFilter(ComponentModel componentModel)
+        {
+            componentModel.SearchDialogFilter = new List<SearchDialogFilter>();
+            var operatorList = RequestHelper.FormValueList("searchDialogOperator", _context).Select(f => f.Trim()).ToList();
+            var value1List = RequestHelper.FormValueList("searchDialogValue1", _context).Select(f => f.Trim()).ToList();
+            var value2List = RequestHelper.FormValueList("searchDialogValue2", _context).Select(f => f.Trim()).ToList();
+            var keyList = RequestHelper.FormValueList("searchDialogKey", _context).Select(f => f.Trim()).ToList();
+
+            for (var i = 0; i < operatorList.Count; i++)
+            {
+                if (string.IsNullOrEmpty(operatorList[i]))
+                {
+                    continue;
+                }
+
+                var searchDialogFilter = new SearchDialogFilter() { Operator = Enum.Parse<SearchOperator>(operatorList[i]), ColumnKey = keyList[i] };
+                ColumnModel columnModel = componentModel.GetColumns().FirstOrDefault(c => c.Key == searchDialogFilter.ColumnKey);
+
+                if (columnModel == null)
+                {
+                    continue;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.IsEmpty:
+                    case SearchOperator.IsNotEmpty:
+                    case SearchOperator.True:
+                    case SearchOperator.False:
+                        componentModel.SearchDialogFilter.Add(searchDialogFilter);
+                        continue;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.In:
+                    case SearchOperator.NotIn:
+                        /*
+                        var paramList = new List<object?>();
+                        foreach (var value in value1List[i].Split(','))
+                        {
+                            paramList.Add(ComponentModelExtensions.ParamValue(value, columnModel, componentModel.DataSourceType));
+                        }
+                        */
+                        searchDialogFilter.Value1 = value1List[i];
+                        break;
+                    default:
+                        searchDialogFilter.Value1 = value1List[i];// ComponentModelExtensions.ParamValue(value1List[i], columnModel, componentModel.DataSourceType);
+                        break;
+                }
+
+                switch (searchDialogFilter.Operator)
+                {
+                    case SearchOperator.Between:
+                    case SearchOperator.NotBetween:
+                        if (string.IsNullOrEmpty(value2List[i]))
+                        {
+                            continue;
+                        }
+                        searchDialogFilter.Value2 = value2List[i];// ComponentModelExtensions.ParamValue(value2List[i], columnModel, componentModel.DataSourceType);
+                        break;
+                }
+
+                componentModel.SearchDialogFilter.Add(searchDialogFilter);
+            }
+        }
+
+        protected void CheckLicense(ComponentModel componentModel)
+        {
+            if (componentModel.Uninitialised)
+            {
+             //   componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
+            }
+        }
+
+        protected void ValidateFormValue(FormColumn formColumn, string value, ResourceNames resourceName, ComponentModel componentModel)
+        {
+            object paramValue;
+
+            switch (resourceName)
+            {
+                case ResourceNames.Required:
+                    if (formColumn.DataType != typeof(Boolean))
+                    {
+                        bool primaryKeyRequired = (formColumn is FormColumn) ? ((FormColumn)formColumn).PrimaryKeyRequired : false;
+
+                        if (formColumn.PrimaryKey && primaryKeyRequired == false)
+                        {
+                            break;
+                        }
+                        formColumn.InError = string.IsNullOrEmpty(value) && formColumn.Required;
+                    }
+                    break;
+                case ResourceNames.DataFormatError:
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+                    if (paramValue == null)
+                    {
+                        formColumn.InError = true;
+                    }
+                    break;
+                case ResourceNames.PatternError:
+                    if (string.IsNullOrEmpty(value) == false && string.IsNullOrEmpty(formColumn.Pattern) == false)
+                    {
+                        if (new Regex(formColumn.Pattern).IsMatch(value) == false)
+                        {
+                            formColumn.InError = true;
+                        }
+                    }
+                    break;
+                case ResourceNames.MinCharsError:
+                    if (formColumn.MinLength == null)
+                    {
+                        break;
+                    }
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+                    if (paramValue == null)
+                    {
+                        break;
+                    }
+                    CheckForLengthError(ResourceNames.MinCharsError, formColumn.MinLength, paramValue, formColumn, componentModel);
+                    break;
+                case ResourceNames.MaxCharsError:
+                    if (formColumn.MaxLength == null)
+                    {
+                        break;
+                    }
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+                    if (paramValue == null)
+                    {
+                        break;
+                    }
+                    CheckForLengthError(ResourceNames.MaxCharsError, formColumn.MaxLength, paramValue, formColumn, componentModel);
+                    break;
+                case ResourceNames.MinValueError:
+                    if (formColumn.MinValue == null && formColumn.MaxValue == null)
+                    {
+                        break;
+                    }
+                    paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+
+                    bool lessThanMinimum = false;
+                    bool greaterThanMaximum = false;
+
+                    if (formColumn.MinValue != null)
+                    {
+                        lessThanMinimum = Compare(paramValue!, formColumn.MinValue) < 0;
+                    }
+
+                    if (formColumn.MaxValue != null)
+                    {
+                        greaterThanMaximum = Compare(paramValue!, formColumn.MaxValue) > 0;
+                    }
+
+                    if (lessThanMinimum)
+                    {
+                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MinValueError), $"<b>{formColumn.Label}</b>&nbsp;", formColumn.MinValue);
+                        formColumn.InError = true;
+                    }
+
+                    if (greaterThanMaximum)
+                    {
+                        formColumn.InError = true;
+                        componentModel.Message = string.Format(ResourceHelper.GetResourceString(ResourceNames.MaxValueError), $"<b>{formColumn.Label}</b>&nbsp;", formColumn.MaxValue);
+                    }
+                    break;
+                case ResourceNames.NotUnique:
+                    if (formColumn.Unique)
+                    {
+                        paramValue = ComponentModelExtensions.ParamValue(value, formColumn, componentModel.DataSourceType);
+                        if (paramValue == null)
+                        {
+                            break;
+                        }
+                        if (componentModel is FormModel formModel)
+                        {
+                            CheckForUniqueness(resourceName, paramValue, formColumn, formModel);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        protected void CheckForLengthError(ResourceNames resourceName, int? length, object paramValue, FormColumn formColumn, ComponentModel componentModel)
+        {
+            if (length.HasValue)
+            {
+                if ((resourceName == ResourceNames.MinCharsError && length.Value > formColumn.ToStringOrEmpty(paramValue).Length) ||
+                    (resourceName == ResourceNames.MaxCharsError && length.Value < formColumn.ToStringOrEmpty(paramValue).Length))
+                {
+                    componentModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", length.Value.ToString());
+                    formColumn.InError = true;
+                    componentModel.MessageType = MessageType.Error;
+                }
+            }
+        }
+
+        protected void CheckForUniqueness(ResourceNames resourceName, object paramValue, FormColumn formColumn, FormModel formModel)
+        {
+            if (ValueIsUnique(formModel, formColumn).Result == false)
+            {
+                formModel.Message = ResourceHelper.GetResourceString(resourceName).Replace("{0}", $"&nbsp;<b>{formColumn.Label}</b>&nbsp;");
+                formColumn.InError = true;
+                formModel.MessageType = MessageType.Error;
+            }
+        }
+
+        protected int Compare(object paramValue, object compareValue)
+        {
+            try
+            {
+                if (paramValue.GetType() != compareValue.GetType())
+                {
+                    compareValue = Convert.ChangeType(compareValue, paramValue.GetType());
+                }
+                string typeName = paramValue.GetType().Name;
+                switch (typeName)
+                {
+                    case nameof(Int16):
+                    case nameof(Int32):
+                    case nameof(Int64):
+                        return Comparer<Int64>.Default.Compare(Convert.ToInt64(paramValue), Convert.ToInt64(compareValue));
+                    case nameof(Decimal):
+                        return Comparer<Decimal>.Default.Compare(Convert.ToDecimal(paramValue), Convert.ToDecimal(compareValue));
+                    case nameof(Single):
+                    case nameof(Double):
+                        return Comparer<Double>.Default.Compare(Convert.ToDouble(paramValue), Convert.ToDouble(compareValue));
+                    case nameof(DateTime):
+                        return Comparer<DateTime>.Default.Compare(Convert.ToDateTime(paramValue), Convert.ToDateTime(compareValue));
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+
+            return 0;
+        }
+    }
+}

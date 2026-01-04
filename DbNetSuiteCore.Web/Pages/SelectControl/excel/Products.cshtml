@@ -1,0 +1,62 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var columns = new List<GridColumn>
+    {
+        new GridColumn("[Row ID]"){ Filter = FilterType.Default },
+        new GridColumn("[Order ID]"){ Filter = FilterType.Default },
+        new GridColumn("[Order Date]"){ Filter = FilterType.Default },
+        new GridColumn("[Ship Date]"),
+        new GridColumn("[Ship Mode]") { Filter = FilterType.Distinct},
+        new GridColumn("[Customer ID]"),
+        new GridColumn("[Customer Name]"),
+        new GridColumn("Segment"){ Filter = FilterType.Distinct},
+        new GridColumn("Country"),
+        new GridColumn("City"){  ForeignKey = true},
+        new GridColumn("State"){ Filter = FilterType.Distinct},
+        new GridColumn("[Postal Code]"),
+        new GridColumn("Region"){ Filter = FilterType.Distinct},
+        new GridColumn("[Product ID]"),
+        new GridColumn("Category"){ Filter = FilterType.Distinct},
+        new GridColumn("[Sub-Category]"){ Filter = FilterType.Distinct},
+        new GridColumn("[Product Name]"),
+        new GridColumn("Sales") { Format = "c",Filter = FilterType.Default},
+        new GridColumn("Quantity") { Filter = FilterType.Default},
+        new GridColumn("Discount") { Format = "p", Filter = FilterType.Default},
+        new GridColumn("Profit") { Format = "c", Filter = FilterType.Default}
+    };
+
+    var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Columns = columns, Caption = "Products" };
+    superstoreGrid.ClientEvents[GridClientEvent.PageLoaded] = "updateCaption";
+
+    var productSelect = new SelectModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Searchable = true, Distinct = true};
+    productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("City"),
+        new SelectColumn("State") {OptionGroup = true}
+    };
+    productSelect.FixedFilter = "City like 'A%'";
+    productSelect.LinkedControl = superstoreGrid;
+    productSelect.ClientEvents[SelectClientEvent.OptionSelected] = "getCaption";
+}
+
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productSelect))
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(superstoreGrid))
+
+<script>
+    var caption = ''
+
+    function getCaption(selectControl, args)
+    {
+        var selectedOption = args.selectedOptions[0]
+        if (selectedOption.value != '') {
+            caption = `Products - ${selectedOption.text} (${selectedOption.parentElement.label})`
+        }
+    }
+
+    function updateCaption(gridControl, args) {
+        gridControl.setCaption(caption)
+    }
+</script>

@@ -1,0 +1,24 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+
+@{
+    var columns = new List<GridColumn>
+    {
+        new GridColumn("Name") {},
+        new GridColumn("TagLine"),
+        new GridColumn("Link") {Format = FormatType.Url},
+        new GridColumn("ImgLink", "Image") {Format = FormatType.Image, RegularExpression = @"^.*?(?=,)"},
+        new GridColumn("Industry"),
+        new GridColumn("Votes", "Votes") {DataType = typeof(Int32)},
+        new GridColumn("PaymentStatus", "Status")
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.JSON, "/data/json/producthunt.json") { 
+        Columns = columns,
+        Cache = true
+    }))
+}
+

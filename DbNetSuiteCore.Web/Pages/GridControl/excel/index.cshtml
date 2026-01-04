@@ -1,0 +1,6 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.Excel, "/data/excel/superstore.xls") { }))

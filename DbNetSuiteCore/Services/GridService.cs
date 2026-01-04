@@ -1,158 +1,168 @@
-﻿using DbNetSuiteCore.Services.Interfaces;
-using DbNetSuiteCore.Repositories;
-using System.Reflection;
-using System.Text;
-using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Extensions;
-using System.Data;
-using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Enums;
-using Microsoft.AspNetCore.StaticFiles;
-using ClosedXML.Excel;
-using Newtonsoft.Json;
+﻿using ClosedXML.Excel;
 using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
+using System.Data;
+using System.Text;
 
 namespace DbNetSuiteCore.Services
 {
-    public class GridService : IGridService
+    public class GridService : ComponentService, IComponentService
     {
-        private readonly IMSSQLRepository _msSqlRepository;
-        private readonly ISQLiteRepository _sqliteRepository;
-        private readonly RazorViewToStringRenderer _razorRendererService;
-        private readonly IJSONRepository _jsonRepository;
-        private readonly IFileSystemRepository _fileSystemRepository;
-        private readonly IMySqlRepository _mySqlRepository;
-        private readonly IPostgreSqlRepository _postgreSqlRepository;
-        private readonly IExcelRepository _excelRepository;
-        private readonly IMongoDbRepository _mongoDbRepository;
-        private HttpContext? _context = null;
-        
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
         {
-            _msSqlRepository = msSqlRepository;
-            _razorRendererService = razorRendererService;
-            _sqliteRepository = sqliteRepository;
-            _jsonRepository = jsonRepository;
-            _fileSystemRepository = fileSystemRepository;
-            _mySqlRepository = mySqlRepository;
-            _postgreSqlRepository = postgreSqlRepository;
-            _excelRepository = excelRepository;
-            _mongoDbRepository = mongoDbRepository;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
         {
+            if (context.Request.Method != "POST")
+            {
+                return new byte[0];
+            }
+
             try
             {
                 _context = context;
                 switch (page.ToLower())
                 {
-                    case "css":
-                    case "js":
-                        return GetResources(page);
                     case "gridcontrol":
                         return await GridView();
                     default:
-                        return GetResource(page.Split(".").Last(), page.Split(".").First());
+                        return new byte[0];
                 }
             }
             catch (Exception ex)
             {
-                context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
-                return await View("Error", ex);
+                return await HandleError(ex, context);
             }
         }
 
         private async Task<Byte[]> GridView()
         {
             GridModel gridModel = GetGridModel() ?? new GridModel();
-
             gridModel.TriggerName = RequestHelper.TriggerName(_context);
 
-            if (gridModel.TriggerName == TriggerNames.InitialLoad)
-            {
-                ValidateGridModel(gridModel);
-            }
+            CheckLicense(gridModel);
 
             switch (gridModel.TriggerName)
             {
                 case TriggerNames.Download:
                     return await ExportRecords(gridModel);
+                case TriggerNames.Apply:
+                    return await ApplyUpdate(gridModel);
                 case TriggerNames.NestedGrid:
-                    return await View("Grid/Nested", ConfigureNestedGrid(gridModel));
+                    return await View("Grid/__Nested", ConfigureNestedGrid(gridModel));
                 case TriggerNames.ViewDialogContent:
-                    return await View("Grid/ViewDialogContent", await ViewDialogContent(gridModel));
+                    return await View("Grid/__ViewDialogContent", await ViewDialogContent(gridModel));
                 default:
-                    string viewName = gridModel.Uninitialised ? "Grid/Markup" : "Grid/Rows";
+                    string viewName = gridModel.Uninitialised ? "Grid/__Markup" : "Grid/__Rows";
                     return await View(viewName, await GetGridViewModel(gridModel));
             }
         }
 
-        private void ValidateGridModel(GridModel gridModel)
-        {
-            var primaryKeyAssigned = gridModel.Columns.Any(x => x.PrimaryKey);
-            if (gridModel.ViewDialog != null && primaryKeyAssigned == false)
-            {
-                throw new Exception("A column designated as a primary key is required for the view dialog");
-            }
-            if (gridModel.DataSourceType == DataSourceType.MongoDB && string.IsNullOrEmpty(gridModel.DatabaseName))
-            {
-                throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
-            }
-        }
-        private async Task<Byte[]> View<TModel>(string viewName, TModel model)
-        {
-            return Encoding.UTF8.GetBytes(await _razorRendererService.RenderViewToStringAsync($"Views/{viewName}.cshtml", model));
-        }
-
         private async Task<GridViewDialogViewModel> ViewDialogContent(GridModel gridModel)
         {
-            gridModel.ParentKey = RequestHelper.FormValue(TriggerNames.ViewDialogContent, "", _context);
             await GetRecord(gridModel);
             return new GridViewDialogViewModel(gridModel);
         }
 
         private async Task<GridViewModel> GetGridViewModel(GridModel gridModel)
         {
-            if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentKey) == false)
+            if (gridModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(gridModel.ParentModel?.Name) == false)
             {
                 FileSystemRepository.UpdateUrl(gridModel);
             }
 
             if (gridModel.IsStoredProcedure == false && gridModel.Uninitialised)
             {
-                await ConfigureGridColumns(gridModel);
+                await ConfigureColumns(gridModel);
+
+                if (gridModel.IsEditable && gridModel.Columns.Any(c => c.PrimaryKey) == false)
+                {
+                    throw new Exception("At least one grid column must be designated as a primary key for it to be editable");
+                }
+
+                foreach (var column in gridModel.Columns.Where(c => c.Editable))
+                {
+                    if (column.FormColumn != null)
+                    {
+                        column.FormColumn.Expression = column.Expression;
+                        ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
+                {
+
+                    PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.Initialisation), gridModel);
+                 
+                    if (string.IsNullOrEmpty(gridModel.Message) == false)
+                    {
+                        throw new Exception(gridModel.Message);
+                    }
+                }
             }
-            await GetRecords(gridModel);
+
+            await GetGridRecords(gridModel);
             if (gridModel.IsStoredProcedure && gridModel.Uninitialised)
             {
-                ConfigureGridColumnsForStoredProcedure(gridModel);
+                ConfigureColumnsForStoredProcedure(gridModel);
+            }
+
+            ConfigureFormColumns(gridModel);
+
+            if (gridModel.IncludeJsonData)
+            {
+                gridModel.JsonData = JsonConvert.SerializeObject(gridModel.Data);
             }
 
             gridModel.CurrentSortKey = RequestHelper.FormValue("sortKey", gridModel.CurrentSortKey, _context);
+            gridModel.FormValues.Clear();
+            gridModel.Columns.ToList().ForEach(c => c.LineInError.Clear());
 
-            var gridViewModel =  new GridViewModel(gridModel);
+            if (gridModel.SummaryModel == null)
+            {
+                gridModel.SummaryModel = new SummaryModel(gridModel);
+            }
+
+            var gridViewModel = new GridViewModel(gridModel);
 
             if (gridModel.DiagnosticsMode)
             {
-                gridViewModel.Diagnostics = RequestHelper.Diagnostics(_context);
+                gridViewModel.Diagnostics = RequestHelper.Diagnostics(_context, _configuration, _webHostEnvironment);
             }
-
+           
             return gridViewModel;
         }
 
-        private List<GridModel> ConfigureNestedGrid(GridModel gridModel)
+        private IEnumerable<GridViewModel> ConfigureNestedGrid(GridModel gridModel)
         {
             foreach (var nestedGrid in gridModel._NestedGrids)
             {
                 nestedGrid.IsNested = true;
-                nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
+                nestedGrid.Caption = string.Empty;
+                //nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
+                nestedGrid.AssignParentModel(_context, _configuration, "summarymodel");
                 nestedGrid.SetId();
 
                 if (gridModel.DataSourceType == DataSourceType.FileSystem)
                 {
-                    nestedGrid._NestedGrids.Add(gridModel._NestedGrids.First().DeepCopy());
+                    var nestedChildGrid = gridModel._NestedGrids.First().DeepCopy();
+                    if (nestedChildGrid != null)
+                    {
+                        nestedChildGrid.Url = $"{nestedChildGrid.Url}/{nestedGrid.ParentModel!.Name}";
+                        nestedChildGrid.HttpContext = _context;
+                        nestedGrid._NestedGrids.Add(nestedChildGrid);
+                    }
                 }
                 else if (string.IsNullOrEmpty(gridModel.ConnectionAlias) == false)
                 {
@@ -161,191 +171,25 @@ namespace DbNetSuiteCore.Services
                 }
             }
 
-            return gridModel._NestedGrids;
+            gridModel._NestedGrids.ForEach(g => g.HttpContext = _context);
+            return gridModel._NestedGrids.Select(g => new GridViewModel(g));
         }
 
-        private async Task ConfigureGridColumns(GridModel gridModel)
-        {
-            if (gridModel.Columns.Any(c => c.DataOnly))
-            {
-                List<GridColumn> gridColumns = gridModel.Columns.Where(c => c.DataOnly == false).ToList();
-                gridColumns.AddRange(gridModel.Columns.Where(c => c.DataOnly).ToList());
-                gridModel.Columns = gridColumns;
-            }
-
-            DataTable schema = await GetColumns(gridModel);
-
-            if (gridModel.Columns.Any() == false)
-            {
-                switch (gridModel.DataSourceType)
-                {
-                    case DataSourceType.MSSQL:
-                        gridModel.Columns = schema.Rows.Cast<DataRow>().Where(r => (bool)r["IsHidden"] == false).Select(r => new GridColumn(r)).Cast<GridColumn>().Where(c => c.Valid).ToList();
-                        break;
-                    default:
-                        gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(c => new GridColumn(c, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
-                        break;
-                }
-                
-                gridModel.QualifyColumnExpressions();
-            }
-            else
-            {
-                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-
-                if (gridModel.DataSourceType == DataSourceType.FileSystem)
-                {
-                    foreach (GridColumn gridColumn in gridModel.Columns)
-                    {
-                        gridColumn.Update(dataColumns.First(dc => dc.ColumnName == gridColumn.Expression), gridModel.DataSourceType);
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < dataColumns.Count; i++)
-                    {
-                        gridModel.Columns.ToList()[i].Update(dataColumns[i], gridModel.DataSourceType);
-                    }
-                }
-            }
-            for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
-            {
-                gridModel.Columns.ToList()[i].Ordinal = i + 1;
-            }
-        }
-
-        private void ConfigureGridColumnsForStoredProcedure(GridModel gridModel)
-        {
-            DataTable schema = gridModel.Data;
-
-            if (gridModel.Columns.Any() == false)
-            {
-                gridModel.Columns = schema.Columns.Cast<DataColumn>().Select(dc => new GridColumn(dc, gridModel.DataSourceType)).Cast<GridColumn>().ToList();
-                gridModel.QualifyColumnExpressions();
-            }
-            else
-            {
-                var gridColumns = gridModel.Columns.DeepCopy();
-                gridModel.Columns = new List<GridColumn>();
-                var dataColumns = schema.Columns.Cast<DataColumn>().ToList();
-
-                for (var i = 0; i < dataColumns.Count; i++)
-                {
-                    var dataColumn = dataColumns[i];
-                    var gridColumn = gridColumns.FirstOrDefault(c => c.Expression.ToLower() == dataColumn.ColumnName.ToLower());
-
-                    if (gridColumn == null)
-                    {
-                        gridColumn = new GridColumn(dataColumn, gridModel.DataSourceType);
-                    }
-                    else
-                    {
-                        gridColumn.Update(dataColumn, gridModel.DataSourceType);
-                    }
-                    gridModel.Columns = gridModel.Columns.Append(gridColumn);
-                }
-            }
-            for (var i = 0; i < gridModel.Columns.ToList().Count; i++)
-            {
-                gridModel.Columns.ToList()[i].Ordinal = i + 1;
-            }
-        }
-
-        private async Task GetRecord(GridModel gridModel)
-        {
-            /*
-            gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
-
-            if (gridModel.TriggerName == TriggerNames.LinkedGrid)
-            {
-                gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
-            }
-            */
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.JSON:
-                    await _jsonRepository.GetRecord(gridModel, _context);
-                    break;
-                case DataSourceType.Excel:
-                    await _excelRepository.GetRecord(gridModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecord(gridModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetRecord(gridModel);
-                    break;
-            }
-        }
-
-        private async Task GetRecords(GridModel gridModel)
+        private async Task GetGridRecords(GridModel gridModel)
         {
             gridModel.ConfigureSort(RequestHelper.FormValue("sortKey", string.Empty, _context));
 
-            if (gridModel.TriggerName == TriggerNames.LinkedGrid)
+            switch (gridModel.TriggerName)
             {
-                gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
+                case TriggerNames.ParentKey:
+                case TriggerNames.Refresh:
+                case TriggerNames.ApiRequestParameters:
+                    gridModel.ColumnFilter = gridModel.ColumnFilter.Select(s => s = string.Empty).ToList();
+                    gridModel.Columns.ToList().ForEach(c => c.DbLookupOptions = null);
+                    break;
             }
 
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.JSON:
-                    await _jsonRepository.GetRecords(gridModel, _context);
-                    break;
-                case DataSourceType.Excel:
-                    await _excelRepository.GetRecords(gridModel);
-                    break;
-                case DataSourceType.FileSystem:
-                    await _fileSystemRepository.GetRecords(gridModel, _context);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecords(gridModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetRecords(gridModel);
-                    break;
-            }
-        }
-
-        private async Task<DataTable> GetColumns(GridModel gridModel)
-        {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.GetColumns(gridModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.GetColumns(gridModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetColumns(gridModel);
-                case DataSourceType.JSON:
-                    return await _jsonRepository.GetColumns(gridModel, _context);
-                case DataSourceType.Excel:
-                    return await _excelRepository.GetColumns(gridModel);
-                case DataSourceType.FileSystem:
-                    return await _fileSystemRepository.GetColumns(gridModel, _context);
-                case DataSourceType.MongoDB:
-                    return await _mongoDbRepository.GetColumns(gridModel);
-                default:
-                    return await _msSqlRepository.GetColumns(gridModel);
-            }
+            await GetRecords(gridModel);
         }
 
         private async Task<Byte[]> ExportRecords(GridModel gridModel)
@@ -378,7 +222,7 @@ namespace DbNetSuiteCore.Services
 
                 foreach (GridColumn columnModel in gridModel.Columns)
                 {
-                    DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
+                    DataColumn dataColumn = gridModel.GetDataColumn(columnModel);
 
                     if (dataColumn != null)
                     {
@@ -402,7 +246,7 @@ namespace DbNetSuiteCore.Services
                 IEnumerable<string> fields = new List<string>();
                 foreach (GridColumn columnModel in gridModel.Columns)
                 {
-                    DataColumn? dataColumn = gridModel.GetDataColumn(columnModel);
+                    DataColumn dataColumn = gridModel.GetDataColumn(columnModel);
 
                     if (dataColumn != null)
                     {
@@ -412,24 +256,32 @@ namespace DbNetSuiteCore.Services
                 }
                 sb.AppendLine(string.Join(",", fields));
             }
-            _context.Response.ContentType = GetMimeTypeForFileExtension(".csv");
 
+            SetMimeType(_context, ".csv");
             return Encoding.UTF8.GetBytes(sb.ToString());
+        }
+
+        private void SetMimeType(HttpContext httpContext, string extension)
+        {
+            if (httpContext != null)
+            {
+                httpContext.Response.ContentType = GetMimeTypeForFileExtension(extension);
+            }
         }
 
         private async Task<Byte[]> ConvertDataTableToHTML(GridModel gridModel)
         {
             gridModel.PageSize = gridModel.Data.Rows.Count;
-            _context.Response.ContentType = GetMimeTypeForFileExtension(".html");
+            SetMimeType(_context, ".html");
             var gridViewModel = await GetGridViewModel(gridModel);
             gridViewModel.RenderMode = RenderMode.Export;
-            return await View("Grid/Export", gridViewModel);
+            return await View("Grid/__Export", gridViewModel);
         }
 
         private byte[] ConvertDataTableToJSON(DataTable dataTable)
         {
             var json = JsonConvert.SerializeObject(dataTable, Newtonsoft.Json.Formatting.Indented);
-            _context.Response.ContentType = GetMimeTypeForFileExtension(".json");
+            SetMimeType(_context, ".json");
             return Encoding.UTF8.GetBytes(json);
         }
 
@@ -479,22 +331,22 @@ namespace DbNetSuiteCore.Services
 
                     foreach (var column in gridModel.Columns)
                     {
-                        DataColumn? dataColumn = gridModel.GetDataColumn(column);
+                        DataColumn dataColumn = gridModel.GetDataColumn(column);
 
                         if (dataColumn == null)
                         {
                             continue;
                         }
 
-                        object value = row[dataColumn];
+                        string value = row[dataColumn]?.ToString() ?? string.Empty;
                         var cell = worksheet.Cell(rowIdx, colIdx);
                         cell.Value = column.FormatValue(value)?.ToString() ?? string.Empty;
 
                         if (columnWidths.ContainsKey(column.ColumnName))
                         {
-                            if (value.ToString().Length > columnWidths[column.ColumnName])
+                            if (value.Length > columnWidths[column.ColumnName])
                             {
-                                columnWidths[column.ColumnName] = value.ToString().Length;
+                                columnWidths[column.ColumnName] = value.Length;
                             }
                         }
 
@@ -524,7 +376,7 @@ namespace DbNetSuiteCore.Services
                     }
                 }
 
-                _context.Response.ContentType = GetMimeTypeForFileExtension(".xlsx");
+                SetMimeType(_context, ".xlsx");
                 using (var memoryStream = new MemoryStream())
                 {
                     workbook.SaveAs(memoryStream);
@@ -538,34 +390,51 @@ namespace DbNetSuiteCore.Services
         {
             try
             {
-                var model = TextHelper.DeobfuscateString(RequestHelper.FormValue("model", string.Empty, _context));
-                GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(model) ?? new GridModel();
-                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context)); ;
+                GridModel gridModel = JsonConvert.DeserializeObject<GridModel>(StateHelper.GetSerialisedModel(_context,_configuration)) ?? new GridModel();
+                gridModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 gridModel.CurrentPage = gridModel.ToolbarPosition == ToolbarPosition.Hidden ? 1 : GetPageNumber(gridModel);
                 gridModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
                 gridModel.SortKey = RequestHelper.FormValue("sortKey", gridModel.SortKey, _context);
                 gridModel.ExportFormat = RequestHelper.FormValue("exportformat", string.Empty, _context);
                 gridModel.ColumnFilter = RequestHelper.FormValueList("columnFilter", _context).Select(f => f.Trim()).ToList();
-                gridModel.ParentKey = RequestHelper.FormValue("primaryKey", gridModel.ParentKey, _context);
+                gridModel.FormValues = RequestHelper.GridFormColumnValues(_context, gridModel);
+                gridModel.SearchDialogConjunction = RequestHelper.FormValue("searchDialogConjunction", "and", _context).Trim();
+                gridModel.RowsModified = RequestHelper.GetModifiedRows(_context, gridModel);
+                gridModel.ValidationPassed = ComponentModelExtensions.ParseBoolean(RequestHelper.FormValue("validationPassed", gridModel.ValidationPassed.ToString(), _context));
+                gridModel.RowId = RequestHelper.FormValue(TriggerNames.ViewDialogContent, string.Empty, _context);
+
+                if (gridModel.DataSourceType == DataSourceType.JSON)
+                { 
+                   _jsonRepository.UpdateApiRequestParameters(gridModel, _context);
+                }
+
+                AssignParentModel(gridModel);
+                AssignSearchDialogFilter(gridModel);
 
                 gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
+                gridModel.Message = string.Empty;
 
                 return gridModel;
             }
-            catch
+            catch(Exception ex)
             {
-                return new GridModel();
+                throw new Exception(ex.Message);
             }
         }
+
         private int GetPageNumber(GridModel gridModel)
         {
             switch (RequestHelper.TriggerName(_context))
             {
                 case TriggerNames.Page:
+                case TriggerNames.Refresh:
+                case TriggerNames.Cancel:
+                case TriggerNames.Apply:
                     return Convert.ToInt32(RequestHelper.FormValue("page", "1", _context));
                 case TriggerNames.Search:
                 case TriggerNames.First:
                 case TriggerNames.ColumnFilter:
+                case TriggerNames.SearchDialog:
                     return 1;
                 case TriggerNames.Next:
                     return gridModel.CurrentPage + 1;
@@ -578,6 +447,16 @@ namespace DbNetSuiteCore.Services
             return 1;
         }
 
+        private void ConfigureFormColumns(GridModel gridModel)
+        {
+            foreach (var column in gridModel.Columns.Where(c => c.Editable))
+            {
+                if (column.FormColumn != null)
+                {
+                    column.FormColumn.SetLookupOptions(column);
+                }
+            }
+        }
 
         private string GetMimeTypeForFileExtension(string extension)
         {
@@ -593,54 +472,163 @@ namespace DbNetSuiteCore.Services
             return contentType;
         }
 
-        private Byte[] GetResources(string type)
+        private async Task<Byte[]> ApplyUpdate(GridModel gridModel)
         {
-            var resources = new string[] { };
-            switch (type)
+            if (gridModel.ClientEvents.Keys.Contains(GridClientEvent.ValidateUpdate) == false)
             {
-                case "css":
-                    resources = new string[] { "output", "gridControl" };
+                if (ValidateRecord(gridModel))
+                {
+                    await CommitUpdate(gridModel);
+                }
+            }
+            else if (gridModel.ValidationPassed == false)
+            {
+                gridModel.ValidationPassed = ValidateRecord(gridModel);
+            }
+            else
+            {
+                await CommitUpdate(gridModel);
+            }
+
+            await GetGridRecords(gridModel);
+            GridViewModel gridViewModel = new GridViewModel(gridModel);
+            return await View("Grid/__Rows", gridViewModel);
+        }
+
+        private async Task CommitUpdate(GridModel gridModel)
+        {
+            try
+            {
+                await UpdateRecords(gridModel);
+                gridModel.FormValues = new Dictionary<string, List<string>>();
+                gridModel.Message = ResourceHelper.GetResourceString(ResourceNames.Updated);
+                gridModel.MessageType = MessageType.Success;
+            }
+            catch (Exception ex)
+            {
+                gridModel.Message = ex.Message;
+                gridModel.MessageType = MessageType.Error;
+            }
+        }
+
+        protected async Task UpdateRecords(GridModel gridModel)
+        {
+            switch (gridModel.DataSourceType)
+            {
+                case DataSourceType.SQLite:
+                    await _sqliteRepository.UpdateRecords(gridModel);
                     break;
-                case "js":
-                    resources = new string[] { "htmx.min", "bundle.min" };
+                case DataSourceType.MySql:
+                    await _mySqlRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.PostgreSql:
+                    await _postgreSqlRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.MongoDB:
+                    await _mongoDbRepository.UpdateRecords(gridModel);
+                    break;
+                case DataSourceType.Oracle:
+                    await _oracleRepository.UpdateRecords(gridModel);
+                    break;
+                default:
+                    await _msSqlRepository.UpdateRecords(gridModel);
                     break;
             }
-
-            return GetResource(type, resources);
         }
 
-        private Byte[] GetResource(string type, string[] resources)
+        private bool ValidateRecord(GridModel gridModel)
         {
-            byte[] bytes = new byte[0];
+            var validationTypes = new List<ResourceNames>() { ResourceNames.Required, ResourceNames.DataFormatError, ResourceNames.MinCharsError, ResourceNames.MaxCharsError, ResourceNames.MinValueError, ResourceNames.PatternError };
 
-            foreach (string resource in resources)
+            foreach (var validationType in validationTypes)
             {
-                var resourceBytes = GetResource(type, resource);
-                bytes = CombineByteArrays(bytes, resourceBytes);
-                bytes = CombineByteArrays(bytes, Encoding.UTF8.GetBytes(Environment.NewLine));
+                if (ValidateErrorType(gridModel, validationType) == false)
+                {
+                    return false;
+                }
             }
-            return bytes;
-        }
 
-        private Byte[] GetResource(string type, string resource)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"{assembly.FullName!.Split(",").First()}.Resources.{type.ToUpper()}.{resource}.{type}";
+            bool validated = true;
 
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? new MemoryStream())
-            using (var binaryReader = new BinaryReader(stream))
+            if (String.IsNullOrWhiteSpace(gridModel.CustomisationPluginName) == false && _context != null)
             {
-                var bytes = binaryReader.ReadBytes((int)stream.Length);
-                return bytes;
+                validated = (bool?)PluginHelper.InvokeMethod(gridModel.CustomisationPluginName, nameof(ICustomGridPlugin.ValidateUpdate), gridModel, null, false) ?? true;
+                if (validated == false)
+                {
+                    if (string.IsNullOrEmpty(gridModel.Message))
+                    {
+                        gridModel.Message = "Custom validation failed";
+                    }
+                    gridModel.MessageType = MessageType.Error;
+                }
             }
+
+            return validated;
         }
 
-        public static byte[] CombineByteArrays(byte[] first, byte[] second)
+        private bool ValidateErrorType(GridModel gridModel, ResourceNames resourceName)
         {
-            byte[] ret = new byte[first.Length + second.Length];
-            Buffer.BlockCopy(first, 0, ret, 0, first.Length);
-            Buffer.BlockCopy(second, 0, ret, first.Length, second.Length);
-            return ret;
+            int rows = gridModel.FormValues[gridModel.FirstEditableColumnName].Count;
+
+            foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
+            {
+                gridColumn.LineInError = new List<bool>();
+                for (var r = 0; r < rows; r++)
+                {
+                    gridColumn.LineInError.Add(false);
+                }
+            }
+
+            for (var r = 0; r < rows; r++)
+            {
+                foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
+                {
+
+                    if (gridColumn.FormColumn == null)
+                    {
+                        continue;
+                    }
+                    var columnName = gridColumn.ColumnName;
+
+                    var value = string.Empty;
+
+                    if (gridModel.FormValues.ContainsKey(columnName))
+                    {
+                        value = gridModel.FormValues[columnName][r];
+                    }
+
+                    gridColumn.FormColumn.InError = false;
+                    ValidateFormValue(gridColumn.FormColumn, value, resourceName, gridModel);
+                    gridColumn.LineInError[r] = gridColumn.FormColumn.InError;
+
+                    if (CellSpecificError())
+                    {
+                        break;
+                    }
+                }
+
+                if (CellSpecificError())
+                {
+                    break;
+                }
+            }
+
+            if (gridModel.Columns.Any(c => c.LineInError.Contains(true)))
+            {
+                if (string.IsNullOrEmpty(gridModel.Message))
+                {
+                    gridModel.Message = ResourceHelper.GetResourceString(resourceName);
+                }
+                gridModel.MessageType = MessageType.Error;
+                return false;
+            }
+
+            return true;
+
+            bool CellSpecificError()
+            {
+                return resourceName == ResourceNames.MinValueError && gridModel.Columns.Any(c => c.FormColumn != null && c.FormColumn.InError);
+            }
         }
     }
 }

@@ -24,6 +24,7 @@
     <None Remove="TestDatabase\MySql\Northwind.sql" />
     <None Remove="TestDatabase\Northwind.sql" />
     <None Remove="TestDatabase\PostgreSql\Northwind.sql" />
+    <None Remove="TestDatabase\SQLite\Northwind.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,25 +42,30 @@
     <EmbeddedResource Include="TestDatabase\MSSQL\Northwind.sql" />
     <EmbeddedResource Include="TestDatabase\MySql\Northwind.sql" />
     <EmbeddedResource Include="TestDatabase\PostgreSql\Northwind.sql" />
+    <EmbeddedResource Include="TestDatabase\SQLite\Northwind.sql" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Playwright" Version="1.47.0" />
-    <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.47.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.56.0" />
+    <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.56.0" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
     <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.7.0" />
+    <PackageReference Include="System.IO.Packaging" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DbNetSuiteCore.Web\DbNetSuiteCore.Web.csproj" />
+    <ProjectReference Include="..\DbNetSuiteCore\DbNetSuiteCore.csproj" />
   </ItemGroup>
 
 </Project>

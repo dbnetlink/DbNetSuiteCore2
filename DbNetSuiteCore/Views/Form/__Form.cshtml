@@ -1,0 +1,65 @@
+﻿@model DbNetSuiteCore.ViewModels.FormViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.ViewModels
+@using MongoDB.Bson
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Extensions
+@using DbNetSuiteCore.Enums
+@using System.Text.Encodings.Web
+
+<div class="form-and-toolbar flex flex-col gap-2" id="@Model.HxIdTarget.Replace("#","")">
+    @if (Model.FormModel.ToolbarPosition != ToolbarPosition.Bottom && Model.HideToolbar == false)
+    {
+        @await Html.PartialAsync("Form/__Toolbar")
+    }
+    <div class="form-body flex" data-currentrecord="@Model.CurrentRecord" data-recordcount="@Model.RecordCount" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-onetoone="@Model.OneToOne" data-mode="@Model.Mode" data-validationpassed="@Model.ValidationPassed" data-committype="@Model.CommitType" data-autoincrementvalue="@Model.AutoincrementValue">
+
+        <div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(@(Model.FormModel.LayoutColumns), auto)">
+            @foreach (FormColumnViewModel formColumn in Model.Columns.Where(c => c.DataOnly == false && c.Autoincrement == false))
+            {
+                var columnValues = Model.GetColumnValues(formColumn.Column);
+
+                <div style="display:grid;grid-column:span @(formColumn.Column.ColSpan);grid-row:span @(formColumn.Column.RowSpan);" class="content-start">
+                    @{
+                        @formColumn.RenderLabel(Model.FormModel)
+                        @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
+                    }
+                </div>
+            }
+        </div>
+        <div>
+            @foreach (FormColumnViewModel formColumn in Model.Columns.Where(c => c.DataOnly == true && c.Autoincrement == false))
+            {
+                var columnValues = Model.GetColumnValues(formColumn.Column);
+                @formColumn.RenderControl(columnValues.Value, columnValues.Key, Model.FormModel)
+            }
+        </div>
+        @await Html.PartialAsync("Form/__Hidden")
+        @if (Model.IsLinked)
+        {
+            <input type="hidden" name="@TriggerNames.ParentKey" hx-trigger="changed" hx-post="@Model.SubmitUrl" hx-target="@Model.HxTarget" hx-swap="innerHTML" hx-indicator="next .htmx-indicator" />
+        }
+       
+    </div>
+    @if (Model.FormModel.ToolbarPosition == ToolbarPosition.Bottom && Model.HideToolbar == false)
+    {
+        @await Html.PartialAsync("Form/__Toolbar")
+    }
+    @{
+        HtmlString highlightAttr = new HtmlString("");
+        if (string.IsNullOrEmpty(Model.Message))
+        {
+            Model.Message = "&nbsp;";
+        }
+        else
+        {
+            highlightAttr = RazorHelper.Attribute("data-highlight", Model.MessageType.ToString().ToLower());
+        }
+
+        <div id="form-message" class="flex border rounded border-slate-300 p-1" @highlightAttr>@Html.Raw(Model.Message)</div>
+    }
+
+</div>

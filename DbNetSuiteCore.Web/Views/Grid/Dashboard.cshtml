@@ -1,0 +1,38 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var leagues = new Dictionary<string, string> { 
+        { "E0", "Premier League" }, 
+        { "E1", "EFL Championship" },
+        { "E2", "EFL League One" },
+        { "E3", "EFL League Two" },
+        { "EC", "National League" } };
+}
+<div class="d-flex flex-wrap">
+    @{
+        foreach (string league in leagues.Keys)
+        {
+            <div style="padding-right:1rem; padding-bottom:1rem">
+                @{
+                    var resultsGrid = new GridModel(DataSourceType.SQLite, "Euro(sqlite)", "matches") { FixedFilter = $"div = '{league}' and date = (select max(date) from matches where div = '{league}')" };
+                    resultsGrid.Columns = new List<GridColumn>()
+                    {
+                        new GridColumn("HomeTeam"),
+                        new GridColumn("FTHG"){ Style = "font-weight:bold"},
+                        new GridColumn("FTAG") { Style = "font-weight:bold"},
+                        new GridColumn("AwayTeam"),
+                        new GridColumn("FTR")
+
+                    };
+                    resultsGrid.ToolbarPosition = ToolbarPosition.Hidden;
+                    resultsGrid.Caption = leagues[league];
+                    resultsGrid.HeadingMode = HeadingMode.Hidden;
+                    resultsGrid.RowSelection = RowSelection.None;
+
+                    @(await DbNetSuiteCore.Control.Create(Context).Render(resultsGrid));
+                }
+            </div>
+        }
+    }
+</div>

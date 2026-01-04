@@ -1,0 +1,11 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var customersForm = new FormModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Categories") { Insert = true, Delete = true};
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customersForm))
+}

@@ -4,7 +4,7 @@ namespace DbNetSuiteCore.Models
 {
     public class DbParameter
     {
-        private Type? _type = null;
+        private Type _type = null;
         public string Name { get; set; } = string.Empty;
         public object Value { get; set; } = string.Empty;
         [JsonIgnore]

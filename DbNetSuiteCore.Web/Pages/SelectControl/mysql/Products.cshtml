@@ -1,0 +1,15 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Helpers
+
+@{
+    var productSelect = new SelectModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "northwind2.Product join northwind2.Category on northwind2.Product.CategoryID = northwind2.Category.CategoryID") { Searchable = true };
+    productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("ProductID"),
+        new SelectColumn("ProductName"),
+        new SelectColumn("CategoryName") {OptionGroup = true}
+    };
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productSelect))
+}

@@ -1,11 +1,12 @@
 ### Introduction ###
-This project is a set of data driven ASP.NET Core UI components based on Razor views, HTMX, Tailwind CSS and JavaScript. The components can be added to any ASP.NET Core web application as middleware and the components can be added to any existing web page. The goal is to create a set of components that are lightweight, easy to add to any web page and highly configurable.
+This project is a set of server-side, data driven ASP.NET Core UI components built using Razor views, HTMX, Tailwind CSS and TypeScript. The components can be hosted in Razor pages, MVC Views and Blazor. The components an be added to any existing web page and interact independently with the server via mmiddleware. The goal is to create a set of highly configurable components that are lightweight, easy to use and secure.
 
 Currently the components support the following data sources:
 
  - MSSQL
  - SQLite
  - MySql
+ - Oracle
  - MariaDB
  - PostgreSql
  - Oracle

@@ -1,0 +1,38 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var columns = new List<GridColumn>
+    {
+        new GridColumn("NptgLocalityCode") {PrimaryKey = true},
+        new GridColumn("LocalityName"),
+        new GridColumn("LocalityNameLang"),
+        new GridColumn("ShortName"),
+        new GridColumn("ShortNameLang"),
+        new GridColumn("QualifierName"),
+        new GridColumn("QualifierNameLang"),
+        new GridColumn("QualifierLocalityRef"),
+        new GridColumn("QualifierDistrictRef"),
+        new GridColumn("ParentLocalityName") { Filter = FilterType.Distinct},
+        new GridColumn("ParentLocalityNameLang"),
+        new GridColumn("AdministrativeAreaCode"),
+        new GridColumn("NptgDistrictCode"),
+        new GridColumn("SourceLocalityType"),
+        new GridColumn("GridType"),
+        new GridColumn("Easting"),
+        new GridColumn("Northing"),
+        new GridColumn("CreationDateTime","Created") {DataType = typeof(DateTime)},
+        new GridColumn("ModificationDateTime","Modified") {DataType = typeof(DateTime)},
+        new GridColumn("RevisionNumber"),
+        new GridColumn("Modification")
+    };
+}
+
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/localities.csv") { 
+    Columns = columns, 
+    Cache = false, 
+    ViewDialog = new ViewDialog() 
+}))

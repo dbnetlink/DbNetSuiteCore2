@@ -6724,3 +6724,4 @@ INSERT INTO EmployeeTerritory  VALUES (9,'48304');
 INSERT INTO EmployeeTerritory  VALUES (9,'55113');
 INSERT INTO EmployeeTerritory  VALUES (9,'55439');
 
+SELECT setval(pg_get_serial_sequence('customer', 'custid'), (SELECT MAX(custid) FROM customer) + 1);

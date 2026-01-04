@@ -1,0 +1,32 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var orderItemsGrid = new GridModel(DataSourceType.SQLite, "Sales(sqlite)", "OrderItems") { ViewDialog = new ViewDialog() };
+
+    orderItemsGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("Order_id", "Order ID"),
+        new GridColumn("product_id", "Product") {Lookup = new Lookup("Products", "product_id","product_name"), FormColumn = new FormColumn()},
+        new GridColumn("quantity") {FormColumn = new FormColumn()},
+        new GridColumn("unit_price") {FormColumn = new FormColumn()},
+        new GridColumn("unit_price * quantity", "Total Price") {DataType = typeof(Decimal)},
+   };
+
+    var orderItemsForm = new FormModel(DataSourceType.SQLite, "Sales(sqlite)", "OrderItems") { };
+
+    orderItemsForm.Columns = new List<FormColumn>
+    {
+        new FormColumn("Order_id", "Order ID") {ForeignKey = true},
+        new FormColumn("product_id", "Product") {Lookup = new Lookup("Products", "product_id","product_name"),ForeignKey = true},
+        new FormColumn("quantity") {},
+        new FormColumn("unit_price") {}
+   };
+
+    orderItemsGrid.LinkedControl = orderItemsForm;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderItemsGrid))
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderItemsForm))
+}

@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+
+    var columns = new List<GridColumn>() {
+        new GridColumn("Order_ID") {Filter = FilterType.Default },
+        new GridColumn("Customer_ID") {Filter = FilterType.Default, Lookup = new Lookup("Customers", "Customer_ID", "Company_Name")},
+        new GridColumn("Employee_ID") {Filter = FilterType.Default, Lookup = new Lookup("Employees", "Employee_ID", "LastName || ', ' || FirstName")},
+        new GridColumn("Order_Date") {Filter = FilterType.Default},
+        new GridColumn("Required_Date") {Filter = FilterType.Default},
+        new GridColumn("Shipped_Date"),
+        new GridColumn("Ship_Via") {Filter = FilterType.Default, Lookup = new Lookup("Shippers", "Shipper_ID", "Company_Name")},
+        new GridColumn("Freight"),
+        new GridColumn("Ship_Name"),
+        new GridColumn("Ship_Address"),
+        new GridColumn("Ship_City") {Filter = FilterType.Distinct},
+        new GridColumn("Ship_Region") {Filter = FilterType.Distinct},
+        new GridColumn("Ship_Postal_Code"),
+        new GridColumn("Ship_Country") {Filter = FilterType.Distinct}
+    };
+
+    var ordersGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "Orders");
+    ordersGrid.Columns = columns;
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
+}

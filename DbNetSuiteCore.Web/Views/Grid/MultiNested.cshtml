@@ -1,0 +1,50 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var filmGrid = new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "Film join Language on Film.Language_id = language.language_id")
+    {
+        Columns = new List<GridColumn>()
+        {
+            new GridColumn("film.film_id", "FilmID") { PrimaryKey = true},
+            new GridColumn("film.title", "Title"),
+            new GridColumn("film.description", "Description"),
+            new GridColumn("film.release_year", "Year Of Release"),
+            new GridColumn("language.name", "Language"),
+            new GridColumn("film.rental_duration", "Duration"),
+            new GridColumn("film.rental_rate", "Rental Rate"){Format = "C" },
+            new GridColumn("film.length", "Length"),
+            new GridColumn("film.replacement_cost", "Replacement Cost"){Format = "C" },
+            new GridColumn("film.rating", "Rating") ,
+            new GridColumn("film.special_features", "Special Features"),
+            new GridColumn("film.last_update", "Last Updated") {Format = "dd/MM/yy", DataType = typeof(DateTime)},
+        },
+        PageSize = 10
+    };
+
+    var actorsGrid = new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "film_actor")
+    {
+        Columns = new List<GridColumn>()
+        {
+            new GridColumn("film_id") {ForeignKey = true, DataOnly = true},
+            new GridColumn("actor_id","Actor") {Lookup = new Lookup("actor","actor_id","last_name")}
+        },
+        ToolbarPosition = ToolbarPosition.Hidden,
+    };
+
+    var categoryGrid = new GridModel(DataSourceType.SQLite, "Sakila(sqlite)", "film_category")
+    {
+        Columns = new List<GridColumn>()
+        {
+            new GridColumn("film_id") {ForeignKey = true, DataOnly = true},
+            new GridColumn("category_id","Category") {Lookup = new Lookup("category","category_id","name")}
+        },
+                ToolbarPosition = ToolbarPosition.Hidden,
+    };
+
+    filmGrid.NestedGrid = actorsGrid;
+    filmGrid.NestedGrid = categoryGrid;
+
+    @(await DbNetSuiteCore.Control.Create(Context).Render(filmGrid))
+
+}

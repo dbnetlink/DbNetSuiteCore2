@@ -1,0 +1,36 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using System.Web
+
+@{
+    const string publishDateTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
+    var BEBModel = new GridModel(DataSourceType.JSON, "https://data.elexon.co.uk/bmrs/api/v1/datasets/BEB")
+    {
+        Caption = "Balancing Energy Bids (BEB)",
+        Cache = false
+    };
+
+    BEBModel.Columns = new List<GridColumn>()
+    {
+        new GridColumn("DocumentId") { Filter = FilterType.Distinct },
+        new GridColumn("DocumentRevisionNumber"),
+        new GridColumn("PublishTime"),
+        new GridColumn("BidId"),
+        new GridColumn("FlowDirection") { Filter = FilterType.Distinct },
+        new GridColumn("Quantity") { Filter = FilterType.Default },
+        new GridColumn("EnergyPrice") { Filter = FilterType.Default },
+        new GridColumn("StartTime") { Filter = FilterType.Distinct, DataType = typeof(DateTime), Format = "HH:mm" },
+        new GridColumn("SettlementDate") { Filter = FilterType.Distinct },
+        new GridColumn("SettlementPeriod") { Filter = FilterType.Distinct },
+    };
+
+
+    BEBModel.ApiRequestParameters["publishDateTimeFrom"] = HttpUtility.UrlEncode(DateTime.Today.ToString(publishDateTimeFormat));
+    BEBModel.ApiRequestParameters["publishDateTimeTo"] = HttpUtility.UrlEncode(DateTime.Today.AddHours(2).AddSeconds(-1).ToString(publishDateTimeFormat));
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(BEBModel));
+}
+

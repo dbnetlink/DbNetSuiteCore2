@@ -1,157 +1,402 @@
-var DbNetSuiteCore: any = {};
-DbNetSuiteCore.gridControlArray = {}
-
-DbNetSuiteCore.createGridControl = function (gridId, clientEvents) {
-    document.addEventListener('htmx:afterRequest', function (evt) {
-        if (!DbNetSuiteCore.gridControlArray[gridId]) {
-            var gridControl = new GridControl(gridId);
-
-            for (const [key, value] of Object.entries(clientEvents)) {
-                gridControl.eventHandlers[key] = window[value.toString()]
-            }
-            DbNetSuiteCore.gridControlArray[gridId] = gridControl;
-        }
-        DbNetSuiteCore.gridControlArray[gridId].afterRequest(evt);
-    });
+interface RowModification {
+    modified: boolean;
+    columns: Array<string>
 }
-class GridControl {
-    gridId: string = "";
-    gridControl: HTMLFormElement;
-    gridContainer: HTMLElement;
-    eventHandlers = {};
+
+class GridControl extends ComponentControl {
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
     viewDialog: ViewDialog;
     selectedRow: HTMLTableRowElement;
+    jsonData: [any];
+    deferredLoad: boolean = false;
 
-    constructor(gridId) {
-        this.gridId = gridId;
-        this.gridControl = document.querySelector(this.gridSelector())
-        this.gridControl.style.display = '';
-        this.gridContainer = this.gridControl.parentElement
+    constructor(gridId: string, deferredLoad: boolean) {
+        super(gridId)
+        this.deferredLoad = deferredLoad;
+        if (this.deferredLoad) {
+            this.checkForVisibility();
+        }
     }
 
     afterRequest(evt) {
         let gridId = evt.target.closest("form").id;
-        if (gridId.startsWith(this.gridId) == false || evt.detail.elt.name == "nestedGrid") {
+        if (gridId.startsWith(this.controlId) == false || evt.detail.elt.name == "nestedGrid") {
             return
         }
 
-        if (this.triggerName(evt) == "viewdialogcontent") {
-            this.viewDialog.show();
-            this.invokeEventHandler('ViewDialogUpdated', {viewDialog:this.viewDialog});
+        let rowIndex = null;
+
+        let triggerName = this.triggerName(evt);
+
+        switch (triggerName) {
+            case "viewdialogcontent":
+                this.viewDialog.show();
+                this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
+                return;
+            case "refresh":
+                let hxVals = JSON.parse(this.triggerElement(evt).getAttribute("hx-vals"));
+                rowIndex = hxVals.rowIndex
+        }
+
+        if (!this.controlElement("tbody")) {
             return
         }
 
-        if (!this.gridControlElement("tbody")) {
-            return
-        }
+        this.formBody = this.controlElement("tbody")
 
         this.configureNavigation()
         this.configureSortIcon()
 
-        if (this.triggerName(evt) == "initialload") {
+        if (triggerName == "initialload") {
             this.initialise()
         }
 
-        this.gridControlElements(".nested-icons").forEach((div) => {
+        this.controlElements(".nested-icons").forEach((div) => {
             let icons = div.querySelectorAll("span")
 
             icons[0].addEventListener("click", ev => this.showHideNestedGrid(ev, true));
             icons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
 
-        this.gridControlElements("tr.grid-row").forEach((row: HTMLTableRowElement) => { this.invokeEventHandler('RowTransform', { row: row }) });
-        this.gridControlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellTransform(cell) });
+        this.controlElements("tr.grid-row").forEach((row: HTMLTableRowElement) => { this.invokeEventHandler('RowTransform', { row: row }) });
+        this.controlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellTransform(cell) });
+        this.reassignFormCheckboxValue();
 
-        this.gridControlElements("tbody a").forEach((e) => {
+        this.controlElements("tbody a").forEach((e) => {
             e.classList.remove("selected");
             e.classList.add("underline")
         });
 
-        if (this.rowSelection() != "none")
-        {
-            if (this.gridControlElement(this.multiRowSelectAllSelector())) {
-                this.gridControlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
-                this.gridControlElements(this.multiRowSelectSelector()).forEach((e) => {
+        this.controlElements('td.tooltip-text').forEach(cell => { cell.addEventListener("mouseenter", (ev) => this.showTextTooltip(ev)) });
+        this.controlElements('td.tooltip-text').forEach(cell => { cell.addEventListener("mouseleave", (ev) => this.hideTextTooltip(ev)) });
+
+        if (this.rowSelection() != "none") {
+            if (this.controlElement(this.multiRowSelectAllSelector())) {
+                this.controlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
+                this.controlElements(this.multiRowSelectSelector()).forEach((e) => {
                     e.addEventListener("change", (ev) => {
                         this.selectRow(ev.target, true);
                     })
                 });
             }
             else {
-                htmx.findAll(this.rowSelector()).forEach((e) => { e.addEventListener("click", (ev) => this.selectRow(ev.target as HTMLElement)) });
+                htmx.findAll(this.rowSelector()).forEach((e) => {
+                    e.addEventListener("click", (ev) => {
+                        if (this.warnIfLinkedFormModified(ev)) {
+                        }
+                        else {
+                            this.selectRow(ev.target as HTMLElement);
+                        }
+                    })
+                });
             }
         }
 
-        let row: HTMLElement = document.querySelector(this.rowSelector());
+        var rowCount = document.querySelectorAll(this.rowSelector()).length;
+
+        if (rowIndex > rowCount) {
+            rowIndex = rowCount;
+        }
+
+        let row: HTMLElement = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null));
         if (row) {
             row.click();
         }
 
-        this.gridControlElements("tr.column-filter-refresh select").forEach((select: HTMLSelectElement) => {
-            let filter: HTMLSelectElement = this.gridControlElement(`thead select[data-key="${select.dataset.key}"]`)
+        this.controlElements("tr.lookup-refresh select").forEach((select: HTMLSelectElement) => {
+            let filter: HTMLSelectElement = this.controlElement(`thead select[data-key="${select.dataset.key}"]`)
             if (filter) {
                 filter.innerHTML = select.innerHTML;
             }
         });
 
-        this.gridControlElements("thead input[data-key]").forEach((input: HTMLInputElement) => {
+        this.controlElements("thead input[data-key]").forEach((input: HTMLInputElement) => {
             input.title = "";
             input.style.backgroundColor = "";
         });
 
-        this.gridControlElements("tr.column-filter-error span").forEach((span: HTMLElement) => {
-            let input: HTMLInputElement = this.gridControlElement(`thead input[data-key="${span.dataset.key}"]`)
+        this.controlElements("tr.column-filter-error span").forEach((span: HTMLElement) => {
+            let input: HTMLInputElement = this.controlElement(`thead input[data-key="${span.dataset.key}"]`)
             input.title = span.innerText;
             input.style.backgroundColor = "rgb(252 165 165)";
         });
 
-        let thead = this.gridControlElement("thead") as HTMLElement;
+        let thead = this.controlElement("thead") as HTMLElement;
         if (thead.dataset.frozen.toLowerCase() == "true") {
             thead.style.top = `0px`;
             thead.style.position = 'sticky';
             thead.style.zIndex = '1';
         }
 
-        this.invokeEventHandler('PageLoaded');
+        var args = {}
+        if (this.gridControlElement("#jsonData")) {
+            this.jsonData = JSON.parse((this.gridControlElement("#jsonData") as HTMLTextAreaElement).value);
+            args['json'] = this.jsonData;
+        }
+
+        if (this.formBody.dataset.message) {
+            this.setMessage(this.formBody.dataset.message, this.formBody.dataset.messagetype)
+        }
+
+        this.invokeEventHandler('PageLoaded', args);
+    }
+
+    private setTableWidth() {
+        const table: HTMLTableElement = this.controlElement("table");
+
+        table.parentElement.style.width = '';
+        table.parentElement.style.overflowX = '';
+
+        let totalWidth = 0;
+        const headers = table.querySelectorAll("th")
+        headers.forEach(header => { totalWidth += header.offsetWidth });
+
+        var offsetLeft = table.getBoundingClientRect().left;
+
+        if (document.documentElement.clientWidth < totalWidth + offsetLeft) {
+            table.parentElement.style.width = `${document.documentElement.clientWidth - 30 - offsetLeft}px`;
+            table.parentElement.style.overflowX = 'auto';
+        }
+    }
+
+    private showTextTooltip(event: Event) {
+        let cell = event.target as HTMLTableCellElement;
+        let popover = cell.querySelector(".tooltip-popover") as HTMLDivElement;
+
+        if (!popover) {
+            popover = document.createElement('div');
+            popover.innerText = cell.dataset.value;
+            popover.className = 'tooltip-popover'
+            cell.appendChild(popover);
+        }
+
+        const rect = cell.getBoundingClientRect();
+        popover.style.top = `${rect.bottom + window.scrollY - (rect.height - 20)}px`;
+        popover.style.left = `${rect.left + 20 + window.scrollX}px`;
+        popover.style.opacity = '1';
+    }
+
+    private hideTextTooltip(event: Event) {
+        let cell = event.target as HTMLTableCellElement;
+        let popover = cell.querySelector(".tooltip-popover") as HTMLDivElement;
+        if (popover) {
+            popover.style.opacity = '0';
+        }
     }
 
     private initialise() {
         if (this.toolbarExists()) {
-            this.getButton("copy").addEventListener("click", ev => this.copyTableToClipboard())
-            this.getButton("export").addEventListener("click", ev => this.download())
+            let copyBtn = this.getButton("copy");
+            if (copyBtn) {
+                copyBtn.addEventListener("click", ev => this.copyTableToClipboard())
+            }
+            let exportBtn = this.getButton("export");
+            if (exportBtn) {
+                exportBtn.addEventListener("click", ev => this.download())
+            }
         }
 
-        var viewDialog = this.gridControlElement(".view-dialog");
+        var viewDialog = this.controlElement(".view-dialog");
         if (viewDialog) {
             this.viewDialog = new ViewDialog(viewDialog, this);
         }
 
+        this.assignSearchDialog();
+
+        document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
+        document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev) });
+        document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev) });
+
+        this.formMessage = this.controlElement("#form-message");
+
+        window.addEventListener('resize', ev => this.setTableWidth())
         this.invokeEventHandler('Initialised');
     }
 
+    checkForVisibility() {
+        let handleIntersection = function (entries) {
+            for (let entry of entries) {
+                if (entry.isIntersecting) {
+                    let form = (entry.target as HTMLFormElement);
+                    if (form.querySelectorAll("table").length == 0) {
+                        htmx.trigger(form, "submit");
+                    }
+                }
+            }
+        }
+
+        const observer = new IntersectionObserver(handleIntersection);
+        observer.observe(this.form);
+    }
+
+    public configRequest(evt) {
+        if (this.isControlEvent(evt) == false) {
+            return;
+        }
+
+        switch (this.triggerName(evt)) {
+            case "apply":
+                evt.detail.parameters["modifiedrows"] = this.getModifiedRows();
+                break;
+        }
+    }
+
+    public afterSettle(evt) {
+        if (this.isControlEvent(evt) == false) {
+            return;
+        }
+        requestAnimationFrame(() => {
+            this.configureFormControls();
+        });
+        requestAnimationFrame(() => {
+            this.setTableWidth();
+        });
+
+        switch (this.triggerName(evt)) {
+            case "apply":
+                if (this.formBody.dataset.validationpassed == "True") {
+                    this.validateUpdate()
+                }
+                else {
+                    this.invokeEventHandler("RecordsUpdated")
+                }
+                break;
+        }
+    }
+
+    private validateUpdate() {
+        let inError = false;
+        var modifiedRows: Array<HTMLTableRowElement> = [];
+        this.controlElements("tr.grid-row").forEach((row) => {
+            let rowModification = this.getFormModification(row)
+            if (rowModification.modified) {
+                modifiedRows.push(row);
+            }
+        });
+
+        for (const row of modifiedRows) {
+            let args = { row: row, message: '' }
+            this.currentValidationRow = row;
+            this.invokeEventHandler("ValidateUpdate", args);
+            inError = Boolean(args.message != '' || this.errorHighlighted(row));
+            if (inError) {
+                this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error', 'error')
+                break;
+            }
+        }
+
+        this.currentValidationRow = null;
+        this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
+
+        if (inError == false) {
+            this.triggerCommit()
+        }
+    }
+
+    public beforeRequest(evt:Event) {
+        if (this.isControlEvent(evt) == false)
+            return;
+
+        if (this.validateSearchDialog(evt) == false) {
+            return;
+        }
+
+        switch (this.triggerName(evt).toLowerCase()) {
+            case "apply":
+                if (this.formModified() == false) {
+                    evt.preventDefault();
+                    return;
+                }
+                if (this.form.checkValidity() == false) {
+                    this.form.reportValidity()
+                    evt.preventDefault();
+                }
+                return
+            case "cancel":
+            case "primarykey":
+                return;
+        }
+
+        this.warnIfLinkedFormModified(evt);
+        this.warnIfFormModified(evt);
+    }
+
+    private getModifiedRows() {
+        let modifiedRows: Array<RowModification> = [];
+        this.controlElements("tr.grid-row").forEach((row) => {
+            modifiedRows.push(this.getFormModification(row));
+        });
+        return JSON.stringify(modifiedRows);
+    }
+
+    public columnSeriesData(columnName: string) {
+        let series = [];
+        if (this.jsonData.length) {
+            let propName = this.getPropertyName(this.jsonData[0], columnName);
+
+            if (propName) {
+                for (var i = 0; i < this.jsonData.length; i++) {
+                    series.push(this.jsonData[i][propName])
+                }
+            }
+        }
+        return series;
+    }
+
+    private getPropertyName(object: any, columnName: string) {
+        let propName = null;
+        for (var name in object) {
+            if (name.toLowerCase() == columnName.toLowerCase()) {
+                propName = name;
+                break;
+            }
+        }
+
+        return propName;
+    }
+
+    public rowSeriesData(columnSeriesName: string, columnSeriesValue: string, columnNames: string[]) {
+        let series = [];
+        if (this.jsonData.length) {
+            let columnSeriesValues = this.columnSeriesData(columnSeriesName);
+            for (let r = 0; r < columnSeriesValues.length; r++) {
+                if (columnSeriesValues[r] == columnSeriesValue) {
+                    for (let c = 0; c < columnNames.length; c++) {
+                        let propName = this.getPropertyName(this.jsonData[r], columnNames[c]);
+                        if (propName) {
+                            series.push(this.jsonData[r][propName])
+                        }
+                    }
+                }
+            }
+        }
+        return series;
+    }
+
+    public refreshPage() {
+        let selector = `#${this.controlId} input[name="refresh"]`;
+        let pk = htmx.find(selector) as HTMLInputElement;
+        let rowIndex = this.selectedRow ? this.selectedRow.rowIndex : 1;
+        this.form.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
+        pk.setAttribute("hx-vals", JSON.stringify({ rowIndex: rowIndex }));
+        htmx.trigger(selector, "changed",);
+    }
+
     private invokeCellTransform(cell: HTMLTableCellElement) {
-        var columnName = (this.gridControlElement("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
+        var columnName = (this.controlElement("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
+        var userDataType = (this.controlElement("colgroup").children[cell.cellIndex] as HTMLTableColElement).dataset.userdatatype
+
         var args = { cell: cell, columnName: columnName }
+
+        if (userDataType == "JsonDocument") {
+            try { args['json'] = JSON.parse(cell.innerText); } catch { }
+        }
         this.invokeEventHandler('CellTransform', args)
     }
 
-    private invokeEventHandler(eventName, args = {}) {
-        window.dispatchEvent(new CustomEvent(`Grid${eventName}`, { detail: this.gridId }));
-        if (this.eventHandlers.hasOwnProperty(eventName) == false) {
-            return;
-        }
-        if (typeof this.eventHandlers[eventName] === 'function') {
-            this.eventHandlers[eventName](this, args)
-        }
-        else {
-            this.message(`Javascript function for event type '${eventName}' is not defined`, 'error', 3)
-        }
-    }
-
     private configureNavigation() {
-        let tbody = this.gridControlElement("tbody") as HTMLElement;
+        let tbody = this.controlElement("tbody") as HTMLElement;
 
         let currentPage = parseInt(tbody.dataset.currentpage);
         let totalPages = parseInt(tbody.dataset.totalpages);
@@ -159,7 +404,9 @@ class GridControl {
 
         if (totalPages == 0) {
             this.updateLinkedGrids('');
-        } 
+        }
+
+        this.notifyParent(rowCount > 0)
 
         if (this.viewDialog) {
             this.getButton("view").disabled = (rowCount == 0);
@@ -168,8 +415,13 @@ class GridControl {
             }
         }
 
+        let applyBtn = this.getButton("apply");
+        if (applyBtn) {
+            applyBtn.disabled = (rowCount == 0)
+        }
+
         if (this.toolbarExists()) {
-            let queryLimit = parseInt(this.gridControlElement("#query-limited").dataset.querylimit);
+            let queryLimit = parseInt(this.controlElement("#query-limited").dataset.querylimit);
 
             if (totalPages == 0) {
                 this.removeClass('#no-records', "hidden");
@@ -187,9 +439,9 @@ class GridControl {
                 this.addClass('#query-limited', "hidden");
             }
 
-            this.setPageNumber(currentPage, totalPages);
-            (this.gridControlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
-            (this.gridControlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
+            this.setPageNumber(currentPage, totalPages, "page");
+            (this.controlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
+            (this.controlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
 
             this.getButton("first").disabled = currentPage == 1;
             this.getButton("previous").disabled = currentPage == 1;
@@ -199,63 +451,28 @@ class GridControl {
     }
 
     private rowSelection() {
-        let thead = this.gridControlElement("thead") as HTMLElement;
+        let thead = this.controlElement("thead") as HTMLElement;
         return thead.dataset.rowselection.toLowerCase();
     }
 
-    private removeClass(selector: string, className: string) {
-        this.gridControlElement(selector).classList.remove(className);
-    }
-
-    private addClass(selector: string, className: string) {
-        this.gridControlElement(selector).classList.add(className);
-    }
-
-    private setPageNumber(pageNumber: number, totalPages: number) {
-        var select = this.gridControlElement('[name="page"]') as HTMLSelectElement;
-
-        if (select.childElementCount != totalPages) {
-            select.querySelectorAll('option').forEach(option => option.remove())
-            for (var i = 1; i <= totalPages; i++) {
-                var opt = document.createElement('option') as HTMLOptionElement;
-                opt.value = i.toString();
-                opt.text = i.toString();
-                select.appendChild(opt);
-            }
-        }
-
-        select.value = pageNumber.toString();
-    }
-
-    private toolbarExists() {
-        return this.gridControlElement('#navigation');
-    }
 
     private configureSortIcon() {
-        if (this.gridControlElements(`th[data-key]`).length == 0) {
+        if (this.controlElements(`th[data-key]`).length == 0) {
             return
         }
-        let tbody = this.gridControlElement("tbody") as HTMLElement;
+        let tbody = this.controlElement("tbody") as HTMLElement;
         let sortKey = tbody.dataset.sortkey;
         let sortIcon = tbody.querySelector("span#sortIcon").innerHTML;
 
-        this.gridControlElements(`th[data-key] span`).forEach(e => e.innerHTML = '')
+        this.controlElements(`th[data-key] span`).forEach(e => e.innerHTML = '')
 
-        let span = this.gridControlElement(`th[data-key="${sortKey}"] span`)
+        let span = this.controlElement(`th[data-key="${sortKey}"] span`)
 
         if (!span) {
-            span = this.gridControlElements(`th[data-key] span`)[0]
+            span = this.controlElements(`th[data-key] span`)[0]
         }
 
         span.innerHTML = sortIcon
-    }
-
-    private gridControlElements(selector) {
-        return this.gridControl.querySelectorAll(selector);
-    }
-
-    private gridControlElement(selector) {
-        return this.gridControl.querySelector(selector);
     }
 
     private showHideNestedGrid(ev: Event, show) {
@@ -270,43 +487,24 @@ class GridControl {
             siblingRow.style.display = show ? null : "none"
         }
         else if (show) {
-            htmx.trigger(icons[2], "click")
+            let span = icons[2]
+            span.setAttribute("hx-vals", JSON.stringify({ rowIndex: span.closest("tr").dataset.idx, primaryKey: span.dataset.foldername }));
+            htmx.trigger(span, "click")
         }
 
         icons[0].style.display = show ? "none" : "block"
         icons[1].style.display = show ? "block" : "none"
     }
 
-    private loadFromParent(primaryKey: string) {
-        let selector = `#${this.gridId} input[name="primaryKey"]`
-        let pk = htmx.find(selector) as HTMLInputElement
-
-        this.gridControl.setAttribute("hx-vals", JSON.stringify({ primaryKey: primaryKey }))
-
-        if (pk) {
-            htmx.trigger(selector, "changed");
-        }
-        else {
-            htmx.trigger(`#${this.gridId}`, "submit");
-        }
-    }
-
     private refresh() {
-        let pageSelect = this.gridControlElement('[name="page"]')
+        let pageSelect = this.controlElement('[name="page"]')
         pageSelect.value = "1";
         htmx.trigger(pageSelect, "changed");
     }
 
-    private isElementLoaded = async selector => {
-        while (document.querySelector(selector) === null) {
-            await new Promise(resolve => requestAnimationFrame(resolve))
-        }
-        return document.querySelector(selector);
-    };
-
     private updateMultiRowSelect(ev: Event) {
         let checked = (ev.target as HTMLInputElement).checked
-        this.gridControlElements(this.multiRowSelectSelector()).forEach((e: HTMLInputElement) => {
+        this.controlElements(this.multiRowSelectSelector()).forEach((e: HTMLInputElement) => {
             e.checked = checked;
             this.selectRow(e);
         });
@@ -314,9 +512,8 @@ class GridControl {
         this.selectedValuesChanged();;
     }
 
-    private selectRow(target: HTMLElement, multiSelect:boolean = false) {
+    private selectRow(target: HTMLElement, multiSelect: boolean = false) {
         let tr = target.closest('tr')
-
         if (target.classList.contains("multi-select") == false) {
             if (tr.classList.contains(this.bgColourClass)) {
                 return;
@@ -335,7 +532,7 @@ class GridControl {
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
         tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder] svg,td > div.nested-icons svg").forEach(e => e.setAttribute("fill", "#ffffff"));
 
-        this.updateLinkedGrids(tr.dataset.id);
+        this.updateLinkedGrids(tr.dataset.idx);
         this.selectedRow = tr;
 
         if (this.viewDialog) {
@@ -353,17 +550,8 @@ class GridControl {
         this.invokeEventHandler('SelectedRowsUpdated', { selectedValues: this.selectedValues() });
     }
 
-    private updateLinkedGrids(primaryKey: string) {
-        let table = this.gridControlElement("table") as HTMLElement;
-
-        if (table.dataset.linkedgridids) {
-            var linkedGridIds = table.dataset.linkedgridids.split(",");
-            linkedGridIds.forEach(linkedGridId => {
-                this.isElementLoaded(`#${linkedGridId}`).then((selector) => {
-                    DbNetSuiteCore.gridControlArray[linkedGridId].loadFromParent(primaryKey);
-                })
-            })
-        }
+    private updateLinkedGrids(rowIdx: string) {
+        this.updateLinkedControls(this.getLinkedControlIds(), rowIdx)
     }
 
     private clearHighlighting(row: HTMLTableRowElement) {
@@ -371,7 +559,7 @@ class GridControl {
             this.clearRowHighlight(row);
         }
         else {
-            this.gridControlElements(this.rowSelector()).forEach(e => {
+            this.controlElements(this.rowSelector()).forEach(e => {
                 this.clearRowHighlight(e.closest("tr"));
             });
         }
@@ -384,20 +572,20 @@ class GridControl {
     }
 
     private copyTableToClipboard() {
-        var table = this.gridControlElement("table");
+        var table = this.controlElement("table");
         try {
             this.copyElementToClipboard(table);
-            this.message("Page copied to clipboard")
+            this.toast("Page copied to clipboard")
         } catch (e) {
             try {
                 const content = table.innerHTML;
                 const blobInput = new Blob([content], { type: 'text/html' });
                 const clipboardItemInput = new ClipboardItem({ 'text/html': blobInput });
                 navigator.clipboard.write([clipboardItemInput]);
-                this.message("Page copied to clipboard")
+                this.toast("Page copied to clipboard")
             }
             catch (e) {
-                this.message("Copy failed", "error", 5)
+                this.toast("Copy failed", "error", 5)
                 return
             }
         }
@@ -412,24 +600,24 @@ class GridControl {
         window.getSelection().removeAllRanges();
     }
 
-    private previousRow() {
+    public previousRow() {
         (this.selectedRow.previousElementSibling as HTMLTableRowElement).click()
     }
 
-    private nextRow() {
+    public nextRow() {
         (this.selectedRow.nextElementSibling as HTMLTableRowElement).click()
     }
 
     private download() {
         this.showIndicator()
         const data = new URLSearchParams();
-        for (let [key, val] of new FormData(this.gridControl)) {
+        for (let [key, val] of new FormData(this.form)) {
             data.append(key, val as any);
         }
 
-        var exportOption = (this.gridControlElement('[name="exportformat"]') as HTMLSelectElement).value
+        var exportOption = (this.controlElement('[name="exportformat"]') as HTMLSelectElement).value
 
-        fetch("gridcontrol.htmx", {
+        fetch("gridcontrol.dbnetsuite", {
             method: 'post',
             body: data,
             headers: {
@@ -468,23 +656,8 @@ class GridControl {
         link.href = window.URL.createObjectURL(response);
         extension = (extension == "excel") ? "xlsx" : extension;
         link.download = `report_${new Date().getTime()}.${extension}`;
-        this.invokeEventHandler('FileDownload', { link: link, extension : extension });
+        this.invokeEventHandler('FileDownload', { link: link, extension: extension });
         link.click();
-    }
-
-    private message(text, style = 'info', delay = 1) {
-        var toast = this.gridContainer.querySelector("#toastMessage") as HTMLElement
-        //toast.classList.add(`alert-${style}`)
-        toast.querySelector("span").innerText = text;
-        if (text == "") {
-            toast.parentElement.style.marginLeft = `-${toast.parentElement.clientWidth / 2}px`
-            toast.parentElement.style.marginTop = `-${toast.parentElement.clientHeight / 2}px`
-            toast.parentElement.style.display = 'none'
-            return
-        }
-        toast.parentElement.style.display = 'block'
-        let self = this
-        window.setTimeout(() => { self.message("") }, delay * 1000)
     }
 
     private showIndicator() {
@@ -496,11 +669,12 @@ class GridControl {
     }
 
     private indicator() {
-        return this.gridContainer.children[1];
+        return this.controlContainer.children[1];
     }
 
-    private rowSelector() {
-        return `#tbody${this.gridId} > tr.grid-row`
+    private rowSelector(rowIndex: number | null = null) {
+        var tr = (rowIndex) ? `tr:nth-child(${rowIndex})` : 'tr.grid-row';
+        return `#tbody${this.controlId} > ${tr}`
     }
 
     private multiRowSelectAllSelector() {
@@ -511,30 +685,18 @@ class GridControl {
         return `td > input.multi-select`
     }
 
-    private gridSelector() {
-        return `#${this.gridId}`
-    }
-
-    private buttonSelector(buttonType) {
-        return `button[button-type="${buttonType}"]`
-    }
-
-    private getButton(name): HTMLButtonElement {
-        return this.gridControlElement(this.buttonSelector(name))
-    }
-
-    private triggerName(evt: any) {
-        return (evt.detail.requestConfig.headers['HX-Trigger-Name'] ?? '').toLowerCase() 
+    public gridControlElement(selector): HTMLElement {
+        return this.controlElement(selector)
     }
 
     private selectedValues() {
         let selectedValues = [];
-        this.gridControlElements(this.multiRowSelectSelector()).forEach((checkbox: HTMLInputElement) => {
+        this.controlElements(this.multiRowSelectSelector()).forEach((checkbox: HTMLInputElement) => {
             if (checkbox.checked) {
                 let tr = checkbox.closest("tr") as HTMLTableRowElement;
 
                 if (tr.dataset.id) {
-                    selectedValues.push(tr.dataset.id)
+                    selectedValues.push(tr.dataset.idx)
                 }
             }
         })
@@ -542,31 +704,133 @@ class GridControl {
         return selectedValues;
     }
 
-
     public columnCells(columnName): NodeListOf<HTMLTableCellElement> {
         let th = this.heading(columnName);
-        return this.gridControlElements(`td:nth-child(${(th.cellIndex + 1)})`)
+        return this.controlElements(`td:nth-child(${(th.cellIndex + 1)})`)
     }
 
     public heading(columnName): HTMLTableCellElement {
-        return this.gridControlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
+        return this.controlElement(`th[data-columnname='${columnName}']`) ?? this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
     }
 
     public columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement {
         let th = this.heading(columnName);
+        if (!th) {
+            console.error(`Column name: '${columnName}' not found`)
+        }
         return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
     }
 
-    public columnValue(columnName: string, row: HTMLTableRowElement) {
+    public columnValue(columnName: string, row: HTMLTableRowElement = null) {
         if (!row) {
-            row = this.selectedRow;
+            row = this.currentValidationRow ? this.currentValidationRow : this.selectedRow;
         }
 
-        let datasetValue = row.dataset[columnName.toLowerCase()];
-        if (datasetValue) {
+        let datasetValue = row.dataset[columnName] ?? row.dataset[columnName.toLowerCase()];
+        if (datasetValue || datasetValue == '') {
             return datasetValue;
         }
-        let cell = this.columnCell(columnName, row)
+        let cell: HTMLTableCellElement = this.columnCell(columnName, row)
+
+        if (cell) {
+            if (this.hasFormControl(cell)) {
+                return this.formControlValue(columnName, row);
+            }
+        }
+
         return cell ? cell.dataset.value : null;
+    }
+
+    private hasFormControl(cell: HTMLTableCellElement) {
+        if (cell.childElementCount > 0) {
+            switch (cell.children[0].tagName) {
+                case 'INPUT':
+                case 'TEXTAREA':
+                case 'SELECT':
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
+        if (!row) {
+            row = this.currentValidationRow;
+        }
+        let cell: HTMLTableCellElement = this.columnCell(columnName, row)
+        let element: HTMLElement = cell;
+        if (this.hasFormControl(cell)) {
+            element = this.formControl(columnName, row);
+        }
+
+        if (element) {
+            element.dataset.error = "true";
+        }
+    }
+
+    public updateApiRequestParameters(params: any) {
+        let input = this.controlElement('input[name="apiRequestParameters"]') as HTMLInputElement;
+        if (input) {
+            input.value = JSON.stringify(params);
+
+            if (this.controlElement('th') == null) {
+                input.attributes["hx-target"].value = "closest div.grid-container";
+            }
+            htmx.trigger(input, "changed",);
+        }
+    }
+
+    private configureFormControls() {
+        let firstRow: HTMLTableRowElement = this.controlElement("tr.grid-row:first-child")
+
+        if (!firstRow) {
+            return;
+        }
+
+        firstRow.querySelectorAll("select").forEach((select: HTMLSelectElement) => {
+            const textArray = [...select.options].map(opt => opt.text);
+            let width = this.getTextWidth(textArray, select);
+            if (width > select.offsetWidth && select.style.width == '') {
+                select.style.width = `${width + 40}px`
+            }
+        });
+
+        firstRow.querySelectorAll("input[type='text']").forEach((input: HTMLInputElement) => {
+            const textArray = [];
+            let cell = input.parentElement as HTMLTableCellElement
+            this.controlElements(`tr.grid-row td:nth-child(${cell.cellIndex + 1})`).forEach((c: HTMLTableCellElement) => {
+                if (c.children.length && c.children[0].tagName == "INPUT") {
+                    textArray.push((c.children[0] as HTMLInputElement).value)
+                }
+            });
+            let width = this.getTextWidth(textArray, input);
+            if (width > input.offsetWidth && input.style.width == '') {
+                input.style.width = `${width + 10}px`
+            }
+        });
+    }
+
+    private getTextWidth(text: string[], element: HTMLElement) {
+        let width = 0;
+
+        const s: HTMLSpanElement = document.createElement('span');
+        document.body.appendChild(s);
+
+        s.style.visibility = 'hidden';
+        s.style.position = 'absolute';
+        s.style.whiteSpace = 'nowrap';
+        s.style.font = window.getComputedStyle(element).font;
+
+        for (let i = 0; i < text.length; i++) {
+            s.textContent = text[i];
+            const w = s.offsetWidth;
+            if (w > width) {
+                width = w;
+            }
+        }
+
+        document.body.removeChild(s);
+        return width;
     }
 }

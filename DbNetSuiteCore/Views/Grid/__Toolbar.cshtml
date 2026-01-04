@@ -1,0 +1,66 @@
+﻿@model GridViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.ViewModels
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+
+<div class="flex flex-row gap-1 items-center bg-slate-50 border border-solid border-slate-300 rounded py-1 px-1 @Model.Justify()">
+    <div id="searchview" class="flex flex-row gap-1"">
+        @if (Model.IsStoredProcedure == false)
+        {
+            <input class="" style="width:10rem" autofocus type="search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" aria-label="Search" name="@TriggerNames.Search" value="@Model.SearchInput" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="outerHTML" autocomplete="off" />
+        }
+
+        <div id="no-records" class="p-1 rounded-md border border-solid border-sky-400 bg-sky-100 flex flex-row gap-2">
+            @IconHelper.Info()
+            <span>@ResourceHelper.GetResourceString(ResourceNames.NoRecordsFound)</span>
+        </div>
+        @if (Model.SearchDialog)
+        {
+            @RazorHelper.IconButton("Search", IconHelper.Search())
+        }
+        @if (Model.GridModel.ViewDialog != null)
+        {
+            <button button-type="view" type="button" title="View">@IconHelper.View()</button>
+        }
+    </div>
+    <div id="navigation" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
+        @{
+            @Model.RenderNavButton(TriggerNames.First, IconHelper.First(), ResourceHelper.GetResourceString(ResourceNames.First))
+            @Model.RenderNavButton(TriggerNames.Previous, IconHelper.Previous(), ResourceHelper.GetResourceString(ResourceNames.Previous))
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Page)</span>
+            @Model.RenderPageNumber(Model.CurrentPage, Model.TotalPages)
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Of)</span>
+            @Model.RenderTotalPages(Model.TotalPages)
+            <span class="flex">@ResourceHelper.GetResourceString(ResourceNames.Rows)</span>
+            @Model.RenderRowCount(Model.RowCount)
+            @Model.RenderNavButton(TriggerNames.Next, IconHelper.Next(), ResourceHelper.GetResourceString(ResourceNames.Next))
+            @Model.RenderNavButton(TriggerNames.Last, IconHelper.Last(), ResourceHelper.GetResourceString(ResourceNames.Last))
+        }
+    </div>
+
+    @await Html.PartialAsync("__QueryLimitWarning", Model.GridModel)
+
+    <div id="export" class="flex flex-row gap-1 items-center @(Model.TotalPages == 0 ? "hidden" : "")">
+        @if (Model.GridModel.Copy)
+        {
+            <button button-type="copy" type="button" title="@ResourceHelper.GetResourceString(ResourceNames.Copy)">@IconHelper.Copy()</button>
+        }
+        @if (Model.GridModel.Export)
+        {
+            <button button-type="export" type="button" title="@ResourceHelper.GetResourceString(ResourceNames.Export)">@IconHelper.Download()</button>
+            @Model.RenderExportOptions()
+        }
+    </div>
+
+    @if (Model.Editable)
+    {
+        <div class="flex flex-row gap-1" id="applyCancel">
+            @{
+                @Model.RenderButton(TriggerNames.Apply, IconHelper.Apply(), ResourceNames.ApplyChanges, false, "background-color: rgb(209 250 229)")
+                @Model.RenderButton(TriggerNames.Cancel, IconHelper.Cancel(), ResourceNames.CancelChanges)
+            }
+        </div>
+    }
+</div>

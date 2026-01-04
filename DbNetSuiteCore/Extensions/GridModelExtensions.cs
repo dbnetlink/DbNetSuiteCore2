@@ -1,127 +1,38 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Enums;
-using System.Text.RegularExpressions;
-using System.Globalization;
 using System.Data;
-using System.Text.Json;
 using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.Math;
-using DocumentFormat.OpenXml.Office2010.Word;
-using DocumentFormat.OpenXml.Bibliography;
 
 namespace DbNetSuiteCore.Extensions
 {
     public static class GridModelExtensions
     {
-        public static QueryCommandConfig BuildQuery(this GridModel gridModel)
-        {
-            string sql = $"select {Top(gridModel)}{AddSelectPart(gridModel)} from {gridModel.TableName}";
-            QueryCommandConfig query = new QueryCommandConfig(sql);
-
-            gridModel.AddFilterPart(query);
-            gridModel.AddGroupByPart(query);
-            gridModel.AddHavingPart(query);
-            gridModel.AddOrderPart(query);
-
-            query.Sql = $"{query.Sql}{Limit(gridModel)}";
-            return query;
-        }
-
-        public static QueryCommandConfig BuildRecordQuery(this GridModel gridModel)
-        {
-            string sql = $"select {AddSelectPart(gridModel)} from {gridModel.TableName}";
-            QueryCommandConfig query = new QueryCommandConfig(sql);
-
-            gridModel.AddPrimaryKeyFilterPart(query);
-            return query;
-        }
-
-        public static QueryCommandConfig BuildProcedureCall(this GridModel gridModel)
-        {
-            QueryCommandConfig query = new QueryCommandConfig($"{gridModel.ProcedureName}");
-            AssignParameters(query, gridModel.ProcedureParameters);
-            return query;
-        }
-
-        public static void AssignParameters(QueryCommandConfig query, List<DbParameter> parameters)
-        {
-            foreach (var parameter in parameters)
-            {
-                if (parameter.Value is JsonElement)
-                {
-                    parameter.Value = JsonElementExtension.Value((JsonElement)parameter.Value);
-                }
-                query.Params[DbHelper.ParameterName(parameter.Name)] = GridColumnModelExtensions.TypedValue(parameter.TypeName, parameter.Value);
-            }
-        }
-
         public static QueryCommandConfig BuildEmptyQuery(this GridModel gridModel)
         {
-            return new QueryCommandConfig($"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2");
-        }
-
-        private static string AddSelectPart(this GridModel gridModel)
-        {
-            if (gridModel.Columns.Any() == false)
-            {
-                return "*";
-            }
-
-            List<string> selectPart = new List<string>();
-
-            foreach (var gridColumn in gridModel.Columns)
-            {
-                var columnExpression = gridColumn.Expression;
-                if (gridColumn.Aggregate != AggregateType.None)
-                {
-                    columnExpression = $"{AggregateExpression(gridColumn)} as {gridColumn.ColumnName}";
-                }
-                selectPart.Add(columnExpression);
-            }
-            return string.Join(",", selectPart);
+            return new QueryCommandConfig(gridModel.DataSourceType) { Sql = $"select {GetColumnExpressions(gridModel)} from {gridModel.TableName} where 1=2" };
         }
 
         private static string GetColumnExpressions(this GridModel gridModel)
         {
-            return gridModel.Columns.Any() ? string.Join(",", gridModel.Columns.Select(x => x.Expression).ToList()) : "*";
+            return ColumnsHelper.GetColumnExpressions(gridModel.Columns.Cast<ColumnModel>());
         }
 
-
-        private static void AddFilterPart(this GridModel gridModel, QueryCommandConfig query)
+        public static void AddFilterPart(this GridModel gridModel, QueryCommandConfig query)
         {
             List<string> filterParts = new List<string>();
 
-            if (!string.IsNullOrEmpty(gridModel.SearchInput))
+            string filter = ComponentModelExtensions.AddSearchInputFilterPart(gridModel, query);
+
+            if (string.IsNullOrEmpty(filter) == false)
             {
-                List<string> quickSearchFilterPart = new List<string>();
+                filterParts.Add(filter);
+            }
 
-                foreach (var gridColumn in gridModel.Columns.Where(c => c.Searchable))
-                {
-                    string searchInput = gridModel.SearchInput;
-                    string expression = RefineSearchExpression(gridColumn, gridModel);
-
-                    if (IsCsvFile(gridModel))
-                    {
-                        searchInput = searchInput.ToLower();
-                        expression = $"LCASE({expression})";
-                    }
-
-                    query.Params[$"@{gridColumn.ParamName}"] = $"%{searchInput}%";
-                    quickSearchFilterPart.Add($"{expression} like @{gridColumn.ParamName}");
-                }
-
-                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
-                {
-                    query.Params[$"@{gridColumn.ParamName}"] = $"%{gridModel.SearchInput}%";
-                    var lookupSql = $"select {gridColumn.Lookup.KeyColumn} from {gridColumn.Lookup.TableName} where {gridColumn.Lookup.DescriptionColumn} like @{gridColumn.ParamName}";
-                    quickSearchFilterPart.Add($"{RefineSearchExpression(gridColumn, gridModel)} in ({lookupSql})");
-                }
-
-                if (quickSearchFilterPart.Any())
-                {
-                    filterParts.Add($"({string.Join(" or ", quickSearchFilterPart)})");
-                }
+            string searchDialogFilter = ComponentModelExtensions.AddSearchDialogFilterPart(gridModel, query);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                filterParts.Add(searchDialogFilter);
             }
 
             List<string> columnFilterParts = ColumnFilterParts(gridModel, query);
@@ -133,50 +44,27 @@ namespace DbNetSuiteCore.Extensions
 
             if (gridModel.IsNested || gridModel.IsLinked)
             {
-                if (!string.IsNullOrEmpty(gridModel.ParentKey))
-                {
-                    var foreignKeyColumn = gridModel.Columns.FirstOrDefault(c => c.ForeignKey);
-                    if (foreignKeyColumn != null)
-                    {
-                        filterParts.Add($"({foreignKeyColumn.Expression.Split(" ").First()} = @{foreignKeyColumn.ParamName})");
-                        query.Params[$"@{foreignKeyColumn.ParamName}"] = foreignKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
-                    }
-                }
-                else
-                {
-                    filterParts.Add($"(1=2)");
-                }
+                ComponentModelExtensions.AddParentKeyFilterPart(gridModel, query, filterParts);
             }
 
             if (!string.IsNullOrEmpty(gridModel.FixedFilter))
             {
                 filterParts.Add($"({gridModel.FixedFilter})");
-                AssignParameters(query, gridModel.FixedFilterParameters);
+                ComponentModelExtensions.AssignParameters(query, gridModel.FixedFilterParameters);
             }
 
             if (filterParts.Any())
             {
-                query.Sql += $" where {string.Join(" and ", filterParts)}";
+                query.Sql += $" where ({string.Join(") and (", filterParts)})";
             }
         }
 
-        private static void AddPrimaryKeyFilterPart(this GridModel gridModel, CommandConfig query)
+        public static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
         {
-            var primaryKeyColumn = gridModel.Columns.FirstOrDefault(c => c.PrimaryKey);
-            query.Sql += $" where {primaryKeyColumn.Expression} = @{primaryKeyColumn.ParamName}";
-            query.Params[$"@{primaryKeyColumn.ParamName}"] = primaryKeyColumn!.TypedValue(gridModel.ParentKey) ?? string.Empty;
-        }
-
-        private static void AddGroupByPart(this GridModel gridModel, QueryCommandConfig query)
-        {
-            if (gridModel.Columns.Any(c => c.Aggregate != AggregateType.None) == false)
-            {
-                return;
-            }
             query.Sql += $" group by {string.Join(",", gridModel.Columns.Where(c => c.Aggregate == AggregateType.None).Select(c => c.Expression).ToList())}";
         }
 
-        private static void AddHavingPart(this GridModel gridModel, CommandConfig query)
+        public static void AddHavingPart(this GridModel gridModel, QueryCommandConfig query)
         {
             List<string> havingParts = new List<string>();
 
@@ -185,6 +73,12 @@ namespace DbNetSuiteCore.Extensions
             if (columnFilterParts.Any())
             {
                 havingParts.Add($"({string.Join(" and ", columnFilterParts)})");
+            }
+
+            string searchDialogFilter = ComponentModelExtensions.AddSearchDialogFilterPart(gridModel, query, true);
+            if (string.IsNullOrEmpty(searchDialogFilter) == false)
+            {
+                havingParts.Add(searchDialogFilter);
             }
 
             if (havingParts.Any())
@@ -218,35 +112,28 @@ namespace DbNetSuiteCore.Extensions
                 if (columnFilter != null)
                 {
                     string expression = FilterColumnExpression(gridModel, column, havingFilter);
-                    object? paramValue = ParamValue(columnFilter.Value.Value, column, gridModel);
+                    object paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType, true);
 
-                    if (paramValue is DateTime && gridModel.DataSourceType == DataSourceType.MSSQL)
-                    {
-                        int year = ((DateTime)paramValue).Year;
-                        if ( year < 1753 || year > 9999 )
-                        {
-                            column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
-                            continue;
-                        }
-                    }
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
                     {
-                        column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
+                        column.FilterError = paramValue == null ? ResourceHelper.GetResourceString(ResourceNames.DataFormatError) : ResourceHelper.GetResourceString(ResourceNames.ColumnFilterNoData);
                         continue;
                     }
 
-                    if (IsCsvFile(gridModel) && columnFilter.Value.Key == "like")
+                    if (columnFilter.Value.Key == "like")
                     {
-                        expression = $"LCASE({expression})";
-                        paramValue = paramValue.ToString().ToLower();
+                        paramValue = (paramValue ?? string.Empty).ToString()!.ToLower();
+                        expression = ComponentModelExtensions.CaseInsensitiveExpression(gridModel, expression);
                     }
+                    string paramName = DbHelper.ParameterName($"columnfilter{i}", gridModel.DataSourceType);
+                    query.Params[paramName] = paramValue;
 
-                    columnFilterParts.Add($"{expression} {columnFilter.Value.Key} @columnfilter{i}");
-                    query.Params[$"@columnfilter{i}"] = paramValue;
+                    paramName = ComponentModelExtensions.UpdateParamName(paramName, column, gridModel.DataSourceType);
+                    columnFilterParts.Add($"{expression} {columnFilter.Value.Key} {paramName}");
                 }
                 else
                 {
-                    column.FilterError = ResourceHelper.GetResourceString(ResourceNames.ColumnFilterDataError);
+                    column.FilterError = ResourceHelper.GetResourceString(ResourceNames.DataFormatError);
                 }
             }
 
@@ -257,7 +144,7 @@ namespace DbNetSuiteCore.Extensions
         {
             if (havingFilter == false)
             {
-                return RefineSearchExpression(gridColumnModel, gridModel);
+                return ComponentModelExtensions.RefineSearchExpression(gridColumnModel, gridModel);
             }
 
             switch (gridModel.DataSourceType)
@@ -265,17 +152,39 @@ namespace DbNetSuiteCore.Extensions
                 case DataSourceType.SQLite:
                     return gridColumnModel.ColumnName;
                 default:
-                    return AggregateExpression(gridColumnModel);
+                    return ComponentModelExtensions.AggregateExpression(gridColumnModel);
             }
         }
 
-        private static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
+        public static void AddOrderPart(this GridModel gridModel, QueryCommandConfig query)
         {
             if (string.IsNullOrEmpty(gridModel.SortColumnOrdinal))
             {
                 return;
             }
             query.Sql += $" order by {gridModel.SortColumnOrdinal} {gridModel.SortSequence}";
+        }
+
+        public static void AddPagination(this GridModel gridModel, QueryCommandConfig query)
+        {
+            if (gridModel.PaginateQuery)
+            {
+                var offset = (gridModel.CurrentPage - 1) * gridModel.PageSize;
+                switch (gridModel.DataSourceType)
+                {
+                    case DataSourceType.MSSQL:
+                    case DataSourceType.Oracle:
+                        query.Sql += $" OFFSET({offset}) ROWS FETCH NEXT {gridModel.PageSize} ROWS ONLY";
+                        break;
+                    case DataSourceType.MySql:
+                        query.Sql += $" LIMIT {offset},{gridModel.PageSize}";
+                        break;
+                    case DataSourceType.PostgreSql:
+                    case DataSourceType.SQLite:
+                        query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({offset})";
+                        break;
+                }
+            }
         }
 
         public static string AddDataTableOrderPart(this GridModel gridModel)
@@ -285,16 +194,6 @@ namespace DbNetSuiteCore.Extensions
                 return string.Empty;
             }
             return $"{gridModel.SortColumnName} {gridModel.SortSequence}";
-        }
-
-        public static void QualifyColumnExpressions(this GridModel gridModel)
-        {
-            gridModel.Columns.ToList().ForEach(c => c.Expression = DbHelper.QualifyExpression(c.Expression, gridModel.DataSourceType));
-        }
-
-        private static string AggregateExpression(GridColumn c)
-        {
-            return $"{c.Aggregate}({Regex.Replace(c.Expression, @" as \w*$", "", RegexOptions.IgnoreCase)})";
         }
 
         public static KeyValuePair<string, object>? ParseFilterColumnValue(string filterColumnValue, GridColumn gridColumn)
@@ -324,14 +223,14 @@ namespace DbNetSuiteCore.Extensions
                 return new KeyValuePair<string, object>(comparisionOperator, string.Empty);
             }
 
-            if (gridColumn.IsNumeric)
+            if (gridColumn.IsNumeric || gridColumn.LookupOptions != null)
             {
                 return new KeyValuePair<string, object>(comparisionOperator, filterColumnValue);
             }
             switch (gridColumn.DataTypeName)
             {
                 case nameof(Boolean):
-                    return new KeyValuePair<string, object>("=", ParseBoolean(filterColumnValue));
+                    return new KeyValuePair<string, object>("=", ComponentModelExtensions.ParseBoolean(filterColumnValue));
                 case nameof(DateTime):
                     try
                     {
@@ -355,228 +254,112 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static void ConvertEnumLookups(this GridModel gridModel)
-        {
-            foreach (var gridColumn in gridModel.Columns.Where(c => c.LookupOptions != null && c.Lookup == null))
-            {
-                DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
-                gridModel.Data.ConvertLookupColumn(dataColumn, gridColumn, gridModel);
-            }
-        }
-
         public static void GetDistinctLookups(this GridModel gridModel)
         {
             if (gridModel.Data.Rows.Count > 0)
             {
-                foreach (var gridColumn in gridModel.Columns.Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName)))
+                foreach (var gridColumn in gridModel.Columns.Where(c => c.DistinctLookup))
                 {
-                    DataColumn? dataColumn = gridModel.GetDataColumn(gridColumn);
-                    var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false).Select(dr => dr[0]).ToList();
-                    gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, v.ToString() ?? string.Empty)).ToList();
-                }
-            }
-        }
-
-        private static string RefineSearchExpression(GridColumn col, GridModel gridModel)
-        {
-            string columnExpression = StripColumnRename(col.Expression);
-
-            if (col.Aggregate != AggregateType.None)
-            {
-                columnExpression = AggregateExpression(col);
-            }
-
-            if (col.DataType != typeof(DateTime))
-            {
-                return columnExpression;
-            }
-
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.MSSQL:
-                    if (col.DbDataType != "31") // "Date"
+                    DataColumn dataColumn = gridModel.GetDataColumn(gridColumn);
+                    if (dataColumn != null)
                     {
-                        columnExpression = $"CONVERT(DATE,{columnExpression})";
+                        var lookupValues = gridModel.Data.DefaultView.ToTable(true, dataColumn.ColumnName).Rows.Cast<DataRow>().Where(dr => string.IsNullOrEmpty(dr[0]?.ToString()) == false && dr[0] != DBNull.Value).Select(dr => Convert.ChangeType(dr[0], gridColumn.DataType)).OrderBy(v => v).ToList();
+
+
+                        gridColumn.DbLookupOptions = lookupValues.AsEnumerable().OrderBy(v => v).Select(v => new KeyValuePair<string, string>(v.ToString() ?? string.Empty, LookupDescription(v, gridColumn))).ToList();
                     }
-                    break;
-                case DataSourceType.SQLite:
-                    columnExpression = $"DATE({columnExpression})";
-                    break;
-            }
-
-            return columnExpression;
-        }
-
-        private static string StripColumnRename(string columnExpression)
-        {
-            string[] columnParts = columnExpression.Split(')');
-            columnParts[columnParts.Length - 1] = Regex.Replace(columnParts[columnParts.Length - 1], " as .*", "", RegexOptions.IgnoreCase);
-            columnParts[0] = Regex.Replace(columnParts[0], "unique |distinct ", "", RegexOptions.IgnoreCase);
-
-            return String.Join(")", columnParts);
-        }
-
-        private static object? ParamValue(object value, GridColumn column, GridModel gridModel)
-        {
-            var dataType = column.DataTypeName;
-            if (value == null)
-            {
-                if (dataType == "Byte[]")
-                    return new byte[0];
-                else
-                    return DBNull.Value;
-            }
-
-            if (string.IsNullOrEmpty(value.ToString()))
-            {
-                return DBNull.Value;
-            }
-
-            object paramValue = value.ToString();
-            try
-            {
-                switch (dataType)
-                {
-                    case nameof(String):
-                        break;
-                    case nameof(Boolean):
-                        paramValue = ParseBoolean(value.ToString());
-                        break;
-                    case nameof(TimeSpan):
-                        paramValue = TimeSpan.Parse(DateTime.Parse(value.ToString()).ToString(column.Format));
-                        break;
-                    case nameof(DateTime):
-                        if (string.IsNullOrEmpty(column.Format))
-                        {
-                            paramValue = Convert.ChangeType(value, Type.GetType($"System.{nameof(DateTime)}"));
-                        }
-                        else
-                        {
-                            try
-                            {
-                                paramValue = DateTime.ParseExact(value.ToString(), column.Format, CultureInfo.CurrentCulture);
-                            }
-                            catch
-                            {
-                                paramValue = DateTime.Parse(value.ToString(), CultureInfo.CurrentCulture);
-                            }
-                        }
-                        break;
-                    case nameof(Byte):
-                        paramValue = value;
-                        break;
-                    case nameof(Guid):
-                        paramValue = new Guid(value.ToString());
-                        break;
-                    case nameof(Int16):
-                    case nameof(Int32):
-                    case nameof(Int64):
-                    case nameof(Decimal):
-                    case nameof(Single):
-                    case nameof(Double):
-                        if (string.IsNullOrEmpty(column.Format) == false)
-                        {
-                            var cultureInfo = Thread.CurrentThread.CurrentCulture;
-                            value = value.ToString().Replace(cultureInfo.NumberFormat.CurrencySymbol, "");
-                        }
-                        paramValue = Convert.ChangeType(value, GetColumnType(dataType));
-                        break;
-                    case nameof(UInt16):
-                    case nameof(UInt32):
-                    case nameof(UInt64):
-                        paramValue = Convert.ChangeType(value, GetColumnType(dataType.Replace("U", string.Empty)));
-                        break;
-                    default:
-                        paramValue = Convert.ChangeType(value, GetColumnType(dataType));
-                        break;
                 }
             }
-            catch (Exception e)
+        }
+
+        private static string LookupDescription(object value, GridColumn gridColumn)
+        {
+            if (value == null || string.IsNullOrEmpty(gridColumn.Format))
             {
-                return null;
-                //throw new Exception($"{e.Message} => : Value: {value.ToString()} DataType:{dataType}");
+                return value?.ToString() ?? string.Empty;
             }
 
-            switch (dataType)
+            return gridColumn.FormatValue(value)?.ToString() ?? string.Empty;
+        }
+
+        public static CommandConfig BuildUpdate(this GridModel gridModel, int r, object primaryKeyObject, List<string> columns)
+        {
+            CommandConfig update = new CommandConfig(gridModel.DataSourceType);
+            update.Sql = $"update {gridModel.TableName}";
+
+            List<string> set = new List<string>();
+
+            foreach (GridColumn gridColumn in gridModel.Columns.Where(c => c.Editable))
             {
-                case nameof(DateTime):
-                    switch (gridModel.DataSourceType)
-                    {
-                        case DataSourceType.SQLite:
-                            paramValue = Convert.ToDateTime(paramValue).ToString("yyyy-MM-dd");
-                            break;
-                    }
-                    break;
-            }
-
-            return paramValue;
-        }
-
-        public static bool ParseBoolean(string boolString)
-        {
-            switch (boolString.ToLower())
-            {
-                case "yes":
-                case "true":
-                case "1":
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        private static Type GetColumnType(string typeName)
-        {
-            return Type.GetType("System." + typeName);
-        }
-
-        private static bool IsCsvFile(GridModel gridModel)
-        {
-            return gridModel.DataSourceType == DataSourceType.Excel && gridModel.TableName.ToLower().Replace("]", string.Empty).EndsWith(".csv");
-        }
-
-        private static string Top(GridModel gridModel)
-        {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.MSSQL:
-                    return QueryLimit(gridModel);
-            }
-
-            return string.Empty;
-        }
-
-        private static string Limit(GridModel gridModel)
-        {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.MySql:
-                case DataSourceType.PostgreSql:
-                case DataSourceType.SQLite:
-                    return QueryLimit(gridModel);
-            }
-
-            return string.Empty;
-        }
-
-        private static string QueryLimit(GridModel gridModel)
-        {
-            string limit = string.Empty;
-            if (gridModel.QueryLimit > 0)
-            {
-                switch (gridModel.DataSourceType)
+                /*
+                if (gridColumn.ReadOnly|| gridColumn.Disabled)
                 {
-                    case DataSourceType.MSSQL:
-                        limit = $"TOP {gridModel.QueryLimit} ";
-                        break;
-                    case DataSourceType.MySql:
-                    case DataSourceType.PostgreSql:
-                    case DataSourceType.SQLite:
-                        limit = $" LIMIT {gridModel.QueryLimit}";
-                        break;
+                    continue;
+                }
+                */
+
+                var columnName = gridColumn.ColumnName;
+
+                if (columns.Contains(columnName, StringComparer.CurrentCultureIgnoreCase) == false)
+                {
+                    continue;
+                }
+
+                if (gridModel.FormValues.ContainsKey(columnName))
+                {
+                    var paramName = DbHelper.ParameterName(columnName, gridModel.DataSourceType);
+                    update.Params[paramName] = GetParamValue(gridModel, gridColumn, r);
+                    paramName = ComponentModelExtensions.UpdateParamName(paramName, gridColumn, gridModel.DataSourceType);
+
+                    set.Add($"{columnName} = {paramName}");
                 }
             }
 
-            return limit;
+            if (set.Any())
+            {
+                update.Sql += $" set {string.Join(",", set)}";
+            }
+
+            List<object> primaryKeyValues = new List<object>();
+            if (primaryKeyObject is not List<object>)
+            {
+                primaryKeyValues = new List<object>() { primaryKeyObject };
+            }
+            else
+            {
+                primaryKeyValues = primaryKeyObject as List<object> ?? new List<object>();
+            }
+
+            List<string> where = new List<string>();
+
+            foreach (var item in gridModel.Columns.Where(c => c.PrimaryKey).Select((value, index) => new { value = value, index = index }))
+            {
+                where.Add($"{item.value.ColumnName} = {DbHelper.ParameterName(item.value.ColumnName, gridModel.DataSourceType)}");
+                update.Params[item.value.ColumnName] = ComponentModelExtensions.ParamValue(primaryKeyValues[item.index], item.value, gridModel.DataSourceType) ?? DBNull.Value;
+            }
+
+            update.Sql += $" where {string.Join(" and ", where)}";
+            return update;
+        }
+
+        public static object GetParamValue(GridModel gridModel, GridColumn gridColumn, int r)
+        {
+            string columnName = gridColumn.ColumnName;
+            string value = string.Empty;
+
+            if (gridModel.FormValues.ContainsKey(columnName))
+            {
+                value = gridModel.FormValues[columnName][r];
+            }
+            else if (gridColumn.DataType != typeof(bool))
+            {
+                throw new Exception($"Form data missing for column => <b>{columnName}</b>");
+            }
+            else
+            {
+                value = "false";
+            }
+            return ComponentModelExtensions.ParamValue(value, gridColumn, gridModel.DataSourceType) ?? DBNull.Value;
         }
     }
 }

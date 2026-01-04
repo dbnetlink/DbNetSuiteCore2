@@ -1,13 +1,14 @@
-.dbnetsuite-grid {
+.dbnetsuite-grid,
+.dbnetsuite-form {
     border: 1px solid gainsboro;
     border-radius: 5px;
 }
 
-    .dbnetsuite-grid div.caption {
+    .dbnetsuite-grid div.caption,
+    .dbnetsuite-form div.caption {
         background-color: whitesmoke;
         border: 1px solid gainsboro;
         border-radius: 5px;
-        margin-bottom: 0.5rem;
         padding-left: 0.5rem;
         font-weight: bold;
     }
@@ -20,23 +21,135 @@
         border: 1px solid gainsboro;
         border-radius: 5px;
     }
+    .dbnetsuite-grid tr.bg-cyan-600 {
+        --tw-bg-opacity: 1;
+        background-color: rgb(8 145 178 / var(--tw-bg-opacity, 1)) !important;
+    }
+    .dbnetsuite-grid tr.grid-row:nth-child(odd) {
+        background-color: whitesmoke;
+    }
+
+    .dbnetsuite-grid tr.in-error {
+        background-color: var(--bg-error) !important;
+    }
 
     .dbnetsuite-grid input.multi-select {
         zoom: 1.25;
-        margin-left: 5px;
-        margin-right: 5px;
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        margin-top: 0.15rem;
+        margin-bottom: 0.15rem;
         justify-content: center;
         align-items: center;
-        display:flex;
+        display: flex;
+    }
+
+    .dbnetsuite-grid .tooltip-popover {
+        opacity: 0;
+        color: #000;
+        transition: opacity 0.5s ease-in-out;
+        max-width: 300px;
+        position: fixed;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: whitesmoke;
+        padding: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+        /*
+        .dbnetsuite-grid .tooltip-popover::after {
+            content: " ";
+            position: absolute;
+            bottom: 100%;
+            left: 10%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent transparent gainsboro transparent;
+        }
+        */
+.dbnetsuite {
+    --bg-error: rgb(254 205 211);
+    --bg-warning: rgb(254 215 170);
+    --bg-success: rgb(204 251 241);
+    --text-error: rgb(190 18 60);
+    --text-warning: rgb(194 65 12);
+    --text-success: rgb(13 148 136);
+}
+
+.dbnetsuite-form input:disabled,
+.dbnetsuite-form select:disabled {
+    background-color: rgb(226 232 240) !important;
+}
+
+.dbnetsuite-form [type="checkbox"]:disabled {
+    background-color: rgb(226 232 240) !important;
+}
+
+.dbnetsuite-form [type="color"] {
+    height: 36px;
+}
+
+.dbnetsuite .fc-control[data-modified='true'] {
+    background-color: var(--bg-warning);
+}
+
+.dbnetsuite .fc-control[data-error='true'],
+.dbnetsuite td[data-error='true'] {
+    background-color: var(--bg-error);
+}
+
+.dbnetsuite div#form-message[data-highlight='success'] {
+    background-color: var(--bg-success);
+    color: var(--text-success);
+}
+
+.dbnetsuite div#form-message[data-highlight='warning'] {
+    background-color: var(--bg-warning);
+    color: var(--text-warning);
+}
+
+.dbnetsuite div#form-message[data-highlight='error'] {
+    background-color: var(--bg-error);
+    color: var(--text-error);
+}
+
+.dbnetsuite-form .readonly,
+.dbnetsuite-form .readonly {
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.8;
+}
+
+    .dbnetsuite-form .readonly *,
+    .dbnetsuite-form .readonly {
+        cursor: default;
     }
 
 
+.dbnetsuite-select div.caption {
+    font-weight: bold;
+}
+
+.dbnetsuite table.search-dialog td {
+    border-top-width: 0px;
+    border-bottom-width: 0px;
+}
+
+.dbnetsuite .lookup-select > option:empty {
+    display: none;
+}
+
 .dbnetsuite .dialog {
-    position: fixed;
+    position: relative;
+    /*
     top: 50%;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
-    z-index:1;
+        */
+    z-index: 1;
 }
 
 .htmx-table :where(th,td) {
@@ -58,7 +171,7 @@
 
 .htmx-indicator {
     display: none;
-    z-index:2;
+    z-index: 2;
     position: absolute;
     top: 50%;
     left: 50%;
