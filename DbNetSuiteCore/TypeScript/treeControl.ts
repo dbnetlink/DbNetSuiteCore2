@@ -1,61 +1,114 @@
-class TreeControl extends ComponentControl {
+﻿class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
     constructor(selectId) {
         super(selectId)
     }
 
-    afterRequest(evt) {
-        let selectId = evt.target.closest("form").id;
-        if (selectId.startsWith(this.controlId) == false) {
+    afterRequest(evt:any) {
+        let treeId = evt.target.closest("form").id;
+        if (treeId.startsWith(this.controlId) == false) {
             return
         }
 
         this.tree = this.controlElement("div.tree-root");
 
-        let selectElements = this.controlElements("select");
-        this.tree.innerHTML = selectElements[1].innerHTML;
-        selectElements[1].remove();
-
         if (this.triggerName(evt) == "initialload") {
             this.initialise()
         }
+    }
 
-        this.invokeEventHandler('OptionsLoaded');
-        this.selectChanged(this.tree);
-        this.checkForError();
+    private toggleDropdown(ev) {
+        this.controlElement("#dropdownMenu").classList.toggle("show");
+    }
+
+    private toggleNode(event: MouseEvent) {
+        let target = event.target as HTMLElement;
+        let nodeHeader = target.closest('.node-header');
+        nodeHeader.querySelectorAll('span.icon').forEach(span => { span.classList.toggle('hidden') });
+        event.stopPropagation();
+        const node = target.parentElement;
+        node.classList.toggle('open');
+        target.closest('.node').querySelector(".node-content").classList.toggle('hidden');
+    }
+
+    private selectLeaf(event: MouseEvent) {
+        let target = event.target as HTMLElement;
+        const selectedLeaf = target.closest("div");
+        this.selectParentNodes(selectedLeaf)
+    }
+
+    private selectNode(event: MouseEvent) {
+        let target = event.target as HTMLElement;
+        const selectedNode = target.closest(".node") as HTMLElement;
+        this.selectParentNodes(selectedNode)
+    }
+
+    private selectParentNodes(selectedElement: HTMLElement) {
+        let path = [selectedElement.dataset.value];
+        let parentNode: HTMLDivElement = selectedElement.parentElement.closest('.node');
+
+        while (parentNode) {
+            const headerText = parentNode.dataset.value;
+            path.unshift(headerText);
+            parentNode = parentNode.parentElement.parentElement.closest('.node');
+        }
+
+        this.controlElement("#selected-label").innerHTML = `<span class="path-prefix">Selected Location</span>${path.join(' &gt; ')}`;
+        this.controlElement("#dropdownMenu").classList.remove("show");
+    }
+
+    private reset(e:MouseEvent) {
+        e.stopPropagation();
+        let treeSearch: HTMLInputElement = this.controlElement('#treeSearch')
+        treeSearch.value = '';
+        treeSearch.dispatchEvent(new Event('input'));
+        this.controlElements('input[name="location"]').forEach(rb => rb.checked = false);
+        this.controlElement('#selected-label').innerText = 'Select Location...';
+    }
+
+    private search(e: InputEvent) {
+        const filter = (e.target as HTMLInputElement).value.toLowerCase();
+        const items = this.controlElements('.node, .leaf');
+
+        items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            const isMatch = text.includes(filter);
+
+            if (!filter) {
+                item.style.display = 'flex';
+                if (item.classList.contains('node')) {
+                    item.classList.remove('open');
+                    item.querySelector('.node-content').classList.add('hidden');
+                }
+            } else if (isMatch) {
+                item.style.display = 'flex';
+                let parentContent = item.closest('.node-content');
+                while (parentContent) {
+                    parentContent.classList.remove('hidden');
+                    parentContent.parentElement.classList.add('open');
+                    parentContent.parentElement.style.display = 'flex';
+                    parentContent = parentContent.parentElement.closest('.node-content');
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
     }
 
     private initialise() {
-        this.controlElement("select").addEventListener("change", (ev: Event) => {
-            this.selectChanged(ev.target as HTMLSelectElement);
-        })
+        this.controlElements('div.select-trigger').forEach(div => { div.addEventListener("click", (e:MouseEvent) => this.toggleDropdown(e)) });
+        this.controlElements('span.open-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
+        this.controlElements('span.close-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
+        this.controlElements('span.leaf-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
+        this.controlElements('span.node-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
+        this.controlElement('#treeSearch').addEventListener('input', (e:InputEvent) => this.search(e));
+        this.controlElement('#resetBtn').addEventListener('click', (e:MouseEvent) => this.reset(e));
+
+        window.onclick = function (event) {
+            if (!event.target.closest('.custom-select-wrapper')) {
+                this.controlElement("#dropdownMenu").classList.remove("show");
+            }
+        }
         this.invokeEventHandler('Initialised');
-    }
-
-    private selectChanged(target: HTMLSelectElement) {
-        let url = '';
-        if (target.selectedOptions.length) {
-            var dataset = target.selectedOptions[0].dataset
-            url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : ''
-        }
-        this.updateLinkedChildControls(target.selectedIndex.toString(), url);
-        this.invokeEventHandler('LeafSelected', { selectedOptions: target.selectedOptions });
-    }
-
-    private updateLinkedChildControls(selectedIndex: string, url:string) {
-        this.updateLinkedControls(this.getLinkedControlIds(), selectedIndex, url)
-    }
-
-    private checkForError() {
-        var select = this.controlElement("select") as HTMLSelectElement;
-        const error = select.querySelector("div");
-        if (error) {
-            select.parentElement.nextElementSibling.after(error)
-        }
-    }
-
-    public getSelectedOptions(): HTMLOptionElement[] {
-
-        return Array.from(this.tree.selectedOptions);
     }
 }

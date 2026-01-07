@@ -14,21 +14,21 @@ namespace DbNetSuiteCore.Services
         {
         }
 
-    public async Task<Byte[]> Process(HttpContext context, string page)
-    {
+        public async Task<Byte[]> Process(HttpContext context, string page)
+        {
             try
             {
                 _context = context;
                 switch (page.ToLower())
                 {
-                    case "Treecontrol":
+                    case "treecontrol":
                         return await TreeView();
                     default:
                         return new byte[0];
                 }
             }
             catch (Exception ex)
-            {   
+            {
                 return await HandleError(ex, context);
             }
         }
@@ -44,7 +44,7 @@ namespace DbNetSuiteCore.Services
 
         private async Task<TreeViewModel> GetTreeViewModel(TreeModel treeModel)
         {
-             if (treeModel.Uninitialised)
+            if (treeModel.Uninitialised)
             {
                 await ConfigureColumns(treeModel);
             }
@@ -59,7 +59,7 @@ namespace DbNetSuiteCore.Services
 
             return treeViewModel;
         }
- 
+
         private TreeModel GetTreeModel()
         {
             try
@@ -67,15 +67,15 @@ namespace DbNetSuiteCore.Services
                 TreeModel TreeModel = JsonConvert.DeserializeObject<TreeModel>(StateHelper.GetSerialisedModel(_context, _configuration)) ?? new TreeModel();
                 TreeModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 AssignParentModel(TreeModel);
-                TreeModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim(); 
-  
+                TreeModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
+
                 if (TreeModel.DataSourceType == DataSourceType.JSON)
                 {
                     _jsonRepository.UpdateApiRequestParameters(TreeModel, _context);
                 }
                 return TreeModel;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return new TreeModel();
             }

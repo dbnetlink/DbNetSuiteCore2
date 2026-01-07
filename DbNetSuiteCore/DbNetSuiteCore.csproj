@@ -118,6 +118,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\CSS\treeControl.css" />
     <EmbeddedResource Include="Resources\CSS\gridControl.css" />
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />

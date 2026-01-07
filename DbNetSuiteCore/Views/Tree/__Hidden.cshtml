@@ -1,14 +1,10 @@
-﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+﻿@model DbNetSuiteCore.ViewModels.TreeViewModel
 @inject IConfiguration Configuration
 @using Microsoft.Extensions.Configuration
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
-@RazorHelper.ModelState(Model.SelectModel, Configuration)
+@RazorHelper.ModelState(Model.TreeModel, Configuration)
 @if (Model.IsParent)
 {
-    @RazorHelper.ModelSummaryState(Model.SelectModel, Configuration)
-}
-@if (string.IsNullOrEmpty(Model.JSON) == false)
-{
-    <input type="hidden" name="json" value="@TextHelper.Compress(Model.JSON)" />
+    @RazorHelper.ModelSummaryState(Model.TreeModel, Configuration)
 }

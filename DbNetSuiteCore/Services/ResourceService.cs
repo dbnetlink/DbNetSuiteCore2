@@ -42,10 +42,10 @@ namespace DbNetSuiteCore.Services
             switch (type)
             {
                 case "css":
-                    resources = new string[] { "output", "componentControl", "gridControl", "selectControl" };
+                    resources = ["output", "gridControl", "treeControl"];
                     break;
                 case "js":
-                    resources = new string[] { "htmx.min", "bundle.min" };
+                    resources = ["htmx.min", "bundle.min"];
 
                     if (_context?.Request.Query.ContainsKey("mode") == true && _context.Request.Query["mode"].ToString() == "blazor")
                     {

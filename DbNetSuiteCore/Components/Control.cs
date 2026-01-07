@@ -13,17 +13,22 @@ namespace DbNetSuiteCore
         {
             if (componentModel is GridModel gridModel)
             {
-                return new HtmlString(await base.Render((GridModel)componentModel));
+                return new HtmlString(await base.Render(gridModel));
             }
 
             if (componentModel is SelectModel selectModel)
             {
-                return new HtmlString(await base.Render((SelectModel)componentModel));
+                return new HtmlString(await base.Render(selectModel));
             }
 
             if (componentModel is FormModel formModel)
             {
-                return new HtmlString(await base.Render((FormModel)componentModel));
+                return new HtmlString(await base.Render(formModel));
+            }
+
+            if (componentModel is TreeModel treeModel)
+            {
+                return new HtmlString(await base.Render(treeModel));
             }
 
             return new HtmlString(string.Empty);

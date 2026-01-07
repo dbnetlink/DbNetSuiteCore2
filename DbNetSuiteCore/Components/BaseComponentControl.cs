@@ -53,6 +53,12 @@ namespace DbNetSuiteCore
             return await RenderView("Form/__ControlForm", new FormViewModel(formModel));
         }
 
+        protected async Task<string> Render(TreeModel treeModel)
+        {
+            treeModel.HttpContext = _httpContext;
+            return await RenderView("Tree/__ControlForm", new TreeViewModel(treeModel));
+        }
+
         private void ValidateControl(ComponentModel componentModel)
         {
             if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)

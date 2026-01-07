@@ -1,4 +1,4 @@
-﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+﻿@model DbNetSuiteCore.ViewModels.TreeViewModel
 @using System.Data
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Enums
 
 <div class="custom-select-wrapper">
-    <div class="select-trigger" onclick="toggleDropdown()">
+    <div class="select-trigger">
         <div id="selected-label">Select Location...</div>
         <span class="chevron">▼</span>
     </div>
@@ -19,34 +19,34 @@
         </div>
 
         <div id="locationTree" class="flex-tree tree-root">
-            <div class="node">
-                <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> USA</div>
+            <div class="node" data-value="USA">
+                <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">USA</span></div>
                 <div class="node-content hidden">
-                    <div class="node">
-                        <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> California</div>
+                    <div class="node" data-value="California">
+                        <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">California</span></div>
                         <div class="node-content hidden">
-                            <label class="leaf"><input type="radio" name="location" value="Los Angeles"> Los Angeles</label>
-                            <label class="leaf"><input type="radio" name="location" value="San Francisco"> San Francisco</label>
+                            <div class="leaf" data-value="Los Angeles"><span>@IconHelper.Document()</span><span class="leaf-text">Los Angeles</span></div>
+                            <div class="leaf" data-value="San Francisco"><span>@IconHelper.Document()</span><span class="leaf-text">San Francisco</span></div>
                         </div>
                     </div>
-                    <div class="node">
-                        <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> Texas</div>
+                    <div class="node data-value="Texas"">
+                        <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">Texas</span></div>
                         <div class="node-content hidden">
-                            <label class="leaf"><input type="radio" name="location" value="Austin"> Austin</label>
-                            <label class="leaf"><input type="radio" name="location" value="Houston"> Houston</label>
+                            <div class="leaf" data-value="Austin"><span>@IconHelper.Document()</span><span class="leaf-text">Austin</span></div>
+                            <div class="leaf" data-value="Houston"><span>@IconHelper.Document()</span><span class="leaf-text">Houston</span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="node">
-                <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> United Kingdom</div>
+            <div class="node" data-value="United Kingdom">
+                <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">United Kingdom</span></div>
                 <div class="node-content hidden">
-                    <div class="node">
-                        <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> England</div>
+                    <div class="node" data-value="England">
+                        <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">England</span></div>
                         <div class="node-content hidden">
-                            <label class="leaf"><input type="radio" name="location" value="London"> London</label>
-                            <label class="leaf"><input type="radio" name="location" value="Manchester"> Manchester</label>
+                            <div class="leaf" data-value="London"><span>@IconHelper.Document()</span><span class="leaf-text">London</span></div>
+                            <div class="leaf" data-value="Manchester"><span>@IconHelper.Document()</span><span class="leaf-text">Manchester</span></div>
                         </div>
                     </div>
                 </div>

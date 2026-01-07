@@ -57,7 +57,7 @@ namespace DbNetSuiteCore.Middleware
                 case "formcontrol":
                     response = await formService.Process(context, page);
                     break;
-                case "treeviewcontrol":
+                case "treecontrol":
                     response = await treeService.Process(context, page);
                     break;
                 default:
@@ -102,6 +102,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<GridService, GridService>();
             services.AddScoped<SelectService, SelectService>();
             services.AddScoped<FormService, FormService>();
+            services.AddScoped<TreeService, TreeService>();
             services.AddScoped<IResourceService, ResourceService>();
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();

@@ -6,6 +6,7 @@
       "Resources/JS/gridControl.js",
       "Resources/JS/selectControl.js",
       "Resources/JS/formControl.js",
+      "Resources/JS/treeControl.js",
       "Resources/JS/draggableDialog.js",
       "Resources/JS/dialog.js",
       "Resources/JS/viewDialog.js",
