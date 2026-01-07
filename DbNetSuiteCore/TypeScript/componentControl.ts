@@ -30,6 +30,9 @@ DbNetSuiteCore.assignClientControl = function (controlId: string, clientEvents: 
         if (controlId.startsWith("Form")) {
             clientControl = new FormControl(controlId);
         }
+        if (controlId.startsWith("Tree")) {
+            clientControl = new TreeControl(controlId);
+        }
         for (const [key, value] of Object.entries(clientEvents)) {
             const functionNameParts: Array<String> = value.toString().split('.') as Array<string>;
             try {

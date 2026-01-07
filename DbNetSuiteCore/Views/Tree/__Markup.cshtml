@@ -1,0 +1,56 @@
+﻿@model DbNetSuiteCore.ViewModels.SelectViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="custom-select-wrapper">
+    <div class="select-trigger" onclick="toggleDropdown()">
+        <div id="selected-label">Select Location...</div>
+        <span class="chevron">▼</span>
+    </div>
+
+    <div id="dropdownMenu" class="dropdown-content">
+        <div class="search-container">
+            <input type="text" id="treeSearch" placeholder="Search town or country..." autocomplete="off">
+            <button type="button" id="resetBtn" title="Reset Selection">✕</button>
+        </div>
+
+        <div id="locationTree" class="flex-tree tree-root">
+            <div class="node">
+                <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> USA</div>
+                <div class="node-content hidden">
+                    <div class="node">
+                        <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> California</div>
+                        <div class="node-content hidden">
+                            <label class="leaf"><input type="radio" name="location" value="Los Angeles"> Los Angeles</label>
+                            <label class="leaf"><input type="radio" name="location" value="San Francisco"> San Francisco</label>
+                        </div>
+                    </div>
+                    <div class="node">
+                        <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> Texas</div>
+                        <div class="node-content hidden">
+                            <label class="leaf"><input type="radio" name="location" value="Austin"> Austin</label>
+                            <label class="leaf"><input type="radio" name="location" value="Houston"> Houston</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="node">
+                <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> United Kingdom</div>
+                <div class="node-content hidden">
+                    <div class="node">
+                        <div class="node-header" onclick="toggleNode(event, this)"><span class="arrow">▶</span> England</div>
+                        <div class="node-content hidden">
+                            <label class="leaf"><input type="radio" name="location" value="London"> London</label>
+                            <label class="leaf"><input type="radio" name="location" value="Manchester"> Manchester</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var locationsTree = new TreeModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "countries") { Caption = "Country" };
+    locationsTree.Columns = new List<TreeColumn>
+    {
+        new TreeColumn("countryid") {PrimaryKey = true },
+        new TreeColumn("countryname")
+    };
+
+    <div style="display:flex;flex-direction:column;gap-4">
+        <div>
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(locationsTree))
+        </div>
+    </div>
+}

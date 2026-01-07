@@ -69,6 +69,10 @@
     <Content Remove="Views\Grid\__ViewDialogContent.cshtml" />
     <Content Remove="Views\Select\__ControlForm.cshtml" />
     <Content Remove="Views\Select\__Hidden.cshtml" />
+    <Content Remove="Views\Tree\__ControlForm.cshtml" />
+    <Content Remove="Views\Tree\__Hidden.cshtml" />
+    <Content Remove="Views\Tree\__Markup.cshtml" />
+    <Content Remove="Views\Tree\__Options.cshtml" />
     <Content Remove="Views\__Error.cshtml" />
     <Content Remove="Views\__LicenseInfo.cshtml" />
     <Content Remove="Views\__QueryLimitWarning.cshtml" />
@@ -132,6 +136,7 @@
     <EmbeddedResource Include="TypeScript\formControl.ts" />
     <EmbeddedResource Include="TypeScript\dialog.ts" />
     <EmbeddedResource Include="TypeScript\lookupDialog.ts" />
+    <EmbeddedResource Include="TypeScript\treeControl.ts" />
     <EmbeddedResource Include="TypeScript\selectControl.ts" />
     <EmbeddedResource Include="TypeScript\confirmDialog.ts" />
     <EmbeddedResource Include="TypeScript\htmlEditor.ts" />
@@ -139,6 +144,18 @@
     <EmbeddedResource Include="TypeScript\viewDialog.ts" />
     <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\Shared\__SearchDialog.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Tree\__ControlForm.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Tree\__Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Tree\__Markup.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Tree\__Options.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\__LicenseInfo.cshtml">

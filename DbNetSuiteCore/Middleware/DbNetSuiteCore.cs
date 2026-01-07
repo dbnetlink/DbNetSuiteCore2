@@ -11,8 +11,8 @@ using System.Net;
 
 namespace DbNetSuiteCore.Middleware
 {
-    public delegate Task<bool> FormValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
-    public delegate Task<bool> GridValidationDelegate(GridModel gridModel, HttpContext context, IConfiguration configuration);
+//    public delegate Task<bool> FormValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
+//    public delegate Task<bool> GridValidationDelegate(GridModel gridModel, HttpContext context, IConfiguration configuration);
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
@@ -25,11 +25,11 @@ namespace DbNetSuiteCore.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
+        public async Task Invoke(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService, TreeService treeService)
         {
             if (context.Request.Path.ToString().EndsWith(Extension))
             {
-                await GenerateResponse(context, resourceService, gridService, selectService, formService);
+                await GenerateResponse(context, resourceService, gridService, selectService, formService, treeService);
             }
             else
             {
@@ -37,7 +37,7 @@ namespace DbNetSuiteCore.Middleware
             }
         }
 
-        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService)
+        private async Task GenerateResponse(HttpContext context, IResourceService resourceService, GridService gridService, SelectService selectService, FormService formService, TreeService treeService)
         {
             var request = context.Request;
             var resp = context.Response;
@@ -56,6 +56,9 @@ namespace DbNetSuiteCore.Middleware
                     break;
                 case "formcontrol":
                     response = await formService.Process(context, page);
+                    break;
+                case "treeviewcontrol":
+                    response = await treeService.Process(context, page);
                     break;
                 default:
                     response = resourceService.Process(context, page);
