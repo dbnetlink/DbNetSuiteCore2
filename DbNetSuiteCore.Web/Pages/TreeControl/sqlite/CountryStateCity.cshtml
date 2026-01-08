@@ -1,0 +1,41 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@{
+
+    var citySelect = new TreeModel("cities") ;
+    citySelect.Columns = new List<TreeColumn>
+    {
+        new TreeColumn("cityid") {PrimaryKey = true },
+        new TreeColumn("cityname"),
+        new TreeColumn("stateid") { ForeignKey = true }
+    };
+
+    var stateSelect = new TreeModel("states") ;
+    stateSelect.Columns = new List<TreeColumn>
+    {
+        new TreeColumn("stateid") {PrimaryKey = true },
+        new TreeColumn("statename"),
+        new TreeColumn("countryid") { ForeignKey = true}
+    };
+    stateSelect.NestedLevel = citySelect;
+
+    var countrySelect = new TreeModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "countries");
+    countrySelect.Columns = new List<TreeColumn>
+    {
+        new TreeColumn("countryid") {PrimaryKey = true },
+        new TreeColumn("countryname")
+    };
+    countrySelect.NestedLevel = stateSelect;
+    countrySelect.SelectionTitle = "Selected City";
+
+
+    <div style="display:flex;flex-direction:column;gap-4">
+        <div> 
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(countrySelect))
+        </div>
+    </div>
+}

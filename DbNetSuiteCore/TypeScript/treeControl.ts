@@ -44,16 +44,17 @@
     }
 
     private selectParentNodes(selectedElement: HTMLElement) {
-        let path = [selectedElement.dataset.value];
+        let path = [selectedElement.dataset.description];
         let parentNode: HTMLDivElement = selectedElement.parentElement.closest('.node');
 
         while (parentNode) {
-            const headerText = parentNode.dataset.value;
+            const headerText = parentNode.dataset.description;
             path.unshift(headerText);
             parentNode = parentNode.parentElement.parentElement.closest('.node');
         }
 
-        this.controlElement("#selected-label").innerHTML = `<span class="path-prefix">Selected Location</span>${path.join(' &gt; ')}`;
+        let selectionLabel = this.controlElement("#selected-label");
+        selectionLabel.innerHTML = `<span class="path-prefix">${selectionLabel.dataset.selectiontitle}</span>${path.join(' &gt; ')}`;
         this.controlElement("#dropdownMenu").classList.remove("show");
     }
 
@@ -62,13 +63,15 @@
         let treeSearch: HTMLInputElement = this.controlElement('#treeSearch')
         treeSearch.value = '';
         treeSearch.dispatchEvent(new Event('input'));
-        this.controlElements('input[name="location"]').forEach(rb => rb.checked = false);
         this.controlElement('#selected-label').innerText = 'Select Location...';
     }
 
     private search(e: InputEvent) {
         const filter = (e.target as HTMLInputElement).value.toLowerCase();
         const items = this.controlElements('.node, .leaf');
+
+        this.controlElements('.close-icon').forEach(e => { e.classList.add('hidden') });
+        this.controlElements('.open-icon').forEach(e => { e.classList.remove('hidden') });
 
         items.forEach(item => {
             const text = item.innerText.toLowerCase();
@@ -84,6 +87,7 @@
                 item.style.display = 'flex';
                 let parentContent = item.closest('.node-content');
                 while (parentContent) {
+                    parentContent.previousElementSibling.querySelectorAll('span.icon').forEach(span => { span.classList.toggle('hidden') });
                     parentContent.classList.remove('hidden');
                     parentContent.parentElement.classList.add('open');
                     parentContent.parentElement.style.display = 'flex';

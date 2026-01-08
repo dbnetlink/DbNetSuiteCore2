@@ -118,9 +118,6 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Assign a grid model to this property for it be rendered as a nested child
         /// </summary>
-        /// <remarks>
-        /// Use HeadingMode.Hidden to hide the heading row or HeadingMode.Frozen to cause the heading row to stay in view when scrolling the grid rows
-        /// </remarks>
         public GridModel NestedGrid
         {
             set

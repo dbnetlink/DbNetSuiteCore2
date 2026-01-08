@@ -1,0 +1,35 @@
+﻿@model DbNetSuiteCore.ViewModels.TreeNodeViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@{
+      <div class="node" data-value="@Model.ParentRowValue()" data-description="@Model.ParentRowDescription()">
+      @{
+          if (Model.HasChildren())
+          {
+                <div class="node-header">
+                    <span class="open-icon icon">@IconHelper.ExpandDown()</span>
+                    <span class="close-icon icon hidden">@IconHelper.ExpandUp()</span>
+                    <span class="node-text">@Model.ParentRowDescription()</span>
+                </div>
+                <div class="node-content hidden">
+                @foreach (DataRow row in Model.ChildRows()) {
+                    if (Model.LeafParent)
+                    {
+                        <div class="leaf" data-value="@Model.RowValue(row)" data-description="@Model.RowDescription(row)">
+                            <span class="leaf-icon icon">@IconHelper.Document()</span>
+                            <span class="leaf-text">@Model.RowDescription(row)</span>
+                        </div>
+                    }
+                    else
+                    { 
+                        @await Html.PartialAsync("Tree/__Node", Model.TreeViewModel.GetTreeNodeViewModel(row, Model.Level+1))
+                    }
+                }
+                </div>
+          }
+      }
+      </div>
+}

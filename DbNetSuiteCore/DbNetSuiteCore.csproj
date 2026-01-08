@@ -72,7 +72,7 @@
     <Content Remove="Views\Tree\__ControlForm.cshtml" />
     <Content Remove="Views\Tree\__Hidden.cshtml" />
     <Content Remove="Views\Tree\__Markup.cshtml" />
-    <Content Remove="Views\Tree\__Options.cshtml" />
+    <Content Remove="Views\Tree\__Node.cshtml" />
     <Content Remove="Views\__Error.cshtml" />
     <Content Remove="Views\__LicenseInfo.cshtml" />
     <Content Remove="Views\__QueryLimitWarning.cshtml" />
@@ -156,7 +156,7 @@
     <EmbeddedResource Include="Views\Tree\__Markup.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Tree\__Options.cshtml">
+    <EmbeddedResource Include="Views\Tree\__Node.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\__LicenseInfo.cshtml">

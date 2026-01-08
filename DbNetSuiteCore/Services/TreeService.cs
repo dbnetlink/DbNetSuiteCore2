@@ -4,7 +4,6 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
-using DbNetSuiteCore.Enums;
 
 namespace DbNetSuiteCore.Services
 {
@@ -44,11 +43,13 @@ namespace DbNetSuiteCore.Services
 
         private async Task<TreeViewModel> GetTreeViewModel(TreeModel treeModel)
         {
-            if (treeModel.Uninitialised)
+            foreach (var level in treeModel.Levels)
             {
-                await ConfigureColumns(treeModel);
+                await ConfigureColumns(level);
+                await GetRecords(level);
+
+                treeModel.DataTables.Add(level.Data);
             }
-            await GetRecords(treeModel);
 
             var treeViewModel = new TreeViewModel(treeModel);
 
@@ -60,19 +61,12 @@ namespace DbNetSuiteCore.Services
             return treeViewModel;
         }
 
+       
         private TreeModel GetTreeModel()
         {
             try
             {
                 TreeModel TreeModel = JsonConvert.DeserializeObject<TreeModel>(StateHelper.GetSerialisedModel(_context, _configuration)) ?? new TreeModel();
-                TreeModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
-                AssignParentModel(TreeModel);
-                TreeModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim();
-
-                if (TreeModel.DataSourceType == DataSourceType.JSON)
-                {
-                    _jsonRepository.UpdateApiRequestParameters(TreeModel, _context);
-                }
                 return TreeModel;
             }
             catch (Exception)

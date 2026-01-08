@@ -8,49 +8,24 @@
 
 <div class="custom-select-wrapper">
     <div class="select-trigger">
-        <div id="selected-label">Select Location...</div>
+        <div id="selected-label" data-selectiontitle="@Model.TreeModel.SelectionTitle">@Model.TreeModel.SelectionPlaceholder</div>
         <span class="chevron">▼</span>
     </div>
 
     <div id="dropdownMenu" class="dropdown-content">
         <div class="search-container">
-            <input type="text" id="treeSearch" placeholder="Search town or country..." autocomplete="off">
+            <input type="text" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
             <button type="button" id="resetBtn" title="Reset Selection">✕</button>
         </div>
 
         <div id="locationTree" class="flex-tree tree-root">
-            <div class="node" data-value="USA">
-                <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">USA</span></div>
-                <div class="node-content hidden">
-                    <div class="node" data-value="California">
-                        <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">California</span></div>
-                        <div class="node-content hidden">
-                            <div class="leaf" data-value="Los Angeles"><span>@IconHelper.Document()</span><span class="leaf-text">Los Angeles</span></div>
-                            <div class="leaf" data-value="San Francisco"><span>@IconHelper.Document()</span><span class="leaf-text">San Francisco</span></div>
-                        </div>
-                    </div>
-                    <div class="node data-value="Texas"">
-                        <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">Texas</span></div>
-                        <div class="node-content hidden">
-                            <div class="leaf" data-value="Austin"><span>@IconHelper.Document()</span><span class="leaf-text">Austin</span></div>
-                            <div class="leaf" data-value="Houston"><span>@IconHelper.Document()</span><span class="leaf-text">Houston</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="node" data-value="United Kingdom">
-                <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">United Kingdom</span></div>
-                <div class="node-content hidden">
-                    <div class="node" data-value="England">
-                        <div class="node-header"><span class="open-icon icon">@IconHelper.ExpandDown()</span><span class="close-icon icon hidden">@IconHelper.ExpandUp()</span><span class="node-text">England</span></div>
-                        <div class="node-content hidden">
-                            <div class="leaf" data-value="London"><span>@IconHelper.Document()</span><span class="leaf-text">London</span></div>
-                            <div class="leaf" data-value="Manchester"><span>@IconHelper.Document()</span><span class="leaf-text">Manchester</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @{
+                foreach (DataRow row in Model.Levels[0].Data.Rows)
+                {
+                    @await Html.PartialAsync("Tree/__Node", Model.GetTreeNodeViewModel(row, 0))
+                }
+            }
         </div>
     </div>
 </div>

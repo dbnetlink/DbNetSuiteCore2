@@ -1,0 +1,32 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@{
+
+    var productsLevel = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products");
+    productsLevel.Columns = new List<TreeColumn>() {
+        new TreeColumn("ProductID") { PrimaryKey = true },
+        new TreeColumn("ProductName"),
+        new TreeColumn("CategoryID") { ForeignKey = true }
+    };
+
+    var categoryProductTree = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Categories");
+    categoryProductTree.Columns = new List<TreeColumn>()
+    {
+        new TreeColumn("CategoryID") { PrimaryKey = true },
+        new TreeColumn("CategoryName")
+    };
+
+    categoryProductTree.NestedLevel = productsLevel;
+    categoryProductTree.SelectionTitle = "Selected Product";
+
+
+    <div style="display:flex;flex-direction:column;gap-4">
+        <div> 
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categoryProductTree))
+        </div>
+    </div>
+}

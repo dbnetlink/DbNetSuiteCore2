@@ -11,34 +11,6 @@ namespace DbNetSuiteCore.ViewModels
         public IEnumerable<TreeColumnViewModel> Columns => _treeModel.Columns.Select(c => new TreeColumnViewModel(c));
         private readonly TreeModel _treeModel = new TreeModel();
         public TreeModel TreeModel => _treeModel;
-        public int RowCount => TreeModel.Data.Rows.Count;
-        public string LinkedSelectIds => string.Join(",", TreeModel.LinkedSelectIds);
-        public DataRowCollection Rows => TreeModel.Data.Rows;
-        public bool SelectFirstOption => TreeModel.RowSelection != RowSelection.Multiple && string.IsNullOrEmpty(TreeModel.EmptyOption);
-        public string HxTarget => $"next div.target";
-        public bool IsGrouped => TreeModel.IsGrouped;
-        public string Value(DataRow dataRow) 
-        {
-            return RowValue(dataRow, GetDataColumn(TreeModel.ValueColumn));
-        }
-        public string Description(DataRow dataRow)
-        {
-            return RowValue(dataRow, GetDataColumn(TreeModel.DescriptionColumn));
-        }
-        public string GroupValue(DataRow dataRow)
-        {
-            return RowValue(dataRow,GetDataColumn(Columns.Where(c => c.Column.OptionGroup).Select(c => c.Column).First()));
-        }
-
-        private string RowValue(DataRow dataRow, DataColumn dataColumn)
-        {
-            return dataRow[dataColumn!]?.ToString() ?? string.Empty;
-        }
-
-        public bool ChangeInGroup(int rowNumber)
-        {
-            return TreeModel.IsGrouped && (GroupValue(Rows[rowNumber]) != GroupValue(Rows[rowNumber-1]));
-        }
 
         public TreeViewModel(TreeModel treeModel) : base(treeModel)
         {
@@ -60,13 +32,44 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString($" <label class=\"leaf\"><input type=\"radio\" name=\"location\" value=\"Houston\"> Houston</label>");
         }
 
-        public HtmlString OpenOptionGroup(DataRow row)
+        public List<TreeModel> Levels => _treeModel.Levels;
+
+        public TreeNodeViewModel GetTreeNodeViewModel(DataRow parentRow, int level) => new TreeNodeViewModel(parentRow, level, this);
+
+        public List<DataTable> TieredData()
         {
-            return new HtmlString($"<optgroup label=\"{GroupValue(row)}\">");
-        }
-        public HtmlString CloseOptionGroup()
-        {
-            return new HtmlString("</optgroup>");
+            var tables = new List<DataTable>();
+            DataTable countries = new DataTable("Countries");
+            countries.Columns.Add("ID", typeof(int));
+            countries.Columns.Add("Name", typeof(string));
+            countries.Rows.Add(1, "USA");
+            countries.Rows.Add(2, "United Kingdom");
+            tables.Add(countries);
+
+            DataTable areas = new DataTable("Areas");
+            areas.Columns.Add("ID", typeof(int));
+            areas.Columns.Add("ParentID", typeof(int));
+            areas.Columns.Add("Name", typeof(string));
+            areas.Rows.Add(1, 1, "California");
+            areas.Rows.Add(2, 1, "Texas");
+            areas.Rows.Add(3, 2, "England");
+            tables.Add(areas);
+
+            DataTable towns = new DataTable("Towns");
+            towns.Columns.Add("ID", typeof(int));
+            towns.Columns.Add("ParentID", typeof(int));
+            towns.Columns.Add("Name", typeof(string));
+            towns.Rows.Add(1, 1, "San Fransisco");
+            towns.Rows.Add(2, 1, "Los Angeles");
+            towns.Rows.Add(3, 2, "Austin");
+            towns.Rows.Add(4, 2, "Houston");
+            towns.Rows.Add(5, 3, "London");
+            towns.Rows.Add(6, 3, "Manchester");
+            tables.Add(towns);
+
+
+            return tables;
+
         }
     }
 }

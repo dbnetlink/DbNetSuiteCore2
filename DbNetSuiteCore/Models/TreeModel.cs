@@ -1,80 +1,40 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.ViewModels;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
 namespace DbNetSuiteCore.Models
 {
-    public class TreeModel : GridSelectModel
+    public class TreeModel : ComponentModel
     {
+        [JsonProperty]
+        internal List<TreeModel> _nestedLevels = new List<TreeModel>();
         private SortOrder? _SortSequence = SortOrder.Asc;
         [JsonProperty]
-        internal List<string> LinkedSelectIds => GetLinkedControlIds(nameof(TreeModel));
         public IEnumerable<TreeColumn> Columns { get; set; } = new List<TreeColumn>();
-
-        [JsonIgnore]
-        internal IEnumerable<TreeColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false);
-        [JsonIgnore]
-        internal TreeColumn ValueColumn => NonOptionGroupColumns.FirstOrDefault() ?? new TreeColumn();
-        [JsonIgnore]
-        internal TreeColumn DescriptionColumn => Columns.Any() ? (NonOptionGroupColumns.Count() == 1 ? NonOptionGroupColumns.First() : NonOptionGroupColumns.Skip(1).First()) : new TreeColumn();
+        internal TreeModel ParentLevel = null;
         [JsonIgnore]
         internal override IEnumerable<TreeColumn> SearchableColumns
         {
             get
             {
-                var searchableColumns = new List<TreeColumn>();
-
-                if (DescriptionColumn != null)
-                {
-                    searchableColumns.Add(DescriptionColumn);
-                }
-                if (IsGrouped)
-                {
-                    searchableColumns.Add(Columns.First(c => c.OptionGroup));
-                }
-                return searchableColumns;
+                return new List<TreeColumn>();
             }
         }
-        /// <summary>
-        /// Use this property or the Bind method to assign the name of a client-side JavaScript function to be executed for the specified client event.
-        /// </summary>
+
         public Dictionary<TreeClientEvent, string> ClientEvents { get; set; } = new Dictionary<TreeClientEvent, string>();
-        /// <summary>
-        /// Sets the number of visible rows in the Select. Default is 1 (drop-down)
-        /// </summary>
-        public int Size { get; set; } = 1;
-        /// <summary>
-        /// Specifies the text for the empty option 
-        /// </summary>
-        public string EmptyOption { get; set; } = string.Empty;
-        /// <summary>
-        /// When set to true the control renders a separate input box that can be used to filter the select options
-        /// </summary>
-        public bool Searchable { get; set; } = false;
-        /// <summary>
-        /// When set to true will only return distinct values of the selected columns
-        /// </summary>
-        public bool Distinct { get; set; } = false;
-        internal override TreeColumn SortColumn => DescriptionColumn;
+        internal override TreeColumn SortColumn => (Columns.Count() == 1) ? Columns.First() : Columns.Skip(1).First();
         internal override SortOrder? SortSequence
         {
-            get { return _SortSequence; }
+            get { return SortOrder.Asc; }
             set { _SortSequence = value; }
         }
-        /// <summary>
-        /// Defines whether single or multiple options can be selected. When set to Multiple it is suggested that the Size property is also set to a value > 1.
-        /// </summary>
-        public RowSelection RowSelection
-        {
-            get { return _RowSelection; }
-            set { _RowSelection = value; }
-        }
 
-        internal bool IsGrouped => Columns.Any(c => c.OptionGroup);
-        /// <summary>
-        /// Controls the layout of the Caption, Search box and Select element. Column (default) renders one above the other and Row renders them across the page
-        /// </summary>
-        public LayoutType Layout { get; set; } = LayoutType.Column;
+        internal List<DataTable> DataTables { get; set; } = new List<DataTable>();
+
+        public string InputPlaceholder { get; set; } = "Search...";
+        public string SelectionPlaceholder { get; set; } = "Select...";
+        public string SelectionTitle { get; set; } = "";
 
         public TreeModel() : base()
         {
@@ -83,21 +43,78 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        public TreeModel(DataSourceType dataSourceType, string connectionAlias, string tableName, bool isStoredProcedure = false) : base(dataSourceType, connectionAlias, tableName, isStoredProcedure)
+        public TreeModel(DataSourceType dataSourceType, string connectionAlias, string tableName) : base(dataSourceType, connectionAlias, tableName)
         {
         }
-
-        public TreeModel(DataSourceType dataSourceType, string connectionAlias, string procedureName, List<DbParameter> procedureParameters) : base(dataSourceType, connectionAlias, procedureName, procedureParameters)
-        {
-        }
-
+ 
         public TreeModel(string tableName) : base(tableName)
         {
         }
 
-        internal override IEnumerable<ColumnModel> GetColumns()
+        internal string ForeignKeyName => Columns.FirstOrDefault(c => c.ForeignKey).Expression ?? string.Empty;
+
+        internal object PrimaryKeyValue(DataRow dataRow)
         {
-            return Columns.Cast<ColumnModel>();
+            DataColumn dataColumn = GetDataColumn(Columns.First(c => c.PrimaryKey));
+            return dataRow[dataColumn];
+        }
+
+        internal string Description(DataRow dataRow)
+        {
+            int index = (Columns.Count() == 1) ? 0 : 1;
+            return dataRow[index].ToString();
+        }
+
+        internal List<TreeModel> Levels => GetLevels();
+
+        private List<TreeModel> GetLevels()
+        {
+            List<TreeModel> levels = new List<TreeModel>() { this };
+            foreach (TreeModel nestedLevel in _nestedLevels)
+            {
+                levels.AddRange(nestedLevel.GetLevels());
+            }
+            return levels;
+        }
+
+        /*
+        List<TreeModel> treeLevels = new List<TreeModel>() { treeModel };
+
+        AddLevels(treeModel._nestedLevels, treeLevels);
+
+        private void AddLevels(List<TreeModel> nestedLevels, List<TreeModel> treeLevels)
+        {
+            if (nestedLevels.Count() > 0)
+            {
+                foreach (TreeModel nestedLevel in nestedLevels)
+                {
+                    treeLevels.Add(nestedLevel);
+                    AddLevels(nestedLevel._nestedLevels, treeLevels);
+                }
+            }
+        }
+        */
+
+        public TreeModel NestedLevel
+        {
+            set
+            {
+                AddNestedLevel(value);
+            }
+        }
+        private void AddNestedLevel(TreeModel treeModel)
+        {
+           AssignLinkedProperties(this, treeModel);
+            foreach (TreeModel nestedLevel in treeModel._nestedLevels)
+            {
+                AssignLinkedProperties(treeModel, nestedLevel);
+            }
+            _nestedLevels.Add(treeModel);
+        }
+
+        internal override IEnumerable<TreeColumn> GetColumns()
+        {
+            return Columns.Cast<TreeColumn>();
         }
 
         internal override void SetColumns(IEnumerable<ColumnModel> columns)
