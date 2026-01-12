@@ -72,6 +72,17 @@ namespace DbNetSuiteCore.Helpers
             return new HtmlString(string.Join(" ", attributes.Keys.ToList().Select(key => Attribute(key, attributes[key])).ToList()));
         }
 
+        public static HtmlString FormClassAttribute(string controlType, string className)
+        {
+            List<string> classNames = new List<string>() { "dbnetsuite", $"dbnetsuite-{controlType}" };
+            if (string.IsNullOrEmpty(className) == false)
+            {
+                classNames.Add(className);
+            }
+
+            return Attribute("class", string.Join(" ", classNames));
+        }
+
         public static HtmlString Attribute(string name, object value)
         {
             var attrValue = value?.ToString() ?? string.Empty;

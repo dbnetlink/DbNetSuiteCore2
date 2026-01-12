@@ -62,4 +62,5 @@ declare class ComponentControl {
     protected getFormModification(container: HTMLElement): RowModification;
     protected warnIfFormModified(evt?: Event): boolean;
     protected warnIfLinkedFormModified(evt: Event): boolean;
+    protected debounce(fn: any, delay?: number): (...args: any[]) => void;
 }

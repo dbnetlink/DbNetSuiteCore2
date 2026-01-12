@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Html;
-using System.Drawing;
+using System.Runtime.Intrinsics.Arm;
 
 namespace DbNetSuiteCore.Helpers
 {
     public static class IconHelper
     {
-        public const string MaterialSvgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"{size}\" viewBox=\"0 -960 960 960\" width=\"{size}\" fill=\"{colour}\"><path d=\"{data}\" /></svg>";
+        public const string MaterialSvgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"{size}\" viewBox=\"{viewbox}\" width=\"{size}\" fill=\"{colour}\"><path d=\"{data}\" /></svg>";
+        public const string FontAwsomeSvgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"{size}\" viewBox=\"0 0 640 640\" width=\"{size}\" fill=\"{colour}\"><path d=\"{data}\" /></svg>";
 
         public static HtmlString ArrowDown()
         {
@@ -122,6 +123,16 @@ namespace DbNetSuiteCore.Helpers
             return MaterialSVG("M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z");
         }
 
+        public static HtmlString DropDownArrow()
+        {
+            return FontAwsomeSVG("M297.4 470.6C309.9 483.1 330.2 483.1 342.7 470.6L534.7 278.6C547.2 266.1 547.2 245.8 534.7 233.3C522.2 220.8 501.9 220.8 489.4 233.3L320 402.7L150.6 233.4C138.1 220.9 117.8 220.9 105.3 233.4C92.8 245.9 92.8 266.2 105.3 278.7L297.3 470.7z", "#6d6d6f");
+        }
+
+        public static HtmlString Reset()
+        {
+            return FontAwsomeSVG("M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z", "#6d6d6f");
+        }
+
         public static HtmlString Save()
         {
             return MaterialSVG("M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z");
@@ -131,9 +142,14 @@ namespace DbNetSuiteCore.Helpers
             return MaterialSVG("M320-280q17 0 28.5-11.5T360-320q0-17-11.5-28.5T320-360q-17 0-28.5 11.5T280-320q0 17 11.5 28.5T320-280Zm0-160q17 0 28.5-11.5T360-480q0-17-11.5-28.5T320-520q-17 0-28.5 11.5T280-480q0 17 11.5 28.5T320-440Zm0-160q17 0 28.5-11.5T360-640q0-17-11.5-28.5T320-680q-17 0-28.5 11.5T280-640q0 17 11.5 28.5T320-600Zm120 320h240v-80H440v80Zm0-160h240v-80H440v80Zm0-160h240v-80H440v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z");
         }
 
-        private static HtmlString MaterialSVG(string data, string colour = "#336699", string size = "24px" )
+        private static HtmlString MaterialSVG(string data, string colour = "#336699", string size = "24px", string viewbox = "0 -960 960 960")
         {
-            return new HtmlString(IconHelper.MaterialSvgTemplate.Replace("{data}", data).Replace("{colour}", colour).Replace("{size}", size));
+            return new HtmlString(IconHelper.MaterialSvgTemplate.Replace("{data}", data).Replace("{colour}", colour).Replace("{size}", size).Replace("{viewbox}", viewbox));
+        }
+
+        private static HtmlString FontAwsomeSVG(string data, string colour = "#000000", string size = "16px")
+        {
+            return new HtmlString(IconHelper.FontAwsomeSvgTemplate.Replace("{data}", data).Replace("{colour}", colour).Replace("{size}", size));
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-
-namespace DbNetSuiteCore.Helpers
+﻿namespace DbNetSuiteCore.Helpers
 {
 
     public static class ValidationHelper

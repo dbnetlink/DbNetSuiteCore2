@@ -3,7 +3,6 @@
     public enum TreeClientEvent
     {
         Initialised,
-        OptionsLoaded,
-        OptionSelected
+        ItemSelected
     };
 }

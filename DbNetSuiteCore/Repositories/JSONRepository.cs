@@ -65,7 +65,7 @@ namespace DbNetSuiteCore.Repositories
 
         public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext context)
         {
-            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue("apiRequestParameters", string.Empty, context)) ?? new Dictionary<string, string>();
+            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue(TriggerNames.ApiRequestParameters, string.Empty, context)) ?? new Dictionary<string, string>();
 
             apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
             foreach (string key in gridSelectModel.ApiRequestParameters.Keys)

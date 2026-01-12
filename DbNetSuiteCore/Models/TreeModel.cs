@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.ViewModels;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -36,6 +35,8 @@ namespace DbNetSuiteCore.Models
         public string SelectionPlaceholder { get; set; } = "Select...";
         public string SelectionTitle { get; set; } = "";
 
+        public bool Searchable { get; set; } = false;
+
         public TreeModel() : base()
         {
         }
@@ -55,8 +56,9 @@ namespace DbNetSuiteCore.Models
 
         internal object PrimaryKeyValue(DataRow dataRow)
         {
-            DataColumn dataColumn = GetDataColumn(Columns.First(c => c.PrimaryKey));
-            return dataRow[dataColumn];
+            var column = Columns.FirstOrDefault(c => c.PrimaryKey) ?? Columns.First();
+            DataColumn dataColumn = GetDataColumn(column);
+            return DbNetSuiteCore.Extensions.DataTableExtensions.QuotedValue(column, dataRow[dataColumn]);
         }
 
         internal string Description(DataRow dataRow)
@@ -76,24 +78,6 @@ namespace DbNetSuiteCore.Models
             }
             return levels;
         }
-
-        /*
-        List<TreeModel> treeLevels = new List<TreeModel>() { treeModel };
-
-        AddLevels(treeModel._nestedLevels, treeLevels);
-
-        private void AddLevels(List<TreeModel> nestedLevels, List<TreeModel> treeLevels)
-        {
-            if (nestedLevels.Count() > 0)
-            {
-                foreach (TreeModel nestedLevel in nestedLevels)
-                {
-                    treeLevels.Add(nestedLevel);
-                    AddLevels(nestedLevel._nestedLevels, treeLevels);
-                }
-            }
-        }
-        */
 
         public TreeModel NestedLevel
         {

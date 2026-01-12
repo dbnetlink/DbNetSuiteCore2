@@ -24,6 +24,6 @@
         public const string Refresh = "refresh";
         public const string SearchDialog = "searchDialog";
         public const string ApiRequestParameters = "apiRequestParameters";
-        
+        public const string FixedFilterParameters = "fixedFilterParameters";
     }
 }

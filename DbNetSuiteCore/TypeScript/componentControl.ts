@@ -166,12 +166,11 @@ class ComponentControl {
                 var summaryModel = null;
                 var rowIndex = null;
                 summaryModel = this.controlElement("input[name='summarymodel']").value;
-                if (this instanceof GridControl)
-                {   
+                if (this instanceof GridControl) {
                     var gridControl = this as GridControl;
                     if (gridControl.selectedRow) {
                         rowIndex = gridControl.selectedRow.dataset.idx;
-                     }
+                    }
                 }
                 if (this instanceof SelectControl) {
                     rowIndex = selectedIndex;
@@ -343,7 +342,7 @@ class ComponentControl {
         return (controlsInError > 0);
     }
 
-    protected getLinkedControlIds():string {
+    protected getLinkedControlIds(): string {
         if (this instanceof GridControl) {
             let table = this.controlElement("table") as HTMLElement;
             return table.dataset.linkedcontrolids;
@@ -361,7 +360,7 @@ class ComponentControl {
         let applyBtn = this.getButton("apply");
         htmx.trigger(applyBtn, "click");
     }
-  
+
     public formControlValue(columnName: string, row: HTMLTableRowElement = null) {
         return this.elementValue(columnName, false, row);
     }
@@ -474,7 +473,7 @@ class ComponentControl {
         return rowModification;
     }
 
-    protected warnIfFormModified(evt:Event = null): boolean {
+    protected warnIfFormModified(evt: Event = null): boolean {
         this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el, true) });
         let modified = this.controlElements(".fc-control[data-modified='true']");
 
@@ -509,4 +508,13 @@ class ComponentControl {
 
         return linkedFormModified;
     }
+
+    protected debounce(fn, delay = 2000) {
+        let timerId;
+        return function (...args) {
+            clearTimeout(timerId);
+            timerId = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
 }

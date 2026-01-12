@@ -4,7 +4,5 @@
 @using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Constants
 @RazorHelper.ModelState(Model.TreeModel, Configuration)
-@if (Model.IsParent)
-{
-    @RazorHelper.ModelSummaryState(Model.TreeModel, Configuration)
-}
+ <input type="hidden" name="@TriggerNames.FixedFilterParameters" value="" hx-post="@Model.PostUrl" hx-trigger="changed" hx-target="closest .tree-root" hx-indicator="next .htmx-indicator" hx-swap="innerHTML"/>
+

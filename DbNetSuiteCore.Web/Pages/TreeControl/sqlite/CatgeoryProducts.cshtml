@@ -13,6 +13,8 @@
         new TreeColumn("CategoryID") { ForeignKey = true }
     };
 
+    productsLevel.FixedFilter = "discontinued = @discontinued";
+    productsLevel.FixedFilterParameters.Add(new DbParameter("discontinued", 0));
     var categoryProductTree = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Categories");
     categoryProductTree.Columns = new List<TreeColumn>()
     {
@@ -22,11 +24,32 @@
 
     categoryProductTree.NestedLevel = productsLevel;
     categoryProductTree.SelectionTitle = "Selected Product";
-
-
-    <div style="display:flex;flex-direction:column;gap-4">
-        <div> 
-            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categoryProductTree))
-        </div>
-    </div>
+    categoryProductTree.ClientEvents[TreeClientEvent.Initialised] = "saveTreeReference";
 }
+
+<div style="display:flex;flex-direction:row;gap: 4px;">
+    <div>
+        <label>Discontinued</label>
+    </div>
+    <div>
+        <label><input type="checkbox" id="discontinued" /></label>
+    </div>
+    <div>
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categoryProductTree))
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelector('input[type="checkbox"]').addEventListener('change', updateTree);
+    });
+
+
+        function saveTreeReference(sender) {
+            window.categoryProductTree = sender;
+        }
+        function updateTree(event) {
+            const isChecked = event.target.checked;
+            window.categoryProductTree.updateFixedFilterParameters({discontinued : isChecked ? 1 : 0});
+    }
+</script>

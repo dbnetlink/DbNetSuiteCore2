@@ -341,6 +341,11 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
+        public static string QuotedValue(ColumnModel columnModel, object value)
+        {
+            return $"{Quoted(columnModel)}{value}{Quoted(columnModel)}";
+        }
+
         private static string AddFilter(SelectModel selectModel)
         {
             string filter = string.Empty;

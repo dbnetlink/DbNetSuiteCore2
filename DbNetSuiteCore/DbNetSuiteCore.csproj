@@ -69,6 +69,7 @@
     <Content Remove="Views\Grid\__ViewDialogContent.cshtml" />
     <Content Remove="Views\Select\__ControlForm.cshtml" />
     <Content Remove="Views\Select\__Hidden.cshtml" />
+    <Content Remove="Views\Tree\__Content.cshtml" />
     <Content Remove="Views\Tree\__ControlForm.cshtml" />
     <Content Remove="Views\Tree\__Hidden.cshtml" />
     <Content Remove="Views\Tree\__Markup.cshtml" />
@@ -151,6 +152,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Tree\__Hidden.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Tree\__Content.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Tree\__Markup.cshtml">

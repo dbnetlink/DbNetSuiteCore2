@@ -1,5 +1,7 @@
 ﻿class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
+    searchEnabled: boolean = false;
+    selectionLabel: HTMLSelectElement;
     constructor(selectId) {
         super(selectId)
     }
@@ -15,6 +17,13 @@
         if (this.triggerName(evt) == "initialload") {
             this.initialise()
         }
+
+        this.controlElements('span.open-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
+        this.controlElements('span.close-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
+        this.controlElements('span.leaf-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
+        this.controlElements('span.node-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
+
+        this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
     }
 
     private toggleDropdown(ev) {
@@ -53,9 +62,10 @@
             parentNode = parentNode.parentElement.parentElement.closest('.node');
         }
 
-        let selectionLabel = this.controlElement("#selected-label");
-        selectionLabel.innerHTML = `<span class="path-prefix">${selectionLabel.dataset.selectiontitle}</span>${path.join(' &gt; ')}`;
+        this.selectionLabel.innerHTML = `<span class="path-prefix">${this.selectionLabel.dataset.selectiontitle}</span>${path.join(' &gt; ')}`;
         this.controlElement("#dropdownMenu").classList.remove("show");
+
+        this.invokeEventHandler('ItemSelected',{ value: selectedElement.dataset.description, description: selectedElement.dataset.description });
     }
 
     private reset(e:MouseEvent) {
@@ -63,7 +73,7 @@
         let treeSearch: HTMLInputElement = this.controlElement('#treeSearch')
         treeSearch.value = '';
         treeSearch.dispatchEvent(new Event('input'));
-        this.controlElement('#selected-label').innerText = 'Select Location...';
+        this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
     }
 
     private search(e: InputEvent) {
@@ -99,20 +109,31 @@
         });
     }
 
-    private initialise() {
-        this.controlElements('div.select-trigger').forEach(div => { div.addEventListener("click", (e:MouseEvent) => this.toggleDropdown(e)) });
-        this.controlElements('span.open-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
-        this.controlElements('span.close-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
-        this.controlElements('span.leaf-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
-        this.controlElements('span.node-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
-        this.controlElement('#treeSearch').addEventListener('input', (e:InputEvent) => this.search(e));
-        this.controlElement('#resetBtn').addEventListener('click', (e:MouseEvent) => this.reset(e));
-
-        window.onclick = function (event) {
-            if (!event.target.closest('.custom-select-wrapper')) {
-                this.controlElement("#dropdownMenu").classList.remove("show");
-            }
+    public updateFixedFilterParameters(params: any) {
+        let input = this.controlElement('input[name="fixedFilterParameters"]') as HTMLInputElement;
+        if (input) {
+            input.value = JSON.stringify(params);
+            input.attributes["hx-target"].value = "closest div.tree-root";
+            htmx.trigger(input, "changed",);
         }
+    }
+
+    private initialise() {
+        this.searchEnabled = this.controlElement('.search-container') != null;
+        this.controlElements('div.select-trigger').forEach(div => { div.addEventListener("click", (e:MouseEvent) => this.toggleDropdown(e)) });
+
+        if (this.searchEnabled) {
+            this.controlElement('#treeSearch').addEventListener('input', this.debounce((e: InputEvent) => this.search(e)));
+            this.controlElement('#resetBtn').addEventListener('click', (e: MouseEvent) => this.reset(e));
+        }
+        this.selectionLabel = this.controlElement("#selected-label");
+        window.addEventListener("click", (e: MouseEvent) => { this.closeDropDown(e) });
         this.invokeEventHandler('Initialised');
+    }
+
+    public closeDropDown(event: any) {
+        if (!event.target.closest('.custom-select-wrapper')) {
+            this.controlElement("#dropdownMenu").classList.remove("show");
+        }
     }
 }

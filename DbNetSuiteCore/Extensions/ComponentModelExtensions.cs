@@ -47,6 +47,12 @@ namespace DbNetSuiteCore.Extensions
                 formModel.AddOrderPart(query);
             }
 
+            if (componentModel is TreeModel treeModel)
+            {
+                treeModel.AddFilterPart(query);
+                treeModel.AddOrderPart(query);
+            }
+
             query.Sql = $"{query.Sql}{Limit(componentModel)}";
 
             if (componentModel.DataSourceType == DataSourceType.Oracle && componentModel.QueryLimit > -1)

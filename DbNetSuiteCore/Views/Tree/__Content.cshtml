@@ -1,0 +1,16 @@
+﻿@model DbNetSuiteCore.ViewModels.TreeViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+@{
+    foreach (DataRow row in Model.Levels[0].Data.Rows)
+    {
+        @await Html.PartialAsync("Tree/__Node", Model.GetTreeNodeViewModel(row, 0))
+    }
+      @await Html.PartialAsync("Tree/__Hidden", Model)
+}
+</div>

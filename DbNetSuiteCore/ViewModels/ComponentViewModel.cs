@@ -51,6 +51,7 @@ namespace DbNetSuiteCore.ViewModels
         public string HxFormTrigger => _componentModel.HxFormTrigger;
         public string Id => _componentModel.Id;
         public bool IsLinked => _componentModel.IsLinked;
+        public string ClassName => _componentModel.ClassName;
         public string Message
         {
             get { return _componentModel.Message; }

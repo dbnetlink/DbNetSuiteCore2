@@ -138,6 +138,7 @@ namespace DbNetSuiteCore.Models
         public int QueryLimit { get; set; } = -1;
         public bool DiagnosticsMode { get; set; } = false;
         public bool Search { get; set; } = true;
+        public string ClassName { get; set; }
         internal string SearchDialogConjunction { get; set; } = "and";
         public string Message = string.Empty;
         [JsonProperty]

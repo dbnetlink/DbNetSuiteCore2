@@ -1,5 +1,7 @@
 declare class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
+    searchEnabled: boolean;
+    selectionLabel: HTMLSelectElement;
     constructor(selectId: any);
     afterRequest(evt: any): void;
     private toggleDropdown;
@@ -9,5 +11,7 @@ declare class TreeControl extends ComponentControl {
     private selectParentNodes;
     private reset;
     private search;
+    updateFixedFilterParameters(params: any): void;
     private initialise;
+    closeDropDown(event: any): void;
 }

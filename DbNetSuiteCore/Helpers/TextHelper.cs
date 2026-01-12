@@ -46,6 +46,11 @@ namespace DbNetSuiteCore.Helpers
                 return string.Empty;
             }
 
+            if (IsDevelopment(httpContext))
+            {
+                return input;
+            }
+
             if (httpContext != null)
             {
                 string aesPassword = GetAesPassword(httpContext);
@@ -73,6 +78,11 @@ namespace DbNetSuiteCore.Helpers
                 return string.Empty;
             }
 
+            if (IsDevelopment(httpContext))
+            {
+                return input;
+            }
+
             if (httpContext != null)
             {
                 string aesPassword = GetAesPassword(httpContext);
@@ -93,6 +103,21 @@ namespace DbNetSuiteCore.Helpers
                 }
             }
             return Decompress(input);
+        }
+
+        private static bool IsDevelopment(HttpContext httpContext)
+        {
+            if (httpContext != null)
+            {
+                IHostEnvironment env = httpContext.RequestServices.GetService<IHostEnvironment>();
+
+                if (env?.IsDevelopment() ?? false)
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         private static string GetAesPassword(HttpContext httpContext)

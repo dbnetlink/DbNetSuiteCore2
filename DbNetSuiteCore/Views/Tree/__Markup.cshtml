@@ -7,25 +7,22 @@
 @using DbNetSuiteCore.Enums
 
 <div class="custom-select-wrapper">
-    <div class="select-trigger">
-        <div id="selected-label" data-selectiontitle="@Model.TreeModel.SelectionTitle">@Model.TreeModel.SelectionPlaceholder</div>
-        <span class="chevron">▼</span>
+    <div class="select-trigger" style="height:@(string.IsNullOrEmpty(Model.TreeModel.SelectionTitle) ? 34 : 40)px">
+        <div id="selected-label" data-selectiontitle="@Model.TreeModel.SelectionTitle" data-selectionplaceholder="@Model.TreeModel.SelectionPlaceholder"></div>
+        <span class="chevron">@IconHelper.DropDownArrow()</span>
     </div>
 
     <div id="dropdownMenu" class="dropdown-content">
-        <div class="search-container">
-            <input type="text" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
-            <button type="button" id="resetBtn" title="Reset Selection">✕</button>
-        </div>
+        @if (Model.TreeModel.Searchable)
+        {
+            <div class="search-container">
+                <input type="text" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
+                <button type="button" id="resetBtn" title="Reset Selection"><span>@IconHelper.Reset()</span></button>
+            </div>
+        }
 
-        <div id="locationTree" class="flex-tree tree-root">
-
-            @{
-                foreach (DataRow row in Model.Levels[0].Data.Rows)
-                {
-                    @await Html.PartialAsync("Tree/__Node", Model.GetTreeNodeViewModel(row, 0))
-                }
-            }
+        <div id="treeRoot" class="flex-tree tree-root">
+             @await Html.PartialAsync("Tree/__Content", Model)
         </div>
     </div>
 </div>

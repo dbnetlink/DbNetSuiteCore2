@@ -1,9 +1,11 @@
-﻿using DbNetSuiteCore.Services.Interfaces;
-using DbNetSuiteCore.Repositories;
-using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Helpers;
-using Newtonsoft.Json;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
+using Newtonsoft.Json;
+using System.Web;
 
 namespace DbNetSuiteCore.Services
 {
@@ -37,7 +39,7 @@ namespace DbNetSuiteCore.Services
             TreeModel treeModel = GetTreeModel() ?? new TreeModel();
             treeModel.TriggerName = _context == null ? string.Empty : RequestHelper.TriggerName(_context);
 
-            string viewName = treeModel.Uninitialised ? "Tree/__Markup" : "Tree/__Options";
+            string viewName = treeModel.Uninitialised ? "Tree/__Markup" : "Tree/__Content";
             return await View(viewName, await GetTreeViewModel(treeModel));
         }
 
@@ -61,17 +63,30 @@ namespace DbNetSuiteCore.Services
             return treeViewModel;
         }
 
-       
+
         private TreeModel GetTreeModel()
         {
-            try
+            string json = StateHelper.GetSerialisedModel(_context, _configuration);
+            TreeModel treeModel = JsonConvert.DeserializeObject<TreeModel>(json) ?? new TreeModel();
+            treeModel.HttpContext = _context;
+            UpdateFixedFilterParameters(treeModel);
+            foreach (var level in treeModel._nestedLevels)
             {
-                TreeModel TreeModel = JsonConvert.DeserializeObject<TreeModel>(StateHelper.GetSerialisedModel(_context, _configuration)) ?? new TreeModel();
-                return TreeModel;
+                UpdateFixedFilterParameters(level);
             }
-            catch (Exception)
+            return treeModel;
+        }
+
+        public void UpdateFixedFilterParameters(TreeModel treeModel)
+        {
+            Dictionary<string, object> fixedFilterParemeters = JsonConvert.DeserializeObject<Dictionary<string, object>>(RequestHelper.FormValue(TriggerNames.FixedFilterParameters, string.Empty, _context)) ?? new Dictionary<string, object>();
+            fixedFilterParemeters = new Dictionary<string, object>(fixedFilterParemeters, StringComparer.OrdinalIgnoreCase);
+            foreach (DbParameter dbParameter in treeModel.FixedFilterParameters)
             {
-                return new TreeModel();
+                if (fixedFilterParemeters.ContainsKey(dbParameter.Name))
+                {
+                    dbParameter.Value = fixedFilterParemeters[dbParameter.Name];
+                }
             }
         }
     }
