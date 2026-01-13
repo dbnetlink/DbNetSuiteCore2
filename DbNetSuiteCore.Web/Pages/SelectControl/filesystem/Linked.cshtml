@@ -8,7 +8,7 @@
     var selectModels = new List<SelectModel>();
     while (selectModels.Count() < 6)
     {
-        var model = new SelectModel(DataSourceType.FileSystem, string.Empty) { Searchable = false };
+        var model = new SelectModel(DataSourceType.FileSystem, string.Empty) { Search = false };
         model.Columns = new List<SelectColumn>() { new SelectColumn(FileSystemColumn.Name.ToString()) };
         model.ClientEvents[SelectClientEvent.OptionSelected] = "showSelectedFile";
 
@@ -20,7 +20,7 @@
         selectModels.Add(model);
     }
 
-    var rootFolder = new SelectModel(DataSourceType.FileSystem, "/data") { Searchable = false };
+    var rootFolder = new SelectModel(DataSourceType.FileSystem, "/data") { Search = false };
     rootFolder.Columns = new List<SelectColumn>()
     {
         new SelectColumn(FileSystemColumn.Name.ToString())

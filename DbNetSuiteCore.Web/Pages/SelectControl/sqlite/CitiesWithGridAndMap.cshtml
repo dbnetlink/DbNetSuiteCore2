@@ -18,7 +18,7 @@
     };
     citiesGrid.ClientEvents[GridClientEvent.RowSelected] = "updateMap";
 
-    var citySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "City", Searchable = true };
+    var citySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "cities") { Caption = "City", Search = true };
     citySelect.Columns = new List<SelectColumn>
     {
         new SelectColumn("cityid") {PrimaryKey = true },
@@ -28,7 +28,7 @@
 
     citySelect.LinkedControl = citiesGrid;
 
-    var stateSelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "states") { Caption = "State", Searchable = true, Distinct = true };
+    var stateSelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "states") { Caption = "State", Search = true, Distinct = true };
     stateSelect.Columns = new List<SelectColumn>
     {
         new SelectColumn("stateid") {PrimaryKey = true },
@@ -37,7 +37,7 @@
     };
     stateSelect.LinkedControl = citySelect;
 
-    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "countries") { Caption = "Country", Searchable = true, Distinct = true };
+    var countrySelect = new SelectModel(DataSourceType.SQLite, "DbNetSuiteCore(sqlite)", "countries") { Caption = "Country", Search = true, Distinct = true };
     countrySelect.Columns = new List<SelectColumn>
     {
         new SelectColumn("countryid") {PrimaryKey = true },

@@ -19,11 +19,11 @@
     {
         HttpClient client = new HttpClient();
         string json = await client.GetStringAsync(url);
-        customerSelect = new SelectModel(DataSourceType.JSON, json) { Columns = columns, Searchable = true, Cache = false };
+        customerSelect = new SelectModel(DataSourceType.JSON, json) { Columns = columns, Search = true, Cache = false };
     }
     else
     {
-        customerSelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Cache = false };
+        customerSelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Search = true, Cache = false };
     }
 
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))

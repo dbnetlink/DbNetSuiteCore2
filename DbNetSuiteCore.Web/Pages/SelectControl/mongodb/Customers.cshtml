@@ -5,7 +5,7 @@
 @using DbNetSuiteCore.Models
 @using Microsoft.Extensions.Primitives
 @{
-    var customersSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Customers") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB), Searchable = true };
+    var customersSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Customers") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB), Search = true };
 
     customersSelect.Columns = new List<SelectColumn>() {
         new SelectColumn("CustomerID"),

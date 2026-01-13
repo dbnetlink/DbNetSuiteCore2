@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Web.Helpers
 @{
-    var customerSelect = new SelectModel(DataSourceType.SQLite, ConnectionStringHelper.TestConnectionString(Context.Request.Query["db"], DataSourceType.SQLite), "customers") { EmptyOption = "Please select a customer", Searchable = true };
+    var customerSelect = new SelectModel(DataSourceType.SQLite, ConnectionStringHelper.TestConnectionString(Context.Request.Query["db"], DataSourceType.SQLite), "customers") { EmptyOption = "Please select a customer", Search = true };
 
     customerSelect.Columns = new List<SelectColumn>
     {

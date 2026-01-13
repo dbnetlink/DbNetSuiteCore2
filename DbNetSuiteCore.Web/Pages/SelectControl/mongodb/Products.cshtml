@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 @using DbNetSuiteCore.Web.Helpers
 @{
-    var productSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Products") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB), Searchable = true };
+    var productSelect = new SelectModel(DataSourceType.MongoDB, "MongoDb(local)", "Products") { DatabaseName = ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MongoDB), Search = true };
 
     productSelect.Columns = new List<SelectColumn>() {
         new SelectColumn("ProductID"),

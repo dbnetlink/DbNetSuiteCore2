@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DocumentFormat.OpenXml.Bibliography;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -34,8 +35,7 @@ namespace DbNetSuiteCore.Models
         public string InputPlaceholder { get; set; } = "Search...";
         public string SelectionPlaceholder { get; set; } = "Select...";
         public string SelectionTitle { get; set; } = "";
-
-        public bool Searchable { get; set; } = false;
+        public bool Expand { get; set; } = false;
 
         public TreeModel() : base()
         {

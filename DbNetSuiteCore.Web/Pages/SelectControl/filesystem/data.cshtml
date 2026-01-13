@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var fileSelect = new SelectModel(DataSourceType.FileSystem, "/data") {  Searchable = true};
+    var fileSelect = new SelectModel(DataSourceType.FileSystem, "/data") {  Search = true};
     fileSelect.Columns = new List<SelectColumn>()
     {
         new SelectColumn(FileSystemColumn.Name.ToString()),

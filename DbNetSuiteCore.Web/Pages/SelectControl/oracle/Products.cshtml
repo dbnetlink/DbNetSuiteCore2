@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Web.Helpers
 
 @{
-    var productSelect = new SelectModel(DataSourceType.Oracle, "Northwind(oracle)", "Products join Categories on Products.Category_ID = Categories.Category_ID") { Searchable = true };
+    var productSelect = new SelectModel(DataSourceType.Oracle, "Northwind(oracle)", "Products join Categories on Products.Category_ID = Categories.Category_ID") { Search = true };
     productSelect.Columns = new List<SelectColumn>()
     {
         new SelectColumn("Product_ID"),

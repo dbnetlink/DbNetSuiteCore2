@@ -14,7 +14,7 @@
             <div class="flex text-lg caption">@Model.SelectModel.Caption</div>
         </div>
     }
-    @if (Model.SelectModel.Searchable)
+    @if (Model.SelectModel.Search)
     {
         <div class="flex">
             <input type="search" class="w-full" aria-label="Search" name="@TriggerNames.Search" placeholder="@ResourceHelper.GetResourceString(ResourceNames.SearchPlaceholder)" hx-post="@Model.SubmitUrl" hx-trigger="input changed delay:1000ms, search" hx-target="@Model.HxTarget" hx-indicator="next .htmx-indicator" hx-swap="innerHTML" autocomplete="off" />

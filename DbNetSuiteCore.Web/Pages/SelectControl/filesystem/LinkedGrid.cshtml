@@ -13,7 +13,7 @@
         new GridColumn(FileSystemColumn.Path.ToString()) {Format = FormatType.Url}
      };
 
-    var rootFolder = new SelectModel(DataSourceType.FileSystem, "/data") { Searchable = false };
+    var rootFolder = new SelectModel(DataSourceType.FileSystem, "/data") { Search = false };
     rootFolder.Columns = new List<SelectColumn>()
     {
         new SelectColumn(FileSystemColumn.Name.ToString())

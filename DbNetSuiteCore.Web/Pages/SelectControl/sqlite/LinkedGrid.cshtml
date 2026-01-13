@@ -64,7 +64,7 @@
     orderGrid.LinkedControl = orderForm;
     orderForm.LayoutColumns = 3;
 
-    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { Caption = "Customers", EmptyOption = "Please select a customer", Searchable = true };
+    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { Caption = "Customers", EmptyOption = "Please select a customer", Search = true };
 
     customerSelect.Columns = new List<SelectColumn>
     {

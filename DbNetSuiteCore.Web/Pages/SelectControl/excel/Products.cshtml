@@ -31,7 +31,7 @@
     var superstoreGrid = new GridModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Columns = columns, Caption = "Products" };
     superstoreGrid.ClientEvents[GridClientEvent.PageLoaded] = "updateCaption";
 
-    var productSelect = new SelectModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Searchable = true, Distinct = true};
+    var productSelect = new SelectModel(DataSourceType.Excel, $"/data/excel/superstore.xlsx") { Search = true, Distinct = true};
     productSelect.Columns = new List<SelectColumn>()
     {
         new SelectColumn("City"),

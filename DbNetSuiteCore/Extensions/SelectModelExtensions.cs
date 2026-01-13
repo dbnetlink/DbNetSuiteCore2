@@ -60,7 +60,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (selectModel.IsGrouped)
             {
-                optionGroupOrdinal = $"{selectModel.OptionGroupColumn.Ordinal},";
+                optionGroupOrdinal = $"{selectModel.OptionGroupColumn.Ordinal} {selectModel.OptionGroupColumn.InitialSortOrder},";
             }
             query.Sql += $" order by {optionGroupOrdinal}{selectModel.SortColumnOrdinal} {selectModel.SortSequence}";
         }

@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-var employeeSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") { Caption = "Employees", Searchable = true, Layout = LayoutType.Row };
+var employeeSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Employees") { Caption = "Employees", Search = true, Layout = LayoutType.Row };
 employeeSelect.Columns = new List<SelectColumn>()
 {
     new SelectColumn("EmployeeID"),

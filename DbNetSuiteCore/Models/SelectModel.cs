@@ -50,10 +50,6 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public string EmptyOption { get; set; } = string.Empty;
         /// <summary>
-        /// When set to true the control renders a separate input box that can be used to filter the select options
-        /// </summary>
-        public bool Searchable { get; set; } = false;
-        /// <summary>
         /// When set to true will only return distinct values of the selected columns
         /// </summary>
         public bool Distinct { get; set; } = false;

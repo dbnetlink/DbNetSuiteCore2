@@ -4,7 +4,7 @@
 @{
     var customerSelect1 = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") { 
         EmptyOption = "Please select a customer", 
-        Caption = "Customers", Searchable = true,
+        Caption = "Customers", Search = true,
         Layout = LayoutType.Column,
         Columns = new List<SelectColumn>
         {
@@ -17,7 +17,7 @@
             {
                 EmptyOption = "Please select a customer",
                 Caption = "Customers",
-                Searchable = true,
+                Search = true,
                 Layout = LayoutType.Row,
                 Columns = new List<SelectColumn>
         {

@@ -10,11 +10,11 @@
           if (Model.HasChildren())
           {
                 <div class="node-header">
-                    <span class="open-icon icon">@IconHelper.ExpandDown()</span>
-                    <span class="close-icon icon hidden">@IconHelper.ExpandUp()</span>
+                    <span class="open-icon icon @(Model.Expand ? "hidden" : string.Empty)">@IconHelper.ExpandDown()</span>
+                    <span class="close-icon icon @(Model.Expand ? string.Empty : "hidden")">@IconHelper.ExpandUp()</span>
                     <span class="node-text">@Model.ParentRowDescription()</span>
                 </div>
-                <div class="node-content hidden">
+                <div class="node-content @(Model.Expand ? string.Empty : "hidden")">
                 @foreach (DataRow row in Model.ChildRows()) {
                     if (Model.LeafParent)
                     {

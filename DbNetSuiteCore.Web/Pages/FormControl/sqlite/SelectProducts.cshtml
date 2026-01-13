@@ -4,7 +4,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var categorySelect = new SelectModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Categories") { Caption = "Categories", Searchable = true, Layout = LayoutType.Row};
+    var categorySelect = new SelectModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Categories") { Caption = "Categories", Search = true, Layout = LayoutType.Row};
     categorySelect.Columns = new List<SelectColumn>() {
         new SelectColumn("CategoryId"),
         new SelectColumn("CategoryName")

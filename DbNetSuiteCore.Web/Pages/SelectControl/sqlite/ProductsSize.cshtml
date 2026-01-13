@@ -3,7 +3,7 @@
 @using DbNetSuiteCore.Models
 
 @{
-    var productSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products join Categories on Products.CategoryID = Categories.CategoryID") { Searchable = true, Size = 20};
+    var productSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products join Categories on Products.CategoryID = Categories.CategoryID") { Search = true, Size = 20};
     productSelect.Columns = new List<SelectColumn>()
     {
         new SelectColumn("ProductID"),

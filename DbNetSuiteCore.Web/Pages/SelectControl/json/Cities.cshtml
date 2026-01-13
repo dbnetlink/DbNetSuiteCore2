@@ -12,7 +12,7 @@
 
     var url = "/cities";
 
-    SelectModel citySelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Searchable = true, Distinct = true, Cache = true };
+    SelectModel citySelect = new SelectModel(DataSourceType.JSON, url) { Columns = columns, Search = true, Distinct = true, Cache = true };
 
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(citySelect))
 }

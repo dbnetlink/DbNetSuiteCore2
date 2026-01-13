@@ -37,6 +37,7 @@ namespace DbNetSuiteCore.ViewModels
 
         public bool LeafLevel => Level == TreeViewModel.Levels.Count - 1;
         public bool LeafParent => Level == TreeViewModel.Levels.Count - 2;
+        public bool Expand => TreeViewModel.TreeModel.Expand;
 
         public object ParentRowValue()
         {

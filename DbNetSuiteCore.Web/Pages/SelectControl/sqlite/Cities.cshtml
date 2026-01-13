@@ -5,7 +5,7 @@
 @using DbNetSuiteCore.Web.Enums
 
 @{
-    var citySelect = new SelectModel("cities") { Caption = "City", Searchable = true };
+    var citySelect = new SelectModel("cities") { Caption = "City", Search = true };
     citySelect.Columns = new List<SelectColumn>
     {
         new SelectColumn("cityid") {PrimaryKey = true },
