@@ -36,6 +36,10 @@ namespace DbNetSuiteCore.Models
         public string SelectionPlaceholder { get; set; } = "Select...";
         public string SelectionTitle { get; set; } = "";
         public bool Expand { get; set; } = false;
+        /// <summary>
+        /// Enables simple search functionality 
+        /// </summary>
+        public bool Search { get; set; } = false;
 
         public TreeModel() : base()
         {

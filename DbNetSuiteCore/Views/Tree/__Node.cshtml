@@ -29,7 +29,14 @@
                     }
                 }
                 </div>
-          }
-      }
+            }
+            else
+            {
+                <div class="leaf" data-value="@Model.ParentRowValue()" data-description="@Model.ParentRowDescription()">
+                    <span class="leaf-icon icon">@IconHelper.Document()</span>
+                    <span class="leaf-text">@Model.ParentRowDescription()</span>
+                </div>
+            }
+        }
       </div>
 }

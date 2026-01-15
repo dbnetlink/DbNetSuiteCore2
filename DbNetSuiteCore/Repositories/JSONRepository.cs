@@ -1,7 +1,9 @@
 ﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -108,7 +110,11 @@ namespace DbNetSuiteCore.Repositories
         {
             string json = string.Empty;
 
-            if (string.IsNullOrEmpty(componentModel.Url))
+            if (String.IsNullOrEmpty(componentModel.DataSourcePluginName) == false)
+            {
+                json = (string)PluginHelper.InvokeMethod(componentModel.DataSourcePluginName, nameof(IDataSourcePlugin.GetData), componentModel, null, false);
+            }
+            else if (string.IsNullOrEmpty(componentModel.Url))
             {
                 json = componentModel.JSON;
             }

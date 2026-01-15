@@ -189,6 +189,11 @@ namespace DbNetSuiteCore.Models
         /// Shows/Hides the Copy to clipboard button in the toolbar.
         /// </summary>
         public bool Copy { get; set; } = true;
+        /// <summary>
+        /// Enables simple search functionality 
+        /// </summary>
+        public bool Search { get; set; } = true;
+
         public GridModel() : base()
         {
         }

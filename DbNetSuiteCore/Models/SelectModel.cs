@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Plugins.Interfaces;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -73,11 +74,19 @@ namespace DbNetSuiteCore.Models
         /// Controls the layout of the Caption, Search box and Select element. Column (default) renders one above the other and Row renders them across the page
         /// </summary>
         public LayoutType Layout { get; set; } = LayoutType.Column;
+        /// <summary>
+        /// Enables simple search functionality 
+        /// </summary>
+        public bool Search { get; set; } = false;
 
         public SelectModel() : base()
         {
         }
         public SelectModel(DataSourceType dataSourceType, string url) : base(dataSourceType, url)
+        {
+        }
+
+        public SelectModel(DataSourceType dataSourceType, Type dataSourcePlugin) : base(dataSourceType, dataSourcePlugin)
         {
         }
 

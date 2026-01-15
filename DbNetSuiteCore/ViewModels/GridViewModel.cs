@@ -40,6 +40,7 @@ namespace DbNetSuiteCore.ViewModels
 
         public int ColSpan => VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
         public bool Editable => GridModel.Columns.Any(c => c.Editable);
+        public bool SearchDialog => SearchDialogColumns.Any() && GridModel.Search && GridModel.DataSourceType != DataSourceType.MongoDB;
         public GridViewModel(GridModel gridModel) : base(gridModel)
         {
             _gridModel = gridModel;

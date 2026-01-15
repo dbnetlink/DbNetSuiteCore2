@@ -5,6 +5,12 @@
     --text-muted: #666;
 }
 
+form.dbnetsuite-tree,
+form.dbnetsuite-select{
+    padding-top: 0rem;
+    padding-bottom: 0rem;
+}
+
 .dbnetsuite-tree .custom-select-wrapper {
     position: relative;
     min-width: 350px;

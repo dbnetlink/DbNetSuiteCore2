@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Plugins.Interfaces;
 using Newtonsoft.Json;
 namespace DbNetSuiteCore.Models
 {
@@ -62,6 +63,10 @@ namespace DbNetSuiteCore.Models
         }
 
         public GridSelectModel(DataSourceType dataSourceType, string url) : base(dataSourceType, url)
+        {
+        }
+
+        public GridSelectModel(DataSourceType dataSourceType, Type dataSourcePlugin) : base(dataSourceType, dataSourcePlugin)
         {
         }
 

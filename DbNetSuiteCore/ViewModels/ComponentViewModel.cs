@@ -65,7 +65,6 @@ namespace DbNetSuiteCore.ViewModels
 
         public string LinkedControlIds => string.Join(",", _componentModel.GetLinkedControlIds());
         public IEnumerable<ColumnViewModel> SearchDialogColumns => _componentModel.GetColumns().Where(c => c.IsSearchable).Select(c => new ColumnViewModel(c));
-        public bool SearchDialog => SearchDialogColumns.Any() && _componentModel.Search && _componentModel.DataSourceType != DataSourceType.MongoDB;
         public HtmlString RenderSearchLookupOptions(List<KeyValuePair<string, string>> options, string key)
         {
             List<HtmlString> html = new List<HtmlString>();

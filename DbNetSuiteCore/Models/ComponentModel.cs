@@ -1,5 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Plugins.Interfaces;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -137,7 +138,6 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public int QueryLimit { get; set; } = -1;
         public bool DiagnosticsMode { get; set; } = false;
-        public bool Search { get; set; } = true;
         public string ClassName { get; set; }
         internal string SearchDialogConjunction { get; set; } = "and";
         public string Message = string.Empty;
@@ -148,6 +148,13 @@ namespace DbNetSuiteCore.Models
         public HttpContext HttpContext { get; internal set; } = null;
         [JsonIgnore]
         public IConfiguration Configuration => HttpContext?.RequestServices.GetService<IConfiguration>();
+
+        public Type DataSourcePlugin
+        {
+            set { DataSourcePluginName = PluginHelper.GetNameFromType(value); }
+        }
+        [JsonProperty]
+        internal string DataSourcePluginName { get; set; } = string.Empty;
         public ComponentModel()
         {
             Id = GeneratedId();
@@ -156,6 +163,12 @@ namespace DbNetSuiteCore.Models
         {
             DataSourceType = dataSourceType;
             Url = url;
+        }
+
+        public ComponentModel(DataSourceType dataSourceType, Type dataSourcePlugin) : this()
+        {
+            DataSourceType = dataSourceType;
+            DataSourcePlugin = dataSourcePlugin;
         }
 
         public ComponentModel(DataSourceType dataSourceType, string connectionAlias, string tableName) : this()

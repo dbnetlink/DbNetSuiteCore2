@@ -35,6 +35,8 @@ namespace DbNetSuiteCore.ViewModels
         public FormMode? CommitType => FormModel.CommitType;
         public long? AutoincrementValue => FormModel.AutoincrementValue;
         public bool OneToOne => FormModel.OneToOne;
+        public bool SearchDialog => SearchDialogColumns.Any() && FormModel.Search && FormModel.DataSourceType != DataSourceType.MongoDB;
+
 
         public FormViewModel(FormModel formModel) : base(formModel)
         {
