@@ -1,7 +1,8 @@
-﻿using DbNetSuiteCore.Models;
-using DocumentFormat.OpenXml.Spreadsheet;
-using SQLitePCL;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Models;
 using System.Data;
+using DataTableExtensions = DbNetSuiteCore.Extensions.DataTableExtensions;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -31,7 +32,17 @@ namespace DbNetSuiteCore.ViewModels
 
         public DataRow[] ChildRows()
         {
-            string filter = $"{ChildLevel.ForeignKeyName} = {CurrentLevel.PrimaryKeyValue(ParentRow)}";
+            if (CurrentLevel.DataSourceType == DataSourceType.FileSystem)
+            {
+                if (Convert.ToBoolean(ParentRow.RowValue(FileSystemColumn.IsDirectory)) == false)
+                {
+                    return Array.Empty<DataRow>();
+                }
+            }
+
+            var primaryKeyColumn = ChildLevel.Columns.FirstOrDefault(c => c.PrimaryKey) ?? ChildLevel.Columns.First();
+
+            string filter = $"{ChildLevel.ForeignKeyName} = {DataTableExtensions.Quoted(primaryKeyColumn)}{CurrentLevel.PrimaryKeyValue(ParentRow)}{DataTableExtensions.Quoted(primaryKeyColumn)}";
             return ChildLevel.Data.Select(filter);
         }
 

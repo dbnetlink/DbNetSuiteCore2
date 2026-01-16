@@ -3,6 +3,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Globalization;
@@ -412,7 +413,15 @@ namespace DbNetSuiteCore.Extensions
             return string.Join(" and ", primaryKeyFilter);
         }
 
+        public static object RowValue(this DataRow dataRow, FileSystemColumn columnName)
+        {
+            return dataRow.RowValue(columnName.ToString());
+        }
 
+        public static object RowValue(this DataRow dataRow, string columnName )
+        {
+            return dataRow[dataRow.Table.Columns[columnName]];
+        }
 
         public static string AddOrder(GridModel gridModel)
         {
@@ -436,7 +445,7 @@ namespace DbNetSuiteCore.Extensions
             return $"{optionGroupSortColumnName}{TextHelper.DelimitColumn(selectModel.SortColumnName, selectModel.DataSourceType)}";
         }
 
-        private static string Quoted(ColumnModel column)
+        public static string Quoted(ColumnModel column)
         {
             return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
         }

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class ExcelRepository : FileRepository, IExcelRepository
+    public class ExcelRepository :  IExcelRepository
     {
         private readonly IWebHostEnvironment _env;
         private readonly IMemoryCache _memoryCache;
@@ -101,7 +101,7 @@ namespace DbNetSuiteCore.Repositories
 
                 if (gridModel.Cache)
                 {
-                    _memoryCache.Set(gridModel.CacheKey, dataTable, GetCacheOptions());
+                    _memoryCache.Set(gridModel.CacheKey, dataTable, CacheHelper.GetCacheOptions());
                 }
             }
             return dataTable;

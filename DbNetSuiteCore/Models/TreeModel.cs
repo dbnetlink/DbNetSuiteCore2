@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
 using DocumentFormat.OpenXml.Bibliography;
 using MongoDB.Bson;
 using Newtonsoft.Json;
@@ -58,17 +59,33 @@ namespace DbNetSuiteCore.Models
 
         internal string ForeignKeyName => Columns.FirstOrDefault(c => c.ForeignKey).Expression ?? string.Empty;
 
+        internal ColumnModel ForeignKeyColumn => Columns.FirstOrDefault(c => c.ForeignKey);
+
         internal object PrimaryKeyValue(DataRow dataRow)
         {
-            var column = Columns.FirstOrDefault(c => c.PrimaryKey) ?? Columns.First();
-            DataColumn dataColumn = GetDataColumn(column);
-            return DbNetSuiteCore.Extensions.DataTableExtensions.QuotedValue(column, dataRow[dataColumn]);
+            if (DataSourceType == DataSourceType.FileSystem)
+            {
+                return dataRow.RowValue(FileSystemColumn.Name);
+            }
+            else
+            {
+                var column = Columns.FirstOrDefault(c => c.PrimaryKey) ?? Columns.First();
+                DataColumn dataColumn = GetDataColumn(column);
+                return DbNetSuiteCore.Extensions.DataTableExtensions.QuotedValue(column, dataRow[dataColumn]);
+            }
         }
 
         internal string Description(DataRow dataRow)
         {
-            int index = (Columns.Count() == 1) ? 0 : 1;
-            return dataRow[index].ToString();
+            if (DataSourceType == DataSourceType.FileSystem)
+            {
+                return dataRow.RowValue(FileSystemColumn.Name).ToString();
+            }
+            else
+            {
+                int index = (Columns.Count() == 1) ? 0 : 1;
+                return dataRow[index].ToString();
+            }
         }
 
         internal List<TreeModel> Levels => GetLevels();

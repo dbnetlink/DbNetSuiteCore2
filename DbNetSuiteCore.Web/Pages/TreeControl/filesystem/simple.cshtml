@@ -1,0 +1,16 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var samplesTree = new TreeModel(DataSourceType.FileSystem, "../Pages") { FixedFilter = "(IsDirectory = 1 or Name like '%.cshtml') and Name not in ('Shared','_ViewStart.cshtml','index.cshtml')" };
+    samplesTree.Columns = new List<TreeColumn>()
+    {
+        new TreeColumn(FileSystemColumn.Name.ToString())
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(samplesTree))
+
+}

@@ -24,7 +24,7 @@
 
         public static bool IsValidUri(string uri)
         {
-            return Uri.IsWellFormedUriString(uri, UriKind.Absolute);
+            return Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute);
         }
     }
 }

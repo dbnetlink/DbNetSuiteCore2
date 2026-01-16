@@ -56,7 +56,7 @@
             }
             @foreach (GridColumnViewModel column in Model.VisibleColumns)
             {
-                DataColumn dataColumn = Model.GetDataColumn(column.Column);
+                 DataColumn dataColumn = Model.GetDataColumn(column.Column);
 
                 if (dataColumn == null)
                 {

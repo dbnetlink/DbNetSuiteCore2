@@ -13,7 +13,7 @@ using System.Web;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class JSONRepository : FileRepository, IJSONRepository
+    public class JSONRepository : IJSONRepository
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
@@ -100,7 +100,7 @@ namespace DbNetSuiteCore.Repositories
 
             if (gridSelectModel.Cache)
             {
-                _memoryCache.Set(gridSelectModel.CacheKey, dataTable, GetCacheOptions());
+                _memoryCache.Set(gridSelectModel.CacheKey, dataTable, CacheHelper.GetCacheOptions());
             }
 
             return dataTable;

@@ -1,10 +1,15 @@
 ﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
+using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.InkML;
 using Newtonsoft.Json;
+using System.Data;
 using System.Web;
 
 namespace DbNetSuiteCore.Services
@@ -45,14 +50,20 @@ namespace DbNetSuiteCore.Services
 
         private async Task<TreeViewModel> GetTreeViewModel(TreeModel treeModel)
         {
-            foreach (var level in treeModel.Levels)
+            if (treeModel.DataSourceType == Enums.DataSourceType.FileSystem)
             {
-                await ConfigureColumns(level);
-                await GetRecords(level);
-
-                treeModel.DataTables.Add(level.Data);
+                await LoadDirectoryStructure(treeModel);
             }
+            else
+            {
+                foreach (var level in treeModel.Levels)
+                {
+                    await ConfigureColumns(level);
+                    await GetRecords(level);
 
+                    treeModel.DataTables.Add(level.Data);
+                }
+            }
             var treeViewModel = new TreeViewModel(treeModel);
 
             if (treeModel.DiagnosticsMode)
@@ -61,6 +72,44 @@ namespace DbNetSuiteCore.Services
             }
 
             return treeViewModel;
+        }
+
+
+        private async Task LoadDirectoryStructure(TreeModel treeModel)
+        {
+            var columns = new List<TreeColumn> {
+                    new TreeColumn(FileSystemColumn.ParentFolder.ToString()) { ForeignKey = true },
+                    new TreeColumn(FileSystemColumn.IsDirectory.ToString())
+                };
+
+            foreach (var column in columns)
+            {
+                treeModel.Columns = treeModel.Columns.ToList().Append(column);
+            }
+            await ConfigureColumns(treeModel.Levels.Last());
+            await GetRecords(treeModel.Levels.Last());
+
+            var folders = treeModel.Levels.Last().Data.Rows.Cast<DataRow>().Where(r => Convert.ToBoolean(r.RowValue(FileSystemColumn.IsDirectory))).ToList();
+
+            while (folders.Any())
+            {
+                var childLevel = treeModel.Levels.Last().DeepCopy();
+                treeModel.NestedLevel = childLevel;
+                childLevel.Data = _fileSystemRepository.GetEmptyDataTable();
+
+                foreach (var folder in folders)
+                {
+                    var dataTable = _fileSystemRepository.GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString());
+                    foreach (DataRow row in dataTable.Rows)
+                    {
+                        DataRow newRow = childLevel.Data.NewRow();
+                        newRow.ItemArray = row.ItemArray;
+                        childLevel.Data.Rows.Add(newRow);
+                    }
+                }   
+              
+                folders = childLevel.Data.Rows.Cast<DataRow>().Where(r => Convert.ToBoolean(r.RowValue(FileSystemColumn.IsDirectory))).ToList();
+            }
         }
 
 

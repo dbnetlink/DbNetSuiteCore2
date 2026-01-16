@@ -1,0 +1,17 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var fileGrid = new GridModel(DataSourceType.FileSystem, "/data/files") { FixedFilter = "IsDirectory = 0" };
+    fileGrid.Columns = new List<GridColumn>()
+    {
+        new GridColumn(FileSystemColumn.Name.ToString()),
+        new GridColumn(FileSystemColumn.Path.ToString()) {Format = "<a target='_blank' href='{0}'><img src='{0}' style='height:30px'/></a>"}
+     };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileGrid))
+
+}

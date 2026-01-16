@@ -48,6 +48,15 @@ namespace DbNetSuiteCore.Helpers
             return TextHelper.ObfuscateString(key);
         }
 
+        public static MemoryCacheEntryOptions GetCacheOptions()
+        {
+            return new MemoryCacheEntryOptions()
+                       .SetSlidingExpiration(TimeSpan.FromMinutes(1))
+                       .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                       .SetPriority(CacheItemPriority.Normal)
+                       .SetSize(1024);
+        }
+
         private static string RedisCacheObject(object obj, string key, HttpContext httpContext)
         {
             if (httpContext == null)

@@ -10,6 +10,7 @@
         Extension,
         Content,
         Folder,
-        Path
+        Path,
+        ParentFolder
     };
 }

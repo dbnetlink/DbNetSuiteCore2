@@ -25,18 +25,22 @@ namespace DbNetSuiteCore.Repositories
 
             string filterPart = string.Empty;
             string orderPart = string.Empty;
-            if (componentModel is GridModel)
+            if (componentModel is GridModel gridModel)
             {
-                var gridModel = (GridModel)componentModel;
                 filterPart = AddFilterPart(gridModel);
                 orderPart = AddOrderPart(gridModel);
             }
 
-            if (componentModel is SelectModel)
+            if (componentModel is SelectModel selectModel)
             {
-                var selectModel = (SelectModel)componentModel;
                 filterPart = AddFilterPart(selectModel);
                 orderPart = AddOrderPart(selectModel);
+            }
+
+            if (componentModel is TreeModel treeModel)
+            {
+                filterPart = AddFilterPart(treeModel);
+                orderPart = AddOrderPart(treeModel);
             }
 
             var rows = dataTable.Select(filterPart, orderPart);
@@ -45,6 +49,19 @@ namespace DbNetSuiteCore.Repositories
             {
                 componentModel.Data = rows.CopyToDataTable();
             }
+        }
+
+        public DataTable GetFolderContents(string path)
+        {
+            var dataTable = GetEmptyDataTable();
+            IDirectoryContents directoryContents = Contents(path);
+
+            foreach (IFileInfo file in directoryContents)
+            {
+                AddRow(file, dataTable);
+            }
+
+            return  dataTable;
         }
 
         public DataTable GetColumns(ComponentModel componentModel)
@@ -113,7 +130,7 @@ namespace DbNetSuiteCore.Repositories
             return provider.GetDirectoryContents(string.Empty);
         }
 
-        private DataTable GetEmptyDataTable()
+        public DataTable GetEmptyDataTable()
         {
             DataTable dataTable = new DataTable();
             dataTable.Clear();
@@ -123,6 +140,7 @@ namespace DbNetSuiteCore.Repositories
             dataTable.Columns.Add(FileSystemColumn.Extension.ToString(), typeof(string));
             dataTable.Columns.Add(FileSystemColumn.Length.ToString(), typeof(Int64));
             dataTable.Columns.Add(FileSystemColumn.Folder.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.ParentFolder.ToString(), typeof(string));
             dataTable.Columns.Add(FileSystemColumn.Path.ToString(), typeof(string));
             dataTable.Columns.Add(FileSystemColumn.LastModified.ToString(), typeof(DateTime));
             return dataTable;
@@ -172,7 +190,8 @@ namespace DbNetSuiteCore.Repositories
             dataRow[FileSystemColumn.LastModified.ToString()] = file.LastModified.UtcDateTime;
 
             var path = GetPath(file.PhysicalPath);
-            dataRow[FileSystemColumn.Folder.ToString()] = file.IsDirectory ? file.Name : (path.Split("/").Count() > 1 ? path.Split("/").Reverse().Skip(1).First() : string.Empty);
+            dataRow[FileSystemColumn.Folder.ToString()] = file.IsDirectory ? file.Name : ParentFolder(path);
+            dataRow[FileSystemColumn.ParentFolder.ToString()] = ParentFolder(path);
             dataRow[FileSystemColumn.Path.ToString()] = path;
 
             if (file.IsDirectory == false && (contentColumns ?? new List<GridColumn>()).Any() && file.Length < (1024 * 16))
@@ -187,6 +206,11 @@ namespace DbNetSuiteCore.Repositories
             }
 
             dataTable.Rows.Add(dataRow);
+        }
+
+        private string ParentFolder(string path)
+        {
+            return path.Split("/").Count() > 1 ? path.Split("/").Reverse().Skip(1).First() : string.Empty;
         }
 
         private void AddSubFolder(IFileInfo folder, DataTable dataTable)
@@ -333,6 +357,23 @@ namespace DbNetSuiteCore.Repositories
             }
 
             return $"IsDirectory desc,{selectModel.SortColumnName} {selectModel.SortSequence}";
+        }
+
+        private string AddFilterPart(TreeModel treeModel)
+        {
+            List<string> filterParts = new List<string>();
+         
+            if (!string.IsNullOrEmpty(treeModel.FixedFilter))
+            {
+                filterParts.Add($"({treeModel.FixedFilter})");
+            }
+
+            return String.Join(" and ", filterParts);
+        }
+
+        private string AddOrderPart(TreeModel treeModel)
+        {
+            return $"IsDirectory desc, Name";
         }
     }
 }
