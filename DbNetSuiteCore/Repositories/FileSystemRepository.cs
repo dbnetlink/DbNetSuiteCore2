@@ -323,12 +323,34 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
+            if (selectModel.IsLinked)
+            {
+                AddParentKeyFilterPart(selectModel, filterParts);
+            }
+
             if (!string.IsNullOrEmpty(selectModel.FixedFilter))
             {
                 filterParts.Add($"({selectModel.FixedFilter})");
             }
 
             return String.Join(" and ", filterParts);
+        }
+
+
+        public static void AddParentKeyFilterPart(SelectModel selectModel, List<string> filterParts)
+        {
+            if (selectModel.ParentModel == null || selectModel.ParentModel.RowIdx < 0)
+            {
+                filterParts.Add($"(1=2)");
+                return;
+            }
+
+            string folderName = selectModel.ParentModel!.ParentRow[FileSystemColumn.Name.ToString()].ToString();
+
+            if (string.IsNullOrEmpty(folderName) == false)
+            {
+                filterParts.Add($"{FileSystemColumn.ParentFolder} = '{folderName}'");
+            }
         }
 
         private string Quoted(GridColumn column)

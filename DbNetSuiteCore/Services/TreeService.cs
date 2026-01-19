@@ -6,11 +6,8 @@ using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.InkML;
 using Newtonsoft.Json;
 using System.Data;
-using System.Web;
 
 namespace DbNetSuiteCore.Services
 {
@@ -78,7 +75,8 @@ namespace DbNetSuiteCore.Services
         private async Task LoadDirectoryStructure(TreeModel treeModel)
         {
             var columns = new List<TreeColumn> {
-                    new TreeColumn(FileSystemColumn.ParentFolder.ToString()) { ForeignKey = true },
+                    new TreeColumn(FileSystemColumn.Path.ToString()) { },
+                    new TreeColumn(FileSystemColumn.ParentFolder.ToString()) {  ForeignKey = true },
                     new TreeColumn(FileSystemColumn.IsDirectory.ToString())
                 };
 

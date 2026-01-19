@@ -58,6 +58,11 @@ namespace DbNetSuiteCore.Services
                 ConfigureColumnsForStoredProcedure(selectModel);
             }
 
+            if (selectModel.DataSourceType == DataSourceType.FileSystem)
+            {
+                selectModel.SummaryModel = new SummaryModel(selectModel);
+            }
+
             var selectViewModel = new SelectViewModel(selectModel);
 
             if (selectModel.DiagnosticsMode)

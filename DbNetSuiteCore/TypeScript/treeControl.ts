@@ -20,10 +20,12 @@
 
         this.controlElements('span.open-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
         this.controlElements('span.close-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
-        this.controlElements('span.leaf-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
-        this.controlElements('span.node-text').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
+        this.controlElements('span.leaf-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
+        this.controlElements('span.node-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
 
-        this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
+        if (this.selectionLabel) {
+            this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
+        }
     }
 
     private toggleDropdown(ev) {
@@ -48,24 +50,37 @@
 
     private selectNode(event: MouseEvent) {
         let target = event.target as HTMLElement;
-        const selectedNode = target.closest(".node") as HTMLElement;
+        const selectedNode = target.closest(".node-header") as HTMLElement;
         this.selectParentNodes(selectedNode)
     }
 
     private selectParentNodes(selectedElement: HTMLElement) {
+        let previouslySelected = this.controlElement('.selected');
+        if (previouslySelected) {
+            previouslySelected.classList.remove("selected");
+        };
+        selectedElement.classList.add("selected"); 
+        selectedElement = selectedElement.closest('div[data-value]');
         let path = [selectedElement.dataset.description];
-        let parentNode: HTMLDivElement = selectedElement.parentElement.closest('.node');
+        let parentNode: HTMLDivElement = selectedElement.parentElement.parentElement.closest('.node');
+
+        let parentValues = [];
+        let parentDescriptions = [];
 
         while (parentNode) {
             const headerText = parentNode.dataset.description;
             path.unshift(headerText);
+            parentDescriptions.push(parentNode.dataset.description);
+            parentValues.push(parentNode.dataset.description);
             parentNode = parentNode.parentElement.parentElement.closest('.node');
         }
 
-        this.selectionLabel.innerHTML = `<span class="path-prefix">${this.selectionLabel.dataset.selectiontitle}</span>${path.join(' &gt; ')}`;
-        this.controlElement("#dropdownMenu").classList.remove("show");
+        if (this.selectionLabel) {
+            this.selectionLabel.innerHTML = `<span class="path-prefix">${this.selectionLabel.dataset.selectiontitle}</span>${path.join(' &gt; ')}`;
+            this.controlElement("#dropdownMenu").classList.remove("show");
+        }
 
-        this.invokeEventHandler('ItemSelected',{ value: selectedElement.dataset.description, description: selectedElement.dataset.description });
+        this.invokeEventHandler('ItemSelected', { value: selectedElement.dataset.value, description: selectedElement.dataset.description, parentValues: parentValues, parentDescriptions: parentDescriptions });
     }
 
     private reset(e:MouseEvent) {
@@ -73,7 +88,9 @@
         let treeSearch: HTMLInputElement = this.controlElement('#treeSearch')
         treeSearch.value = '';
         treeSearch.dispatchEvent(new Event('input'));
-        this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
+        if (this.selectionLabel) {
+            this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
+        }
     }
 
     private search(e: InputEvent) {
@@ -120,7 +137,10 @@
 
     private initialise() {
         this.searchEnabled = this.controlElement('.search-container') != null;
-        this.controlElements('div.select-trigger').forEach(div => { div.addEventListener("click", (e:MouseEvent) => this.toggleDropdown(e)) });
+
+        if (this.controlElement('div.select-trigger')) {
+            this.controlElement('div.select-trigger').addEventListener("click", (e: MouseEvent) => this.toggleDropdown(e));
+        }
 
         if (this.searchEnabled) {
             this.controlElement('#treeSearch').addEventListener('input', this.debounce((e: InputEvent) => this.search(e)));

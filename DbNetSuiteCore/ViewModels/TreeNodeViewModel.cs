@@ -42,8 +42,13 @@ namespace DbNetSuiteCore.ViewModels
 
             var primaryKeyColumn = ChildLevel.Columns.FirstOrDefault(c => c.PrimaryKey) ?? ChildLevel.Columns.First();
 
-            string filter = $"{ChildLevel.ForeignKeyName} = {DataTableExtensions.Quoted(primaryKeyColumn)}{CurrentLevel.PrimaryKeyValue(ParentRow)}{DataTableExtensions.Quoted(primaryKeyColumn)}";
-            return ChildLevel.Data.Select(filter);
+            List<string> filter = new List<string>() { $"{ChildLevel.ForeignKeyName} = {DataTableExtensions.Quoted(primaryKeyColumn)}{CurrentLevel.PrimaryKeyValue(ParentRow)}{DataTableExtensions.Quoted(primaryKeyColumn)}" };
+
+            if (TreeViewModel.TreeModel.DataSourceType == DataSourceType.FileSystem) 
+            {
+                filter.Add($"{FileSystemColumn.Path} like '{CurrentLevel.PathValue(ParentRow)}%'");
+            }
+            return ChildLevel.Data.Select(string.Join(" and ", filter));
         }
 
         public bool LeafLevel => Level == TreeViewModel.Levels.Count - 1;

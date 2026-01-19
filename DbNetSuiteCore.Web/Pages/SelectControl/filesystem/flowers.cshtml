@@ -15,11 +15,14 @@
     @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileSelect))
 }
 
-<img id="flowerImage" />
+<div style="padding:5px">
+    <img id="flowerImage" />
+</div>
+
 
 <script>
     function showImage(selectControl, args) {
         var selectedOption = args.selectedOptions[0]
-        document.querySelector("#flowerImage").src = selectedOption.dataset.path
+        document.querySelector("#flowerImage").src = `/data/files/${selectedOption.dataset.name}`
     }
 </script>

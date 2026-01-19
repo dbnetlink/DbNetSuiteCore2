@@ -6,23 +6,26 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="custom-select-wrapper">
-    <div class="select-trigger" style="height:@(string.IsNullOrEmpty(Model.TreeModel.SelectionTitle) ? 34 : 40)px">
-        <div id="selected-label" data-selectiontitle="@Model.TreeModel.SelectionTitle" data-selectionplaceholder="@Model.TreeModel.SelectionPlaceholder"></div>
-        <span class="chevron">@IconHelper.DropDownArrow()</span>
-    </div>
-
-    <div id="dropdownMenu" class="dropdown-content">
-        @if (Model.TreeModel.Search)
-        {
-            <div class="search-container">
-                <input type="text" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
-                <button type="button" id="resetBtn" title="Reset Selection"><span>@IconHelper.Reset()</span></button>
-            </div>
-        }
-
-        <div id="treeRoot" class="flex-tree tree-root">
-             @await Html.PartialAsync("Tree/__Content", Model)
+<div class="custom-select-wrapper" style="min-width:@Model.TreeModel.MinWidth">
+    @if (Model.TreeModel.DropDown) 
+    {
+        <div class="select-trigger" style="height:@(string.IsNullOrEmpty(Model.TreeModel.SelectionTitle) ? 34 : 40)px">
+            <div id="selected-label" data-selectiontitle="@Model.TreeModel.SelectionTitle" data-selectionplaceholder="@Model.TreeModel.SelectionPlaceholder"></div>
+            <span class="chevron">@IconHelper.DropDownArrow()</span>
         </div>
-    </div>
+    }
+
+        <div id="dropdownMenu" class="dropdown-content@(Model.TreeModel.DropDown ? "" : " show")" style="max-height:@Model.TreeModel.MaxHeight">
+            @if (Model.TreeModel.Search)
+            {
+                <div class="search-container">
+                    <input type="text" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
+                    <button type="button" id="resetBtn" title="Reset Selection"><span>@IconHelper.Reset()</span></button>
+                </div>
+            }
+
+            <div id="treeRoot" class="flex-tree tree-root">
+                 @await Html.PartialAsync("Tree/__Content", Model)
+            </div>
+        </div> 
 </div>

@@ -13,7 +13,6 @@ form.dbnetsuite-select{
 
 .dbnetsuite-tree .custom-select-wrapper {
     position: relative;
-    min-width: 350px;
 }
 
 .dbnetsuite-tree .select-trigger {
@@ -56,7 +55,6 @@ form.dbnetsuite-select{
     border: 1px solid var(--border-color);
     border-radius: 6px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    max-height: 450px;
     overflow-y: auto;
 }
 
@@ -131,7 +129,7 @@ form.dbnetsuite-select{
 .dbnetsuite-tree .leaf {
     display: flex;
     align-items: center;
-    padding: 2px 2px;
+    padding: 2px 6px;
     cursor: pointer;
     border-radius: 4px;
     /*font-size: 14px;*/
@@ -151,11 +149,16 @@ form.dbnetsuite-select{
     display: inline-block;
     width: 20px;
     transition: transform 0.2s;
-    margin-right:4px;
+    margin-right:8px;
 }
 
 .dbnetsuite-tree .hidden {
     display: none;
+}
+
+.dbnetsuite-tree div.selected {
+    background-color: lightsteelblue !important;
+    color: whitesmoke !important;
 }
 
 .dbnetsuite-tree .leaf:has(input:checked) {

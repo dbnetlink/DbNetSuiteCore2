@@ -37,10 +37,15 @@ namespace DbNetSuiteCore.Models
         public string SelectionPlaceholder { get; set; } = "Select...";
         public string SelectionTitle { get; set; } = "";
         public bool Expand { get; set; } = false;
+        public bool LeafSelectable { get; set; } = true;
+        public bool DropDown { get; set; } = true;
+        public bool NodeSelectable { get; set; } = false;
         /// <summary>
         /// Enables simple search functionality 
         /// </summary>
         public bool Search { get; set; } = false;
+        public string MaxHeight { get; set; } = "30rem";
+        public string MinWidth { get; set; } = "20rem";
 
         public TreeModel() : base()
         {
@@ -87,6 +92,17 @@ namespace DbNetSuiteCore.Models
                 return dataRow[index].ToString();
             }
         }
+
+
+        internal string PathValue(DataRow dataRow)
+        {
+            if (DataSourceType == DataSourceType.FileSystem)
+            {
+                return dataRow.RowValue(FileSystemColumn.Path).ToString();
+            }
+            return string.Empty;
+        }
+
 
         internal List<TreeModel> Levels => GetLevels();
 
