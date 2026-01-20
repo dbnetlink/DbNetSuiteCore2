@@ -13,7 +13,7 @@
                 <div class="node-header">
                     <span class="open-icon icon @(Model.Expand ? "hidden" : string.Empty)">@(Model.TreeViewModel.TreeModel.DataSourceType == DataSourceType.FileSystem ? IconHelper.Folder() : IconHelper.ExpandDown())</span>
                     <span class="close-icon icon @(Model.Expand ? string.Empty : "hidden")">@(Model.TreeViewModel.TreeModel.DataSourceType == DataSourceType.FileSystem ? IconHelper.FolderOpen() : IconHelper.ExpandUp())</span>
-                    <span class="node-text" selectable="@Model.TreeViewModel.TreeModel.NodeSelectable.ToString().ToLower()">@Model.ParentRowDescription()</span>
+                    <span class="node-text" selectable="@Model.TreeViewModel.TreeModel.NodeSelectable.ToString().ToLower()" data-level="@Model.Level">@Model.ParentRowDescription()</span>
                 </div>
                 <div class="node-content @(Model.Expand ? string.Empty : "hidden")">
                 @foreach (DataRow row in Model.ChildRows()) {
@@ -21,7 +21,7 @@
                     {
                         <div class="leaf" data-value="@Model.RowValue(row)" data-description="@Model.RowDescription(row)">
                             <span class="leaf-icon icon">@IconHelper.Document()</span>
-                            <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()">@Model.RowDescription(row)</span>
+                            <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@(Model.Level+1)">@Model.RowDescription(row)</span>
                         </div>
                     }
                     else
@@ -35,7 +35,7 @@
             {
                 <div class="leaf" data-value="@Model.ParentRowValue()" data-description="@Model.ParentRowDescription()">
                     <span class="leaf-icon icon">@IconHelper.Document()</span>
-                    <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()">@Model.ParentRowDescription()</span>
+                    <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@Model.Level">@Model.ParentRowDescription()</span>
                 </div>
             }
         }

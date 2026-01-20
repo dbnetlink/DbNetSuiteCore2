@@ -49,6 +49,7 @@ namespace DbNetSuiteCore.Services
         {
             if (treeModel.DataSourceType == Enums.DataSourceType.FileSystem)
             {
+             //   FileSystemRepository.UpdateUrl(treeModel);
                 await LoadDirectoryStructure(treeModel);
             }
             else
@@ -97,7 +98,7 @@ namespace DbNetSuiteCore.Services
 
                 foreach (var folder in folders)
                 {
-                    var dataTable = _fileSystemRepository.GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString());
+                    var dataTable = _fileSystemRepository.GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString(), childLevel);
                     foreach (DataRow row in dataTable.Rows)
                     {
                         DataRow newRow = childLevel.Data.NewRow();

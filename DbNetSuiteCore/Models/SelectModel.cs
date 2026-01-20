@@ -13,7 +13,7 @@ namespace DbNetSuiteCore.Models
         public IEnumerable<SelectColumn> Columns { get; set; } = new List<SelectColumn>();
 
         [JsonIgnore]
-        internal IEnumerable<SelectColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false);
+        internal IEnumerable<SelectColumn> NonOptionGroupColumns => Columns.Where(c => c.OptionGroup == false && c.DataOnly == false);
         [JsonIgnore]
         internal SelectColumn ValueColumn => NonOptionGroupColumns.FirstOrDefault() ?? new SelectColumn();
         [JsonIgnore]

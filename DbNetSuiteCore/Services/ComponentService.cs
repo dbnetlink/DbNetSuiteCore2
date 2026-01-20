@@ -158,11 +158,7 @@ namespace DbNetSuiteCore.Services
 
             if (componentModel.DataSourceType == DataSourceType.FileSystem && componentModel.IsLinked)
             {
-                componentModel.Url = primaryKey;
-            }
-            else
-            {
-            //    componentModel.ParentKey = primaryKey ?? string.Empty;
+                componentModel.Url = componentModel.ParentModel.Url;// $"{componentModel.ParentModel.Url}/{componentModel.ParentModel.ParentRow[FileSystemColumn.Name.ToString()]}";
             }
 
             if (componentModel.IsLinked && componentModel is FormModel)

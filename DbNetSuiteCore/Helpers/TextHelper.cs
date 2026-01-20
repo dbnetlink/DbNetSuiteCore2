@@ -177,7 +177,7 @@ namespace DbNetSuiteCore.Helpers
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return new Regex(@"^[a-zA-C]:\\").IsMatch(path);
+                return new Regex(@"^[a-zA-C]:\\").IsMatch(path) || new Regex(@"^[a-zA-C]:/").IsMatch(path);
             }
             else
             {

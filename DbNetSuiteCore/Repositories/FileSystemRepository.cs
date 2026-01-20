@@ -51,7 +51,7 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        public DataTable GetFolderContents(string path)
+        public DataTable GetFolderContents(string path, TreeModel treeModel)
         {
             var dataTable = GetEmptyDataTable();
             IDirectoryContents directoryContents = Contents(path);
@@ -61,7 +61,12 @@ namespace DbNetSuiteCore.Repositories
                 AddRow(file, dataTable);
             }
 
-            return  dataTable;
+            string filterPart = AddFilterPart(treeModel);
+            string orderPart = AddOrderPart(treeModel);
+
+            var rows = dataTable.Select(filterPart, orderPart);
+
+            return rows.CopyToDataTable();
         }
 
         public DataTable GetColumns(ComponentModel componentModel)
@@ -69,24 +74,23 @@ namespace DbNetSuiteCore.Repositories
             return BuildDataTable(componentModel);
         }
 
-        public static void UpdateUrl(GridModel gridModel)
+        public static void UpdateUrl(ComponentModel componentModel)
         {
             var folderSeparator = "/";
 
-            if (TextHelper.IsAbsolutePath(gridModel.Url))
+            if (TextHelper.IsAbsolutePath(componentModel.Url))
             {
                 folderSeparator = Path.DirectorySeparatorChar.ToString();
             }
 
-            var urlParts = gridModel.Url.Split(folderSeparator);
+            var urlParts = componentModel.Url.Split(folderSeparator);
 
-            if (string.IsNullOrEmpty(gridModel.ParentModel?.Name) == false)
+            if (string.IsNullOrEmpty(componentModel.ParentModel?.Name) == false)
             {
-                var url = gridModel.ParentModel?.Name ?? string.Empty;
+                var url = componentModel.ParentModel?.Name ?? string.Empty;
                 urlParts = urlParts.Append(url).ToArray();
 
-                gridModel.Url = string.Join(folderSeparator, urlParts.ToArray());
-              //  gridModel.ParentKey = string.Empty;
+                componentModel.Url = string.Join(folderSeparator, urlParts.ToArray());
             }
         }
 
@@ -96,36 +100,38 @@ namespace DbNetSuiteCore.Repositories
             {
                 return GetEmptyDataTable();
             }
-            var path = string.Empty;
+       
+            return Tabulate(Contents(componentModel.Url), componentModel);
+        }
 
-            if (TextHelper.IsAbsolutePath(componentModel.Url))
+        private string ConvertUrlToFilePath(string url)
+        {
+            if (TextHelper.IsAbsolutePath(url))
             {
-                path = componentModel.Url;
+                return url;
             }
-            else
-            {
-                var pathParts = _env.WebRootPath.Split(Path.DirectorySeparatorChar.ToString());
-                var urlParts = componentModel.Url.Split("/");
 
-                foreach (var part in urlParts)
+            var pathParts = _env.WebRootPath.Split(Path.DirectorySeparatorChar.ToString());
+            var urlParts = url.Split("/");
+
+            foreach (var part in urlParts)
+            {
+                if (part == "..")
                 {
-                    if (part == "..")
-                    {
-                        pathParts = pathParts.Take(pathParts.Count() - 1).ToArray();
-                    }
-                    else
-                    {
-                        pathParts = pathParts.Append(part).ToArray();
-                    }
+                    pathParts = pathParts.Take(pathParts.Count() - 1).ToArray();
                 }
-                path = string.Join(Path.DirectorySeparatorChar.ToString(), pathParts);
+                else
+                {
+                    pathParts = pathParts.Append(part).ToArray();
+                }
             }
 
-            return Tabulate(Contents(path), componentModel);
+            return string.Join(Path.DirectorySeparatorChar.ToString(), pathParts); 
         }
 
         private IDirectoryContents Contents(string path)
         {
+            path = ConvertUrlToFilePath(path);
             var provider = new PhysicalFileProvider(path);
             return provider.GetDirectoryContents(string.Empty);
         }

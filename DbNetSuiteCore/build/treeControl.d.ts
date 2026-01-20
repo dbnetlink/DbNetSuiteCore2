@@ -14,4 +14,6 @@ declare class TreeControl extends ComponentControl {
     updateFixedFilterParameters(params: any): void;
     private initialise;
     closeDropDown(event: any): void;
+    getLeafElements(): NodeListOf<any>;
+    getNodeElements(): NodeListOf<any>;
 }

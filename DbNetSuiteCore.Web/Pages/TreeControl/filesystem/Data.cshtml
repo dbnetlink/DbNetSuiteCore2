@@ -1,0 +1,59 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var samplesTree = new TreeModel(DataSourceType.FileSystem, "/Data/") { };
+    samplesTree.Columns = new List<TreeColumn>()
+    {
+        new TreeColumn(FileSystemColumn.Name.ToString())
+    };
+    samplesTree.Bind(TreeClientEvent.ItemSelected, "fileSelected");
+
+    <div class="main-container">
+        <nav class="sidebar">
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(samplesTree))
+        </nav>
+
+        <iframe name="content-viewport" src="" class="content-frame">
+        </iframe>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function fileSelected(sender, args) {
+            let selectedValues = [args.value];
+            selectedValues = selectedValues.concat(args.parentValues);
+            let url = `/data/${selectedValues.reverse().join('/').replace('.cshtml','')}`;
+            document.querySelector("iframe.content-frame").src = url;
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+    .main-container {
+        display: flex;
+        height: 100vh; /* Viewport Height */
+        width: 100vw;  /* Viewport Width */
+    }
+
+    .sidebar {
+        flex: 1;
+        background-color: #f4f4f4;
+        border-right: 1px solid #ccc;
+        overflow-y: auto; /* Allows scrolling within the list only */
+        padding: 20px;
+    }
+
+    .content-frame {
+        flex: 5;
+        border: none;
+        height: 100%;
+    }
+    </style>
+}
+

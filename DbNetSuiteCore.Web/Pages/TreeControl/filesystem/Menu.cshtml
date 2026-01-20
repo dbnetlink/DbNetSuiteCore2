@@ -11,6 +11,8 @@
         new TreeColumn(FileSystemColumn.Name.ToString())
     };
     samplesTree.Bind(TreeClientEvent.ItemSelected, "fileSelected");
+    samplesTree.Bind(TreeClientEvent.Initialised, "cleanFileNames");
+
 
     <div class="main-container">
         <nav class="sidebar">
@@ -29,6 +31,10 @@
             selectedValues = selectedValues.concat(args.parentValues);
             let url = `/${selectedValues.reverse().join('/').replace('.cshtml','')}`;
             document.querySelector("iframe.content-frame").src = url;
+        }
+
+        function cleanFileNames(sender) {
+            sender.getLeafElements().forEach(e => {e.innerText = e.innerText.replace(".cshtml","")} )
         }
     </script>
 }

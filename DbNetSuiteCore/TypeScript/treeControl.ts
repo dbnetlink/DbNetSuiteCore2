@@ -61,7 +61,7 @@
         };
         selectedElement.classList.add("selected"); 
         selectedElement = selectedElement.closest('div[data-value]');
-        let path = [selectedElement.dataset.description];
+        let path = [(selectedElement.querySelector("span[selectable]") as HTMLSpanElement).innerText];
         let parentNode: HTMLDivElement = selectedElement.parentElement.parentElement.closest('.node');
 
         let parentValues = [];
@@ -155,5 +155,13 @@
         if (!event.target.closest('.custom-select-wrapper')) {
             this.controlElement("#dropdownMenu").classList.remove("show");
         }
+    }
+
+    public getLeafElements() {
+        return this.controlElements("span.leaf-text")
+    }
+
+    public getNodeElements() {
+        return this.controlElements("span.node-text")
     }
 }

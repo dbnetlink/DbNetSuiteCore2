@@ -20,6 +20,8 @@ namespace DbNetSuiteCore.Models
         public string Name => ParentRow.Keys.Contains("name") ? ParentRow["name"]?.ToString() ?? string.Empty : string.Empty;
         [JsonIgnore]
         public HttpContext HttpContext { get; set; } = null;
+        public string Url { get; set; } = string.Empty;
+
         public SummaryModel()
         {
         }
@@ -32,6 +34,7 @@ namespace DbNetSuiteCore.Models
             {
                 Data = gridModel.Data.Columns.Cast<DataColumn>().Where(c => c.DataType != typeof(Byte[])).ToDictionary(c => c.ColumnName, c => gridModel.Rows.AsEnumerable().Select(r => r[c]).ToArray());
                 RowCount = gridModel.Rows.Count();
+                Url = componentModel.Url;
             }
 
             if (componentModel is FormModel formModel)
@@ -45,6 +48,7 @@ namespace DbNetSuiteCore.Models
                 Data = selectModel.Data.Columns.Cast<DataColumn>().Where(c => c.DataType != typeof(Byte[])).ToDictionary(c => c.ColumnName, c => selectModel.Data.Rows.Cast<DataRow>().AsEnumerable().Select(r => r[c]).ToArray());
                 RowCount = selectModel.Data.Rows.Cast<DataRow>().Count();
                 HasEmptyOption = string.IsNullOrEmpty(selectModel.EmptyOption) == false;
+                Url = componentModel.Url;
             }
 
             HttpContext = componentModel.HttpContext;

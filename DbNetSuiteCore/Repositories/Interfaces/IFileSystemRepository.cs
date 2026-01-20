@@ -8,6 +8,6 @@ namespace DbNetSuiteCore.Repositories
         void GetRecords(ComponentModel componentModel);
         DataTable GetColumns(ComponentModel componentModel);
         DataTable GetEmptyDataTable();
-        DataTable GetFolderContents(string path);
+        DataTable GetFolderContents(string path, TreeModel treeModel);
     }
 }

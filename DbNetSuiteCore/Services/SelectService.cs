@@ -48,7 +48,11 @@ namespace DbNetSuiteCore.Services
 
         private async Task<SelectViewModel> GetSelectViewModel(SelectModel selectModel)
         {
-             if (selectModel.IsStoredProcedure == false && selectModel.Uninitialised)
+            if (selectModel.DataSourceType == DataSourceType.FileSystem && string.IsNullOrEmpty(selectModel.ParentModel?.Name) == false)
+            {
+                FileSystemRepository.UpdateUrl(selectModel);
+            }
+            if (selectModel.IsStoredProcedure == false && selectModel.Uninitialised)
             {
                 await ConfigureColumns(selectModel);
             }
