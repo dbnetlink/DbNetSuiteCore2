@@ -17,5 +17,6 @@
 }
 @if (Model.DataSourceType == DataSourceType.JSON)
 {   
-    <input type="hidden" name="@TriggerNames.ApiRequestParameters" value="" hx-post="@Model.PostUrl" hx-trigger="changed" hx-target="closest tbody" hx-indicator="next .htmx-indicator" hx-swap="outerHTML"/>
+    @Model.RenderHtmxTriggerInput(TriggerNames.ApiRequestParameters)
 }   
+@Model.RenderHtmxTriggerInput(TriggerNames.FixedFilterParameters)

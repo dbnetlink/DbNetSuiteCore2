@@ -9,7 +9,6 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text;
@@ -410,6 +409,7 @@ namespace DbNetSuiteCore.Services
 
                 AssignParentModel(gridModel);
                 AssignSearchDialogFilter(gridModel);
+                UpdateFixedFilterParameters(gridModel);
 
                 gridModel.Columns.ToList().ForEach(column => column.FilterError = string.Empty);
                 gridModel.Message = string.Empty;

@@ -490,7 +490,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static string Distinct(ComponentModel componentModel)
         {
-            return (componentModel is SelectModel selectModel && selectModel.Distinct ? "distinct " : string.Empty);
+            return ((componentModel is SelectModel selectModel && selectModel.Distinct) || (componentModel is TreeModel treeModel && treeModel.Distinct) ? "distinct " : string.Empty);
         }
 
         public static void AssignParentModel(this ComponentModel componentModel, HttpContext context, IConfiguration configuration, string key = "parentModel")

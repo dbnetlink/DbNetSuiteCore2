@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using DocumentFormat.OpenXml.Bibliography;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
@@ -22,7 +21,6 @@ namespace DbNetSuiteCore.Models
                 return new List<TreeColumn>();
             }
         }
-
         public Dictionary<TreeClientEvent, string> ClientEvents { get; set; } = new Dictionary<TreeClientEvent, string>();
         internal override TreeColumn SortColumn => (Columns.Count() == 1) ? Columns.First() : Columns.Skip(1).First();
         internal override SortOrder? SortSequence
@@ -33,18 +31,49 @@ namespace DbNetSuiteCore.Models
 
         internal List<DataTable> DataTables { get; set; } = new List<DataTable>();
 
+        /// <summary>
+        /// Placeholder text for the search input
+        /// </summary>
         public string InputPlaceholder { get; set; } = "Search...";
+        /// <summary>
+        /// Placeholder text for selected item
+        /// </summary>
         public string SelectionPlaceholder { get; set; } = "Select...";
+        /// <summary>
+        /// Selection title text
+        /// </summary>
         public string SelectionTitle { get; set; } = "";
+        /// <summary>
+        /// Loads the tree fully expanded (default false)
+        /// </summary>
         public bool Expand { get; set; } = false;
+        /// <summary>
+        /// Allows the tree leaves to be selectable (default true)
+        /// </summary>
         public bool LeafSelectable { get; set; } = true;
+        /// <summary>
+        /// Makes the tree items available as a drop down pane
+        /// </summary>
         public bool DropDown { get; set; } = true;
+        /// <summary>
+        /// Allows the tree nodes to be selectable  (default false)
+        /// </summary>
         public bool NodeSelectable { get; set; } = false;
         /// <summary>
         /// Enables simple search functionality 
         /// </summary>
         public bool Search { get; set; } = false;
+        /// <summary>
+        /// Select distinct values only (database only) 
+        /// </summary>
+        public bool Distinct { get; set; } = false;
+        /// <summary>
+        /// Defines the max-height CSS style value for the tree items pane
+        /// </summary>
         public string MaxHeight { get; set; } = "30rem";
+        /// <summary>
+        /// Defines the min-width CSS style value for the tree items pane
+        /// </summary>
         public string MinWidth { get; set; } = "20rem";
 
         public TreeModel() : base()
@@ -62,7 +91,7 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        internal string ForeignKeyName => Columns.FirstOrDefault(c => c.ForeignKey).Expression ?? string.Empty;
+        internal string ForeignKeyName => Columns.FirstOrDefault(c => c.ForeignKey)?.Expression ?? string.Empty;
 
         internal ColumnModel ForeignKeyColumn => Columns.FirstOrDefault(c => c.ForeignKey);
 
@@ -76,7 +105,7 @@ namespace DbNetSuiteCore.Models
             {
                 var column = Columns.FirstOrDefault(c => c.PrimaryKey) ?? Columns.First();
                 DataColumn dataColumn = GetDataColumn(column);
-                return DbNetSuiteCore.Extensions.DataTableExtensions.QuotedValue(column, dataRow[dataColumn]);
+                return dataRow[dataColumn];
             }
         }
 
@@ -88,7 +117,7 @@ namespace DbNetSuiteCore.Models
             }
             else
             {
-                int index = (Columns.Count() == 1) ? 0 : 1;
+                int index = (Columns.Where(c => c.ForeignKey == false).Count() == 1) ? 0 : 1;
                 return dataRow[index].ToString();
             }
         }

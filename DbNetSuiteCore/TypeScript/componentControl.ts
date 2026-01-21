@@ -353,6 +353,9 @@ class ComponentControl {
         if (this instanceof SelectControl) {
             return (this as SelectControl).select.dataset.linkedcontrolids;
         }
+        if (this instanceof TreeControl) {
+            return (this as TreeControl).treeContainer.dataset.linkedcontrolids;
+        }
         return "";
     }
 
@@ -517,4 +520,11 @@ class ComponentControl {
         };
     }
 
+    protected updateFixedFilterParams(params: any) {
+        let input = this.controlElement('input[name="fixedFilterParameters"]') as HTMLInputElement;
+        if (input) {
+            input.value = JSON.stringify(params);
+            htmx.trigger(input, "changed",);
+        }
+    }
 }

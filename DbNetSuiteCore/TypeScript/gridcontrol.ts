@@ -754,6 +754,10 @@ class GridControl extends ComponentControl {
         return false;
     }
 
+    public updateFixedFilterParameters(params: any) {
+        this.updateFixedFilterParams(params);
+    }
+
     public highlightError(columnName: string, row: HTMLTableRowElement = null) {
         if (!row) {
             row = this.currentValidationRow;

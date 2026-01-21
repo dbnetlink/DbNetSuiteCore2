@@ -1,9 +1,8 @@
-﻿using System.Data;
-using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Enums;
+﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
+using System.Data;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -94,6 +93,32 @@ namespace DbNetSuiteCore.ViewModels
             AddLookupFilterOptions(html, options);
             html.Add(new HtmlString($"</select>"));
             return new HtmlString(string.Join(" ", html));
+        }
+
+        public HtmlString RenderHtmxTriggerInput(string triggerName)
+        {
+            var attributes = new Dictionary<string, string>
+            {
+                { "type", "hidden" },
+                { "name", triggerName },
+                { "value", string.Empty },
+                { "hx-post", PostUrl },
+                { "hx-trigger", "changed" },
+                { "hx-indicator", "next .htmx-indicator" }
+            };
+
+            if (this is GridViewModel)
+            {
+                attributes.Add("hx-target", "closest tbody");
+                attributes.Add("hx-swap", "outerHTML");
+            }
+
+            if (this is TreeViewModel)
+            {
+                attributes.Add("hx-target", "closest .tree-root");
+                attributes.Add("hx-swap", "innerHTML");
+            }
+            return new HtmlString($"<input {RazorHelper.Attributes(attributes)}/>");
         }
 
         protected string ButtonText(ResourceNames resourceName)

@@ -7,6 +7,7 @@ using System.Text;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.Services
 {
@@ -748,6 +749,19 @@ namespace DbNetSuiteCore.Services
             }
 
             return 0;
+        }
+
+        protected void UpdateFixedFilterParameters(ComponentModel componentModel)
+        {
+            Dictionary<string, object> fixedFilterParemeters = JsonConvert.DeserializeObject<Dictionary<string, object>>(RequestHelper.FormValue(TriggerNames.FixedFilterParameters, string.Empty, _context)) ?? new Dictionary<string, object>();
+            fixedFilterParemeters = new Dictionary<string, object>(fixedFilterParemeters, StringComparer.OrdinalIgnoreCase);
+            foreach (DbParameter dbParameter in componentModel.FixedFilterParameters)
+            {
+                if (fixedFilterParemeters.ContainsKey(dbParameter.Name))
+                {
+                    dbParameter.Value = fixedFilterParemeters[dbParameter.Name];
+                }
+            }
         }
     }
 }

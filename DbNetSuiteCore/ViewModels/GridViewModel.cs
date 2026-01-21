@@ -1,10 +1,9 @@
-﻿using DbNetSuiteCore.Helpers;
+﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using System.Data;
-using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Constants;
-using Newtonsoft.Json;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -217,6 +216,31 @@ namespace DbNetSuiteCore.ViewModels
         public string Justify()
         {
             return (GridModel.IsEditable) ? "justify-between" : "justify-start";
+        }
+
+        public HtmlString TableBodyAttributes()
+        {
+            Dictionary<string, string> attributes = new Dictionary<string, string>()
+            {
+                {"id",HxIdTarget.Replace("#", "") },
+                {"data-currentpage",CurrentPage.ToString() },
+                {"data-totalpages",TotalPages.ToString() },
+                {"data-rowcount",RowCount.ToString() },
+                {"data-sortkey",CurrentSortKey },
+                {"data-url",GridModel.Url },
+                {"data-editable",IsEditable.ToString() },
+                {"data-mode",FormMode.Update.ToString() },
+                {"data-unappliedmessage",ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges) },
+                {"data-messagetype",MessageType.ToString() },
+                {"data-validationpassed",ValidationPassed.ToString() }
+            };
+
+            if (GridModel.RowSelection == RowSelection.Single)
+            {
+                attributes.Add("style", "cursor:pointer");
+            }
+
+            return RazorHelper.Attributes(attributes);
         }
     }
 }

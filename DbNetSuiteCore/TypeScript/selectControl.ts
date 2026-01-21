@@ -55,7 +55,6 @@ class SelectControl extends ComponentControl {
     }
 
     public getSelectedOptions(): HTMLOptionElement[] {
-
         return Array.from(this.select.selectedOptions);
     }
 }

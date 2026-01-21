@@ -1,10 +1,7 @@
 ﻿using Dapper;
-using DbNetSuiteCore.Identity.Constants;
 using DbNetSuiteCore.Identity.Models;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient; 
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace DbNetSuiteCore.Identity.Stores

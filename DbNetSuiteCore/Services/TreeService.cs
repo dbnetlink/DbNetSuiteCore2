@@ -49,7 +49,6 @@ namespace DbNetSuiteCore.Services
         {
             if (treeModel.DataSourceType == Enums.DataSourceType.FileSystem)
             {
-             //   FileSystemRepository.UpdateUrl(treeModel);
                 await LoadDirectoryStructure(treeModel);
             }
             else
@@ -111,7 +110,6 @@ namespace DbNetSuiteCore.Services
             }
         }
 
-
         private TreeModel GetTreeModel()
         {
             string json = StateHelper.GetSerialisedModel(_context, _configuration);
@@ -124,18 +122,6 @@ namespace DbNetSuiteCore.Services
             }
             return treeModel;
         }
-
-        public void UpdateFixedFilterParameters(TreeModel treeModel)
-        {
-            Dictionary<string, object> fixedFilterParemeters = JsonConvert.DeserializeObject<Dictionary<string, object>>(RequestHelper.FormValue(TriggerNames.FixedFilterParameters, string.Empty, _context)) ?? new Dictionary<string, object>();
-            fixedFilterParemeters = new Dictionary<string, object>(fixedFilterParemeters, StringComparer.OrdinalIgnoreCase);
-            foreach (DbParameter dbParameter in treeModel.FixedFilterParameters)
-            {
-                if (fixedFilterParemeters.ContainsKey(dbParameter.Name))
-                {
-                    dbParameter.Value = fixedFilterParemeters[dbParameter.Name];
-                }
-            }
-        }
+      
     }
 }

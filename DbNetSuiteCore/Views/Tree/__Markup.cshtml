@@ -6,7 +6,7 @@
 @using DbNetSuiteCore.Constants
 @using DbNetSuiteCore.Enums
 
-<div class="custom-select-wrapper" style="min-width:@Model.TreeModel.MinWidth">
+<div class="tree-container" style="min-width:@Model.TreeModel.MinWidth" data-linkedcontrolids="@Model.LinkedControlIds">
     @if (Model.TreeModel.DropDown) 
     {
         <div class="select-trigger" style="height:@(string.IsNullOrEmpty(Model.TreeModel.SelectionTitle) ? 34 : 40)px">
@@ -15,11 +15,11 @@
         </div>
     }
 
-        <div id="dropdownMenu" class="dropdown-content@(Model.TreeModel.DropDown ? "" : " show")" style="max-height:@Model.TreeModel.MaxHeight">
+        <div id="dropdownMenu" class="dropdown-content" style="max-height:@Model.TreeModel.MaxHeight@(Model.TreeModel.DropDown ? string.Empty : ";display:block")">
             @if (Model.TreeModel.Search)
             {
                 <div class="search-container">
-                    <input type="text" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
+                    <input type="search" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
                     <button type="button" id="resetBtn" title="Reset Selection"><span>@IconHelper.Reset()</span></button>
                 </div>
             }

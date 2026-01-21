@@ -7,7 +7,7 @@
 @using DbNetSuiteCore.Extensions
 @using Microsoft.AspNetCore.Html
 
-<tbody id="@Model.HxIdTarget.Replace("#", "")" data-currentpage="@Model.CurrentPage" data-totalpages="@Model.TotalPages" data-rowcount="@Model.RowCount" data-sortkey="@Model.CurrentSortKey" data-url="@Model.GridModel.Url" data-editable="@Model.IsEditable" data-mode="@FormMode.Update" data-unappliedmessage="@ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges)" data-message="@Html.Raw(Model.Message)" data-messagetype="@Model.MessageType" data-validationpassed="@Model.ValidationPassed">
+<tbody @Model.TableBodyAttributes() data-message="@Html.Raw(Model.Message)">
     @{
         int rowIndex = -1;
     }
@@ -22,7 +22,7 @@
             rowClasses.Add("in-error");
         }
 
-        <tr style="cursor:pointer" class="@(String.Join(" ", rowClasses))" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
+        <tr class="@(String.Join(" ", rowClasses))" @RazorHelper.RowDataAttributes(row, Model.GridModel) data-idx="@rowIndex">
             @if (Model.RenderMode == DbNetSuiteCore.Enums.RenderMode.Page)
             {
                 if (Model.GridModel.MultiRowSelectLocation == MultiRowSelectLocation.Left)

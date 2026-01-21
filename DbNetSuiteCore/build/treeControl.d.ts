@@ -1,5 +1,6 @@
 declare class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
+    treeContainer: HTMLSelectElement;
     searchEnabled: boolean;
     selectionLabel: HTMLSelectElement;
     constructor(selectId: any);

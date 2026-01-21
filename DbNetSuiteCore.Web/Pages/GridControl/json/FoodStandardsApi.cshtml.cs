@@ -1,6 +1,3 @@
-using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Helpers;
-using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

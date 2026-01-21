@@ -1,10 +1,11 @@
-﻿using System.Data;
-using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using Microsoft.AspNetCore.Html;
-using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using Microsoft.AspNetCore.Html;
+using System.Data;
+using static MongoDB.Driver.WriteConcern;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -121,5 +122,22 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString($"<input class=\"text-center\" style=\"width:{(recordCount.ToString().Length + 1)}em\" readonly type=\"text\" data-type=\"record-count\" value=\"{recordCount}\" />");
         }
 
+        public HtmlString FormBodyAttributes()
+        {
+            Dictionary<string, string> attributes = new Dictionary<string, string>()
+            {
+                {"class", "form-body flex" },
+                {"data-currentrecord", CurrentRecord.ToString() },
+                {"data-recordcount", RecordCount.ToString() },
+                {"data-unappliedmessage", ResourceHelper.GetResourceString(ResourceNames.UnappliedChanges) },
+                {"data-onetoone", OneToOne.ToString() },
+                {"data-mode", Mode.ToString() },
+                {"data-validationpassed", ValidationPassed.ToString() },
+                {"data-committype", CommitType.ToString() },
+                {"data-autoincrementvalue", AutoincrementValue.ToString() }
+            };
+
+            return RazorHelper.Attributes(attributes);
+        }
     }
 }

@@ -1,0 +1,102 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@{
+
+    var orderDetailsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[Order Details]");
+    orderDetailsGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("OrderId", "Invoice Line ID") {ForeignKey = true },
+        new GridColumn("ProductID", "Product")  {Lookup = new Lookup("Products","ProductID","ProductName")},
+        new GridColumn("UNitPrice", "Price") { Format = "c"},
+        new GridColumn("QUantity", "Quantity"),
+        new GridColumn("UnitPrice*Quantity", "Cost") { Format = "c", DataType = typeof(Decimal)},
+        new GridColumn("Discount", "Discount") { Format = "p"},
+        new GridColumn( "UnitPrice*Quantity* (1-Discount)", "Net Cost") { Format = "c", DataType = typeof(Decimal)},
+    };
+
+    orderDetailsGrid.Caption = "Order Details";
+
+    var ordersGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "Orders");
+    ordersGrid.Columns = new List<GridColumn>() {
+        new GridColumn("OrderID") { PrimaryKey = true},
+        new GridColumn("CustomerID") { ForeignKey = true, DataOnly = true},
+        new GridColumn("EmployeeID")  { Lookup = new Lookup("Employees", "EmployeeID", "LastName || ',' || FirstName") },
+        new GridColumn("OrderDate"),
+        new GridColumn("RequiredDate"),
+        new GridColumn("ShippedDate"),
+        new GridColumn("ShipVia") { Lookup = new Lookup("Shippers", "ShipperId", "CompanyName") },
+        new GridColumn("Freight") { Format = "c" },
+        new GridColumn("ShipName"),
+        new GridColumn("ShipAddress"),
+        new GridColumn("ShipCity"),
+        new GridColumn("ShipRegion"),
+        new GridColumn("ShipPostalCode"),
+        new GridColumn("ShipCountry")
+    };
+
+    ordersGrid.Caption = "Orders";
+    ordersGrid.FixedFilter = "customerid = @customerid";
+    ordersGrid.FixedFilterParameters.Add(new DbParameter("customerid", ""));
+    ordersGrid.Bind(GridClientEvent.Initialised, "saveOrdersGridReference");
+
+    ordersGrid.LinkedControl = orderDetailsGrid;
+
+    var customersLevel = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+    customersLevel.Columns = new List<TreeColumn>() {
+         new TreeColumn("CustomerID") {  },
+        new TreeColumn("CompanyName") {  },
+        new TreeColumn("Country") { ForeignKey = true }
+    };
+
+    var countriesLevel = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+    countriesLevel.Columns = new List<TreeColumn>() {
+        new TreeColumn("Country") { PrimaryKey = true },
+        new TreeColumn("Region") { ForeignKey = true }
+    };
+    countriesLevel.Distinct = true;
+    countriesLevel.NestedLevel = customersLevel;
+
+    var regionsTree = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+    regionsTree.Columns = new List<TreeColumn>()
+    {
+        new TreeColumn("Region") { PrimaryKey = true }
+    };
+
+    regionsTree.NestedLevel = countriesLevel;
+    regionsTree.Distinct = true;
+    regionsTree.Expand = true;
+    regionsTree.DropDown = false;
+    regionsTree.MaxHeight = "70rem";
+
+    regionsTree.Bind(TreeClientEvent.ItemSelected, "customerSelected");
+}
+
+<div style="display:flex;flex-direction:row;gap: 10px;">
+    <div>
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(regionsTree))
+    </div>
+    <div style="display:flex;flex-direction:column;gap: 10px;padding-top:5px;">
+        <div>
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
+        </div>
+        <div>
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(orderDetailsGrid))
+        </div>
+    </div>
+</div>
+
+<script>
+    function saveOrdersGridReference(sender) {
+        window.ordersGrid = sender;
+    }
+    function customerSelected(sender, args) {
+        if (window.ordersGrid)
+        {
+            window.ordersGrid.updateFixedFilterParameters({customerid : args.value})
+        }
+    }
+</script>

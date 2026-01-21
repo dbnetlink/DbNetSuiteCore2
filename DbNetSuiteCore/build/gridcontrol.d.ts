@@ -57,6 +57,7 @@ declare class GridControl extends ComponentControl {
     columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement;
     columnValue(columnName: string, row?: HTMLTableRowElement): any;
     private hasFormControl;
+    updateFixedFilterParameters(params: any): void;
     highlightError(columnName: string, row?: HTMLTableRowElement): void;
     updateApiRequestParameters(params: any): void;
     private configureFormControls;

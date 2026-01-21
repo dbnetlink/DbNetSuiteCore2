@@ -1,5 +1,6 @@
 ﻿class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
+    treeContainer: HTMLSelectElement;
     searchEnabled: boolean = false;
     selectionLabel: HTMLSelectElement;
     constructor(selectId) {
@@ -80,6 +81,7 @@
             this.controlElement("#dropdownMenu").classList.remove("show");
         }
 
+        this.updateLinkedControls(this.getLinkedControlIds(), selectedElement.dataset.value)
         this.invokeEventHandler('ItemSelected', { value: selectedElement.dataset.value, description: selectedElement.dataset.description, parentValues: parentValues, parentDescriptions: parentDescriptions });
     }
 
@@ -127,16 +129,12 @@
     }
 
     public updateFixedFilterParameters(params: any) {
-        let input = this.controlElement('input[name="fixedFilterParameters"]') as HTMLInputElement;
-        if (input) {
-            input.value = JSON.stringify(params);
-            input.attributes["hx-target"].value = "closest div.tree-root";
-            htmx.trigger(input, "changed",);
-        }
+        this.updateFixedFilterParams(params);
     }
 
     private initialise() {
         this.searchEnabled = this.controlElement('.search-container') != null;
+        this.treeContainer = this.controlElement('.tree-container');
 
         if (this.controlElement('div.select-trigger')) {
             this.controlElement('div.select-trigger').addEventListener("click", (e: MouseEvent) => this.toggleDropdown(e));
@@ -152,7 +150,7 @@
     }
 
     public closeDropDown(event: any) {
-        if (!event.target.closest('.custom-select-wrapper')) {
+        if (!event.target.closest('.tree-container')) {
             this.controlElement("#dropdownMenu").classList.remove("show");
         }
     }
