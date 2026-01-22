@@ -6,7 +6,7 @@
 @using DbNetSuiteCore.Models
 @{
 
-    var orderDetailsGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[Order Details]");
+    var orderDetailsGrid = new GridModel("[Order Details]");
     orderDetailsGrid.Columns = new List<GridColumn>
     {
         new GridColumn("OrderId", "Invoice Line ID") {ForeignKey = true },
@@ -45,14 +45,14 @@
 
     ordersGrid.LinkedControl = orderDetailsGrid;
 
-    var customersLevel = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+    var customersLevel = new TreeModel("Customers");
     customersLevel.Columns = new List<TreeColumn>() {
          new TreeColumn("CustomerID") {  },
         new TreeColumn("CompanyName") {  },
         new TreeColumn("Country") { ForeignKey = true }
     };
 
-    var countriesLevel = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Customers");
+    var countriesLevel = new TreeModel("Customers");
     countriesLevel.Columns = new List<TreeColumn>() {
         new TreeColumn("Country") { PrimaryKey = true },
         new TreeColumn("Region") { ForeignKey = true }

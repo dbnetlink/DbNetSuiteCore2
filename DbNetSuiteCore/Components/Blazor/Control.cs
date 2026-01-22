@@ -31,6 +31,11 @@ namespace DbNetSuiteCore.Blazor
                 return new MarkupString(base.Render(formModel).Result);
             }
 
+            if (componentModel is TreeModel treeModel)
+            {
+                return new MarkupString(base.Render(treeModel).Result);
+            }
+
             return new MarkupString(string.Empty);
         }
 

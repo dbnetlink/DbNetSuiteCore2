@@ -77,7 +77,7 @@ namespace DbNetSuiteCore.Services
                 throw new Exception("At least one form column must be designated as a primary key");
             }
 
-            List<string> refreshTriggers = new List<string>() { TriggerNames.Search, TriggerNames.ParentKey, TriggerNames.SearchDialog };
+            List<string> refreshTriggers = new List<string>() { TriggerNames.Search, TriggerNames.ParentKey, TriggerNames.SearchDialog, TriggerNames.FixedFilterParameters };
 
             if (formModel.PrimaryKeyValues.Any() == false || refreshTriggers.Contains(formModel.TriggerName))
             {
@@ -405,6 +405,7 @@ namespace DbNetSuiteCore.Services
 
                 AssignParentModel(formModel);
                 AssignSearchDialogFilter(formModel);
+                UpdateFixedFilterParameters(formModel);
 
                 return formModel;
             }

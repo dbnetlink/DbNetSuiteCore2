@@ -7,4 +7,5 @@ declare class SelectControl extends ComponentControl {
     private updateLinkedChildControls;
     private checkForError;
     getSelectedOptions(): HTMLOptionElement[];
+    updateFixedFilterParameters(params: any): void;
 }

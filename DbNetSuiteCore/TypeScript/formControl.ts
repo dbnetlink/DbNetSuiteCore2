@@ -262,6 +262,10 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('ConfigureHtmlEditor', { configuration: configuration, columnName: name });
     }
 
+    public updateFixedFilterParameters(params: any) {
+        this.updateFixedFilterParams(params);
+    }
+
     private setFocus() {
         var selector = this.errorHighlighted(this.form) ? ".fc-control[data-error='true']" : ".fc-control"
         for (const el of this.controlElements(selector)) {

@@ -93,6 +93,8 @@ namespace DbNetSuiteCore.Services
                 {
                     _jsonRepository.UpdateApiRequestParameters(selectModel, _context);
                 }
+
+                UpdateFixedFilterParameters(selectModel);
                 return selectModel;
             }
             catch(Exception)

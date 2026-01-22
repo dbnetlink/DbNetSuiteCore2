@@ -24,6 +24,7 @@ declare class FormControl extends ComponentControl {
     beforeRequest(evt: Event): void;
     checkIfFormModfied(evt?: Event): boolean;
     configureHtmlEditor(configuration: any, name: string): void;
+    updateFixedFilterParameters(params: any): void;
     private setFocus;
     private htmlEditorElements;
     private configureHtmlEditors;

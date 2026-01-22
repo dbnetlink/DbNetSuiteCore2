@@ -104,19 +104,29 @@ namespace DbNetSuiteCore.ViewModels
                 { "value", string.Empty },
                 { "hx-post", PostUrl },
                 { "hx-trigger", "changed" },
-                { "hx-indicator", "next .htmx-indicator" }
+                { "hx-indicator", "next .htmx-indicator" },
+                { "hx-swap", "innerHTML" }
             };
 
             if (this is GridViewModel)
             {
                 attributes.Add("hx-target", "closest tbody");
-                attributes.Add("hx-swap", "outerHTML");
+                attributes["hx-swap"] = "outerHTML";
             }
 
             if (this is TreeViewModel)
             {
                 attributes.Add("hx-target", "closest .tree-root");
-                attributes.Add("hx-swap", "innerHTML");
+            }
+
+            if (this is FormViewModel formViewModel)
+            {
+                attributes.Add("hx-target", formViewModel.HxIdTarget);
+            }
+
+            if (this is SelectViewModel selectViewModel)
+            {
+                attributes.Add("hx-target", "closest div.target");
             }
             return new HtmlString($"<input {RazorHelper.Attributes(attributes)}/>");
         }

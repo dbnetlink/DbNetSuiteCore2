@@ -66,6 +66,10 @@ namespace DbNetSuiteCore.Repositories
 
             var rows = dataTable.Select(filterPart, orderPart);
 
+            if (rows.Length == 0)
+            {
+                return dataTable;
+            }
             return rows.CopyToDataTable();
         }
 

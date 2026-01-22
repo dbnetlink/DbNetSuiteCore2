@@ -5,8 +5,25 @@
 @using DbNetSuiteCore.Web.Helpers
 @using DbNetSuiteCore.Models
 @{
+    var productForm = new FormModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products") { LayoutColumns = 3 };
+    productForm.Columns = new List<FormColumn>() {
+        new FormColumn("ProductID","ID") { DataOnly = true},
+        new FormColumn("ProductName", "Name") {Required = true, MinLength = 3, MaxLength = 20 },
+        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, HelpText = "Select a category for the product" },
+        new FormColumn("QuantityPerUnit", "Qty"){ InitialValue = 0},
+        new FormColumn("UnitPrice", "Price") {Required = true,InitialValue = 0, MinValue = 0.00, MaxValue = 100.00, Format = "c" },
+        new FormColumn("UnitsInStock", "Stock") {Required = true,InitialValue = 0, MinValue = 0, MaxValue = 1000 },
+        new FormColumn("UnitsOnOrder", "On Order") {Required = true,InitialValue = 0, MinValue = 0, MaxValue = 1000 },
+        new FormColumn("ReorderLevel", "Re-order Level") {Required = true,InitialValue = 0, MaxValue = 50, LookupRange = Enumerable.Range(0,50) },
+        new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true, HelpText = "Discontinued products must have a re-order level of 0"}
+    };
 
-    var productsLevel = new TreeModel(DataSourceType.SQLite, "Northwind(sqlite)", "Products");
+    productForm.FixedFilter = "ProductID = @ProductID";
+    productForm.FixedFilterParameters.Add(new DbParameter("ProductID", -1));
+    productForm.Bind(FormClientEvent.Initialised, "saveFormReference");
+
+    var productsLevel = new TreeModel("Products");
     productsLevel.Columns = new List<TreeColumn>() {
         new TreeColumn("ProductID") { PrimaryKey = true },
         new TreeColumn("ProductName"),
@@ -25,18 +42,25 @@
     categoryProductTree.NestedLevel = productsLevel;
     categoryProductTree.SelectionTitle = "Selected Product";
     categoryProductTree.ClientEvents[TreeClientEvent.Initialised] = "saveTreeReference";
+    categoryProductTree.ClientEvents[TreeClientEvent.ItemSelected] = "productSelected";
     categoryProductTree.Expand = true;
 }
 
-<div style="display:flex;flex-direction:row;gap: 4px;">
-    <div>
-        <label>Discontinued</label>
-    </div>
-    <div>
-        <label><input type="checkbox" id="discontinued" /></label>
+
+<div style="display:flex;flex-direction:column;gap: 4px;">
+    <div style="display:flex;flex-direction:row;gap: 4px;">
+        <div>
+            <label style="margin-left:5px">Discontinued</label>
+        </div>
+        <div>
+            <label><input type="checkbox" id="discontinued" /></label>
+        </div>
     </div>
     <div>
         @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categoryProductTree))
+    </div>
+    <div>
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(productForm))
     </div>
 </div>
 
@@ -44,13 +68,24 @@
     document.addEventListener("DOMContentLoaded", function() {
         document.querySelector('input[type="checkbox"]').addEventListener('change', updateTree);
     });
+    function saveTreeReference(sender) {
+        window.categoryProductTree = sender;
+    }
 
+    function saveFormReference(sender) {
+        window.productForm = sender;
+    }
 
-        function saveTreeReference(sender) {
-            window.categoryProductTree = sender;
+    function updateTree(event) {
+        const isChecked = event.target.checked;
+        window.categoryProductTree.updateFixedFilterParameters({discontinued : isChecked ? 1 : 0});
+        window.productForm.updateFixedFilterParameters({productid : -1})
+    }
+
+    function productSelected(sender, args) {
+        if (window.productForm)
+        {
+            window.productForm.updateFixedFilterParameters({productid : args.value})
         }
-        function updateTree(event) {
-            const isChecked = event.target.checked;
-            window.categoryProductTree.updateFixedFilterParameters({discontinued : isChecked ? 1 : 0});
     }
 </script>

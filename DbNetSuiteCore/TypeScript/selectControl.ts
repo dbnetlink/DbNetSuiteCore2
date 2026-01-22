@@ -57,4 +57,8 @@ class SelectControl extends ComponentControl {
     public getSelectedOptions(): HTMLOptionElement[] {
         return Array.from(this.select.selectedOptions);
     }
+
+    public updateFixedFilterParameters(params: any) {
+        this.updateFixedFilterParams(params);
+    }
 }
