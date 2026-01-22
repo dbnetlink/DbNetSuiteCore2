@@ -79,6 +79,12 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public bool Search { get; set; } = false;
 
+        [Obsolete("Searchable is deprecated, please use Search instead.")]
+        public bool Searchable
+        {
+            get { return Search; }
+            set { Search = value; }
+        }
         public SelectModel() : base()
         {
         }
