@@ -13,6 +13,6 @@ namespace DbNetSuiteCore.Enums
         MongoDB,
         Oracle,
         OpenDocumentSpreadsheet,
-        PlugIn
+        IEnumerable
     };
 }

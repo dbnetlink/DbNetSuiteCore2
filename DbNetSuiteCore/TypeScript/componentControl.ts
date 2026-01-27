@@ -11,6 +11,16 @@ DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents: 
         DbNetSuiteCore.controlArray[controlId].afterRequest(evt);
     });
 
+    document.getElementById(controlId).addEventListener('htmx:responseError', function (evt: any) {
+        evt.currentTarget.innerHTML = evt.detail.xhr.responseText;
+    });
+
+    htmx.on("htmx:responseError", function (evt:any) {
+        const requestConfig = evt.detail.requestConfig;
+        const xhr = evt.detail.xhr;
+        alert(`<b>${requestConfig.verb} ${requestConfig.path}</b> returned <b>${xhr.status} ${xhr.statusText}</b><br>${xhr.responseText}`)
+    })
+
     if (deferredLoad) {
         DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
     }
@@ -521,7 +531,15 @@ class ComponentControl {
     }
 
     protected updateFixedFilterParams(params: any) {
-        let input = this.controlElement('input[name="fixedFilterParameters"]') as HTMLInputElement;
+        this.updateParamValues("fixedFilterParameters", params);    
+    }
+
+    protected updateApiRequestParams(params: any) {
+        this.updateParamValues("apiRequestParameters", params);    
+    }
+
+    private updateParamValues(name: string, params: any) {
+        let input = this.controlElement(`input[name="${name}"]`) as HTMLInputElement;
         if (input) {
             input.value = JSON.stringify(params);
             htmx.trigger(input, "changed",);

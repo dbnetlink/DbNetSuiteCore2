@@ -774,15 +774,7 @@ class GridControl extends ComponentControl {
     }
 
     public updateApiRequestParameters(params: any) {
-        let input = this.controlElement('input[name="apiRequestParameters"]') as HTMLInputElement;
-        if (input) {
-            input.value = JSON.stringify(params);
-
-            if (this.controlElement('th') == null) {
-                input.attributes["hx-target"].value = "closest div.grid-container";
-            }
-            htmx.trigger(input, "changed",);
-        }
+        this.updateApiRequestParams(params);
     }
 
     private configureFormControls() {

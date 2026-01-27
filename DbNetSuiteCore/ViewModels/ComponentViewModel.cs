@@ -10,10 +10,11 @@ namespace DbNetSuiteCore.ViewModels
     {
         private ComponentModel _componentModel;
         public IEnumerable<DataColumn> DataColumns => _componentModel.Data.Columns.Cast<DataColumn>();
-
         public string SubmitUrl => _componentModel.PostUrl;
         public string Diagnostics { get; set; } = string.Empty;
         public ComponentModel ComponentModel => _componentModel;
+        public DataSourceType DataSourceType => _componentModel.DataSourceType;
+        public string TriggerName => _componentModel.TriggerName;
 
         public ComponentViewModel(ComponentModel componentModel)
         {

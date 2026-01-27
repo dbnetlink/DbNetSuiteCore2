@@ -3,6 +3,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
@@ -41,24 +42,38 @@ namespace DbNetSuiteCore.Services
             TreeModel treeModel = GetTreeModel() ?? new TreeModel();
             treeModel.TriggerName = _context == null ? string.Empty : RequestHelper.TriggerName(_context);
 
-            string viewName = treeModel.Uninitialised ? "Tree/__Markup" : "Tree/__Content";
+            string viewName = RequestHelper.TriggerName(_context) == TriggerNames.InitialLoad ? "Tree/__Markup" : "Tree/__Content";
             return await View(viewName, await GetTreeViewModel(treeModel));
         }
 
         private async Task<TreeViewModel> GetTreeViewModel(TreeModel treeModel)
         {
-            if (treeModel.DataSourceType == Enums.DataSourceType.FileSystem)
+            if (treeModel.DataSourceType == DataSourceType.FileSystem)
             {
                 await LoadDirectoryStructure(treeModel);
             }
             else
             {
-                foreach (var level in treeModel.Levels)
+                if (String.IsNullOrEmpty(treeModel.DataSourcePluginName) == false)
                 {
-                    await ConfigureColumns(level);
-                    await GetRecords(level);
-
-                    treeModel.DataTables.Add(level.Data);
+                    try
+                    {
+                        treeModel.ClearNestedLevels();
+                        PluginHelper.InvokeMethod(treeModel.DataSourcePluginName, nameof(IDataSourcePlugin.GetTreeData), treeModel, null, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error invoking plugin  {nameof(IDataSourcePlugin)} => {nameof(IDataSourcePlugin.GetTreeData)}");
+                        throw;
+                    }
+                }
+                else
+                {
+                    foreach (var level in treeModel.Levels)
+                    {
+                        await ConfigureColumns(level);
+                        await GetRecords(level);
+                    }
                 }
             }
             var treeViewModel = new TreeViewModel(treeModel);
@@ -116,10 +131,13 @@ namespace DbNetSuiteCore.Services
             TreeModel treeModel = JsonConvert.DeserializeObject<TreeModel>(json) ?? new TreeModel();
             treeModel.HttpContext = _context;
             UpdateFixedFilterParameters(treeModel);
+            UpdateApiRequestParameters(treeModel);
             foreach (var level in treeModel._nestedLevels)
             {
                 UpdateFixedFilterParameters(level);
+                UpdateApiRequestParameters(level);
             }
+
             return treeModel;
         }
       

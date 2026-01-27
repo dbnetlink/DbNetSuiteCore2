@@ -8,4 +8,5 @@ declare class SelectControl extends ComponentControl {
     private checkForError;
     getSelectedOptions(): HTMLOptionElement[];
     updateFixedFilterParameters(params: any): void;
+    updateApiRequestParameters(params: any): void;
 }

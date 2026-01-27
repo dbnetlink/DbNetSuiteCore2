@@ -13,6 +13,7 @@ declare class TreeControl extends ComponentControl {
     private reset;
     private search;
     updateFixedFilterParameters(params: any): void;
+    updateApiRequestParameters(params: any): void;
     private initialise;
     closeDropDown(event: any): void;
     getLeafElements(): NodeListOf<any>;

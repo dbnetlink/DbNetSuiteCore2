@@ -1,8 +1,6 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
 using System.Collections;
-using System.Diagnostics.Contracts;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 
@@ -15,9 +13,9 @@ namespace DbNetSuiteCore.Web.Plugins
 
         public IEnumerable Transform(GridModel gridModel)
         {
-            return (items ?? new List<Item>()).Select(i => new
+            return (items ?? new List<Item>()).Select((i, index) => new
             {
-                Id = i.id ?? string.Empty,
+                Id = index + 1,
                 Title = i.title ?? string.Empty,
                 Notation = i.notation ?? string.Empty,
                 Created = i.created ?? string.Empty,

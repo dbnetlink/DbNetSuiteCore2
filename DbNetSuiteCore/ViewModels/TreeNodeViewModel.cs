@@ -40,6 +40,11 @@ namespace DbNetSuiteCore.ViewModels
                 }
             }
 
+            if (ChildLevel.Data.Rows.Count == 0)
+            {
+                return Array.Empty<DataRow>();
+            }
+
             var primaryKeyColumn = ChildLevel.Columns.FirstOrDefault(c => c.PrimaryKey) ?? ChildLevel.Columns.First();
 
             List<string> filter = new List<string>() { $"{ChildLevel.ForeignKeyName} = {DataTableExtensions.Quoted(primaryKeyColumn)}{CurrentLevel.PrimaryKeyValue(ParentRow)}{DataTableExtensions.Quoted(primaryKeyColumn)}" };
@@ -48,7 +53,19 @@ namespace DbNetSuiteCore.ViewModels
             {
                 filter.Add($"{FileSystemColumn.Path} like '{CurrentLevel.PathValue(ParentRow)}%'");
             }
-            return ChildLevel.Data.Select(string.Join(" and ", filter));
+
+            DataRow[] childRows = Array.Empty<DataRow>();
+
+            try
+            {
+                childRows = ChildLevel.Data.Select(string.Join(" and ", filter));
+            }
+            catch
+            {
+                return childRows;
+            }
+
+            return childRows;
         }
 
         public bool LeafLevel => Level == TreeViewModel.Levels.Count - 1;

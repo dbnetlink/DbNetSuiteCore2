@@ -28,8 +28,7 @@ namespace DbNetSuiteCore.Models
             get { return SortOrder.Asc; }
             set { _SortSequence = value; }
         }
-
-        internal List<DataTable> DataTables { get; set; } = new List<DataTable>();
+       // internal List<DataTable> DataTables { get; set; } = new List<DataTable>();
 
         /// <summary>
         /// Placeholder text for the search input
@@ -83,6 +82,10 @@ namespace DbNetSuiteCore.Models
         {
         }
 
+        public TreeModel(Type dataSourcePlugin, Type dataSourcePluginType) : base(dataSourcePlugin, dataSourcePluginType)
+        {
+        }
+
         public TreeModel(DataSourceType dataSourceType, string connectionAlias, string tableName) : base(dataSourceType, connectionAlias, tableName)
         {
         }
@@ -132,8 +135,8 @@ namespace DbNetSuiteCore.Models
             return string.Empty;
         }
 
-
-        internal List<TreeModel> Levels => GetLevels();
+        [JsonIgnore]
+        public List<TreeModel> Levels => GetLevels();
 
         private List<TreeModel> GetLevels()
         {
@@ -151,6 +154,11 @@ namespace DbNetSuiteCore.Models
             {
                 AddNestedLevel(value);
             }
+        }
+
+        internal void ClearNestedLevels()
+        {
+            _nestedLevels.Clear();
         }
         private void AddNestedLevel(TreeModel treeModel)
         {

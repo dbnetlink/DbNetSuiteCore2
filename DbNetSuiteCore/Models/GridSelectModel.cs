@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Plugins.Interfaces;
 using Newtonsoft.Json;
 namespace DbNetSuiteCore.Models
 {
@@ -8,14 +7,7 @@ namespace DbNetSuiteCore.Models
         private bool _cache = false;
         private string _cacheKey = string.Empty;
 
-        /// <summary>
-        /// Allows custom headers to be added to API requests when using an API JSON data source.
-        /// </summary>
-        public Dictionary<string, string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
-        /// <summary>
-        /// Allows custom request parameters to be added to API requests when using an API JSON data source.
-        /// </summary>
-        public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
+
         /// <summary>
         /// Name of stored procedure used for data source.
         /// </summary>
@@ -65,8 +57,7 @@ namespace DbNetSuiteCore.Models
         public GridSelectModel(DataSourceType dataSourceType, string url) : base(dataSourceType, url)
         {
         }
-
-        public GridSelectModel(DataSourceType dataSourceType, Type dataSourcePlugin) : base(dataSourceType, dataSourcePlugin)
+        public GridSelectModel(Type dataSourcePlugin, Type dataSourcePluginType) : base(dataSourcePlugin, dataSourcePluginType)
         {
         }
 

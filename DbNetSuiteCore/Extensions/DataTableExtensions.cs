@@ -4,6 +4,7 @@ using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using System.Data;
 using System.Globalization;
+using System.Reflection;
 
 namespace DbNetSuiteCore.Extensions
 {
@@ -445,6 +446,49 @@ namespace DbNetSuiteCore.Extensions
         public static string Quoted(ColumnModel column)
         {
             return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
+        }
+
+        public static DataTable ToDataTable<T>(this IEnumerable<T> items)
+        {
+            // 1. Grab the first item to see what we're actually working with
+            var firstItem = items.FirstOrDefault();
+            if (firstItem == null) return new DataTable(); // Return empty if no data
+
+            // 2. Use the ACTUAL runtime type of the first item
+            // This solves the "T is object" problem
+            Type type = firstItem.GetType();
+
+            string tableName = type.Name.Contains("AnonymousType") ? "Results" : type.Name;
+            DataTable table = new DataTable(tableName);
+
+            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var prop in properties)
+            {
+                Type propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+                if (propType.IsEnum)
+                    table.Columns.Add(prop.Name, typeof(string));
+                else
+                    table.Columns.Add(prop.Name, propType);
+            }
+
+            foreach (var item in items)
+            {
+                var values = new object[properties.Length];
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    object val = properties[i].GetValue(item, null);
+
+                    if (val != null && val.GetType().IsEnum)
+                        values[i] = val.ToString();
+                    else
+                        values[i] = val ?? DBNull.Value;
+                }
+                table.Rows.Add(values);
+            }
+
+            return table;
         }
     }
 }

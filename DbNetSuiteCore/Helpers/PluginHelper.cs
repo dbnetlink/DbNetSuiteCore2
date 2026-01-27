@@ -20,18 +20,12 @@ namespace DbNetSuiteCore.Helpers
             return String.IsNullOrEmpty(typeName) ? null : Type.GetType(typeName);
         }
 
-        public static string TransformJson(GridModel gridModel, string json)
+        public static IEnumerable TransformJson(GridModel gridModel, string json)
         {
             var targetType = PluginHelper.GetTypeFromName(gridModel.JsonTransformPluginName);
             object instance = System.Text.Json.JsonSerializer.Deserialize(json, targetType!);
 
-            object obj = PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, instance, instance);
-
-            if (obj == null)
-            {
-                return json;
-            }
-            return System.Text.Json.JsonSerializer.Serialize(obj, new JsonSerializerOptions { });
+            return (IEnumerable)PluginHelper.InvokeMethod(gridModel.JsonTransformPluginName, nameof(IJsonTransformPlugin.Transform), gridModel, null, instance, instance);
         }
 
         public static string GetNameFromType(Type type)

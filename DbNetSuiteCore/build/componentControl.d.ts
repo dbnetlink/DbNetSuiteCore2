@@ -64,4 +64,6 @@ declare class ComponentControl {
     protected warnIfLinkedFormModified(evt: Event): boolean;
     protected debounce(fn: any, delay?: number): (...args: any[]) => void;
     protected updateFixedFilterParams(params: any): void;
+    protected updateApiRequestParams(params: any): void;
+    private updateParamValues;
 }

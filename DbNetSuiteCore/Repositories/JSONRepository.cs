@@ -65,20 +65,6 @@ namespace DbNetSuiteCore.Repositories
             return gridSelectModel.Data;
         }
 
-        public void UpdateApiRequestParameters(GridSelectModel gridSelectModel, HttpContext context)
-        {
-            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue(TriggerNames.ApiRequestParameters, string.Empty, context)) ?? new Dictionary<string, string>();
-
-            apiRequestParameters = new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
-            foreach (string key in gridSelectModel.ApiRequestParameters.Keys)
-            {
-                if (apiRequestParameters.ContainsKey(key))
-                {
-                    gridSelectModel.ApiRequestParameters[key] = HttpUtility.UrlEncode(apiRequestParameters[key]);
-                }
-            }
-        }
-
         private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel, HttpContext httpContext)
         {
             if (gridSelectModel.Cache)
@@ -160,12 +146,14 @@ namespace DbNetSuiteCore.Repositories
 
             if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && httpContext != null)
             {
-                json = PluginHelper.TransformJson(gridModel, json);
+                IEnumerable<object> items = (IEnumerable<object>)PluginHelper.TransformJson(gridModel, json);
 
                 if (string.IsNullOrEmpty(gridModel.Message) == false)
                 {
                     throw new Exception(gridModel.Message);
                 }
+
+                return items.ToList().ToDataTable();
             }
 
             DataTable dataTable = new();

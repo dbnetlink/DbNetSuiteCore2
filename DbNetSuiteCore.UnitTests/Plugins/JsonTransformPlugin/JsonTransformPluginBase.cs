@@ -6,7 +6,7 @@ namespace DbNetSuiteCore.UnitTests.Plugins.JsonTransformPlugin
 {
     public abstract class JsonTransformPluginBase : IJsonTransformPlugin
     {
-        public List<string>? Items { get; set; } = new List<string>() { "AAAAA", "BBBBB", "CCCCC" };
+        public static List<string> Items { get; set; } = new List<string>() { "AAAAA", "BBBBB", "CCCCC" };
 
         public abstract IEnumerable Transform(GridModel gridModel);
     }

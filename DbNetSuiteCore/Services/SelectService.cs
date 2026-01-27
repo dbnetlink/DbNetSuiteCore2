@@ -1,14 +1,16 @@
-﻿using DbNetSuiteCore.Services.Interfaces;
-using DbNetSuiteCore.Repositories;
-using System.Text;
-using DbNetSuiteCore.Models;
-using System.Data;
+﻿using DbNetSuiteCore.Constants;
+using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using Newtonsoft.Json;
+using DbNetSuiteCore.Middleware;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Plugins.Interfaces;
+using DbNetSuiteCore.Repositories;
+using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
 using Microsoft.Extensions.Options;
-using DbNetSuiteCore.Middleware;
-using DbNetSuiteCore.Enums;
+using Newtonsoft.Json;
+using System.Data;
+using System.Text;
 
 namespace DbNetSuiteCore.Services
 {
@@ -42,7 +44,7 @@ namespace DbNetSuiteCore.Services
             SelectModel selectModel = GetSelectModel() ?? new SelectModel();
             selectModel.TriggerName = _context == null ? string.Empty : RequestHelper.TriggerName(_context);
 
-            string viewName = selectModel.Uninitialised ? "Select/__Markup" : "Select/__Options";
+            string viewName = selectModel.TriggerName == TriggerNames.InitialLoad ? "Select/__Markup" : "Select/__Options";
             return await View(viewName, await GetSelectViewModel(selectModel));
         }
 
@@ -52,14 +54,30 @@ namespace DbNetSuiteCore.Services
             {
                 FileSystemRepository.UpdateUrl(selectModel);
             }
-            if (selectModel.IsStoredProcedure == false && selectModel.Uninitialised)
+
+            if (String.IsNullOrEmpty(selectModel.DataSourcePluginName) == false)
             {
-                await ConfigureColumns(selectModel);
+                try
+                {
+                    PluginHelper.InvokeMethod(selectModel.DataSourcePluginName, nameof(IDataSourcePlugin.GetData), selectModel, null, false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error invoking plugin {nameof(IDataSourcePlugin)} => {nameof(IDataSourcePlugin.GetData)}");
+                    throw;
+                }
             }
-            await GetRecords(selectModel);
-            if (selectModel.IsStoredProcedure && selectModel.Uninitialised)
+            else
             {
-                ConfigureColumnsForStoredProcedure(selectModel);
+                if (selectModel.IsStoredProcedure == false && selectModel.Uninitialised)
+                {
+                    await ConfigureColumns(selectModel);
+                }
+                await GetRecords(selectModel);
+                if (selectModel.IsStoredProcedure && selectModel.Uninitialised)
+                {
+                    ConfigureColumnsForStoredProcedure(selectModel);
+                }
             }
 
             if (selectModel.DataSourceType == DataSourceType.FileSystem)
@@ -87,13 +105,8 @@ namespace DbNetSuiteCore.Services
                 selectModel.JSON = TextHelper.Decompress(RequestHelper.FormValue("json", string.Empty, _context));
                 AssignParentModel(selectModel);
                 selectModel.SearchInput = RequestHelper.FormValue("searchInput", string.Empty, _context).Trim(); 
-
   
-                if (selectModel.DataSourceType == DataSourceType.JSON)
-                {
-                    _jsonRepository.UpdateApiRequestParameters(selectModel, _context);
-                }
-
+                UpdateApiRequestParameters(selectModel);
                 UpdateFixedFilterParameters(selectModel);
                 return selectModel;
             }

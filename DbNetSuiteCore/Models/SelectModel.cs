@@ -92,7 +92,7 @@ namespace DbNetSuiteCore.Models
         {
         }
 
-        public SelectModel(DataSourceType dataSourceType, Type dataSourcePlugin) : base(dataSourceType, dataSourcePlugin)
+        public SelectModel(Type dataSourcePlugin, Type dataSourcePluginType) : base(dataSourcePlugin, dataSourcePluginType)
         {
         }
 

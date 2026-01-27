@@ -236,7 +236,11 @@ namespace DbNetSuiteCore.Models
         public GridModel(string tableName) : base(tableName)
         {
         }
-
+        /*
+        public GridModel(Type dataSourcePlugin) : base(DataSourceType.JSON, dataSourcePlugin)
+        {
+        }
+        */
         internal override IEnumerable<ColumnModel> GetColumns()
         {
             return Columns.Cast<ColumnModel>();

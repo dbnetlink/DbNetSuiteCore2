@@ -61,4 +61,8 @@ class SelectControl extends ComponentControl {
     public updateFixedFilterParameters(params: any) {
         this.updateFixedFilterParams(params);
     }
+
+    public updateApiRequestParameters(params: any) {
+        this.updateApiRequestParams(params);
+    }
 }

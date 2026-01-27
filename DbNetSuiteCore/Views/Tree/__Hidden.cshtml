@@ -2,6 +2,8 @@
 @inject IConfiguration Configuration
 @using Microsoft.Extensions.Configuration
 @using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Enums
 @using DbNetSuiteCore.Constants
 @RazorHelper.ModelState(Model.TreeModel, Configuration)
 @Model.RenderHtmxTriggerInput(TriggerNames.FixedFilterParameters)
+@Model.RenderHtmxTriggerInput(TriggerNames.ApiRequestParameters)

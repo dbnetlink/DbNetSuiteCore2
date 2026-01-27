@@ -22,7 +22,7 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public DataSourceType DataSourceType { get; set; }
         [JsonIgnore]
-        public DataTable Data { get; internal set; } = new DataTable();
+        public DataTable Data { get; set; } = new DataTable();
         [JsonIgnore]
         internal DataTable Record { get; set; } = new DataTable();
         /// <summary>
@@ -134,6 +134,14 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public List<DbParameter> FixedFilterParameters { get; set; } = new List<DbParameter>();
         /// <summary>
+        /// Allows custom headers to be added to API requests when using an API JSON data source.
+        /// </summary>
+        public Dictionary<string, string> ApiRequestHeaders { get; set; } = new Dictionary<string, string>();
+        /// <summary>
+        /// Allows custom request parameters to be added to API requests when using an API JSON data source.
+        /// </summary>
+        public Dictionary<string, string> ApiRequestParameters { get; set; } = new Dictionary<string, string>();
+        /// <summary>
         /// Restricts the number of records returned from the data source query. Only valid for SQL based data sources.
         /// </summary>
         public int QueryLimit { get; set; } = -1;
@@ -153,8 +161,14 @@ namespace DbNetSuiteCore.Models
         {
             set { DataSourcePluginName = PluginHelper.GetNameFromType(value); }
         }
+        public Type DataSourcePluginType
+        {
+            set { DataSourcePluginTypeName = PluginHelper.GetNameFromType(value); }
+        }
         [JsonProperty]
         internal string DataSourcePluginName { get; set; } = string.Empty;
+        [JsonProperty]
+        internal string DataSourcePluginTypeName { get; set; } = string.Empty;
         public ComponentModel()
         {
             Id = GeneratedId();
@@ -165,10 +179,11 @@ namespace DbNetSuiteCore.Models
             Url = url;
         }
 
-        public ComponentModel(DataSourceType dataSourceType, Type dataSourcePlugin) : this()
+        public ComponentModel(Type dataSourcePlugin, Type dataSourcePluginType) : this()
         {
-            DataSourceType = dataSourceType;
+            DataSourceType = DataSourceType.IEnumerable;
             DataSourcePlugin = dataSourcePlugin;
+            DataSourcePluginType = dataSourcePluginType;
         }
 
         public ComponentModel(DataSourceType dataSourceType, string connectionAlias, string tableName) : this()
@@ -231,7 +246,7 @@ namespace DbNetSuiteCore.Models
 
         internal List<object> GetPrimaryKeyValues()
         {
-            return JsonConvert.DeserializeObject<List<object>>(TextHelper.DeobfuscateString(RowId,HttpContext)) ?? new List<object>();
+            return new List<object>() { RowId };// JsonConvert.DeserializeObject<List<object>>(TextHelper.DeobfuscateString(RowId,HttpContext)) ?? new List<object>();
         }
         internal List<object> GetParentKeyValues()
         {

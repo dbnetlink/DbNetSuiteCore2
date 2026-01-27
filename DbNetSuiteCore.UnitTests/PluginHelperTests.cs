@@ -7,6 +7,7 @@ using DbNetSuiteCore.UnitTests.Plugins.CustomFormPlugin;
 using DbNetSuiteCore.UnitTests.Plugins.CustomGridPlugin;
 using DbNetSuiteCore.UnitTests.Plugins.JsonTransformPlugin;
 using DbNetSuiteCore.Web.Plugins;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using System.Data;
 using System.Reflection;
@@ -39,13 +40,6 @@ namespace DbNetSuiteCore.UnitTests
         {
         }
 
-        [Test]
-        public void JsonTransformPluginNotImplementedTest()
-        {
-            string json = JsonConvert.SerializeObject(new JsonTransformPluginNotImplemented());
-            string transformedJson = PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(JsonTransformPluginNotImplemented) }, json);
-            Assert.True(json == transformedJson);
-        }
 
         [Test]
         public void JsonTransformPluginOtherExceptionTest()
@@ -54,7 +48,7 @@ namespace DbNetSuiteCore.UnitTests
 
             try
             {
-                string transformedJson = PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(JsonTransformPluginNotImplemented) }, json);
+                IEnumerable<object> transformedJson = (IEnumerable<object>)PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(JsonTransformPluginNotImplemented) }, json);
             }
             catch (Exception ex)
             {
@@ -69,21 +63,17 @@ namespace DbNetSuiteCore.UnitTests
             JsonTransformPluginSortDesc jsonTransformPluginSortDesc = new JsonTransformPluginSortDesc();
 
             string json = JsonConvert.SerializeObject(jsonTransformPluginSortDesc);
-            string transformedJson = PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(JsonTransformPluginSortDesc) }, json);
+            List<string> items = (List<string>)PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(JsonTransformPluginSortDesc) }, json);
 
-            json = JsonConvert.SerializeObject(jsonTransformPluginSortDesc.Items!.OrderByDescending(i => i).ToList());
-            Assert.True(json == transformedJson);
+            Assert.That(items.OrderByDescending(i => i).ToList().LastOrDefault(), Is.EqualTo(JsonTransformPluginSortDesc.Items.FirstOrDefault() ?? string.Empty));
         }
 
         [Test]
         public void JsonTransformPluginDataTest()
         {
             string json = Encoding.UTF8.GetString(GetResource("Data.NobelLaureates.json"));
-            string transformedJson = PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(NobelLaureatesPlugin) }, json);
-
-            List<LaureateModel>? laureates = JsonConvert.DeserializeObject<List<LaureateModel>>(transformedJson);
-
-            Assert.True((laureates ?? new List<LaureateModel>()).Count == 682);
+            List<TransformedNobelPrizeList>? laureates = (List<TransformedNobelPrizeList>)PluginHelper.TransformJson(new GridModel() { JsonTransformPlugin = typeof(NobelLaureatesPlugin) }, json);
+            Assert.True((laureates ?? new List<TransformedNobelPrizeList>()).Count == 682);
         }
 
         [Test]

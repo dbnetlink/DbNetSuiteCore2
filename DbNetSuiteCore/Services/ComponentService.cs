@@ -1,13 +1,15 @@
-﻿using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Newtonsoft.Json;
 using System.Data;
 using System.Text;
-using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Extensions;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
+using System.Web;
 
 namespace DbNetSuiteCore.Services
 {
@@ -52,11 +54,13 @@ namespace DbNetSuiteCore.Services
         }
 
         protected async Task<Byte[]> HandleError(Exception ex, HttpContext context)
-        {            
+        {
             if (_logger != null)
             {
                 _logger.LogError(ex, "Error processing DbNetSuiteCore control");
             }
+
+            context.Response.StatusCode = 500;
             context.Response.Headers.Append("error", ex.Message.Normalize(NormalizationForm.FormKD).Where(x => x < 128).ToArray().ToString());
             return await View("__Error", ex);
         }
@@ -753,8 +757,7 @@ namespace DbNetSuiteCore.Services
 
         protected void UpdateFixedFilterParameters(ComponentModel componentModel)
         {
-            Dictionary<string, object> fixedFilterParemeters = JsonConvert.DeserializeObject<Dictionary<string, object>>(RequestHelper.FormValue(TriggerNames.FixedFilterParameters, string.Empty, _context)) ?? new Dictionary<string, object>();
-            fixedFilterParemeters = new Dictionary<string, object>(fixedFilterParemeters, StringComparer.OrdinalIgnoreCase);
+            var fixedFilterParemeters = GetFormParameters(TriggerNames.FixedFilterParameters);
             foreach (DbParameter dbParameter in componentModel.FixedFilterParameters)
             {
                 if (fixedFilterParemeters.ContainsKey(dbParameter.Name))
@@ -762,6 +765,26 @@ namespace DbNetSuiteCore.Services
                     dbParameter.Value = fixedFilterParemeters[dbParameter.Name];
                 }
             }
+        }
+
+        public void UpdateApiRequestParameters(ComponentModel componentModel)
+        {
+            var apiRequestParameters = GetFormParameters(TriggerNames.ApiRequestParameters);
+            foreach (string key in componentModel.ApiRequestParameters.Keys)
+            {
+                if (apiRequestParameters.ContainsKey(key))
+                {
+                    componentModel.ApiRequestParameters[key] = HttpUtility.UrlEncode(apiRequestParameters[key]);
+                }
+            }
+        }
+
+        private Dictionary<string, string> GetFormParameters(string name)
+        {
+            Dictionary<string, string> apiRequestParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(RequestHelper.FormValue(name, string.Empty, _context)) ?? new Dictionary<string, string>();
+
+            return new Dictionary<string, string>(apiRequestParameters, StringComparer.OrdinalIgnoreCase);
+
         }
     }
 }

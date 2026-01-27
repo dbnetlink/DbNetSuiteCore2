@@ -132,6 +132,10 @@
         this.updateFixedFilterParams(params);
     }
 
+    public updateApiRequestParameters(params: any) {
+        this.updateApiRequestParams(params);
+    }
+
     private initialise() {
         this.searchEnabled = this.controlElement('.search-container') != null;
         this.treeContainer = this.controlElement('.tree-container');

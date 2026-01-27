@@ -405,7 +405,7 @@ namespace DbNetSuiteCore.Services
 
                 if (gridModel.DataSourceType == DataSourceType.JSON)
                 { 
-                   _jsonRepository.UpdateApiRequestParameters(gridModel, _context);
+                   UpdateApiRequestParameters(gridModel);
                 }
 
                 AssignParentModel(gridModel);

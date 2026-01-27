@@ -26,10 +26,8 @@ namespace DbNetSuiteCore.ViewModels
         public string LinkedGridIds => string.Join(",", _gridModel.LinkedGridIds);
         public string SearchInput => _gridModel.SearchInput;
         public string CurrentSortKey => _gridModel.CurrentSortKey;
-        public string TriggerName => _gridModel.TriggerName;
         public bool HasNestedGrids => _gridModel.HasNestedGrids;
         public HtmlString SortIcon => _gridModel.CurrentSortAscending ? IconHelper.ArrowUp() : IconHelper.ArrowDown();
-        public DataSourceType DataSourceType => _gridModel.DataSourceType;
         public RenderMode RenderMode { get; set; } = RenderMode.Page;
         public int CurrentPage => _gridModel.CurrentPage;
         public bool IsNested => _gridModel.IsNested;
