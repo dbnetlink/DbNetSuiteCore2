@@ -28,8 +28,8 @@ namespace DbNetSuiteCore.ViewModels
         public bool RenderInsert => FormModel.Insert && Mode != FormMode.Insert && ReadOnly == false;
         public bool RenderDelete => FormModel.Delete && Mode == FormMode.Update && ReadOnly == false;
         public bool ShowNavigation => Mode == FormMode.Update && FormModel.OneToOne == false && RecordCount > 1;
-        public bool ShowQuickSearch => Mode != FormMode.Insert && FormModel.OneToOne == false && FormModel.SearchableColumns.Any() && RecordCount > 1;
-        public bool ShowSearchDialog => Mode != FormMode.Insert && FormModel.OneToOne == false && SearchDialog && RecordCount > 1;
+        public bool ShowQuickSearch => Mode != FormMode.Insert && FormModel.OneToOne == false && FormModel.SearchableColumns.Any();
+        public bool ShowSearchDialog => Mode != FormMode.Insert && FormModel.OneToOne == false && SearchDialog;
         public bool RenderInsertDelete => RenderInsert || RenderDelete;
         public bool JustifyEnd => Mode == FormMode.Insert || (ShowNavigation == false && ShowQuickSearch == false);
         public string ConfirmDialogId => $"confirmDialog{_formModel.Id}";

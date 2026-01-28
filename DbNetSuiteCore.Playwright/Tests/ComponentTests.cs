@@ -297,6 +297,20 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
+        private async Task TestFormRowCount(int expectedRowCount)
+        {
+            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"), new PageWaitForResponseOptions() { Timeout = 3000 });
+            if (expectedRowCount == 0)
+            {
+                await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();
+            }
+            else
+            {
+                var value = await Page.GetAttributeAsync("div.form-body", "data-recordcount");
+                Assert.That(value, Is.EqualTo(expectedRowCount.ToString()));
+            }
+        }
+
         private async Task TestTagCount(Dictionary<string,int> tagCounts)
         {
             await Page.WaitForResponseAsync(r => IsSelectUrl($"selectcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"));
@@ -349,7 +363,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             foreach (string token in searches.Keys)
             {
                 await search.FillAsync(token);
-                await TestRowCount(searches[token],"record");
+                await TestFormRowCount(searches[token]);
             }
         }
 
@@ -366,7 +380,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
 
             await Page.GetByTestId("apply").ClickAsync();
-            await TestRowCount(92, "record");
+            await TestFormRowCount(92);
         }
 
         protected async Task FormDeleteTest(string page = "", bool mvc = false)
