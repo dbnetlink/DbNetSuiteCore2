@@ -3,6 +3,7 @@ interface Dictionary<T> {
 }
 declare var DbNetSuiteCore: any;
 declare var controlArray: Dictionary<ComponentControl>;
+declare var namedControlArray: Dictionary<ComponentControl>;
 declare class ComponentControl {
     controlId: string;
     form: HTMLFormElement;
@@ -14,6 +15,7 @@ declare class ComponentControl {
     formBody: HTMLElement;
     formMessage: HTMLDivElement;
     currentValidationRow: HTMLTableRowElement;
+    loaded: boolean;
     constructor(controlId: any);
     setCaption(text: any): void;
     protected isControlEvent(evt: any): any;

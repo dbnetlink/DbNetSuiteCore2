@@ -1,5 +1,6 @@
 class SelectControl extends ComponentControl {
     select: HTMLSelectElement;
+    selectedOptions: HTMLCollectionOf<HTMLOptionElement> | undefined; 
     constructor(selectId) {
         super(selectId)
     }
@@ -26,6 +27,7 @@ class SelectControl extends ComponentControl {
     }
 
     private initialise() {
+        this.loaded = true;
         this.controlElement("select").addEventListener("change", (ev: Event) => {
             this.selectChanged(ev.target as HTMLSelectElement);
         })
@@ -39,6 +41,7 @@ class SelectControl extends ComponentControl {
             url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : ''
         }
         this.updateLinkedChildControls(target.selectedIndex.toString(), url);
+        this.selectedOptions = target.selectedOptions;
         this.invokeEventHandler('OptionSelected', { selectedOptions: target.selectedOptions });
     }
 

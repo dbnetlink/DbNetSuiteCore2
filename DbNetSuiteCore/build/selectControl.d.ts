@@ -1,5 +1,6 @@
 declare class SelectControl extends ComponentControl {
     select: HTMLSelectElement;
+    selectedOptions: HTMLCollectionOf<HTMLOptionElement> | undefined;
     constructor(selectId: any);
     afterRequest(evt: any): void;
     private initialise;

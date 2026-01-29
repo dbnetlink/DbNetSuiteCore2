@@ -140,6 +140,7 @@ class FormControl extends ComponentControl {
     }
 
     private initialise() {
+        this.loaded = true;
         document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev) });
         document.body.addEventListener('htmx:beforeRequest', (ev) => { this.beforeRequest(ev) });
         document.body.addEventListener('htmx:confirm', (ev) => { this.confirmRequest(ev) });

@@ -5,9 +5,11 @@
 var DbNetSuiteCore: any = {};
 var controlArray: Dictionary<ComponentControl> = {}
 DbNetSuiteCore.controlArray = controlArray;
-DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents: object, deferredLoad: boolean = false) {
+var namedControlArray: Dictionary<ComponentControl> = {}
+DbNetSuiteCore.namedControlArray = namedControlArray;
+DbNetSuiteCore.createClientControl = function (controlId: string, clientId: string, clientEvents: object, deferredLoad: boolean = false) {
     document.addEventListener('htmx:afterRequest', function (evt) {
-        DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
+        DbNetSuiteCore.assignClientControl(controlId, clientId, clientEvents, deferredLoad);
         DbNetSuiteCore.controlArray[controlId].afterRequest(evt);
     });
 
@@ -22,11 +24,11 @@ DbNetSuiteCore.createClientControl = function (controlId: string, clientEvents: 
     })
 
     if (deferredLoad) {
-        DbNetSuiteCore.assignClientControl(controlId, clientEvents, deferredLoad);
+        DbNetSuiteCore.assignClientControl(controlId, clientId, clientEvents, deferredLoad);
     }
 }
 
-DbNetSuiteCore.assignClientControl = function (controlId: string, clientEvents: object, deferredLoad: boolean = false) {
+DbNetSuiteCore.assignClientControl = function (controlId: string, clientId: string, clientEvents: object, deferredLoad: boolean = false) {
     if (!DbNetSuiteCore.controlArray[controlId]) {
 
         var clientControl = {}
@@ -64,7 +66,21 @@ DbNetSuiteCore.assignClientControl = function (controlId: string, clientEvents: 
             }
         }
         DbNetSuiteCore.controlArray[controlId] = clientControl;
+        DbNetSuiteCore.namedControlArray[clientId] = clientControl;
     }
+}
+
+DbNetSuiteCore.waitFor = function (conditionFn, interval = 50) {
+    return new Promise<void>(resolve => {
+        const check = () => {
+            if (conditionFn()) {
+                resolve();
+            } else {
+                setTimeout(check, interval);
+            }
+        };
+        check();
+    });
 }
 
 class ComponentControl {
@@ -78,6 +94,7 @@ class ComponentControl {
     public formBody: HTMLElement;
     formMessage: HTMLDivElement;
     currentValidationRow: HTMLTableRowElement;
+    loaded: boolean = false;
 
     constructor(controlId) {
         this.controlId = controlId;
@@ -542,7 +559,10 @@ class ComponentControl {
         let input = this.controlElement(`input[name="${name}"]`) as HTMLInputElement;
         if (input) {
             input.value = JSON.stringify(params);
-            htmx.trigger(input, "changed",);
+
+            if (this.loaded) {
+                htmx.trigger(input, "changed",);
+            }
         }
     }
 }

@@ -125,6 +125,17 @@ namespace DbNetSuiteCore.Models
             }
         }
 
+        internal Dictionary<string, string> DataOnlyAttributeValues(DataRow dataRow)
+        {
+            var attributes = new Dictionary<string, string>();
+            foreach (var column in Columns.Where(c => c.DataOnly))
+            {
+                var dataColumn = GetDataColumn(column);
+                attributes[$"data-{column.Expression}"] = dataRow[dataColumn].ToString();
+            }
+
+            return attributes;
+        }
 
         internal string PathValue(DataRow dataRow)
         {

@@ -10,10 +10,10 @@
 <script>
     @if (Model.IsNested)
     {
-        <text>DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents))); </text>
+            <text>DbNetSuiteCore.createClientControl('@(Model.Id)','@(Model.ClientId)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents))); </text>
     }
     else
     {
-        <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents)), @Model.GridModel.DeferredLoad.ToString().ToLower()); });</text>
+            <text>document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)','@(Model.ClientId)', @Html.Raw(JsonConvert.SerializeObject(Model.GridModel.ClientEvents)), @Model.GridModel.DeferredLoad.ToString().ToLower()); });</text>
     }
 </script>

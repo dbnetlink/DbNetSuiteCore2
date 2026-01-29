@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Html
 @using DbNetSuiteCore.Constants
 @{
-      <div class="node" data-value="@Model.ParentRowValue()" data-description="@Model.ParentRowDescription()">
+      <div class="node" @Model.ParentRowDataAttributes()>
       @{
           if (Model.HasChildren())
           {
@@ -19,9 +19,9 @@
                 @foreach (DataRow row in Model.ChildRows()) {
                     if (Model.LeafParent)
                     {
-                        <div class="leaf" data-value="@Model.RowValue(row)" data-description="@Model.RowDescription(row)">
+                        <div class="leaf" @Model.ChildRowDataAttributes(row)>
                             <span class="leaf-icon icon">@IconHelper.Document()</span>
-                            <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@(Model.Level+1)">@Model.RowDescription(row)</span>
+                            <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@(Model.Level+1)">@Model.ChildRowDescription(row)</span>
                         </div>
                     }
                     else
@@ -33,7 +33,7 @@
             }
             else
             {
-                <div class="leaf" data-value="@Model.ParentRowValue()" data-description="@Model.ParentRowDescription()">
+                <div class="leaf" @Model.ParentRowDataAttributes()>
                     <span class="leaf-icon icon">@IconHelper.Document()</span>
                     <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@Model.Level">@Model.ParentRowDescription()</span>
                 </div>

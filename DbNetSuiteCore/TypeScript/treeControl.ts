@@ -1,8 +1,16 @@
-﻿class TreeControl extends ComponentControl {
+﻿interface Selection {
+    value: string;
+    description: string;
+    parentValues: Array<string>;
+    parentDescriptions: Array<string>;
+}
+
+class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
     treeContainer: HTMLSelectElement;
     searchEnabled: boolean = false;
     selectionLabel: HTMLSelectElement;
+    currentSelection: Selection|undefined;
     constructor(selectId) {
         super(selectId)
     }
@@ -23,6 +31,8 @@
         this.controlElements('span.close-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
         this.controlElements('span.leaf-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
         this.controlElements('span.node-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
+
+        this.currentSelection = null;
 
         if (this.selectionLabel) {
             this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder;
@@ -82,7 +92,10 @@
         }
 
         this.updateLinkedControls(this.getLinkedControlIds(), selectedElement.dataset.value)
-        this.invokeEventHandler('ItemSelected', { value: selectedElement.dataset.value, description: selectedElement.dataset.description, parentValues: parentValues, parentDescriptions: parentDescriptions });
+
+        let args: Selection = { value: selectedElement.dataset.value, description: selectedElement.dataset.description, parentValues: parentValues, parentDescriptions: parentDescriptions } as Selection;
+        this.currentSelection = args;
+        this.invokeEventHandler('ItemSelected', args);
     }
 
     private reset(e:MouseEvent) {
@@ -137,6 +150,7 @@
     }
 
     private initialise() {
+        this.loaded = true;
         this.searchEnabled = this.controlElement('.search-container') != null;
         this.treeContainer = this.controlElement('.tree-container');
 

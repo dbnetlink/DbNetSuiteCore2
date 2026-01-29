@@ -1,6 +1,8 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
+using Microsoft.AspNetCore.Html;
 using System.Data;
 using DataTableExtensions = DbNetSuiteCore.Extensions.DataTableExtensions;
 
@@ -72,23 +74,53 @@ namespace DbNetSuiteCore.ViewModels
         public bool LeafParent => Level == TreeViewModel.Levels.Count - 2;
         public bool Expand => TreeViewModel.TreeModel.Expand;
 
-        public object ParentRowValue()
-        {
-            return CurrentLevel.PrimaryKeyValue(ParentRow);
-        }
         public string ParentRowDescription()
         {
-            return CurrentLevel.Description(ParentRow);
+            return RowDescription(ParentRow, CurrentLevel);
         }
 
-        public object RowValue(DataRow row)
+        public string ChildRowDescription(DataRow row)
         {
-            return ChildLevel.PrimaryKeyValue(row);
+            return RowDescription(row, ChildLevel);
         }
 
-        public string RowDescription(DataRow row)
+        private object RowValue(DataRow row, TreeModel level)
         {
-            return ChildLevel.Description(row);
+            return level.PrimaryKeyValue(row);
+        }
+
+        private string RowDescription(DataRow row, TreeModel level)
+        {
+            return level.Description(row);
+        }
+
+        public HtmlString ParentRowDataAttributes()
+        {
+            return RowDataAttributes(ParentRow, CurrentLevel);
+        }
+
+        public HtmlString ChildRowDataAttributes(DataRow row)
+        {
+            return RowDataAttributes(row, ChildLevel);
+        }
+        private HtmlString RowDataAttributes(DataRow row, TreeModel level)
+        {
+            var attributes = new Dictionary<string, string> 
+            {
+                {"data-value", RowValue(row, level).ToString()},
+                {"data-description", RowDescription(row, level) }
+            };
+
+            var dataOnlyAttributes = level.DataOnlyAttributeValues(row);
+
+            foreach (string key in dataOnlyAttributes.Keys)
+            {
+                if (attributes.ContainsKey(key) == false)
+                {
+                    attributes.Add(key, dataOnlyAttributes[key]);
+                }
+            }
+            return RazorHelper.Attributes(attributes);
         }
     }
 }

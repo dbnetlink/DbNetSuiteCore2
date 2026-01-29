@@ -1,8 +1,15 @@
+interface Selection {
+    value: string;
+    description: string;
+    parentValues: Array<string>;
+    parentDescriptions: Array<string>;
+}
 declare class TreeControl extends ComponentControl {
     tree: HTMLSelectElement;
     treeContainer: HTMLSelectElement;
     searchEnabled: boolean;
     selectionLabel: HTMLSelectElement;
+    currentSelection: Selection | undefined;
     constructor(selectId: any);
     afterRequest(evt: any): void;
     private toggleDropdown;

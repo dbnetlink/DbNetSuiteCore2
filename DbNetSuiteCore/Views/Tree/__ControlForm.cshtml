@@ -9,5 +9,5 @@
 @await Html.PartialAsync("__HxIndicator")
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)', @Html.Raw(JsonConvert.SerializeObject(Model.TreeModel.ClientEvents))); });
+    document.addEventListener("DOMContentLoaded", function () { DbNetSuiteCore.createClientControl('@(Model.Id)','@(Model.ClientId)', @Html.Raw(JsonConvert.SerializeObject(Model.TreeModel.ClientEvents))); });
 </script>
