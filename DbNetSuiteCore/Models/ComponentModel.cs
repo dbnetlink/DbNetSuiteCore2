@@ -169,6 +169,7 @@ namespace DbNetSuiteCore.Models
         internal string DataSourcePluginName { get; set; } = string.Empty;
         [JsonProperty]
         internal string DataSourcePluginTypeName { get; set; } = string.Empty;
+        internal bool FixedFilterModified { get; set; } = false;
 
         public string ClientId => string.IsNullOrEmpty(Name) ? Id : Name;
         public ComponentModel()

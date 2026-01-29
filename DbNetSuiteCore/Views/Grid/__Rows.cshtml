@@ -183,7 +183,7 @@
 
         </tr>
 
-        @if ((Model.IsLinked && Model.TriggerName == TriggerNames.ParentKey) || Model.TriggerName == TriggerNames.ApiRequestParameters)
+        @if ((Model.IsLinked && Model.TriggerName == TriggerNames.ParentKey) || Model.TriggerName == TriggerNames.ApiRequestParameters || Model.TriggerName == TriggerNames.FixedFilterParameters)
         {
             <tr style="display:none" class="lookup-refresh">
                 <td colspan="@Model.ColSpan">

@@ -763,6 +763,7 @@ namespace DbNetSuiteCore.Services
                 if (fixedFilterParemeters.ContainsKey(dbParameter.Name))
                 {
                     dbParameter.Value = fixedFilterParemeters[dbParameter.Name];
+                    componentModel.FixedFilterModified = true;
                 }
             }
         }
