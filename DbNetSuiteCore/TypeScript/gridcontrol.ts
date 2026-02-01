@@ -186,7 +186,7 @@ class GridControl extends ComponentControl {
     }
 
     private initialise() {
-        this.loaded = true;
+        this.loaded = true;  
         if (this.toolbarExists()) {
             let copyBtn = this.getButton("copy");
             if (copyBtn) {

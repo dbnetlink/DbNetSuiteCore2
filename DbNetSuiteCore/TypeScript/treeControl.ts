@@ -29,7 +29,7 @@ class TreeControl extends ComponentControl {
 
         this.controlElements('span.open-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
         this.controlElements('span.close-icon').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.toggleNode(e)) });
-        this.controlElements('span.leaf-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
+        this.controlElements('div.leaf[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
         this.controlElements('span.node-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
 
         this.currentSelection = null;
@@ -72,7 +72,7 @@ class TreeControl extends ComponentControl {
         };
         selectedElement.classList.add("selected"); 
         selectedElement = selectedElement.closest('div[data-value]');
-        let path = [(selectedElement.querySelector("span[selectable]") as HTMLSpanElement).innerText];
+        let path = [(selectedElement.querySelector("span[data-level]") as HTMLSpanElement).innerText];
         let parentNode: HTMLDivElement = selectedElement.parentElement.parentElement.closest('.node');
 
         let parentValues = [];

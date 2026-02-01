@@ -19,9 +19,9 @@
                 @foreach (DataRow row in Model.ChildRows()) {
                     if (Model.LeafParent)
                     {
-                        <div class="leaf" @Model.ChildRowDataAttributes(row)>
+                        <div class="leaf" @Model.ChildRowDataAttributes(row) selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()">
                             <span class="leaf-icon icon">@IconHelper.Document()</span>
-                            <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@(Model.Level+1)">@Model.ChildRowDescription(row)</span>
+                            <span class="leaf-text" data-level="@(Model.Level+1)">@Model.ChildRowDescription(row)</span>
                         </div>
                     }
                     else
