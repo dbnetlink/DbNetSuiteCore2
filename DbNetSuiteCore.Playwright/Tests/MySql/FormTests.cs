@@ -21,7 +21,7 @@ namespace DbNetSuiteCore.Playwright.Tests.MySql
             };
 
         [Test]
-        public async Task _QuickSearchTest()
+        public async Task QuickSearchTest()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
                 { "Berlin", 2 },

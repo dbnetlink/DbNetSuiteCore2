@@ -19,7 +19,7 @@ namespace DbNetSuiteCore.Playwright.Tests.PostgreSql
             };
 
         [Test]
-        public async Task _QuickSearchTest()
+        public async Task QuickSearchTest()
         {
             Dictionary<string, int> searches = new Dictionary<string, int>() {
                 { "Berlin", 2 },
