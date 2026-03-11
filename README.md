@@ -24,4 +24,5 @@ https://dbnetsuitecore.com
 https://github.com/dbnetlink/DbNetSuiteCore2/wiki
 
 ### To download some working samples ###
-https://github.com/dbnetlink/DbNetSuiteCore.Templates
+https://dbnetsuitecore.com/download   (Nuget package)
+https://github.com/dbnetlink/DbNetSuiteCore.Templates (Source code)
