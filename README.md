@@ -1,5 +1,5 @@
 ### Introduction ###
-This project is a set of server-side, data driven ASP.NET Core UI components built using Razor views, HTMX, Tailwind CSS and TypeScript. The components can be hosted in Razor pages, MVC Views and Blazor. The components an be added to any existing web page and interact independently with the server via mmiddleware. The goal is to create a set of highly configurable components that are lightweight, easy to use and secure.
+This project is a set of server-side, data driven ASP.NET Core UI components built using Razor views, HTMX, Tailwind CSS and TypeScript. The components can be hosted in Razor pages, MVC Views and Blazor. The components an be added to any existing web page and interact independently with the server via middleware. The goal is to create a set of highly configurable components that are lightweight, easy to use and secure.
 
 Currently the components support the following data sources:
 
@@ -12,6 +12,7 @@ Currently the components support the following data sources:
  - Oracle
  - MongoDB
  - Excel
+ - Open Document Spreadsheet
  - CSV
  - JSON
  - File System
@@ -20,7 +21,9 @@ Currently the components support the following data sources:
 https://dbnetsuitecore.com
 
 ### For information about installation and usage see the docs ###
-https://dbnetsuitecore.document360.io/docs
+https://github.com/dbnetlink/DbNetSuiteCore2/wiki
 
 ### To download some working samples ###
-https://github.com/dbnetlink/DbNetSuiteCore.Templates
+https://dbnetsuitecore.com/download   (Nuget package)
+
+https://github.com/dbnetlink/DbNetSuiteCore.Templates (Source code)
