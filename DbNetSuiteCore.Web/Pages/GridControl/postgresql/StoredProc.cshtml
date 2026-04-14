@@ -1,0 +1,9 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var customersGrid = new GridModel(DataSourceType.PostgreSql, "Northwind(postgresql)", "getcustomers()");
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customersGrid))
+}

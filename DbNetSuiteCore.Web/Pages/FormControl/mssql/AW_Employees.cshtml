@@ -1,0 +1,27 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+    var employeesForm = new FormModel(DataSourceType.MSSQL, "AdventureWorks(mssql)", "HumanResources.[Employee]") { Insert = true, Delete = true};
+
+    employeesForm.Columns = new List<FormColumn>() {
+        new FormColumn("BusinessEntityID"),
+        new FormColumn("NationalIDNumber"),
+        new FormColumn("LoginID"),
+        new FormColumn("JobTitle"),
+        new FormColumn("BirthDate"),
+        new FormColumn("MaritalStatus") {LookupEnum = typeof(MaritalStatusEnum)},
+        new FormColumn("Gender") {LookupEnum = typeof(GenderEnum)},
+        new FormColumn("HireDate"),
+        new FormColumn("SalariedFlag"),
+        new FormColumn("VacationHours"),
+        new FormColumn("SickLeaveHours"),
+        new FormColumn("CurrentFlag"),
+        new FormColumn("Rowguid"),
+        new FormColumn("ModifiedDate")
+    };
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(employeesForm))
+}

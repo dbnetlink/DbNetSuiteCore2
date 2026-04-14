@@ -1,0 +1,22 @@
+﻿@model DbNetSuiteCore.Models.LicenseInfo
+
+@if (Model != null)
+{
+    @if (Model.Valid == false)
+    {
+        <div class="border border-lime-700 rounded p-1 my-2 bg-lime-200 text-lime-700">
+            
+            @if (Model.ExisingLicense) 
+            {
+                <p>Your <b>DbNetSuiteCore</b> license key is not valid for this server (<b>@Model.ServerHostName</b>). If your license allows you can generate a new license key for this server <a href="https://dbnetsuitecore.com/register?licenseid=@Model.Id&hostname=@Model.ServerHostName" target="_blank">here</a> or purchase an additional license <a href="https://dbnetsuitecore.com/purchase?hostname=@Model.ServerHostName" target="_blank">here</a></p>
+            }
+            else
+            {
+                <p>
+                    This server (<b>@Model.ServerHostName</b>) is not currently licensed for <a href="https://dbnetsuitecore.com" target="_blank">DbNetSuiteCore</a>.
+                    You can purchase a <b>DbNetSuiteCore</b> license <a href="https://dbnetsuitecore.com/purchase?hostname=@Model.ServerHostName" target="_blank">here</a> 
+                </p>
+            }
+        </div>
+    }
+}

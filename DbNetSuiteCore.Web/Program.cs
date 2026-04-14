@@ -1,15 +1,11 @@
 using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Web.Helpers;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("appsettings.Development.json");
 builder.Services.AddDbNetSuiteCore();  // make web reporting part of the web application middleware
 
-builder.Services.AddRazorPages();
-builder.Services.AddResponseCompression(options =>
-{
-    options.EnableForHttps = true;
-});
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var app = builder.Build();
 
@@ -31,17 +27,19 @@ app.MapGet("/orders", () =>
     FileHelper.GetJson("/data/json/orders.json", builder.Environment));
 app.MapGet("/superstore", () =>
     FileHelper.GetJson("/data/json/superstore.json", builder.Environment));
-
+app.MapGet("/cities", () =>
+    DbHelper.GetJson("statecity", builder.Configuration, builder.Environment));
 
 app.UseRouting();
-app.UseResponseCompression();
+
 app.UseAuthorization();
 app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller}/{action}/{id?}");
 
 app.Run();
 
-#pragma warning disable CA1050 // Declare types in namespaces
 public partial class Program
 {
 }
-#pragma warning restore CA1050 // Declare types in namespaces

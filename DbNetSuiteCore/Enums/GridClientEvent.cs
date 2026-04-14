@@ -9,6 +9,8 @@
         RowTransform,
         SelectedRowsUpdated,
 		ViewDialogUpdated,
-        FileDownload
+        FileDownload,
+        ValidateUpdate,
+        RecordsUpdated
 	};
 }

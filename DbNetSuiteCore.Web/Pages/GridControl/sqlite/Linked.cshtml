@@ -1,0 +1,80 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    Layout = null;
+}
+
+@{
+    var customerColumns = new List<GridColumn>
+    {
+        new GridColumn("customerid", "CustomerID") {PrimaryKey = true },
+        new GridColumn("firstname", "Forename"),
+        new GridColumn("lastname", "Surname"),
+        new GridColumn("email", "Email Address") {Format = FormatType.Email },
+        new GridColumn("address", "Address"),
+        new GridColumn("city", "City") { InitialSortOrder = SortOrder.Desc},
+        new GridColumn("postalcode", "Post Code"),
+    };
+
+    var invoiceColumns = new List<GridColumn>
+    {
+        new GridColumn("invoiceid", "Invoice ID") {PrimaryKey = true },
+        new GridColumn("customerid", "Customer ID") {ForeignKey = true },
+        new GridColumn("invoicedate", "Date"),
+        new GridColumn("billingaddress", "Address"),
+        new GridColumn("billingcity", "City"),
+        new GridColumn("billingstate", "State"),
+        new GridColumn("billingcountry", "Country"),
+        new GridColumn("billingpostalcode", "Post Code"),
+    };
+
+    var invoiceItemColumns = new List<GridColumn>
+    {
+        new GridColumn("invoicelineid", "Invoice Line ID"),
+        new GridColumn("invoiceid", "Invoice ID") {ForeignKey = true },
+        new GridColumn("trackid", "Track ID") {Lookup = new Lookup("tracks","trackid","name")},
+        new GridColumn("unitprice", "Price"),
+        new GridColumn("quantity", "Qty"),
+    };
+
+    var invoiceLineGridModel = new GridModel("Invoice_items");
+    invoiceLineGridModel.Columns = invoiceItemColumns;
+    invoiceLineGridModel.Caption = "Invoice Lines";
+    invoiceLineGridModel.PageSize = 5;
+    //  invoiceLineGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+
+    var invoiceGridModel = new GridModel("Invoices");
+    invoiceGridModel.Columns = invoiceColumns;
+    invoiceGridModel.LinkedControl = invoiceLineGridModel;
+    invoiceGridModel.Caption = "Invoices";
+    invoiceGridModel.PageSize = 5;
+    // invoiceGridModel.ToolbarPosition = ToolbarPosition.Hidden;
+
+    var customerGridModel = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "Customers");
+    customerGridModel.Columns = customerColumns;
+    customerGridModel.LinkedControl = invoiceGridModel;
+    customerGridModel.PageSize = 5;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main style="padding:20px">
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGridModel))
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(invoiceGridModel))
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(invoiceLineGridModel))
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>
+

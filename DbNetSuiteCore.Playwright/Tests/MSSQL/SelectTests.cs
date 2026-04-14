@@ -1,0 +1,30 @@
+﻿using NUnit.Framework;
+
+namespace DbNetSuiteCore.Playwright.Tests.MSSQL
+{
+    public class SelectTests : MSSQLDbSetUp
+    {
+        [Test]
+        public async Task SearchTest()
+        {
+            Dictionary<string, int> searches = new Dictionary<string, int>() {
+                { "market", 4 },
+                { "xxxxxxx", 0 },
+                { "", 91 }
+            };
+
+            await SelectSearchTest(searches, $"mssql/customers?db={DatabaseName}");
+        }
+
+        [Test]
+        public async Task GroupTest()
+        {
+            Dictionary<string, KeyValuePair<int, int>> searches = new Dictionary<string, KeyValuePair<int, int>>() {
+                { "sil", new KeyValuePair<int, int>(3,1) },
+                { "", new KeyValuePair<int, int>(77,8) }
+            };
+
+            await SelectGroupTest(searches, $"mssql/products?db={DatabaseName}");
+        }
+    }
+}

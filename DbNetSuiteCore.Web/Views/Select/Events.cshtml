@@ -1,0 +1,29 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var customerSelect = new SelectModel(DataSourceType.SQLite, "Northwind(sqlite)", "customers") {Size = 10, RowSelection = RowSelection.Multiple};
+
+    customerSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("CustomerID"),
+        new SelectColumn("coalesce(CompanyName,'') || ', ' || coalesce(Address,'') || ', ' || coalesce(City,'')")
+    };
+
+    customerSelect.ClientEvents[SelectClientEvent.Initialised] = "initialised";
+    customerSelect.ClientEvents[SelectClientEvent.OptionSelected] = "optionSelected";
+
+
+    @(await DbNetSuiteCore.Control.Create(Context).Render(customerSelect))
+}
+
+<script>
+
+    function initialised(selectControl, args) { 
+        console.log("initialised")
+    }
+
+    function optionSelected(selectControl, args) {
+        console.log(args.selectedOptions)
+    }
+</script>

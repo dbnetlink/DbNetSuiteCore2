@@ -1,0 +1,37 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customerGrid = new GridModel(DataSourceType.MySql, "Northwind2(mysql)", "comprehensive_data_types") {};
+
+    customerGrid.Columns = new List<GridColumn>() {
+        new GridColumn("Int_Column"),
+        new GridColumn("Tinyint_Column"),
+        new GridColumn("Smallint_Column"),
+        new GridColumn("Mediumint_Column"),
+        new GridColumn("Bigint_Column"),
+        new GridColumn("Decimal_Column"),
+        new GridColumn("Float_Column"),
+        new GridColumn("Double_Column"),
+        new GridColumn("Bit_Column"),
+        new GridColumn("Char_Column"),
+        new GridColumn("Varchar_Column"),
+        new GridColumn("Tinytext_Column"),
+        new GridColumn("Text_Column"),
+        new GridColumn("Mediumtext_Column"),
+        new GridColumn("Longtext_Column"),
+        new GridColumn("Date_Column"),
+        new GridColumn("Datetime_Column"),
+        new GridColumn("Timestamp_Column"),
+        new GridColumn("Time_Column"),
+        new GridColumn("Year_Column"),
+        new GridColumn("Enum_Column"),
+        new GridColumn("Set_Column"),
+        new GridColumn("Json_Column")
+    };
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGrid))
+}

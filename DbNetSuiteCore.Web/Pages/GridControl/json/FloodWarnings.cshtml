@@ -1,0 +1,34 @@
+﻿ @page
+@using System.Net.Http
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Models
+@using DbNetSuiteCore.Web.Plugins
+
+@{
+   
+
+var gridModel = new GridModel(DataSourceType.JSON, $"https://environment.data.gov.uk/flood-monitoring/id/floods");
+    gridModel.Caption = "Flood Warnings";
+
+    gridModel.Columns = new List<GridColumn>
+    {
+    new GridColumn("Description"),
+    new GridColumn("Severity") {Filter = FilterType.Distinct},
+    new GridColumn("SeverityLevel", "") {},
+    new GridColumn("Area"),
+    new GridColumn("County") {},
+    new GridColumn("RaisedAt","Raised") ,
+    new GridColumn("Message") {DataOnly = true},
+    new GridColumn("Polygon") {DataOnly = true},
+    };
+
+    gridModel.ClientEvents[GridClientEvent.RowSelected] = "drawFieldPolygon";
+    gridModel.ClientEvents[GridClientEvent.CellTransform] = "cellTransform";
+    gridModel.JsonTransformPlugin = typeof(FloodWarningsTransform);
+    gridModel.Cache = true;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
+}

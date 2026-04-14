@@ -12,6 +12,8 @@
     <main style="padding:20px">
         @RenderBody()
     </main>
+    @await RenderSectionAsync("Libraries", required: false)
+
     @DbNetSuiteCore.Resources.ClientScript()
     <script src="~/js/bootstrap.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

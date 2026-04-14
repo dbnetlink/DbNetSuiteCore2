@@ -1,0 +1,25 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "ES2018",
+    "rootDir": "./TypeScript",
+    "moduleResolution": "Node",
+    "baseUrl": "./", /* Specify the base directory to resolve non-relative module names. */
+    "resolveJsonModule": true, /* Enable importing .json files. */
+    "outDir": "./wwwroot/js",
+    "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type   "strict": true, /* Enable all strict type-checking options. */
+    "skipLibCheck": false /* Skip type checking all .d.ts files. */
+  },
+  "exclude": [
+    "**/bin",
+    "**/bower_components",
+    "**/jspm_packages",
+    "**/node_modules",
+    "**/obj",
+    "**/platforms"
+  ],
+  "include": [
+    "**/*.ts",
+    "types/**/*.d.ts" // <-- Add this line
+  ]
+}

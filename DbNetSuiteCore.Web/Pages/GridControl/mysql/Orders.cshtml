@@ -1,0 +1,32 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var columns = new List<GridColumn>() {
+        new GridColumn("OrderId"),
+        new GridColumn("CustId") {Lookup = new Lookup("Customer", "CustID", "CompanyName")},
+        new GridColumn("EmployeeId") {Lookup = new Lookup("Employee", "EmployeeId", "CONCAT(LastName,', ',FirstName)")},
+        new GridColumn("OrderDate"),
+        new GridColumn("RequiredDate") { InitialSortOrder = SortOrder.Desc },
+        new GridColumn("ShippedDate"),
+        new GridColumn("Shipperid") { Lookup = new Lookup("Shipper", "ShipperID", "CompanyName")},
+        new GridColumn("Freight"),
+        new GridColumn("ShipName"),
+        new GridColumn("ShipAddress"),
+        new GridColumn("ShipCity"){ Lookup = new Lookup()},
+        new GridColumn("ShipRegion"){ Lookup = new Lookup()},
+        new GridColumn("ShipPostalCode"),
+        new GridColumn("ShipCountry"){ Lookup = new Lookup()}
+    };
+
+    columns.ForEach(c => c.Filter = FilterType.Default);
+
+    var ordersGrid = new GridModel(DataSourceType.MySql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MySql), "salesorder");
+    ordersGrid.Columns = columns;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
+}

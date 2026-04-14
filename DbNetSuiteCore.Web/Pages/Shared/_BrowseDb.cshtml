@@ -77,7 +77,16 @@
                                 </h2>
                                 <div id="@(tab)" class="accordion-collapse collapse@(first ? " show" : "")" aria-labelledby="heading@(tab)" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
-                                        @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionAlias, tableName) { }))
+                                        @{
+                                            if (Model.ControlType == typeof(GridModel))
+                                            {
+                                                @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(new GridModel(Model.DataSourceType, Model.ConnectionString, tableName) { OptimizeForLargeDataset = true, DeferredLoad = true }))
+                                            }
+                                            if (Model.ControlType == typeof(FormModel))
+                                            {
+                                                @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(new FormModel(Model.DataSourceType, Model.ConnectionString, tableName) { QueryLimit = 1000, Insert = true, Delete = true }))
+                                            }
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -87,33 +96,41 @@
                 }
                 else
                 {
-                    GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionAlias, Model.TableName) { DatabaseName = Model.DatabaseName };
-                    gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
-                    @(await new DbNetSuiteCore.GridControl(_httpContext.HttpContext).Render(gridModel))
+                    if (Model.ControlType == typeof(GridModel))
+                    {
+                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, OptimizeForLargeDataset = true };
+                        gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
+                        @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(gridModel))
+                    }
+                    if (Model.ControlType == typeof(FormModel))
+                    {
+                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 1000 };
+                        @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(formModel))
+                    }
                 }
             }
 
         }
     </div>
+</div>
 
-    <script>
-        function setFileName(sender, args) {
-            args.link.download = "@(CleanTableName(Model.TableName))." + args.extension
-        }
-
-    </script>
-
-
-    @functions
-    {
-        string CleanTableName(string tableName)
-        {
-            if (string.IsNullOrEmpty(tableName) == false)
-            {
-                Regex rgx = new Regex(@"[^a-zA-Z0-9_\][\]]");
-                tableName = rgx.Replace(tableName.Split(".").Last(), "");
-            }
-
-            return tableName;
-        }
+<script>
+    function setFileName(sender, args) {
+        args.link.download = "@(CleanTableName(Model.TableName))." + args.extension
     }
+</script>
+
+
+@functions
+{
+    string CleanTableName(string tableName)
+    {
+        if (string.IsNullOrEmpty(tableName) == false)
+        {
+            Regex rgx = new Regex(@"[^a-zA-Z0-9_]");
+            tableName = rgx.Replace(tableName.Split(".").Last(), "");
+        }
+
+        return tableName;
+    }
+}

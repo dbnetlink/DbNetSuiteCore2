@@ -1,0 +1,42 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var gridModel = new GridModel(DataSourceType.Excel, "http://ccgbcodni-cbcni.opendata.arcgis.com/datasets/42b6ad70a304442dbdb963974d44b433_0.csv") {
+        CacheKey = "dd2ce447-589c-45aa-be9f-0b600b6466e4" 
+    };
+
+    gridModel.Columns = new List<GridColumn>()
+    {
+        new GridColumn("X") { DataOnly = true},
+        new GridColumn("Y") { DataOnly = true},
+        new GridColumn("OBJECTID") { DataOnly = true},
+        new GridColumn("Name"),
+        new GridColumn("Address"),
+        new GridColumn("Postcode"),
+        new GridColumn("Town"),
+        new GridColumn("Website") {Format = FormatType.Url }
+    };
+}
+
+<div class="row flex-grow-1">
+    <div class="col-4 left-half" id="viewDiv"></div>
+    <div class="col-8 right-half">
+        <div>
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+    <script src="https://js.arcgis.com/4.28/"></script>
+}

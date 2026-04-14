@@ -1,0 +1,35 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var customerForm = new FormModel(DataSourceType.Oracle, "Northwind(oracle)", "Customers") { Insert = true, Delete = true };
+
+    customerForm.Columns = new List<FormColumn> {
+        new FormColumn("CUSTOMER_ID") { SequenceName = "SEQ_NW_CUSTOMERS"},
+        new FormColumn("CUSTOMER_CODE") {TextTransform = TextTransform.Uppercase},
+        new FormColumn("COMPANY_NAME"),
+        new FormColumn("CONTACT_NAME"),
+        new FormColumn("CONTACT_TITLE"),
+        new FormColumn("ADDRESS"),
+        new FormColumn("CITY"),
+        new FormColumn("REGION"),
+        new FormColumn("POSTAL_CODE"),
+        new FormColumn("COUNTRY"),
+        new FormColumn("PHONE"),
+        new FormColumn("FAX")
+    };
+
+    customerForm.ClientEvents[FormClientEvent.ValidateDelete] = "validateDelete";
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
+}
+
+<script>
+    function validateDelete(formControl, args) {
+        if (formControl.formControlDbValue("company_name") != "DbNetLink Limited") {
+            formControl.highlightError("company_name");
+            args.message = `Only customers with a name of DbNetLink Limited can be deleted`;
+        }
+    }
+</script>

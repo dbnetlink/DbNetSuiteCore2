@@ -1,0 +1,34 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives;
+@using DbNetSuiteCore.Web.Helpers
+@{
+  var columns = new List<GridColumn>()
+    {
+    new GridColumn("Orderid"),
+    new GridColumn("Custid"),
+    new GridColumn("Empid") {Lookup = new Lookup("employee","empid", "concat_ws(', ', lastname, firstname)")},
+    new GridColumn("Orderdate"),
+    new GridColumn("Requireddate"),
+    new GridColumn("Shippeddate"),
+    new GridColumn("Shipperid") {Lookup = new Lookup("shipper","shipperid", "companyname")},
+    new GridColumn("Freight"),
+    new GridColumn("Shipname"),
+    new GridColumn("Shipaddress"),
+    new GridColumn("Shipcity"),
+    new GridColumn("Shipregion"),
+    new GridColumn("Shippostalcode"),
+    new GridColumn("Shipcountry") {Lookup = new Lookup()}
+    };
+
+    columns.ForEach(c => c.Filter = FilterType.Default);
+
+    var ordersGrid = new GridModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "salesorder");
+    ordersGrid.Columns = columns;
+    ordersGrid.OptimizeForLargeDataset = true;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
+}

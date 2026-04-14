@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Web.Helpers;
+using DbNetSuiteCore.Enums;
 using MySqlConnector;
 using NUnit.Framework;
 
@@ -10,7 +11,7 @@ namespace DbNetSuiteCore.Playwright.Tests.MySql
         public MySQLDbSetUp()
         {
             MasterConnectionString = "server=localhost;user=root;password=password1234;";
-            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, Enums.DataSourceType.MySql);
+            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, DataSourceType.MySql);
         }
 
         [OneTimeSetUp]

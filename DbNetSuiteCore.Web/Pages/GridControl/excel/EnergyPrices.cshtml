@@ -1,0 +1,22 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Plugins
+
+@{
+
+      var energyPricesGrid = new GridModel(DataSourceType.Excel, "https://localhost:7243/data/excel/DomesticEnergyPrices.xlsx");
+  //  var energyPricesGrid = new GridModel(DataSourceType.Excel, "/data/excel/DomesticEnergyPrices.xlsx");
+
+      energyPricesGrid.CustomisationPlugin = typeof(EnergyPricesPlugin);
+    energyPricesGrid.SheetName = "Table 5.5.1";
+ //   energyPricesGrid.DeferredLoad = true;
+ //   energyPricesGrid.Cache = true;
+ //   energyPricesGrid.Bind(GridClientEvent.CellTransform, "highlightQuality");
+
+
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(energyPricesGrid))
+}
+        

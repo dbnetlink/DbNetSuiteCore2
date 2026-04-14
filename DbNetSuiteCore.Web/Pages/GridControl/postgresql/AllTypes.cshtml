@@ -1,0 +1,40 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var customerForm = new GridModel(DataSourceType.PostgreSql, "Northwind(postgresql)", "comprehensive_data_types") {};
+
+    customerForm.Columns = new List<GridColumn>() {
+        new GridColumn("Smallint_Col"),
+        new GridColumn("Integer_Col"),
+        new GridColumn("Bigint_Col"),
+        new GridColumn("Decimal_Col"),
+        new GridColumn("Numeric_Col"),
+        new GridColumn("Real_Col"),
+        new GridColumn("Double_Precision_Col"),
+        new GridColumn("Smallserial_Col"),
+        new GridColumn("Serial_Col"),
+        new GridColumn("Bigserial_Col"),
+        new GridColumn("Char_Col"),
+        new GridColumn("Varchar_Col"),
+        new GridColumn("Text_Col	"),
+        new GridColumn("Date_Col"),
+        new GridColumn("Time_Col"),
+        new GridColumn("Timetz_Col"),
+        new GridColumn("Timestamp_Col"),
+        new GridColumn("Timestamptz_Col"),
+        new GridColumn("Interval_Col"),
+        new GridColumn("Boolean_Col"),
+        new GridColumn("Mood_Col") {Filter = FilterType.Default},
+        new GridColumn("Json_Col	"),
+        new GridColumn("Jsonb_Col"),
+        new GridColumn("Xml_Col	"),
+        new GridColumn("Id")
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
+}

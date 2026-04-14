@@ -1,0 +1,33 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    <p style="width:700px; padding-bottom:20px">Click on a JSON file so see it presented in the Grid control</p>
+    var columns = new List<GridColumn>()
+    {
+        new GridColumn(FileSystemColumn.Name.ToString())
+    };
+    var gridModel = new GridModel(DataSourceType.FileSystem, "/") { Url = "/data/json", FixedFilter = "(IsDirectory = 1 or Name like '%.json')" };
+    gridModel.Columns = columns;
+    gridModel.ClientEvents[GridClientEvent.CellTransform] = "createLink";
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel));
+}
+
+<script>
+    function createLink(gridControl, args) {
+        var tbody = args.cell.closest("tbody")
+        
+        switch (args.columnName.toLowerCase()) 
+        { 
+            case "name":
+                var name = args.cell.dataset.value.toString()
+                if (name.endsWith(".json")) {
+                    args.cell.innerHTML = `<a target='_blank' href='${window.location.origin}/gridcontrol/json/renderfile?name=${name}'>${name.replace(".json", "")}</a>`
+                }
+                break;
+        }
+    }
+</script>

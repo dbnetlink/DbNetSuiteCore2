@@ -1,0 +1,19 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+
+<div class="gap-2 my-2" style="display:grid;grid-template-columns: repeat(4, auto);">
+
+    @for (var i=1; i<= 12; i++)
+    {
+        <div style="display:grid;grid-column:span 2;" class="content-start">
+        <label for="CustomerID" class="font-bold text-slate-800">Column @i</label><input type="text" name="_column@(i)" data-value="ALFKI" value="@i" data-datatype="String" data-dbdatatype="TEXT" class="fc-control w-full" data-error="false" disabled="" data-modified="false">
+    </div>
+    }
+
+</div>
+}

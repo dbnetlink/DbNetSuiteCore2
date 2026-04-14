@@ -8,6 +8,9 @@
         IsDirectory,
         Length,
         Extension,
-        Content
+        Content,
+        Folder,
+        Path,
+        ParentFolder
     };
 }

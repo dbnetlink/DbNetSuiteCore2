@@ -1,0 +1,74 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Plugins.Interfaces
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Models
+@using System.Text.Json
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>Food Establishment Ratings</title>
+    @DbNetSuiteCore.Resources.StyleSheet()
+    <style>
+
+        .container {
+            display: flex;
+            flex-direction: row; /* Arranges the divs side-by-side */
+            height: 100vh; /* Ensures the container fills the viewport height */
+            width: 100vw; /* Ensures the container fills the viewport width */
+        }
+
+    </style>
+
+</head>
+<body>
+    @{
+        var gridModel = new GridModel(DataSourceType.JSON, $"https://data.food.gov.uk/food-alerts/id?since={DateTime.Now.AddDays(-30).ToString("yyyy-MM-ddTHH:mm:ssZ")}&_view=full");
+
+        gridModel.Columns = new List<GridColumn>
+        {
+            new GridColumn("Description"),
+            new GridColumn("LastModified") {DataType = typeof(DateTime)},
+            new GridColumn("HumanizedLastModified"){DataOnly = true},
+            new GridColumn("ReportingBusiness"),
+            new GridColumn("AlertURL") {Format = FormatType.Url},
+            new GridColumn("ActionTaken"),
+            new GridColumn("ConsumerAdvice"),
+            new GridColumn("Products")
+        };
+        gridModel.Caption = "Food Standards Agency - Food Alerts";
+        gridModel.JsonTransformPlugin = typeof(FoodAlertTransform);
+        gridModel.ApiRequestHeaders["x-api-version"] = "2";
+        gridModel.ClientEvents[GridClientEvent.CellTransform] = "cellTransform";
+    }
+    <div class="container">
+        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel))
+    </div>
+    @DbNetSuiteCore.Resources.ClientScript()
+    <script>
+        function cellTransform(sender, args)
+        {
+            switch (args.columnName.toLowerCase())
+            {
+                case "lastmodified":
+                    args.cell.innerText = sender.columnValue("humanizedlastmodified", args.cell.parentElement);
+                    break;
+            }
+        }
+
+        function viewCellTransform(sender, args)
+        {
+            var cell = args.viewDialog.columnCell('humanizedlastmodified')
+            cell.innerText = args.viewDialog.columnValue("humanizedlastmodified");
+        }
+    </script>
+</body>
+</html>

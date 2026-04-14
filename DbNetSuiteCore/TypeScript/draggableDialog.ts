@@ -1,16 +1,14 @@
 ﻿class DraggableDialog {
     private dialog: HTMLDialogElement;
     private dragHandle: HTMLElement;
-    private container: HTMLElement;
     private isDragging: boolean = false;
     private initialX: number = 0;
     private initialY: number = 0;
     private xOffset: number = 0;
     private yOffset: number = 0;
 
-    constructor(dialogId: string, dragHandleClass: string = 'dialog-header', container:HTMLElement) {
+    constructor(dialogId: string, dragHandleClass: string = 'dialog-header') {
         this.dialog = document.getElementById(dialogId) as HTMLDialogElement;
-        this.container = container;
         if (!this.dialog) {
             throw new Error(`Dialog with id "${dialogId}" not found`);
         }
@@ -28,9 +26,28 @@
         document.addEventListener('mousemove', this.drag.bind(this));
         document.addEventListener('mouseup', this.stopDragging.bind(this));
 
-        this.xOffset = (0 - (this.container.clientWidth / 2)) + this.container.offsetLeft;
-        this.yOffset = (0 - (this.container.clientHeight / 2)) + this.container.offsetTop;
+        var rect = this.dialog.getBoundingClientRect()
+        this.xOffset = rect.left - rect.width; 
+        this.yOffset = rect.top - rect.height; 
+
+        const computedStyle = window.getComputedStyle(this.dialog);
+        const transformValue = computedStyle.transform;
+
+        // Parse the transform matrix to extract tx and ty
+        let tx = 0, ty = 0;
+        if (transformValue && transformValue !== 'none') {
+            const matrix = transformValue.match(/^matrix\((.+)\)$/);
+            if (matrix) {
+                const values = matrix[1].split(', ');
+                tx = parseFloat(values[4]); // tx is the 5th value in the matrix
+                ty = parseFloat(values[5]); // ty is the 6th value in the matrix
+            }
+        }
+
+        this.xOffset = tx;
+        this.yOffset = ty;
         this.setTranslate(this.xOffset, this.yOffset);
+
     }
 
     private startDragging(e: MouseEvent): void {

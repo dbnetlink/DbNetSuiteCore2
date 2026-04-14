@@ -1,0 +1,30 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var customerForm = new FormModel(DataSourceType.Oracle, "Northwind(oracle)", "example_table") { Insert = true, Delete = true };
+
+    customerForm.Columns = new List<FormColumn> {
+        new FormColumn("ID") {Autoincrement = true},
+        new FormColumn("NAME"),
+        new FormColumn("DESCRIPTION	"),
+        new FormColumn("SALARY"),
+        new FormColumn("HIRE_DATE"),
+        new FormColumn("IS_ACTIVE"),
+        new FormColumn("CREATED_AT"),
+        new FormColumn("UPDATED_AT"),
+        new FormColumn("PROFILE_PICTURE"),
+        new FormColumn("EMAIL"),
+        new FormColumn("AGE"),
+        new FormColumn("CREDIT_LIMIT"),
+        new FormColumn("NOTES"),
+        new FormColumn("RAW_DATA"),
+        new FormColumn("UUID"),
+        new FormColumn("JSON_DATA"),
+        new FormColumn("XML_DATA")
+    };
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
+}
+

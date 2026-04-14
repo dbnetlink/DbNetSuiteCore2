@@ -1,0 +1,36 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var invoiceGrid = new GridModel(DataSourceType.SQLite, "Chinook(sqlite)", "invoices");
+    invoiceGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("InvoiceId", "Invoice ID") { PrimaryKey = true, DataOnly = true},
+        new GridColumn("CustomerID", "Customer") {Lookup = new Lookup("Customers","CustomerID","LastName || ', ' || FirstName")},
+        new GridColumn("InvoiceDate", "Date") { DataType = typeof(DateTime)},
+        new GridColumn("BillingAddress", "Address"),
+        new GridColumn("BillingCity", "City"){ Style = "font-weight:bold;"},
+        new GridColumn("BillingState", "State") {LookupEnum = typeof(StateEnum) },
+        new GridColumn("BillingCountry", "Country") { Style = "background-color:gold; color:steelblue;"},
+        new GridColumn("BillingPostalCode", "Postal Code"),
+        new GridColumn("Total", "Total") { Format = "C"},
+    };
+    invoiceGrid.RowSelection = RowSelection.Multiple;
+    invoiceGrid.MultiRowSelectLocation = MultiRowSelectLocation.Right;
+    invoiceGrid.PageSize = 100;
+
+   // invoiceGrid.FixedFilter = "InvoiceDate >= @EarliestDate";
+  //  invoiceGrid.FixedFilterParameters = new List<DbParameter>() { new DbParameter("@EarliestDate", DateTime.Today.AddDays(-60))};
+
+    invoiceGrid.HeadingMode = HeadingMode.Frozen;
+    invoiceGrid.ClientEvents[GridClientEvent.SelectedRowsUpdated] = "showSelectedRows";
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(invoiceGrid))
+}
+
+<script>
+    function showSelectedRows(gridControl, args) {
+        console.log(`Selected Values => ${args.selectedValues}`)
+    }
+</script>

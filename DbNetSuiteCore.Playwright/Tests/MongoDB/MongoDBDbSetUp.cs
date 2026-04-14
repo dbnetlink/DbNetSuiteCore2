@@ -1,4 +1,5 @@
 ﻿using DbNetSuiteCore.Web.Helpers;
+using DbNetSuiteCore.Enums;
 using MongoDB.Driver;
 using NUnit.Framework;
 using MongoDB.Bson;
@@ -12,7 +13,7 @@ namespace DbNetSuiteCore.Playwright.Tests.MongoDB
         public MongoDBDbSetUp()
         {
             MasterConnectionString = "mongodb://localhost:27017/";
-            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, Enums.DataSourceType.MongoDB);
+            ConnectionString = ConnectionStringHelper.TestConnectionString(DatabaseName, DataSourceType.MongoDB);
         }
 
         [OneTimeSetUp]

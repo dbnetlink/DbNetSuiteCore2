@@ -1,0 +1,80 @@
+﻿@page
+@model DbNetSuiteCore.Web.Pages.AccountsModel
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+                <div class="container">
+                    <ul class="nav nav-tabs">
+                        @{
+                foreach (string tab in Model.Tabs)
+                {
+                    var id = tab.Replace(" ", "");
+                                            <li class="nav-item">
+                                                <a class="nav-link @(id == Model.ActiveTab ? "active" : "")" aria-current="page" href="?activetab=@id&financialYear=@Model.FinancialYear">@tab</a>
+                                            </li>
+                }
+                        }
+                    </ul>
+                    @{
+            FormModel? formModel = Model.GetFormModel();
+            GridModel? gridModel = Model.GetGridModel();
+
+            if (gridModel != null)
+            {
+                if (formModel != null)
+                {
+                    gridModel.LinkedControl = formModel;
+                }
+            }
+                    }
+                    <div style="display:flex; flex-direction: row; gap:10px;justify-content: flex-start; align-items:center;margin-bottom:10px;margin-top:10px;">
+                        <div>
+                            <b>Financial Year</b>
+                        </div>
+                        <div>
+                            <form method="post">
+                                <select class="form-select" name="financialYear" onchange="this.form.submit()">
+                                @for (var year = DateTime.Today.Year; year >= 2023 ; year--)
+                            {
+                                    <option value="@year" @(year == (Model.FinancialYear) ? "selected" : string.Empty)>@year/@(year + 1)</option>
+                            }
+                                </select>
+                                <input type="hidden" name="ActiveTab" value="@Model.ActiveTab"/>
+                            </form>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction: column; gap:10px;">
+                        @if (formModel != null)
+            {
+                            <div>
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(formModel!))
+                            </div>
+            }
+                        @if (gridModel != null)
+            {
+                            <div>
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(gridModel!))
+                            </div>
+            }
+                    </div>
+                </div>
+}
+<script>
+    function validateJournalEntry(formControl, args) { 
+        if (formControl.formControlValue("debit").trim() == '' && formControl.formControlValue("credit").trim() == '') {
+            formControl.highlightError("debit");
+            formControl.highlightError("credit");
+            args.message = "A debit or credit value must be specified";
+        }
+   
+    }
+
+    function validateUserDelete(formControl, args) {
+        if (formControl.formControlDbValue("name").trim() == 'Admin') {
+            args.message = "Admin user cannot be deleted";
+        }
+    }
+</script>

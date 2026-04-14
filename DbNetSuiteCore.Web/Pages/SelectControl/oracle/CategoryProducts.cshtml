@@ -1,0 +1,31 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+	var productsGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "Products");
+	productsGrid.Columns = new List<GridColumn>() {
+		new GridColumn("Product_ID") { PrimaryKey = true },
+		new GridColumn("Product_Name"),
+		new GridColumn("Supplier_ID","Supplier") { Lookup = new Lookup("Suppliers", "Supplier_Id", "Company_Name"), Filter = FilterType.Default },
+		new GridColumn("Category_ID","Category") { ForeignKey = true,  Lookup = new Lookup("Categories", "Category_ID", "Category_Name"), Filter = FilterType.Default },
+		new GridColumn("Quantity_Per_Unit", "Qty."),
+		new GridColumn("Unit_Price","Price") { Format = "c"},
+		new GridColumn("Units_In_Stock", "Stock"),
+		new GridColumn("Units_On_Order","On Order"),
+		new GridColumn("Reorder_Level"),
+		new GridColumn("Discontinued") { Filter = FilterType.Default, LookupEnum = typeof(YesNoEnum)}
+	};
+
+	var productSelect = new SelectModel(DataSourceType.Oracle, "Northwind(oracle)", "Categories") { Caption = "Category" };
+	productSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("Category_ID"),
+        new SelectColumn("Category_Name")
+    };
+	productSelect.LinkedControl = productsGrid;
+
+	@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productSelect))
+	@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productsGrid))
+}

@@ -1,0 +1,29 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Web.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@{
+
+    var columns = new List<FormColumn>() {
+        new FormColumn("OrderID") { },
+        new FormColumn("CustomerID") {Lookup = new Lookup("Customers", "CustomerID", "CompanyName")},
+        new FormColumn("EmployeeID") {Lookup = new Lookup("Employees", "EmployeeID", "LastName + ',' + FirstName")},
+        new FormColumn("OrderDate") {},
+        new FormColumn("RequiredDate") {},
+        new FormColumn("ShippedDate"),
+        new FormColumn("ShipVia") {Lookup = new Lookup("Shippers", "ShipperID", "CompanyName")},
+        new FormColumn("Freight"),
+        new FormColumn("ShipName"),
+        new FormColumn("ShipAddress"),
+        new FormColumn("ShipCity") {},
+        new FormColumn("ShipRegion") {},
+        new FormColumn("ShipPostalCode"),
+        new FormColumn("ShipCountry") {}
+    };
+
+    var ordersForm = new FormModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "Orders");
+    ordersForm.Columns = columns;
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersForm))
+}

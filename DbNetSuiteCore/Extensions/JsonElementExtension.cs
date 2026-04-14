@@ -10,7 +10,7 @@ namespace DbNetSuiteCore.Extensions
             switch (jsonElement.ValueKind)
             {
                 case JsonValueKind.String:
-                    value = jsonElement.GetString();
+                    value = jsonElement.GetString() ?? string.Empty;
                     break;
                 case JsonValueKind.Number:
                     value = jsonElement.GetInt32();
@@ -23,7 +23,7 @@ namespace DbNetSuiteCore.Extensions
                     value = DBNull.Value;
                     break;
                 default:
-                    value = jsonElement.GetString();
+                    value = jsonElement.GetString() ?? string.Empty;
                     break;
             }
             return value;

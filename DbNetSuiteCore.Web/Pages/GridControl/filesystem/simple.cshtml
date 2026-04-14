@@ -1,0 +1,10 @@
+﻿@page
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+    var fileGrid = new GridModel(DataSourceType.FileSystem, "/data/files") ;
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fileGrid))
+}

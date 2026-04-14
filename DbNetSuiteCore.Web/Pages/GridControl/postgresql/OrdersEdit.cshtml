@@ -1,0 +1,35 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives;
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var columns = new List<GridColumn>()
+    {
+        new GridColumn("Orderid"),
+        new GridColumn("Custid"),
+        new GridColumn("Empid") {Lookup = new Lookup("employee","empid", "concat_ws(', ', lastname, firstname)"),FormColumn = new FormColumn()},
+        new GridColumn("Orderdate") {FormColumn = new FormColumn()},
+        new GridColumn("Requireddate") {FormColumn = new FormColumn()},
+        new GridColumn("Shippeddate") {FormColumn = new FormColumn()},
+        new GridColumn("Shipperid") {Lookup = new Lookup("shipper","shipperid", "companyname"),FormColumn = new FormColumn(), Filter = FilterType.Default},
+        new GridColumn("Freight") {FormColumn = new FormColumn()},
+        new GridColumn("Shipname") {FormColumn = new FormColumn()},
+        new GridColumn("Shipaddress") {FormColumn = new FormColumn()},
+        new GridColumn("Shipcity") {FormColumn = new FormColumn()},
+        new GridColumn("Shipregion") {FormColumn = new FormColumn()},
+        new GridColumn("Shippostalcode") {FormColumn = new FormColumn()},
+        new GridColumn("Shipcountry") {Lookup = new Lookup(),FormColumn = new FormColumn()}
+    };
+
+
+    columns.ForEach(c => c.Filter = FilterType.Default);
+
+    var ordersGrid = new GridModel(DataSourceType.PostgreSql, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.PostgreSql), "salesorder");
+    ordersGrid.Columns = columns;
+    ordersGrid.OptimizeForLargeDataset = true;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(ordersGrid))
+}

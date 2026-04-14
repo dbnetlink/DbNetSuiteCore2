@@ -1,0 +1,124 @@
+﻿@page
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Enums
+
+@{
+    var tabs = new List<string> { "Cruises", "Fares" };
+}
+
+<div>
+    @{
+        GridModel cruisesGrid = new GridModel(DataSourceType.MSSQL, "WanderlyApiData", "Cruise");
+
+        cruisesGrid.Columns = new List<GridColumn>() {
+            new GridColumn("Id"),
+            new GridColumn("Ref"),
+            new GridColumn("FlyCruisePrice") {Format = "c",Filter = FilterType.Default},
+            new GridColumn("CruiseOnlyPrice") {Format = "c",Filter = FilterType.Default},
+            new GridColumn("InsidePrice"){Format = "c",Filter = FilterType.Default},
+            new GridColumn("OutsidePrice"){Format = "c",Filter = FilterType.Default},
+            new GridColumn("BalconyPrice"){Format = "c",Filter = FilterType.Default},
+            new GridColumn("SuitePrice"){Format = "c",Filter = FilterType.Default},
+            new GridColumn("VendorId"),
+    new GridColumn("CruiseNights") {Filter = FilterType.Distinct},
+            new GridColumn("Name"),
+            new GridColumn("Rating") {Filter = FilterType.Distinct},
+            new GridColumn("StartsAt") {Filter = FilterType.Default},
+            new GridColumn("StartsOn","On"),
+            new GridColumn("EndsAt") {Filter = FilterType.Default},
+            new GridColumn("EndsOn","On"),
+            new GridColumn("Description"),
+            new GridColumn("VacationDays"),
+            new GridColumn("TravelType") {Filter = FilterType.Distinct},
+            new GridColumn("OfficialLink") {Format = "<a href=\"{0}\" target=\"blank\" title=\"{0}\">Link</a>"},
+            new GridColumn("ShipTitle") {Filter = FilterType.Distinct},
+            new GridColumn("OperatorTitle"){Filter = FilterType.Distinct},
+            new GridColumn("IsCharter")
+        };
+        cruisesGrid.Bind(GridClientEvent.CellTransform, "truncateDescription");
+
+        GridModel fareSetsGrid = new GridModel(DataSourceType.MSSQL, "WanderlyApiData", "FareSet") {Caption = "Fare Sets"};
+        fareSetsGrid.Columns = new List<GridColumn>()
+        {
+            new GridColumn("Id") {DataOnly = true },
+            new GridColumn("PortCharge"),
+            new GridColumn("Airport"),
+            new GridColumn("DealCode"),
+            new GridColumn("Name"),
+            new GridColumn("Description"),
+            new GridColumn("CruiseId") {ForeignKey = true,DataOnly = true }
+        };
+
+        GridModel faresGrid = new GridModel(DataSourceType.MSSQL, "WanderlyApiData", "Fare") { Caption = "Fares" };
+        faresGrid.Columns = new List<GridColumn>()
+        {
+            new GridColumn("Id") {DataOnly = true },
+            new GridColumn("GradeCode"),
+            new GridColumn("GradeName"),
+            new GridColumn("Price") {Format = "c"},
+            new GridColumn("Price34Pax","Price 3/4 Pax") {Format = "c"},
+            new GridColumn("FlightPrice34Pax","Flight Price 3/4 Pax") {Format = "c"},
+            new GridColumn("PriceSingle") {Format = "c"},
+            new GridColumn("FlightPrice") {Format = "c"},
+            new GridColumn("Availability"),
+            new GridColumn("NonCommCharges"),
+
+            new GridColumn("FareSetId") {ForeignKey = true,DataOnly = true }
+        };
+
+        cruisesGrid.LinkedControl = fareSetsGrid;
+        fareSetsGrid.LinkedControl = faresGrid;
+
+        <ul class="nav nav-tabs">
+            @{
+                foreach (string tab in tabs)
+                {
+                    <li class="nav-item">
+                        <button class="nav-link @(tab == tabs.First() ? "active" : string.Empty)" id="@(tab)-tab" data-bs-toggle="tab" data-bs-target="#@(tab)-pane" type="button" role="tab" aria-controls="@tab" aria-selected="true">@tab</button>
+                    </li>
+                }
+            }
+        </ul>
+
+        <div class="tab-content" id="tabContent" style="margin-top:20px;">
+            @foreach (string tab in tabs)
+            {
+                <div class="tab-pane fade @(tab == tabs.First() ? "show active" : string.Empty)" id="@(tab)-pane" role="tabpanel" aria-labelledby="@(tab)-tab">
+                    @{
+                        switch (tab)
+                        {
+                            case "Cruises":
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(cruisesGrid))
+                                break;
+                            case "Fares":
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(fareSetsGrid))
+                                <div style="height:20px;">&nbsp;</div>
+                                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(faresGrid))
+                                break;
+                        }
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+
+    <script>
+        function truncateDescription(gridControl, args) {
+            switch (args.columnName.toLowerCase()) {
+                case "description":
+                    if (args.cell.innerText.length > 50)
+                    {
+                        args.cell.title = args.cell.innerText;
+                        args.cell.innerText = `${args.cell.innerText.substring(0,50)} ...`;
+                    }
+                    break;
+            }
+        }
+
+
+    </script>
+
+}

@@ -1,0 +1,26 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+	var productsGrid = new GridModel(DataSourceType.Oracle, "Northwind(oracle)", "PRODUCTS") { Search = true, ViewDialog = new ViewDialog() { LayoutColumns = 2 } };
+
+	productsGrid.Columns = new List<GridColumn>() {
+		new GridColumn("Product_ID") { PrimaryKey = true, Search = false },
+		new GridColumn("Product_Name") {FormColumn = new FormColumn() },
+		new GridColumn("Supplier_ID","Supplier") { Lookup = new Lookup("Suppliers", "Supplier_Id", "Company_Name"), Filter = FilterType.Default,FormColumn = new FormColumn()},
+		new GridColumn("Category_ID","Category") { Lookup = new Lookup("Categories", "Category_ID", "Category_Name"), Filter = FilterType.Default,FormColumn = new FormColumn() },
+		new GridColumn("Quantity_Per_Unit", "Qty.") {FormColumn = new FormColumn() },
+		new GridColumn("Unit_Price","Price") { Format = "c",FormColumn = new FormColumn()},
+		new GridColumn("Units_In_Stock", "Stock") {FormColumn = new FormColumn() },
+		new GridColumn("Units_On_Order","On Order") {FormColumn = new FormColumn() },
+		new GridColumn("Reorder_Level") { Search = false,FormColumn = new FormColumn() },
+		new GridColumn("Discontinued") { Filter = FilterType.Distinct,FormColumn = new FormColumn()}
+	};
+
+	productsGrid.FixedFilter = "Unit_Price > :unitprice";
+	productsGrid.FixedFilterParameters.Add(new DbParameter(":unitprice", 50));
+
+	@(await DbNetSuiteCore.Control.Create(HttpContext).Render(productsGrid))
+}

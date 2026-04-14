@@ -1,9 +1,0 @@
-﻿@model DbNetSuiteCore.Models.GridModel
-@using Newtonsoft.Json
-@using DbNetSuiteCore.Helpers
-@using DbNetSuiteCore.Constants
-<input type="hidden" name="model" value="@TextHelper.ObfuscateString(JsonConvert.SerializeObject(Model))" />
-@if (string.IsNullOrEmpty(Model.JSON) == false)
-{
-    <input type="hidden" name="json" value="@TextHelper.Compress(Model.JSON)" />
-}

@@ -1,0 +1,25 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Web.Enums
+
+@{
+    var columns = new List<GridColumn>
+    {
+        new GridColumn("id") { PrimaryKey = true},
+        new GridColumn("Name") ,
+        
+        new GridColumn("state_id"),
+        new GridColumn("state_code"),
+        new GridColumn("state_name") {Filter = FilterType.Distinct},
+        new GridColumn("country_id"),
+        new GridColumn("country_code"),
+        new GridColumn("country_name"){Filter = FilterType.Distinct},
+        new GridColumn("latitude"),
+        new GridColumn("longitude"),
+        new GridColumn("wikiDataId") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
+    };
+}
+
+@(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/cities.csv") { Columns = columns, ViewDialog = new ViewDialog(), Cache = true }))

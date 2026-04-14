@@ -1,0 +1,42 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+
+@{
+
+    var filmColumns = new List<GridColumn>
+    {
+        new GridColumn("film_id") {PrimaryKey = true},
+        new GridColumn("title"),
+        new GridColumn("description"),
+        new GridColumn("release_year"),
+        new GridColumn("language_id"){ Lookup = new Lookup("language", "language_id", "name")},
+        new GridColumn("rental_duration"),
+        new GridColumn("rental_rate"),
+        new GridColumn("length"),
+        new GridColumn("replacement_cost"),
+        new GridColumn("rating"),
+        new GridColumn("last_update"),
+        new GridColumn("special_features"),
+      //  new GridColumnModel("fulltext")
+    };
+
+    var filmCategoryColumns = new List<GridColumn>
+    {
+        new GridColumn("film_id") {ForeignKey = true},
+        new GridColumn("category_id"){ Lookup = new Lookup("category", "category_id", "name")},
+        new GridColumn("last_update")
+    };
+
+    var filmCategoryGrid = new GridModel("film_category") { PageSize = 5 };
+    filmCategoryGrid.Columns = filmCategoryColumns;
+
+    var filmsGrid = new GridModel(DataSourceType.PostgreSql, "sakila(postgresql)", "film") { PageSize = 5 };
+    filmsGrid.Columns = filmColumns;
+    filmsGrid.AddLinkedControl(filmCategoryGrid);
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(filmsGrid));
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(filmCategoryGrid)) ;
+}

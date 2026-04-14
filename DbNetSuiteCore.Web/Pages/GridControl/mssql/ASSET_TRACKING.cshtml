@@ -1,0 +1,15 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var assetGrid = new GridModel(DataSourceType.MSSQL, "ESS_CH_283", "ASSET_TRACKING") { OptimizeForLargeDataset = true };
+
+    assetGrid.FixedFilter = "CREATEDDATE > @createddate";
+    assetGrid.FixedFilterParameters.Add(new DbParameter("@createddate", DateTime.Now.AddDays(-60)));
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(assetGrid))
+}

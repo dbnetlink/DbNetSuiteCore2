@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <_MyControlPackageDir>$(MSBuildThisFileDirectory)</_MyControlPackageDir>
+    
+    <_MyControlDtsSource>$(_MyControlPackageDir)my-control.d.ts</_MyControlDtsSource>
+    
+    <_MyControlDtsDestDir>$(MSBuildProjectDirectory)types\$(PackageId)\</_MyControlDtsDestDir>
+    
+    <_MyControlDtsDestFile>$(_MyControlDtsDestDir)my-control.d.ts</_MyControlDtsDestFile>
+  </PropertyGroup>
+
+  <Target Name="CopyMyControlTypeDefs" BeforeTargets="BeforeBuild">
+    
+    <MakeDir Directories="$(_MyControlDtsDestDir)" Condition="!Exists('$(_MyControlDtsDestDir)')" />
+
+    <Copy
+      SourceFiles="$(_MyControlDtsSource)"
+      DestinationFiles="$(_MyControlDtsDestFile)"
+      SkipUnchangedFiles="true"
+    />
+  
+    <ItemGroup>
+      <Content Include="$(_MyControlDtsDestFile)" Condition="!Exists('@(Content)')" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,29 @@
+﻿@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var categoryGrid = new GridModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Categories") { Caption = "Categories"};
+    categoryGrid.Columns = new List<GridColumn>() {
+        new GridColumn("CategoryId") { PrimaryKey = true},
+        new GridColumn("CategoryName", "Category")
+    };
+    var productForm = new FormModel(DataSourceType.SQLite, "FormNorthwind(sqlite)", "Products") { Insert = true, Delete = true, ToolbarPosition = ToolbarPosition.Bottom, Caption = "Products" };
+    productForm.Columns = new List<FormColumn>() {
+        new FormColumn("ProductID","ID") { },
+        new FormColumn("ProductName", "Name"),
+        new FormColumn("SupplierID","Supplier") { Lookup = new Lookup("Suppliers", "SupplierId", "CompanyName"),Required = true },
+        new FormColumn("CategoryID","Category") { Lookup = new Lookup("Categories", "CategoryID", "CategoryName"),Required = true, ForeignKey = true },
+        new FormColumn("QuantityPerUnit", "Qty"){ InitialValue = 0},
+        new FormColumn("UnitPrice", "Price") {Required = true,InitialValue = 0, MinValue = 0, MaxValue = 100 },
+        new FormColumn("UnitsInStock", "Stock") {Required = true,InitialValue = 0, MinValue = 0 },
+        new FormColumn("UnitsOnOrder", "On Order") {Required = true,InitialValue = 0 },
+        new FormColumn("ReorderLevel", "Re-order Level") {Required = true,InitialValue = 0, MaxValue = 50 },
+        new FormColumn("Discontinued") {DataType = typeof(bool), InitialValue = true}
+    };
+
+    categoryGrid.LinkedControl = productForm;
+
+    @(await DbNetSuiteCore.Control.Create(Context).Render(categoryGrid))
+    <hr />
+    @(await DbNetSuiteCore.Control.Create(Context).Render(productForm))
+}

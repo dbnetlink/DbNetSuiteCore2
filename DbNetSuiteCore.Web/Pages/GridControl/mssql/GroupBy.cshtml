@@ -1,0 +1,20 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Web.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+@using DbNetSuiteCore.Web.Helpers
+@{
+    var invoiceColumns = new List<GridColumn>
+    {
+        new GridColumn("ProductName", "Product"),
+        new GridColumn("UnitPrice", "Unit Price") {Format = "c", Aggregate = AggregateType.Sum} ,
+        new GridColumn("Quantity", "Qty") {Aggregate = AggregateType.Sum},
+        new GridColumn("(UnitPrice*Quantity)", "Price") {Format = "c", Aggregate = AggregateType.Sum, InitialSortOrder = SortOrder.Desc},
+    };
+
+    var invoiceGrid = new GridModel(DataSourceType.MSSQL, ConnectionStringHelper.TestConnectionString(Request.Query["db"], DataSourceType.MSSQL), "invoices");
+    invoiceGrid.Columns = invoiceColumns;
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(invoiceGrid))
+}

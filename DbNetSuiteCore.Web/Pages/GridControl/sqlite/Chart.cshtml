@@ -1,0 +1,58 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@{
+    var categorySalesChartGrid = new GridModel(DataSourceType.SQLite, "Northwind(sqlite)", "[SalesByCategory]");
+    categorySalesChartGrid.Columns = new List<GridColumn>
+    {
+        new GridColumn("CategoryName", "Category"),
+        new GridColumn("ProductSales", "Total Sales") {Format = "c", Aggregate = AggregateType.Sum, DataType = typeof(Decimal)} ,
+    };
+    categorySalesChartGrid.IncludeJsonData = true;
+    categorySalesChartGrid.ToolbarPosition = ToolbarPosition.Hidden;
+    categorySalesChartGrid.HeadingMode = HeadingMode.Hidden;
+    categorySalesChartGrid.Bind(GridClientEvent.PageLoaded, "renderChart");
+
+    <div style="display:flex; flex-direction:row;gap:20px;align-items:center">
+        <div>
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(categorySalesChartGrid))
+        </div>
+        <div style="width: 600px;">
+            <canvas id="salesByCategory"></canvas>
+        </div>
+    </div>
+}
+
+@section Scripts
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        let salesChart = null;
+
+        function renderChart(gridControl, args)
+        {
+             if (salesChart)
+             {
+                 salesChart.data.labels = gridControl.columnSeriesData("CategoryName");
+                 salesChart.data.datasets[0].data = gridControl.columnSeriesData("ProductSales");
+                 salesChart.update();
+             }
+             else
+             {
+                 const ctx = document.getElementById('salesByCategory');
+                 salesChart = new Chart(ctx, {
+                   type: 'bar',
+                   data: {
+                     labels: gridControl.columnSeriesData("CategoryName"),
+                     datasets: [{
+                       label: 'Sales By Category',
+                        data: gridControl.columnSeriesData("ProductSales")
+                     }]
+                   }
+                 });
+             }
+        }
+    </script>
+}

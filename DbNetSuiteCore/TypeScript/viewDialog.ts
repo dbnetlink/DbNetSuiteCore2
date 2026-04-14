@@ -1,30 +1,15 @@
-class ViewDialog {
-    dialog: HTMLDialogElement;
-    gridControl: GridControl;
-    draggableDialog: DraggableDialog | null = null;
-
+class ViewDialog extends Dialog {
+    gridControl:GridControl
     constructor(dialog: HTMLDialogElement, gridControl: GridControl) {
-        this.dialog = dialog;
+        super(dialog, gridControl);
         this.gridControl = gridControl;
-
-        let closeButtons = this.dialog.querySelectorAll(this.gridControl.buttonSelector("close"));
-        closeButtons.forEach((e) => {
-            e.addEventListener("click", () => this.dialog.close());
-        });
-        this.dialog.querySelector(this.gridControl.buttonSelector("previous")).addEventListener("click", () => this.gridControl.previousRow());
-        this.dialog.querySelector(this.gridControl.buttonSelector("next")).addEventListener("click", () => this.gridControl.nextRow());
-        this.gridControl.getButton("view").addEventListener("click", this.open.bind(this))
+        this.dialog.querySelector(this.control.buttonSelector("previous")).addEventListener("click", () => gridControl.previousRow());
+        this.dialog.querySelector(this.control.buttonSelector("next")).addEventListener("click", () => gridControl.nextRow());
+        this.control.getButton("view").addEventListener("click", this.open.bind(this))
     }
 
     open() {
         this.getRecord();
-    }
-
-    show() {
-        this.dialog.show();
-        if (!this.draggableDialog) {
-            this.draggableDialog = new DraggableDialog(this.dialog.id, "dialog-nav", this.gridControl.gridControlElement("tbody"));
-        }
     }
 
     update() {
@@ -37,12 +22,6 @@ class ViewDialog {
         let input = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
         input.value = this.gridControl.selectedRow.dataset.id;
         htmx.trigger(input, "changed");
-    }
-
-    close() {
-        if (this.dialog && this.dialog.open) {
-            this.close();
-        }
     }
 
     configureNavigation(tr: HTMLTableRowElement) {

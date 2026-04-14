@@ -1,0 +1,43 @@
+﻿@model DbNetSuiteCore.ViewModels.TreeNodeViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using DbNetSuiteCore.Enums
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@{
+      <div class="node" @Model.ParentRowDataAttributes()>
+      @{
+          if (Model.HasChildren())
+          {
+                <div class="node-header">
+                    <span class="open-icon icon @(Model.Expand ? "hidden" : string.Empty)">@(Model.TreeViewModel.TreeModel.DataSourceType == DataSourceType.FileSystem ? IconHelper.Folder() : IconHelper.ExpandDown())</span>
+                    <span class="close-icon icon @(Model.Expand ? string.Empty : "hidden")">@(Model.TreeViewModel.TreeModel.DataSourceType == DataSourceType.FileSystem ? IconHelper.FolderOpen() : IconHelper.ExpandUp())</span>
+                    <span class="node-text" selectable="@Model.TreeViewModel.TreeModel.NodeSelectable.ToString().ToLower()" data-level="@Model.Level">@Model.ParentRowDescription()</span>
+                </div>
+                <div class="node-content @(Model.Expand ? string.Empty : "hidden")">
+                @foreach (DataRow row in Model.ChildRows()) {
+                    if (Model.LeafParent)
+                    {
+                        <div class="leaf" @Model.ChildRowDataAttributes(row) selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()">
+                            <span class="leaf-icon icon">@IconHelper.Document()</span>
+                            <span class="leaf-text" data-level="@(Model.Level+1)">@Model.ChildRowDescription(row)</span>
+                        </div>
+                    }
+                    else
+                    { 
+                        @await Html.PartialAsync("Tree/__Node", Model.TreeViewModel.GetTreeNodeViewModel(row, Model.Level+1))
+                    }
+                }
+                </div>
+            }
+            else
+            {
+                <div class="leaf" @Model.ParentRowDataAttributes()>
+                    <span class="leaf-icon icon">@IconHelper.Document()</span>
+                    <span class="leaf-text" selectable="@Model.TreeViewModel.TreeModel.LeafSelectable.ToString().ToLower()" data-level="@Model.Level">@Model.ParentRowDescription()</span>
+                </div>
+            }
+        }
+      </div>
+}

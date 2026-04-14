@@ -1,0 +1,32 @@
+﻿@model DbNetSuiteCore.ViewModels.TreeViewModel
+@using System.Data
+@using DbNetSuiteCore.Helpers
+@using DbNetSuiteCore.Models
+@using Microsoft.AspNetCore.Html
+@using DbNetSuiteCore.Constants
+@using DbNetSuiteCore.Enums
+
+<div class="tree-container" style="min-width:@Model.TreeModel.MinWidth" data-linkedcontrolids="@Model.LinkedControlIds">
+    @if (Model.TreeModel.DropDown) 
+    {
+        <div class="select-trigger" style="height:@(string.IsNullOrEmpty(Model.TreeModel.SelectionTitle) ? 34 : 40)px">
+            <div id="selected-label" data-selectiontitle="@Model.TreeModel.SelectionTitle" data-selectionplaceholder="@Model.TreeModel.SelectionPlaceholder"></div>
+            <span class="chevron">@IconHelper.DropDownArrow()</span>
+        </div>
+    }
+
+        <div id="dropdownMenu" class="dropdown-content" style="max-height:@Model.TreeModel.MaxHeight@(Model.TreeModel.DropDown ? string.Empty : ";display:block")">
+            @if (Model.TreeModel.Search)
+            {
+                <div class="search-container">
+                    <input type="search" id="treeSearch" placeholder="@Model.TreeModel.InputPlaceholder" autocomplete="off">
+                    <button type="button" id="resetBtn" title="Reset Selection"><span>@IconHelper.Reset()</span></button>
+                </div>
+            }
+
+            <div id="treeRoot" class="flex-tree tree-root">
+                 @await Html.PartialAsync("Tree/__Content", Model)
+            </div>
+        @await Html.PartialAsync("__ToastMessage")
+        </div> 
+</div>
