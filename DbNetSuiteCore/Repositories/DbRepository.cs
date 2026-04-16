@@ -399,7 +399,9 @@ namespace DbNetSuiteCore.Repositories
 
             //var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
             var keyColumn = $"{lookup.KeyColumn}";
-            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
+
+            string filter = paramNames.Any() ? $" where {keyColumn} in ({String.Join(",", paramNames)})" : " where 1=2";
+            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName}{filter} order by 2";
         }
 
         private void BuildLookupOptionsFromDbQuery(ComponentModel componentModel, ColumnModel column, ref QueryCommandConfig query)
