@@ -10,7 +10,6 @@ Currently the components support the following data sources:
  - MariaDB
  - PostgreSql
  - Oracle
- - MongoDB
  - Excel
  - Open Document Spreadsheet
  - CSV
