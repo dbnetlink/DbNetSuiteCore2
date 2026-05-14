@@ -112,7 +112,6 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IMySqlRepository, MySqlRepository>();
             services.AddScoped<IPostgreSqlRepository, PostgreSqlRepository>();
             services.AddScoped<IExcelRepository, ExcelRepository>();
-            services.AddScoped<IMongoDbRepository, MongoDbRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
             services.AddSingleton<DataProtectionService>();
             services.AddScoped<ICacheService, CacheService>();

@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
 namespace DbNetSuiteCore.Models
@@ -198,11 +197,6 @@ namespace DbNetSuiteCore.Models
         internal override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new TreeColumn(dataColumn, dataSourceType);
-        }
-
-        internal override ColumnModel NewColumn(BsonElement element)
-        {
-            return new TreeColumn(element);
         }
 
         public void Bind(TreeClientEvent clientEvent, string functionName)

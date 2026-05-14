@@ -1,8 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using MongoDB.Bson;
 using Newtonsoft.Json;
-using System.ComponentModel;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -112,9 +110,6 @@ namespace DbNetSuiteCore.Models
         }
 
         internal GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
-        {
-        }
-        internal GridColumn(BsonElement element) : base(element)
         {
         }
 

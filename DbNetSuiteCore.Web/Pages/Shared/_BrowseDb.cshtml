@@ -22,24 +22,6 @@
                     }
                 </select>
             </div>
-            @if (Model.DataSourceType == DataSourceType.MongoDB)
-            {
-                <div>Database</div>
-                <div>
-                    <select class="form-select" name="DatabaseName" onchange="this.form.submit()" value="@Model.DatabaseName" autofocus>
-                        @if (Model.Databases.Any())
-                        {
-                            <option value="">Select database</option>
-                            <option value="All" selected="@("All" == Model.TableName)">All</option>
-                            @foreach (string databaseName in Model.Databases)
-                            {
-                                var selected = (databaseName == Model.DatabaseName);
-                                <option value="@databaseName" selected="@selected">@databaseName</option>
-                            }
-                        }
-                    </select>
-                </div>
-            }
             <div>Table/View</div>
             <div>
                 <select class="form-select" name="TableName" onchange="this.form.submit()" value="@Model.TableName" autofocus>
@@ -98,13 +80,13 @@
                 {
                     if (Model.ControlType == typeof(GridModel))
                     {
-                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, OptimizeForLargeDataset = true };
+                        GridModel gridModel = new GridModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { OptimizeForLargeDataset = true };
                         gridModel.ClientEvents[GridClientEvent.FileDownload] = "setFileName";
                         @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(gridModel))
                     }
                     if (Model.ControlType == typeof(FormModel))
                     {
-                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { DatabaseName = Model.DatabaseName, QueryLimit = 1000 };
+                        FormModel formModel = new FormModel(Model.DataSourceType, Model.ConnectionString, Model.TableName) { QueryLimit = 1000 };
                         @(await DbNetSuiteCore.Control.Create(_httpContext.HttpContext).Render(formModel))
                     }
                 }

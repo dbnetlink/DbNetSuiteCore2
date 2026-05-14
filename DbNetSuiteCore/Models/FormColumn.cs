@@ -2,8 +2,6 @@
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using Microsoft.AspNetCore.Html;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -137,11 +135,6 @@ namespace DbNetSuiteCore.Models
         internal FormColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
         {
         }
-
-        internal FormColumn(BsonElement element) : base(element)
-        {
-        }
-
 
         internal HtmlString RenderLabel(FormModel formModel)
         {
@@ -300,7 +293,6 @@ namespace DbNetSuiteCore.Models
             switch (DbDataType)
             {
                 case nameof(MySqlDataTypes.Set):
-                case nameof(BsonType.Array):
                     ControlType = FormControlType.SelectMultiple;
                     break;
             }

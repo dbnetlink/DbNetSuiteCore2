@@ -18,7 +18,6 @@
     <Content Remove="Pages\Accounts.cshtml" />
     <Content Remove="Pages\FormControl\mssql\BrowseDb.cshtml" />
     <Content Remove="Pages\FormControl\oracle\BrowseDb.cshtml" />
-    <Content Remove="Pages\GridControl\mongodb\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mssql\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\mysql\BrowseDb.cshtml" />
     <Content Remove="Pages\GridControl\oracle\BrowseDb.cshtml" />
@@ -35,7 +34,6 @@
     <None Include="Pages\FormControl\mssql\BrowseDb.cshtml" />
     <None Include="Pages\FormControl\oracle\BrowseDb.cshtml" />
     <None Include="Pages\form_layout.cshtml" />
-    <None Include="Pages\GridControl\mongodb\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\mssql\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\mysql\BrowseDb.cshtml" />
     <None Include="Pages\GridControl\oracle\BrowseDb.cshtml" />
@@ -47,14 +45,6 @@
 
   <ItemGroup>
     <Content Update="Pages\RPT_ScheduleHistory_SP.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Pages\FormControl\mongodb\Customers.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Pages\FormControl\mongodb\Orders.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -83,10 +73,6 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Content Update="Pages\GridControl\json\JsonString.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Pages\GridControl\mongodb\Customers.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

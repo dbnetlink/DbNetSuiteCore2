@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Repositories;
-using System.Text;
 using DbNetSuiteCore.Models;
 using System.Data;
 using DbNetSuiteCore.Helpers;
@@ -9,16 +8,13 @@ using DbNetSuiteCore.ViewModels;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using MongoDB.Bson;
-using Microsoft.Extensions.Options;
-using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Plugins.Interfaces;
 
 namespace DbNetSuiteCore.Services
 {
     public class FormService : ComponentService, IComponentService
     {
-        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -116,15 +112,7 @@ namespace DbNetSuiteCore.Services
             List<object> primaryKeyValues = new List<object>();
             foreach (object value in (dataRow.ItemArray ?? new object[] { }))
             {
-                if (value == null)
-                {
-                    continue;
-                }
-                if (value is ObjectId)
-                {
-                    primaryKeyValues.Add(((ObjectId)value).ToString());
-                }
-                else
+                if (value != null)
                 {
                     primaryKeyValues.Add(value);
                 }
@@ -428,9 +416,6 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.PostgreSql:
                     await _postgreSqlRepository.UpdateRecord(formModel);
                     break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.UpdateRecord(formModel);
-                    break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.UpdateRecord(formModel);
                     break;
@@ -454,9 +439,6 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.PostgreSql:
                     await _postgreSqlRepository.InsertRecord(formModel);
                     break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.InsertRecord(formModel);
-                    break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.InsertRecord(formModel);
                     break;
@@ -478,9 +460,6 @@ namespace DbNetSuiteCore.Services
                     break;
                 case DataSourceType.PostgreSql:
                     await _postgreSqlRepository.DeleteRecord(formModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.DeleteRecord(formModel);
                     break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.DeleteRecord(formModel);

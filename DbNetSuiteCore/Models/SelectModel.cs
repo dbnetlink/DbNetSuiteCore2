@@ -1,6 +1,4 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Plugins.Interfaces;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
 namespace DbNetSuiteCore.Models
@@ -127,10 +125,6 @@ namespace DbNetSuiteCore.Models
             return new SelectColumn(dataColumn, dataSourceType);
         }
 
-        internal override ColumnModel NewColumn(BsonElement element)
-        {
-            return new SelectColumn(element);
-        }
         /// <summary>
         /// Use this method or the ClientEvents property to assign the name of a client-side JavaScript function to be executed for the specified client event.
         /// </summary>

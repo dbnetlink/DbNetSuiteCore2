@@ -1,7 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Plugins.Interfaces;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -32,10 +30,7 @@ namespace DbNetSuiteCore.Models
         /// An example of using mutliple tables and/or views would be "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id"        
         /// /// </remarks> 
         public string TableName { get; set; } = string.Empty;
-        /// <summary>
-        /// The name of the database. MongoDB only.
-        /// </summary>
-        public string DatabaseName { get; set; } = string.Empty;
+       
         /// <summary>
         /// The connection alias stored in appSetting.json or environment variables
         /// </summary>
@@ -314,7 +309,6 @@ namespace DbNetSuiteCore.Models
         internal abstract void SetColumns(IEnumerable<ColumnModel> columns);
         internal abstract ColumnModel NewColumn(DataRow dataRow, DataSourceType dataSourceType);
         internal abstract ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType);
-        internal abstract ColumnModel NewColumn(BsonElement element);
         internal abstract ColumnModel SortColumn { get; }
         internal abstract SortOrder? SortSequence { get; set; }
       

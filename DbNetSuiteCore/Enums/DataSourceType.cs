@@ -10,7 +10,6 @@ namespace DbNetSuiteCore.Enums
         MySql,
         PostgreSql,
         Excel,
-        MongoDB,
         Oracle,
         OpenDocumentSpreadsheet,
         IEnumerable

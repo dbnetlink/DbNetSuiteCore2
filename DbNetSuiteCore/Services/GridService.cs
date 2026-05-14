@@ -17,7 +17,7 @@ namespace DbNetSuiteCore.Services
 {
     public class GridService : ComponentService, IComponentService
     {
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -524,9 +524,6 @@ namespace DbNetSuiteCore.Services
                     break;
                 case DataSourceType.PostgreSql:
                     await _postgreSqlRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.UpdateRecords(gridModel);
                     break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.UpdateRecords(gridModel);

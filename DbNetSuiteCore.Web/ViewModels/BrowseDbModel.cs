@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using MongoDB.Driver.Core.Configuration;
 using Microsoft.Extensions.FileProviders;
 
 namespace DbNetSuiteCore.Web.ViewModels
@@ -51,11 +50,6 @@ namespace DbNetSuiteCore.Web.ViewModels
             {
                 return;
             }
-
-            if (DataSourceType == DataSourceType.MongoDB)
-            {
-                Databases = DbHelper.GetDatabases(ConnectionString, configuration);
-            }
         }
 
         public void LoadTables()
@@ -64,19 +58,7 @@ namespace DbNetSuiteCore.Web.ViewModels
             {
                 return;
             }
-
-            if (DataSourceType == DataSourceType.MongoDB)
-            {
-                if (string.IsNullOrEmpty(DatabaseName))
-                {
-                    return;
-                }
-                Tables = DbHelper.GetTables(ConnectionString, configuration, DatabaseName);
-            }
-            else
-            {
-                Tables = DbHelper.GetTables(ConnectionString, DataSourceType, configuration, env);
-            }
+            Tables = DbHelper.GetTables(ConnectionString, DataSourceType, configuration, env);
 
             if (string.IsNullOrEmpty(TableName) == false && TableName != "All")
             {

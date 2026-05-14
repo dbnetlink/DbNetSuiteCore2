@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using System.Data;
-using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
@@ -258,11 +257,6 @@ namespace DbNetSuiteCore.Models
         internal override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new GridColumn(dataColumn, dataSourceType);
-        }
-
-        internal override ColumnModel NewColumn(BsonElement element)
-        {
-            return new GridColumn(element);
         }
 
         internal void AddNestedGrid(GridModel gridModel)

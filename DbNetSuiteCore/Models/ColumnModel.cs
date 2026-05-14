@@ -2,7 +2,6 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Repositories;
 using Microsoft.AspNetCore.Html;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -241,14 +240,6 @@ namespace DbNetSuiteCore.Models
             Label = TextHelper.GenerateLabel(expression);
         }
 
-        internal ColumnModel(BsonElement element) : this(element.Name)
-        {
-            if (element.Name == MongoDbRepository.PrimaryKeyName)
-            {
-                PrimaryKey = true;
-            }
-        }
-
         private List<KeyValuePair<string, string>> GetLookupOptions()
         {
             return ((DbLookupOptions ?? EnumOptions) ?? GetListOptions()) ?? GetDictionaryOptions() ?? GetRangeOptions();
@@ -310,17 +301,6 @@ namespace DbNetSuiteCore.Models
             DataType = dataColumn.DataType;
             Initialised = true;
             Name = (dataSourceType == Enums.DataSourceType.Excel || dataSourceType == Enums.DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
-
-            if (this is FormColumn formColumn)
-            {
-                switch (dataSourceType)
-                {
-                    case Enums.DataSourceType.MongoDB:
-                        PrimaryKey = (Name == MongoDbRepository.PrimaryKeyName);
-                        formColumn.Autoincrement = (Name == MongoDbRepository.PrimaryKeyName);
-                        break;
-                }
-            }
 
             if (dataColumn.ExtendedProperties.Contains("DataType"))
             {
@@ -477,33 +457,6 @@ namespace DbNetSuiteCore.Models
             }
 
             return dataRow[name];
-        }
-
-        internal void Update(BsonValue bsonValue)
-        {
-            if (string.IsNullOrEmpty(DbDataType) == false || bsonValue.BsonType == BsonType.Null)
-            {
-                return;
-            }
-
-            DbDataType = bsonValue.BsonType.ToString();
-
-            if (DbDataType == nameof(BsonType.Document))
-            {
-                Valid = false;
-            }
-
-            if (this is FormColumn)
-            {
-                var formColumn = (FormColumn)this;
-                if (formColumn.DbDataType == nameof(BsonType.Array))
-                {
-                    if (formColumn.ControlType == FormControlType.Auto)
-                    {
-                        formColumn.ControlType = FormControlType.TextArea;
-                    }
-                }
-            }
         }
 
         private void IsSupportedType<T>(int value) where T : Enum

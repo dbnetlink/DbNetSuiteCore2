@@ -2,13 +2,11 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Playwright.Enums;
 using DbNetSuiteCore.Playwright.Models;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 
 namespace DbNetSuiteCore.Playwright.Tests
@@ -16,8 +14,8 @@ namespace DbNetSuiteCore.Playwright.Tests
     public class ComponentTests : PageTest
     {
         private int _port;
-        protected CustomWebApplicationFactory<Program> _factory;
-        protected HttpClient _client;
+        protected CustomWebApplicationFactory<Program>? _factory;
+        protected HttpClient? _client;
         public int Port => _port;
         private string _baseUrl = string.Empty;
 
@@ -27,12 +25,12 @@ namespace DbNetSuiteCore.Playwright.Tests
             _port = FreeTcpPort();
             _baseUrl = $"https://localhost:{_port}/";
             _factory = new CustomWebApplicationFactory<Program>(_baseUrl);
-            _client = _factory.CreateClient();
+            _client = _factory!.CreateClient();
         }
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _factory.Dispose();
+            _factory?.Dispose();
         }
 
         public async Task GoToPage(string page, ComponentType componentType = ComponentType.Grid, bool mvc = false)

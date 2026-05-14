@@ -23,7 +23,6 @@ namespace DbNetSuiteCore.Services
         protected readonly IMySqlRepository _mySqlRepository;
         protected readonly IPostgreSqlRepository _postgreSqlRepository;
         protected readonly IExcelRepository _excelRepository;
-        protected readonly IMongoDbRepository _mongoDbRepository;
         protected readonly IOracleRepository _oracleRepository;
 
         protected HttpContext _context;
@@ -32,7 +31,7 @@ namespace DbNetSuiteCore.Services
         protected readonly ILoggerFactory _loggerFactory = null;
         protected readonly ILogger _logger = null;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory)
+        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory)
         {
             _msSqlRepository = msSqlRepository;
             _razorRendererService = razorRendererService;
@@ -42,7 +41,6 @@ namespace DbNetSuiteCore.Services
             _mySqlRepository = mySqlRepository;
             _postgreSqlRepository = postgreSqlRepository;
             _excelRepository = excelRepository;
-            _mongoDbRepository = mongoDbRepository;
             _oracleRepository = oracleRepository;
             _configuration = configuration;
             _webHostEnvironment = webHostEnvironment;
@@ -109,7 +107,6 @@ namespace DbNetSuiteCore.Services
 
             switch (componentModel.DataSourceType)
             {
-                case DataSourceType.MongoDB:
                 case DataSourceType.SQLite:
                 case DataSourceType.MSSQL:
                 case DataSourceType.MySql:
@@ -122,15 +119,6 @@ namespace DbNetSuiteCore.Services
                     break;
             }
 
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.MongoDB:
-                    if (string.IsNullOrEmpty(componentModel.DatabaseName))
-                    {
-                        throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
-                    }
-                    break;
-            }
 
             switch (componentModel.DataSourceType)
             {
@@ -363,8 +351,6 @@ namespace DbNetSuiteCore.Services
                     return _excelRepository.GetColumns((GridSelectModel)componentModel);
                 case DataSourceType.FileSystem:
                     return _fileSystemRepository.GetColumns(componentModel);
-                case DataSourceType.MongoDB:
-                    return await _mongoDbRepository.GetColumns(componentModel);
                 case DataSourceType.Oracle:
                     return await _oracleRepository.GetColumns(componentModel);
                 default:
@@ -393,9 +379,6 @@ namespace DbNetSuiteCore.Services
                     break;
                 case DataSourceType.FileSystem:
                     _fileSystemRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecords(componentModel);
                     break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.GetRecords(componentModel);
@@ -463,9 +446,6 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.Excel:
                     _excelRepository.GetRecord((GridSelectModel)componentModel);
                     break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecord(componentModel);
-                    break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.GetRecord(componentModel);
                     break;
@@ -508,8 +488,6 @@ namespace DbNetSuiteCore.Services
                     break;
                 case DataSourceType.Oracle:
                     await _oracleRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.MongoDB:
                     break;
                 default:
                     await _msSqlRepository.GetLookupOptions(componentModel);

@@ -4,7 +4,6 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using MongoDB.Driver;
 using System.Data;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -259,20 +258,6 @@ namespace DbNetSuiteCore.Helpers
             return connectionStrings;
         }
 
-        public static List<string> GetDatabases(string connectionAlias, IConfiguration configuration)
-        {
-            string connectionString = GetConnectionString(connectionAlias, configuration);
-            var client = new MongoClient(connectionString);
-            return client.ListDatabaseNames().ToList();
-        }
-
-        public static List<string> GetTables(string connectionAlias, IConfiguration configuration, string database)
-        {
-            string connectionString = GetConnectionString(connectionAlias, configuration);
-            var client = new MongoClient(connectionString);
-            return client.GetDatabase(database).ListCollectionNames().ToList();
-        }
-
         public static List<string> GetTables(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment webHostEnvironment = null)
         {
             List<string> tables = new List<string>();
@@ -399,9 +384,6 @@ namespace DbNetSuiteCore.Helpers
             dataTable.Load(command.ExecuteReader(CommandBehavior.Default));
             return dataTable;
         }
-        private static void LoadMongoDBCollections(IMongoDatabase database, List<string> tables)
-        {
-            tables = database.ListCollectionNames().ToList();
-        }
+
     }
 }

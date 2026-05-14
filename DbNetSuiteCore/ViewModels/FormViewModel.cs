@@ -5,7 +5,6 @@ using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using Microsoft.AspNetCore.Html;
 using System.Data;
-using static MongoDB.Driver.WriteConcern;
 
 namespace DbNetSuiteCore.ViewModels
 {
@@ -36,7 +35,7 @@ namespace DbNetSuiteCore.ViewModels
         public FormMode? CommitType => FormModel.CommitType;
         public long? AutoincrementValue => FormModel.AutoincrementValue;
         public bool OneToOne => FormModel.OneToOne;
-        public bool SearchDialog => SearchDialogColumns.Any() && FormModel.Search && FormModel.DataSourceType != DataSourceType.MongoDB;
+        public bool SearchDialog => SearchDialogColumns.Any() && FormModel.Search;
 
 
         public FormViewModel(FormModel formModel) : base(formModel)
