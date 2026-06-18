@@ -1,11 +1,15 @@
-class SearchDialog extends Dialog {
+import { Dialog } from './Dialog.js'
+import { LookupDialog } from './LookupDialog.js';
+import { ComponentControl } from './ComponentControl.js';
+
+export class SearchDialog extends Dialog {
     lookupDialog: LookupDialog;
     constructor(dialog: HTMLDialogElement, componentControl: ComponentControl) {
         super(dialog, componentControl);
         this.lookupDialog = new LookupDialog(componentControl.controlElement(".lookup-dialog") as HTMLDialogElement, componentControl);
         this.dependentDialog = this.lookupDialog;
         this.bindSearchButton();
-        this.control.getButton("clear").addEventListener("click", this.clear.bind(this))
+        this.control?.getButton("clear").addEventListener("click", this.clear.bind(this))
         dialog.querySelectorAll(".search-operator").forEach(e => e.addEventListener("change", (e) => this.operatorSelected(e)))
         dialog.querySelectorAll("input").forEach(e => "input,change".split(',').forEach(en => e.addEventListener(en, this.valueEntered.bind({ event: e }))))
         dialog.querySelectorAll("button[button-type='list']").forEach(e => e.addEventListener("click", (e) => this.showLookup(e)))
@@ -59,7 +63,7 @@ class SearchDialog extends Dialog {
         }
     }
 
-    isVisible(el:any) {
+    isVisible(el:HTMLElement) {
         return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     }
 
@@ -88,16 +92,17 @@ class SearchDialog extends Dialog {
         let input = button.closest("tr")?.querySelector("input") as HTMLInputElement;
         let label = (button.closest("tr")?.querySelector("td") as HTMLTableCellElement).innerText;
 
-        let select: HTMLSelectElement | null = null;
-        if (this.control instanceof (GridControl))
+        let select:HTMLSelectElement| null = null;
+        if (this.control?.controlId.startsWith("Grid"))
         {
             select = this.control.controlElement(`tr.lookup-refresh select[data-key='${button.dataset.key}']`) as HTMLSelectElement;
         }
-        if (this.control instanceof (FormControl)) {
+        if (this.control?.controlId.startsWith("Form"))
+        {
             select = this.control.controlElement(`div.lookup-refresh select[data-key='${button.dataset.key}']`) as HTMLSelectElement;
         }
 
-        if (!select) {
+        if (select == null) {
             select = this.dialog.querySelector(`select[data-key='${button.dataset.key}']`) as HTMLSelectElement;
         }
         this.lookupDialog.open(select, input, label);

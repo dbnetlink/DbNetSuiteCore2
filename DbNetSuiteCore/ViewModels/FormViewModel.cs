@@ -66,7 +66,6 @@ namespace DbNetSuiteCore.ViewModels
                         value = formColumn.GetInitialValue();
                     }
                     dbValue = "";
-                    value = dbValue;
                     break;
             }
 

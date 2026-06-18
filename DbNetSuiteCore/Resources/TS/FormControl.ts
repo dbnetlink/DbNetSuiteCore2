@@ -1,4 +1,10 @@
-class FormControl extends ComponentControl {
+import { ComponentControl } from './ComponentControl.js'
+import { GridControl } from './GridControl.js'
+import { ConfirmDialog } from './ConfirmDialog.js'
+import { HtmlEditor } from './HtmlEditor.js'
+import { Dictionary } from './types.js'
+
+export class FormControl extends ComponentControl {
     formContainer: HTMLElement | null = null;
     confirmDialog: ConfirmDialog | null = null;
     cachedMessage: string | null | undefined = null;
@@ -17,8 +23,9 @@ class FormControl extends ComponentControl {
             return;
         }
 
-        this.formContainer = this.controlElement("div.form-container");
-        this.formBody = this.controlElement("div.form-body");
+        this.formContainer = this.controlElement("div.form-container") as HTMLElement;
+        this.linkedControlIdsElement = this.formContainer;
+        this.formBody = this.controlElement("div.form-body") as HTMLElement;
         this.formMessage = this.controlElement("#form-message") as HTMLDivElement;
 
         if (!this.formBody) {
@@ -57,7 +64,7 @@ class FormControl extends ComponentControl {
         this.updateLinkedChildControls()
 
         window.setTimeout(() => { this.clearErrorMessage() }, 3000)
-        this.controlElements("select.fc-control.readonly").forEach((el: HTMLElement) => { this.makeSelectReadonly(el as HTMLSelectElement) });
+        this.controlElements("select.fc-control.readonly").forEach((el:HTMLElement) => { this.makeSelectReadonly(el as HTMLSelectElement) });
         this.controlElements("input.fc-control.readonly").forEach((el: HTMLElement) => { this.makeCheckboxReadonly(el as HTMLInputElement) });
         this.controlElements("input[data-texttransform]").forEach((el: HTMLElement) => { this.transformText(el as HTMLInputElement) });
         this.reassignFormCheckboxValue();
@@ -149,8 +156,8 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('Initialised');
     }
 
-    private transformText(input: HTMLInputElement) {
-        input.addEventListener("input", (e: Event) => {
+    private transformText(input:HTMLInputElement) {
+        input.addEventListener("input", (e:Event) => {
             e.preventDefault();
             let el = e.target as HTMLInputElement;
             el.value = el.dataset.texttransform == "Uppercase" ? el.value.toUpperCase() : el.value.toLowerCase();
@@ -174,7 +181,7 @@ class FormControl extends ComponentControl {
         "click".split(" ").forEach(function (e) {
             checkboxElement.addEventListener(e, (e) => {
                 e.preventDefault();
-                checkboxElement.checked = JSON.parse(checkboxElement.dataset.value as string);
+                checkboxElement.checked = (checkboxElement.dataset.value as string) == '1'|| (checkboxElement.dataset.value as string) == 'true';
             });
         });
     }
@@ -208,7 +215,7 @@ class FormControl extends ComponentControl {
         this.confirmDialog.open(evt);
     }
 
-    public configRequest(evt: any) {
+    public configRequest(evt:any) {
         if (this.isControlEvent(evt) == false) {
             return;
         }
@@ -251,9 +258,9 @@ class FormControl extends ComponentControl {
         this.checkIfFormModfied(evt);
     }
 
-    public checkIfFormModfied(evt:Event): boolean {
+    public checkIfFormModfied(evt:Event|null = null): boolean {
         if (this.formMode() != "empty") {
-            return this.warnIfFormModified(evt);
+            return this.warnIfFormModified(evt as Event);
         }
 
         return false;
@@ -287,7 +294,7 @@ class FormControl extends ComponentControl {
         if (elements.length == 0) {
             return;
         }
-        let editor: any = elements[0].dataset.htmleditor
+        let editor:any = elements[0].dataset.htmleditor
         if (!HtmlEditor.editor(editor)) {
             this.setMessage(`${editor} library not available.`, "error");
             this.htmlEditorElements().forEach((el) => {

@@ -2,20 +2,21 @@
   "name": "dbnetsuitecore",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "css:build": "npx tailwind build -i ./resources/CSS/tailwind.css -o ./resources/CSS/output.css"
   },
+  "sideEffects": true,
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "devDependencies": {
-    "@types/node": "^20.19.41",
     "@typescript/lib-dom": "npm:@types/web@^0.0.218",
     "autoprefixer": "^10",
     "concurrently": "^8",
     "del": "^7.1.0",
+    "esbuild": "^0.25.0",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
     "merge-stream": "^2.0.0",

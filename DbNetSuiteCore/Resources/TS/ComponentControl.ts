@@ -1,89 +1,14 @@
-﻿class DbNetSuiteCore {
-    public static controlArray: Dictionary<any> = {}
-    public static namedControlArray: Dictionary<any> = {}
+﻿import type { Dictionary, RowModification } from './types.js'
+import type { SearchDialog } from './SearchDialog.js'
+import { DbNetSuiteCore } from './DbNetSuiteCore.js'
 
-    public static createClientControl(controlId: string, clientId: string, clientEvents: object, deferredLoad: boolean = false) {
-        document.addEventListener('htmx:afterRequest', function (evt) {
-            DbNetSuiteCore.assignClientControl(controlId, clientId, clientEvents, deferredLoad);
-            DbNetSuiteCore.controlArray[controlId].afterRequest(evt);
-        });
-
-        document.getElementById(controlId)!.addEventListener('htmx:responseError', function (evt: any) {
-            evt.currentTarget.innerHTML = evt.detail.xhr.responseText;
-        });
-
-        htmx.on("htmx:responseError", function (evt: any) {
-            const requestConfig = evt.detail.requestConfig;
-            const xhr = evt.detail.xhr;
-            alert(`<b>${requestConfig.verb} ${requestConfig.path}</b> returned <b>${xhr.status} ${xhr.statusText}</b><br>${xhr.responseText}`)
-        })
-
-        if (deferredLoad) {
-            DbNetSuiteCore.assignClientControl(controlId, clientId, clientEvents, deferredLoad);
-        }
-    }
-
-    public static assignClientControl(controlId: string, clientId: string, clientEvents: object, deferredLoad: boolean = false) {
-        if (!DbNetSuiteCore.controlArray[controlId]) {
-
-            var clientControl = {}
-
-            if (controlId.startsWith("Grid")) {
-                clientControl = new GridControl(controlId, deferredLoad);
-            }
-            if (controlId.startsWith("Select")) {
-                clientControl = new SelectControl(controlId);
-            }
-            if (controlId.startsWith("Form")) {
-                clientControl = new FormControl(controlId);
-            }
-            if (controlId.startsWith("Tree")) {
-                clientControl = new TreeControl(controlId);
-            }
-            for (const [key, value] of Object.entries(clientEvents)) {
-                const functionNameParts: Array<string> = value.toString().split('.') as Array<string>;
-                try {
-                    if (functionNameParts.length > 1) {
-                        (clientControl as any).eventHandlers[key] = {
-                            type: window[functionNameParts[0].toString() as keyof Window][functionNameParts[1].toString() as keyof Window],
-                            name: value.toString()
-                        }
-                    }
-                    else {
-                        (clientControl as any).eventHandlers[key] = {
-                            type: window[functionNameParts[0].toString() as keyof Window],
-                            name: value.toString()
-                        }
-                    }
-                }
-                catch (ex) {
-                    console.error(`Client-side event handler => ${value} not found`);
-                }
-            }
-            DbNetSuiteCore.controlArray[controlId] = clientControl;
-            DbNetSuiteCore.namedControlArray[clientId] = clientControl;
-        }
-    }
-
-    public static waitFor(conditionFn: any, interval: number = 50) {
-        return new Promise<void>(resolve => {
-            const check = () => {
-                if (conditionFn()) {
-                    resolve();
-                } else {
-                    setTimeout(check, interval);
-                }
-            };
-            check();
-        });
-    }
-}
-class ComponentControl {
+export class ComponentControl {
     public controlId: string = "";
     public form: HTMLFormElement;
     parentControl: ComponentControl | null = null;
     childControls: Dictionary<ComponentControl> = {};
     controlContainer: HTMLElement;
+    linkedControlIdsElement: HTMLElement | null = null;
     eventHandlers: Dictionary<any> = {};
     searchDialog: SearchDialog | null = null;
     public formBody: HTMLElement | null = null;
@@ -91,7 +16,7 @@ class ComponentControl {
     currentValidationRow: HTMLTableRowElement | null = null;
     loaded: boolean = false;
 
-    constructor(controlId: string) {
+    constructor(controlId:string) {
         this.controlId = controlId;
         this.form = document.querySelector(this.formSelector()) as HTMLFormElement;
         this.form.style.display = '';
@@ -105,9 +30,9 @@ class ComponentControl {
         }
     }
 
-    protected isControlEvent(evt:any) {
-        let formId = evt.target.closest("form").id;
-        return formId.startsWith(this.controlId);
+    protected isControlEvent(evt:Event) {
+        let formId = (evt.target as HTMLElement).closest("form")?.id;
+        return formId?.startsWith(this.controlId);
     }
 
     protected invokeEventHandler(eventName:string, args = {}) {
@@ -131,11 +56,11 @@ class ComponentControl {
         return true;
     }
 
-    protected eventHandlerAttached(eventName:string) {
+    protected eventHandlerAttached(eventName:string, args = {}) {
         return (typeof this.eventHandlers[eventName] === 'function')
     }
 
-    protected toast(text: string, style: string = 'info', delay: number = 1) {
+    protected toast(text:string, style:string = 'info', delay:number = 1) {
         const toast = this.controlContainer.querySelector("#toastMessage") as HTMLElement;
         const toastParent = toast.parentElement;
 
@@ -160,12 +85,12 @@ class ComponentControl {
         return `#${this.controlId}`;
     }
 
-    protected controlElements(selector: string): NodeListOf<HTMLElement> {
-        return this.form.querySelectorAll(selector) as NodeListOf<HTMLElement>;
+    protected controlElements(selector:string):NodeListOf<HTMLElement> {
+        return this.form.querySelectorAll(selector);
     }
 
-    public controlElement(selector: string): HTMLElement {
-        return this.form.querySelector(selector) as HTMLElement;
+    public controlElement(selector:string):HTMLElement|null {
+        return this.form.querySelector(selector);
     }
 
     protected triggerName(evt: any) {
@@ -177,7 +102,7 @@ class ComponentControl {
         return evt.detail.requestConfig.elt;
     }
 
-    protected updateLinkedControls(linkedIds: string, selectedIndex: string| null = null, url: string|null = null) {
+    protected async updateLinkedControls(linkedIds: string, selectedIndex: string | null = null, url: string | null = null) {
         if (!linkedIds) {
             return;
         }
@@ -194,13 +119,13 @@ class ComponentControl {
                 var summaryModel = null;
                 var rowIndex = null;
                 summaryModel = (this.controlElement("input[name='summarymodel']") as HTMLInputElement).value;
-                if (this instanceof GridControl) {
-                    var gridControl = this as GridControl;
+                if (this.controlId.startsWith("Grid")) {
+                    var gridControl = this as any;
                     if (gridControl.selectedRow) {
                         rowIndex = gridControl.selectedRow.dataset.idx;
                     }
                 }
-                if (this instanceof SelectControl) {
+                if (this.controlId.startsWith("Select")) {
                     rowIndex = selectedIndex;
                 }
                 linkedControl.loadFromParent(summaryModel, rowIndex, url);
@@ -215,7 +140,7 @@ class ComponentControl {
     }
 
     public childLoaded(records: boolean) {
-        if (this instanceof FormControl) {
+        if (this.controlId.startsWith("Form")) {
             let deleteButton = this.getButton("delete")
             if (deleteButton) {
                 deleteButton.disabled = records;
@@ -266,7 +191,7 @@ class ComponentControl {
         }
     }
 
-    public getButton(name: string): HTMLButtonElement {
+    public getButton(name:string): HTMLButtonElement {
         return this.controlElement(this.buttonSelector(name)) as HTMLButtonElement;
     }
 
@@ -290,14 +215,15 @@ class ComponentControl {
         select.value = pageNumber.toString();
     }
 
-    protected assignSearchDialog() {
-        var searchDialog = this.controlElement(".search-dialog");
+    protected async assignSearchDialog() {
+        const { SearchDialog } = await import('./SearchDialog.js');
+        const searchDialog = this.controlElement(".search-dialog") as HTMLDialogElement;
         if (searchDialog && this.getButton("search")) {
-            this.searchDialog = new SearchDialog(searchDialog as HTMLDialogElement, this);
+            this.searchDialog = new SearchDialog(searchDialog, this);
         }
     }
 
-    protected validateSearchDialog(evt:any) {
+    protected validateSearchDialog(evt:Event) {
         switch (this.triggerName(evt)) {
             case "searchdialog":
                 if (this.form.checkValidity() == false) {
@@ -321,7 +247,11 @@ class ComponentControl {
         }
         let modified = [];
         this.controlElements(".fc-control").forEach((el) => {
-            if (this.elementModified(el as HTMLFormElement)) { modified.push(el) }
+            const formElement = el as HTMLFormElement
+            if (this.elementModified(formElement))
+            {
+                modified.push(formElement)
+            }
         });
 
         return modified.length > 0;
@@ -331,14 +261,16 @@ class ComponentControl {
         if (el.dataset.dbdatatype == "XmlType") {
             return false;
         }
+
         const value = el.dataset.value as string;
         if (el.tagName == 'INPUT' && el.type == 'checkbox') {
             return this.wasChecked(value) != el.checked;
         }
         if (el.type == 'select-multiple') {
+            
             var selectedValues = [...el.options].map(opt => opt.value);
 
-            if (el.dataset.dbdatatype == 'Array') {
+            if (el.dataset.dbdatatype = 'Array') {
                 let dbValue = value.split(',').sort().join(',');
                 return this.cleanString(dbValue) != this.cleanString(selectedValues.join(''));
             }
@@ -363,7 +295,7 @@ class ComponentControl {
         let controlsInError = 0;
         let selectors = [".fc-control"]
 
-        if (this instanceof GridControl) {
+        if (this.controlId.startsWith("Grid")) {
             selectors.push("td")
         }
 
@@ -372,20 +304,11 @@ class ComponentControl {
     }
 
     protected getLinkedControlIds(): string {
-        if (this instanceof GridControl) {
-            let table = this.controlElement("table") as HTMLElement;
-            return table.dataset.linkedcontrolids as string;
+        if (this.linkedControlIdsElement) {
+            return this.linkedControlIdsElement?.dataset.linkedcontrolids as string;
         }
-        if (this instanceof FormControl) {
-            return (this as FormControl).formContainer?.dataset.linkedcontrolids as string;
-        }
-        if (this instanceof SelectControl) {
-            return (this as SelectControl).select?.dataset.linkedcontrolids as string;
-        }
-        if (this instanceof TreeControl) {
-            return (this as TreeControl).treeContainer?.dataset.linkedcontrolids as string;
-        }
-        return "";
+       
+        return '';
     }
 
     protected triggerCommit() {
@@ -402,7 +325,7 @@ class ComponentControl {
     }
 
     private elementValue(columnName: string, db: boolean, row: HTMLTableRowElement) {
-        var el: HTMLFormElement = this.formControl(columnName, row);
+        var el: HTMLFormElement = this.formControl(columnName, row) as HTMLFormElement;
 
         if (!el) {
             console.error(`Form control for column name ${columnName} not found`)
@@ -427,8 +350,9 @@ class ComponentControl {
         return this.formControl(columnName, row);
     }
 
-    public formControl(columnName: string, row: HTMLTableRowElement): HTMLFormElement {
-        var element: HTMLFormElement | null = null;
+    public formControl(columnName: string, row: HTMLTableRowElement): HTMLFormElement
+    {
+        var element: HTMLFormElement|null = null;
         var container = row ? row : this.controlId.startsWith("Form") ? this.form : this.currentValidationRow;
         container?.querySelectorAll(".fc-control").forEach((el: Element) => {
             let name = this.getElementName(el as HTMLFormElement);
@@ -444,7 +368,10 @@ class ComponentControl {
     protected getElementName(el: HTMLFormElement): string {
         let name = el.name;
         if (el.type == "checkbox") {
-            name = this.nextInputElement(el)?.name ?? ''
+            const next = this.nextInputElement(el);
+            if (next) {
+                name = next.name;
+            }
         }
 
         return name;
@@ -469,13 +396,14 @@ class ComponentControl {
         delete this.formMessage!.dataset.highlight;
         this.controlElements(`.fc-control`).forEach((el) => { el.dataset.modified = "false"; el.dataset.error = "false" });
 
-        if (this.controlId.startsWith("Grid")) {
+        if (this.controlId.startsWith("Grid"))
+        {
             this.controlElements(`td`).forEach((el) => { el.dataset.error = "false" });
         }
     }
 
     protected reassignFormCheckboxValue() {
-        this.controlElements('input[type="checkbox"].fc-control').forEach((cb) => {
+        this.controlElements('input[type="checkbox"].fc-control').forEach((cb: Element) => {
             const next = this.nextInputElement(cb as HTMLFormElement);
             if (next) {
                 next.value = (cb as HTMLInputElement).checked.toString();
@@ -489,7 +417,7 @@ class ComponentControl {
             });
         });
     }
-    private nextInputElement(cb: HTMLFormElement): HTMLInputElement | null{
+    private nextInputElement(cb: HTMLFormElement): HTMLInputElement| null {
         let element = cb.nextElementSibling;
         while (element) {
             if (element.nodeName === "INPUT") {
@@ -500,9 +428,9 @@ class ComponentControl {
         return null;
     }
 
-     protected getFormModification(container: HTMLElement) {
+    protected getFormModification(container: HTMLElement) {
         let rowModification: RowModification = { modified: false, columns: [] };
-        container.querySelectorAll(".fc-control").forEach((el) => {
+        container.querySelectorAll(".fc-control").forEach((el: Element) => {
             if (this.elementModified(el as HTMLFormElement)) {
                 rowModification.columns.push(this.getElementName(el as HTMLFormElement));
             }
@@ -511,7 +439,7 @@ class ComponentControl {
         return rowModification;
     }
 
-    protected warnIfFormModified(evt: Event | null = null): boolean {
+    protected warnIfFormModified(evt: Event|null = null): boolean {
         this.controlElements(".fc-control").forEach((el) => { el.dataset.modified = this.elementModified(el as HTMLFormElement, true).toString() });
         let modified = this.controlElements(".fc-control[data-modified='true']");
 
@@ -525,7 +453,8 @@ class ComponentControl {
         return modified.length > 0;
     }
 
-    protected warnIfLinkedFormModified(evt: Event): boolean {
+    protected async warnIfLinkedFormModified(evt: Event): Promise<boolean> {
+        const { DbNetSuiteCore } = await import('./DbNetSuiteCore.js');
         let table = this.controlElement("table");
         let linkedFormModified = false;
         let linkedControlIds = this.getLinkedControlIds();
@@ -534,8 +463,8 @@ class ComponentControl {
             linkedIdArray.forEach(linkedId => {
                 if (document.querySelector(`#${linkedId}`)) {
                     var linkedControl = DbNetSuiteCore.controlArray[linkedId];
-                    if (linkedControl instanceof FormControl) {
-                        var formControl = linkedControl as FormControl;
+                    if (linkedControl.controlId.startsWith("Form")) {
+                        var formControl = linkedControl as any;
                         if (formControl.formBody && formControl.checkIfFormModfied(evt)) {
                             linkedFormModified = true;
                         }

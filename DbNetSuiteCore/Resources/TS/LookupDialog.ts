@@ -1,12 +1,15 @@
-class LookupDialog extends Dialog {
+import { Dialog } from './Dialog.js'
+import { ComponentControl } from './ComponentControl.js';
+
+export class LookupDialog extends Dialog {
     select: HTMLSelectElement;
-    input: HTMLInputElement | null = null;
+    input: HTMLInputElement|null = null;
     caption: string = '';
     constructor(dialog: HTMLDialogElement, componentControl: ComponentControl) {
         super(dialog, componentControl);
         this.select = dialog.querySelector("select") as HTMLSelectElement;
-        this.control.getButton("cancel").addEventListener("click", () => this.close())
-        this.control.getButton("select").addEventListener("click", () => this.apply())
+        this.control?.getButton("cancel").addEventListener("click", () => this.close())
+        this.control?.getButton("select").addEventListener("click", () => this.apply())
     }
 
     open(select: HTMLSelectElement, input: HTMLInputElement, label : string) {

@@ -1,7 +1,9 @@
-class Dialog {
+import { ComponentControl } from './ComponentControl.js'
+import { DraggableDialog } from './DraggableDialog.js'
+export class Dialog {
     dialog: HTMLDialogElement;
     dependentDialog: Dialog | null = null;
-    control: ComponentControl;
+    control: ComponentControl | null = null;
     draggableDialog: DraggableDialog | null = null;
     constructor(dialog: HTMLDialogElement, control: ComponentControl) {
         this.dialog = dialog;

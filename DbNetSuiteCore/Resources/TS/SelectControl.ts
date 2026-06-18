@@ -1,4 +1,5 @@
-class SelectControl extends ComponentControl {
+import { ComponentControl } from './ComponentControl.js';
+export class SelectControl extends ComponentControl {
     select: HTMLSelectElement | null = null;
     selectedOptions: HTMLCollectionOf<HTMLOptionElement> | undefined; 
     constructor(selectId:string) {
@@ -12,6 +13,7 @@ class SelectControl extends ComponentControl {
         }
 
         this.select = this.controlElement("select") as HTMLSelectElement;
+        this.linkedControlIdsElement = this.select;
 
         let selectElements = this.controlElements("select");
         this.select.innerHTML = selectElements[1].innerHTML;
@@ -28,14 +30,14 @@ class SelectControl extends ComponentControl {
 
     private initialise() {
         this.loaded = true;
-        this.controlElement("select").addEventListener("change", (ev: Event) => {
+        (this.select as HTMLSelectElement).addEventListener("change", (ev: Event) => {
             this.selectChanged(ev.target as HTMLSelectElement);
         })
         this.invokeEventHandler('Initialised');
     }
 
     private selectChanged(target: HTMLSelectElement) {
-        let url = '';
+        let url:string = '';
         if (target.selectedOptions.length) {
             var dataset = target.selectedOptions[0].dataset
             url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path as string : ''
@@ -57,7 +59,7 @@ class SelectControl extends ComponentControl {
     }
 
     public getSelectedOptions(): HTMLOptionElement[] {
-        return Array.from(this.select!.selectedOptions);
+        return Array.from((this.select as HTMLSelectElement).selectedOptions);
     }
 
     public updateFixedFilterParameters(params: any) {

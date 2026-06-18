@@ -1,11 +1,15 @@
-class ViewDialog extends Dialog {
-    gridControl:GridControl
+
+import type { GridControl } from './GridControl.js'
+import { Dialog } from './Dialog.js'
+import { ComponentControl } from './ComponentControl.js';
+export class ViewDialog extends Dialog {
+    gridControl:GridControl;
     constructor(dialog: HTMLDialogElement, gridControl: GridControl) {
-        super(dialog, gridControl);
+        super(dialog, gridControl as ComponentControl);
         this.gridControl = gridControl;
         this.dialog.querySelector(this.control!.buttonSelector("previous"))?.addEventListener("click", () => gridControl.previousRow());
         this.dialog.querySelector(this.control!.buttonSelector("next"))?.addEventListener("click", () => gridControl.nextRow());
-        this.control.getButton("view").addEventListener("click", this.open.bind(this))
+        this.control!.getButton("view").addEventListener("click", this.open.bind(this))
     }
 
     open() {
@@ -19,8 +23,8 @@ class ViewDialog extends Dialog {
     }
 
     getRecord() {
-        const input: HTMLInputElement = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
-        input.value = this.gridControl.selectedRow?.dataset.id as string;
+        const input:HTMLInputElement = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
+        input.value = this.gridControl?.selectedRow?.dataset.id as string;
         htmx.trigger(input, "changed");
     }
 

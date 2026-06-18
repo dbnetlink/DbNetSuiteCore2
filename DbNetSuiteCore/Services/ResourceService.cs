@@ -45,7 +45,7 @@ namespace DbNetSuiteCore.Services
                     resources = ["output", "gridControl", "treeControl"];
                     break;
                 case "js":
-                    resources = ["htmx.min", "bundle.min"];
+                    resources = ["htmx.min", "dbnetsuite-core.bundle"];
 
                     if (_context?.Request.Query.ContainsKey("mode") == true && _context.Request.Query["mode"].ToString() == "blazor")
                     {

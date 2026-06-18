@@ -509,6 +509,11 @@ namespace DbNetSuiteCore.Models
                 return string.Empty;
             }
 
+            if ((DataType == typeof(Boolean)))
+            {
+                return ComponentModelExtensions.ParseBoolean(InitialValue).ToString().ToLower();
+            }
+
             switch (InitialValue.GetType().Name)
             {
                  case nameof(DateTime):

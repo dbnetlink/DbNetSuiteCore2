@@ -1,5 +1,9 @@
-class ConfirmDialog extends Dialog {
+
+import { Dialog } from './Dialog.js'
+import type { ComponentControl } from './ComponentControl.js'
+export class ConfirmDialog extends Dialog{
     event: any;
+
     constructor(control: ComponentControl, prompt: string) {
         super(control.controlElement(".confirm-dialog") as HTMLDialogElement, control);
         (this.dialog.querySelector(".prompt") as HTMLElement).innerHTML = prompt;

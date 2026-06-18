@@ -1,4 +1,6 @@
-class HtmlEditor {
+import { FormControl } from './FormControl.js'
+
+export class HtmlEditor {
     textarea: HTMLTextAreaElement;
     formControl: FormControl;
     editorInstance: any;

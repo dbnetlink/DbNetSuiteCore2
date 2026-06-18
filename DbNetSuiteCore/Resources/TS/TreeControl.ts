@@ -1,9 +1,12 @@
-﻿class TreeControl extends ComponentControl {
-    tree: HTMLDivElement | null = null;
+﻿import { ComponentControl } from './ComponentControl.js'
+import { Selection } from './types.js'
+
+export class TreeControl extends ComponentControl {
+    tree: HTMLDivElement|null = null;
     treeContainer: HTMLDivElement | null = null;
     searchEnabled: boolean = false;
     selectionLabel: HTMLDivElement | null = null;
-    currentSelection: Selection | null = null;
+    currentSelection: Selection|null = null;
     constructor(selectId:string) {
         super(selectId)
     }
@@ -25,15 +28,13 @@
         this.controlElements('div.leaf[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectLeaf(e)) });
         this.controlElements('span.node-text[selectable="true"]').forEach(div => { div.addEventListener("click", (e: MouseEvent) => this.selectNode(e)) });
 
-        this.currentSelection = null;
-
-        if (this.selectionLabel) {
+        if (this.selectionLabel != null) {
             this.selectionLabel.innerText = this.selectionLabel.dataset.selectionplaceholder as string;
         }
     }
 
-    private toggleDropdown(ev:any) {
-        this.controlElement("#dropdownMenu").classList.toggle("show");
+    private toggleDropdown(ev:Event) {
+        (this.controlElement("#dropdownMenu") as HTMLElement).classList.toggle("show");
     }
 
     private toggleNode(event: MouseEvent) {
@@ -41,14 +42,14 @@
         const nodeHeader = target.closest('.node-header') as HTMLElement;
         nodeHeader.querySelectorAll('span.icon').forEach(span => { span.classList.toggle('hidden') });
         event.stopPropagation();
-        const node: HTMLElement = target.parentElement as HTMLElement;
+        const node:HTMLElement = target.parentElement as HTMLElement;
         node.classList.toggle('open');
         target.closest('.node')?.querySelector(".node-content")?.classList.toggle('hidden');
     }
 
     private selectLeaf(event: MouseEvent) {
         let target = event.target as HTMLElement;
-        const selectedLeaf = target.closest("div") as HTMLDivElement;
+        const selectedLeaf = target.closest("div") as HTMLElement;
         this.selectParentNodes(selectedLeaf)
     }
 
@@ -63,7 +64,7 @@
         if (previouslySelected) {
             previouslySelected.classList.remove("selected");
         };
-        selectedElement.classList.add("selected");
+        selectedElement.classList.add("selected"); 
         const divElement = selectedElement.closest('div[data-value]') as HTMLDivElement;
         let path = [(divElement.querySelector("span[data-level]") as HTMLSpanElement).innerText];
         let parentNode: HTMLDivElement = divElement.parentElement?.parentElement?.closest('.node') as HTMLDivElement;
@@ -91,7 +92,7 @@
         this.invokeEventHandler('ItemSelected', args);
     }
 
-    private reset(e: MouseEvent) {
+    private reset(e:MouseEvent) {
         e.stopPropagation();
         let treeSearch: HTMLInputElement = this.controlElement('#treeSearch') as HTMLInputElement;
         treeSearch.value = '';
@@ -147,14 +148,13 @@
         this.loaded = true;
         this.searchEnabled = this.controlElement('.search-container') != null;
         this.treeContainer = this.controlElement('.tree-container') as HTMLDivElement;
+        this.linkedControlIdsElement = this.treeContainer;
 
-        if (this.controlElement('div.select-trigger')) {
-            this.controlElement('div.select-trigger').addEventListener("click", (e: MouseEvent) => this.toggleDropdown(e));
-        }
+        this.controlElement('div.select-trigger')?.addEventListener("click", (e: MouseEvent) => this.toggleDropdown(e));
 
         if (this.searchEnabled) {
-            this.controlElement('#treeSearch').addEventListener('input', this.debounce((e: InputEvent) => this.search(e)));
-            this.controlElement('#resetBtn').addEventListener('click', (e: MouseEvent) => this.reset(e));
+            this.controlElement('#treeSearch')?.addEventListener('input', this.debounce((e: InputEvent) => this.search(e)));
+            this.controlElement('#resetBtn')?.addEventListener('click', (e: MouseEvent) => this.reset(e));
         }
         this.selectionLabel = this.controlElement("#selected-label") as HTMLDivElement;
         window.addEventListener("click", (e: MouseEvent) => { this.closeDropDown(e) });
@@ -163,7 +163,7 @@
 
     public closeDropDown(event: any) {
         if (!event.target.closest('.tree-container')) {
-            this.controlElement("#dropdownMenu").classList.remove("show");
+            this.controlElement("#dropdownMenu")?.classList.remove("show");
         }
     }
 
