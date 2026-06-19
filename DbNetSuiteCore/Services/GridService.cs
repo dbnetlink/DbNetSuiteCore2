@@ -99,6 +99,11 @@ namespace DbNetSuiteCore.Services
                     }
                 }
 
+                foreach (var column in gridModel.Columns.Where(c => c.Filter != FilterType.None))
+                {
+                    gridModel.ColumnFilter.Add(column.FilterInitialValue == null ? string.Empty : column.FilterInitialValue.ToString());
+                }
+
                 if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
                 {
 

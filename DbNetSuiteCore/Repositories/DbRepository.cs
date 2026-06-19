@@ -353,7 +353,7 @@ namespace DbNetSuiteCore.Repositories
                     }
                     else
                     {
-                        query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
+                        query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName}{(string.IsNullOrEmpty(lookup.Filter) ? string.Empty : $" where {lookup.Filter}")} order by 2";
                     }
                // }
             }

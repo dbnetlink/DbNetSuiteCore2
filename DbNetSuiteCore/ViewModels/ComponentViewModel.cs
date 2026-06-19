@@ -75,7 +75,7 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString(string.Join(" ", html));
         }
 
-        protected void AddLookupFilterOptions(List<HtmlString> html, List<KeyValuePair<string, string>> options, bool includeEmpty = true)
+        protected void AddLookupFilterOptions(List<HtmlString> html, List<KeyValuePair<string, string>> options, bool includeEmpty = true, string selectedValue = "")
         {
             if (includeEmpty)
             {
@@ -84,7 +84,7 @@ namespace DbNetSuiteCore.ViewModels
 
             foreach (var option in options)
             {
-                html.Add(new HtmlString($"<option value=\"{option.Key}\">{option.Value}</option>"));
+                html.Add(new HtmlString($"<option value=\"{option.Key}\" {(option.Key == selectedValue ? "selected" : string.Empty)}>{option.Value}</option>"));
             }
         }
 

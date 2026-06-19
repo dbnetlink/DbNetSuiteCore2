@@ -121,14 +121,14 @@ namespace DbNetSuiteCore.ViewModels
                 var options = gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>();
                 if (options.Any() || gridColumn?.Filter == FilterType.Distinct)
                 {
-                    return RenderColumnSelectFilter(options, gridColumn.Key);
+                    return RenderColumnSelectFilter(options, gridColumn);
                 }
                 else
                 {
                     switch (gridColumn?.DataTypeName)
                     {
                         case nameof(Boolean):
-                            return RenderColumnSelectFilter(GridColumn.BooleanFilterOptions, gridColumn.Key);
+                            return RenderColumnSelectFilter(GridColumn.BooleanFilterOptions, gridColumn);
                         default:
                             return new HtmlString($"<input class=\"w-full\" type=\"search\" name=\"columnFilter\" value=\"{SearchInput}\" hx-post=\"{SubmitUrl}\" hx-trigger=\"input changed delay:1000ms, search\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn?.Key}\" autocomplete=\"off\" />");
                     }
@@ -138,11 +138,11 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString(string.Empty);
         }
 
-        public HtmlString RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, string key)
+        public HtmlString RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, GridColumn gridColumn)
         {
             List<HtmlString> html = new List<HtmlString>();
-            html.Add(new HtmlString($"<select class=\"column-filter\" name=\"columnFilter\" hx-post=\"{SubmitUrl}\" hx-trigger=\"change\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{key}\">"));
-            AddLookupFilterOptions(html, options);
+            html.Add(new HtmlString($"<select class=\"column-filter\" name=\"columnFilter\" hx-post=\"{SubmitUrl}\" hx-trigger=\"change\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn.Key}\">"));
+            AddLookupFilterOptions(html, options, true, gridColumn.FilterInitialValue?.ToString() ?? string.Empty);
             html.Add(new HtmlString($"</select>"));
 
             return new HtmlString(string.Join(" ", html));

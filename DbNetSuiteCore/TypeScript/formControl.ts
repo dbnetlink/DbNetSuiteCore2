@@ -26,14 +26,14 @@ class FormControl extends ComponentControl {
         }
 
         if (this.formBody.dataset.onetoone?.toLowerCase() == "true") {
-            var parentHxVals = JSON.parse(this.parentControl?.form.getAttribute("hx-vals") ?? '');
+            var parentHxVals = JSON.parse(this.parentControl.form.getAttribute("hx-vals"));
             if (parentHxVals) {
-                var hxVals = JSON.parse(this.form.getAttribute("hx-vals") ?? '');
+                var hxVals = JSON.parse(this.form.getAttribute("hx-vals"));
                 hxVals["foreignKey"] = parentHxVals["primaryKey"];
                 this.form.setAttribute("hx-vals", JSON.stringify(hxVals));
             }
         }
-
+      
         this.notifyParent(this.formMode() == "update")
 
         switch (this.triggerName(evt)) {
