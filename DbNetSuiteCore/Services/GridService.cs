@@ -101,7 +101,7 @@ namespace DbNetSuiteCore.Services
 
                 foreach (var column in gridModel.Columns.Where(c => c.Filter != FilterType.None))
                 {
-                    gridModel.ColumnFilter.Add(column.FilterInitialValue == null ? string.Empty : column.FilterInitialValue.ToString());
+                    gridModel.ColumnFilter.Add(column.InitialFilterValue == null ? string.Empty : column.InitialFilterValue.ToString());
                 }
 
                 if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
@@ -153,7 +153,7 @@ namespace DbNetSuiteCore.Services
             foreach (var nestedGrid in gridModel._NestedGrids)
             {
                 nestedGrid.IsNested = true;
-                nestedGrid.Caption = string.Empty;
+              //  nestedGrid.Caption = string.Empty;
                 //nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
                 nestedGrid.AssignParentModel(_context, _configuration, "summarymodel");
                 nestedGrid.SetId();

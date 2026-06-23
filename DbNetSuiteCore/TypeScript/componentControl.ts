@@ -277,6 +277,10 @@ class ComponentControl {
     protected setPageNumber(pageNumber: number, totalPages: number, name: string) {
         var select = this.controlElement(`[name="${name}"]`) as HTMLSelectElement;
 
+        if (!select) {
+            return;
+        }
+
         if (select.childElementCount != totalPages) {
             select.querySelectorAll('option').forEach(option => option.remove());
             for (var i = 1; i <= totalPages; i++) {

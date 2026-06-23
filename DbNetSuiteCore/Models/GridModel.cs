@@ -9,6 +9,7 @@ namespace DbNetSuiteCore.Models
     public class GridModel : GridSelectModel
     {
         private string _SortKey = string.Empty;
+        private int _pageSize = 20;
         private SortOrder? _SortSequence = null;
         [JsonIgnore]
         internal IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
@@ -44,7 +45,17 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Defines the number of rows rendered on each page with the default number being 20.
         /// </summary>
-        public int PageSize { get; set; } = 20;
+        public int PageSize
+        {
+            get
+            {
+                return PageNavigation ? _pageSize : Int32.MaxValue;
+            }
+            set
+            {
+                _pageSize = value > 0 ? value : 20;
+            }
+        }
         [JsonProperty]
         internal bool IsNested { get; set; } = false;
         /// <summary>
@@ -192,6 +203,10 @@ namespace DbNetSuiteCore.Models
         /// Enables simple search functionality 
         /// </summary>
         public bool Search { get; set; } = true;
+        /// <summary>
+        /// If set to false the paging information is removed from the toolbar with all selected records show on the first page
+        /// </summary>
+        public bool PageNavigation { get; set; } = true;
 
         public GridModel() : base()
         {

@@ -47,7 +47,7 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Specified the initial value of the column filter
         /// </summary>
-        public object FilterInitialValue { get; set; } = null;
+        public object InitialFilterValue { get; set; } = null;
 
         [JsonProperty]
         internal string FilterError { get; set; } = string.Empty;

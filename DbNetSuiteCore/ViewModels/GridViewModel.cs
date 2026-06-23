@@ -142,7 +142,7 @@ namespace DbNetSuiteCore.ViewModels
         {
             List<HtmlString> html = new List<HtmlString>();
             html.Add(new HtmlString($"<select class=\"column-filter\" name=\"columnFilter\" hx-post=\"{SubmitUrl}\" hx-trigger=\"change\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn.Key}\">"));
-            AddLookupFilterOptions(html, options, true, gridColumn.FilterInitialValue?.ToString() ?? string.Empty);
+            AddLookupFilterOptions(html, options, true, gridColumn.InitialFilterValue?.ToString() ?? string.Empty);
             html.Add(new HtmlString($"</select>"));
 
             return new HtmlString(string.Join(" ", html));

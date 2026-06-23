@@ -449,13 +449,18 @@ class GridControl extends ComponentControl {
             }
 
             this.setPageNumber(currentPage, totalPages, "page");
-            (this.controlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
+            let pageTotal = (this.controlElement('[data-type="total-pages"]') as HTMLInputElement);
+            if (pageTotal) {
+                pageTotal.value = totalPages.toString();
+            }
             (this.controlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
 
-            this.getButton("first").disabled = currentPage == 1;
-            this.getButton("previous").disabled = currentPage == 1;
-            this.getButton("next").disabled = currentPage == totalPages;
-            this.getButton("last").disabled = currentPage == totalPages;
+            if (this.getButton("first")) {
+                this.getButton("first").disabled = currentPage == 1;
+                this.getButton("previous").disabled = currentPage == 1;
+                this.getButton("next").disabled = currentPage == totalPages;
+                this.getButton("last").disabled = currentPage == totalPages;
+            }
         }
     }
 
