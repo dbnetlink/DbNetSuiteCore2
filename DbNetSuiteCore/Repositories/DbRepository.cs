@@ -5,11 +5,12 @@ using System.Data;
 using System.Data.Common;
 using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
+using DbNetSuiteCore.Repositories.Interfaces;
 
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class DbRepository : BaseRepository
+    public class DbRepository : IRepository
     {
         private readonly DataSourceType _dataSourceType;
         private readonly IConfiguration _configuration;

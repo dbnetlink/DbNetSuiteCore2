@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
@@ -14,7 +15,13 @@ namespace DbNetSuiteCore.Services
 {
     public class TreeService : ComponentService, IComponentService
     {
-        public TreeService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public TreeService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory) 
+            : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -108,18 +115,18 @@ namespace DbNetSuiteCore.Services
             {
                 var childLevel = treeModel.Levels.Last().DeepCopy();
                 treeModel.NestedLevel = childLevel;
-                childLevel.Data = _fileSystemRepository.GetEmptyDataTable();
+                childLevel.Data = _repositoryFactory.GetFileSystemRepository().GetEmptyDataTable();
 
                 foreach (var folder in folders)
                 {
-                    var dataTable = _fileSystemRepository.GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString(), childLevel);
+                    var dataTable = _repositoryFactory.GetFileSystemRepository().GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString(), childLevel);
                     foreach (DataRow row in dataTable.Rows)
                     {
                         DataRow newRow = childLevel.Data.NewRow();
                         newRow.ItemArray = row.ItemArray;
                         childLevel.Data.Rows.Add(newRow);
                     }
-                }   
+                }
               
                 folders = childLevel.Data.Rows.Cast<DataRow>().Where(r => Convert.ToBoolean(r.RowValue(FileSystemColumn.IsDirectory))).ToList();
             }

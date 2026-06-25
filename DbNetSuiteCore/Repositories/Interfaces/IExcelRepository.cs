@@ -1,12 +1,10 @@
 ﻿using DbNetSuiteCore.Models;
-using System.Data;
+using DbNetSuiteCore.Repositories.Interfaces;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public interface IExcelRepository
+    public interface IExcelRepository : IRepository
     {
-        public void GetRecords(GridSelectModel gridSelectModel);
-        public DataTable GetColumns(GridSelectModel gridSelectModel);
-        public void GetRecord(GridSelectModel gridSelectModel);
+        public void GetRecord(ComponentModel componentModel);
     }
 }

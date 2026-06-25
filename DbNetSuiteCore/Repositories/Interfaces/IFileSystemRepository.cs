@@ -1,12 +1,11 @@
 ﻿using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories.Interfaces;
 using System.Data;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public interface IFileSystemRepository
+    public interface IFileSystemRepository : IRepository
     {
-        void GetRecords(ComponentModel componentModel);
-        DataTable GetColumns(ComponentModel componentModel);
         DataTable GetEmptyDataTable();
         DataTable GetFolderContents(string path, TreeModel treeModel);
     }

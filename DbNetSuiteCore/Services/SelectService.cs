@@ -1,22 +1,25 @@
 ﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Middleware;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Data;
-using System.Text;
 
 namespace DbNetSuiteCore.Services
 {
     public class SelectService : ComponentService, IComponentService
     {
-        public SelectService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public SelectService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory) 
+            : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
         }
 

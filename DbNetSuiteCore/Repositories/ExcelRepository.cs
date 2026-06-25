@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
+using DbNetSuiteCore.Repositories.Interfaces;
 using DocumentFormat.OpenXml;
 using ExcelDataReader;
 using Microsoft.Extensions.Caching.Memory;
@@ -20,38 +21,50 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public void GetRecords(GridSelectModel gridSelectModel)
-        {
-            var dataTable = gridSelectModel.Data.Columns.Count > 0 ? gridSelectModel.Data : BuildDataTable(gridSelectModel);
-            if (gridSelectModel is GridModel gridModel)
-            {
-                dataTable.FilterAndSort(gridModel);
-                gridModel.ConvertEnumLookups();
-                gridModel.GetDistinctLookups();
-            }
 
-            if (gridSelectModel is SelectModel selectModel)
+        public Task GetRecords(ComponentModel componentModel)
+        {
+            if (componentModel is GridSelectModel gridSelectModel)
             {
-                if (selectModel.Distinct)
+                var dataTable = componentModel.Data.Columns.Count > 0 ? componentModel.Data : BuildDataTable(gridSelectModel);
+                if (componentModel is GridModel gridModel)
                 {
-                    var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
-                    dataTable = dataTable.DefaultView.ToTable(true, columnNames);
+                    dataTable.FilterAndSort(gridModel);
+                    gridModel.ConvertEnumLookups();
+                    gridModel.GetDistinctLookups();
                 }
-                dataTable.FilterAndSort(selectModel);
-                selectModel.ConvertEnumLookups();
+
+                if (componentModel is SelectModel selectModel)
+                {
+                    if (selectModel.Distinct)
+                    {
+                        var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
+                        dataTable = dataTable.DefaultView.ToTable(true, columnNames);
+                    }
+                    dataTable.FilterAndSort(selectModel);
+                    selectModel.ConvertEnumLookups();
+                }
+            }
+            return Task.CompletedTask;
+        }
+
+        public void GetRecord(ComponentModel componentModel)
+        {
+            if (componentModel is GridSelectModel gridSelectModel)
+            {
+                var dataTable = BuildDataTable(gridSelectModel);
+                dataTable.FilterWithPrimaryKey(gridSelectModel);
+                gridSelectModel.ConvertEnumLookups();
             }
         }
 
-        public void GetRecord(GridSelectModel gridSelectModel)
+        public Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            var dataTable = BuildDataTable(gridSelectModel);
-            dataTable.FilterWithPrimaryKey(gridSelectModel);
-            gridSelectModel.ConvertEnumLookups();
-        }
-
-        public DataTable GetColumns(GridSelectModel gridSelectModel)
-        {
-            return BuildDataTable(gridSelectModel);
+            if (componentModel is GridSelectModel gridSelectModel)
+            {
+                return Task.FromResult(BuildDataTable(gridSelectModel));
+            }
+            return Task.FromResult(new DataTable());
         }
 
         private DataTable BuildDataTable(GridSelectModel gridSelectModel)

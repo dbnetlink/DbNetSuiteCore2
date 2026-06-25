@@ -1,12 +1,10 @@
 ﻿using DbNetSuiteCore.Models;
-using System.Data;
+using DbNetSuiteCore.Repositories.Interfaces;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public interface IJSONRepository
+    public interface IJSONRepository : IRepository
     {
-        public Task GetRecords(GridSelectModel gridSelectModel, HttpContext httpContext);
-        public Task GetRecord(GridSelectModel gridSelectModel, HttpContext httpContext);
-        public Task<DataTable> GetColumns(GridSelectModel gridSelectModel, HttpContext httpContext);
+        public Task GetRecord(GridSelectModel gridSelectModel);
     }
 }

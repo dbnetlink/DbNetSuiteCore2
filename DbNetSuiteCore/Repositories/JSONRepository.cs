@@ -26,12 +26,17 @@ namespace DbNetSuiteCore.Repositories
             _env = env;
             _memoryCache = memoryCache;
         }
-        public async Task GetRecords(GridSelectModel gridSelectModel, HttpContext httpContext)
+        public async Task GetRecords(ComponentModel componentModel)
         {
-            gridSelectModel.Data = await BuildDataTable(gridSelectModel, httpContext);
+            if (componentModel is not GridSelectModel gridSelectModel)
+            {  
+                return; 
+            }
+            componentModel.Data = await BuildDataTable(gridSelectModel);
 
-            var dataTable = gridSelectModel.Data;
-            if (gridSelectModel is GridModel gridModel)
+            var dataTable = componentModel.Data;
+
+            if (componentModel is GridModel gridModel)
             {
                 if (gridModel.Data.Rows.Count > 0)
                 {
@@ -41,7 +46,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            if (gridSelectModel is SelectModel selectModel)
+            if (componentModel is SelectModel selectModel)
             {
                 if (selectModel.Distinct)
                 {
@@ -52,20 +57,24 @@ namespace DbNetSuiteCore.Repositories
                 selectModel.ConvertEnumLookups();
             }
         }
-        public async Task GetRecord(GridSelectModel gridSelectModel, HttpContext httpContext)
+        public async Task GetRecord(GridSelectModel gridSelectModel)
         {
-            var dataTable = await BuildDataTable(gridSelectModel, httpContext);
+            var dataTable = await BuildDataTable(gridSelectModel);
             dataTable.FilterWithPrimaryKey(gridSelectModel);
             gridSelectModel.ConvertEnumLookups();
         }
 
-        public async Task<DataTable> GetColumns(GridSelectModel gridSelectModel, HttpContext httpContext)
+        public async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            gridSelectModel.Data = await BuildDataTable(gridSelectModel, httpContext);
-            return gridSelectModel.Data;
+            if (componentModel is not GridSelectModel gridSelectModel)
+            {
+                return new DataTable();
+            }
+            componentModel.Data = await BuildDataTable(gridSelectModel);
+            return componentModel.Data;
         }
 
-        private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel, HttpContext httpContext)
+        private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel)
         {
             if (gridSelectModel.Cache)
             {
@@ -82,7 +91,7 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            DataTable dataTable = await JsonToDataTable(gridSelectModel, httpContext);
+            DataTable dataTable = await JsonToDataTable(gridSelectModel);
 
             if (gridSelectModel.Cache)
             {
@@ -92,7 +101,7 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel, HttpContext httpContext)
+        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel)
         {
             string json = string.Empty;
 
@@ -108,10 +117,10 @@ namespace DbNetSuiteCore.Repositories
             {
                 var url = componentModel.Url;
 
-                if (url.StartsWith("/") && httpContext != null)
+                if (url.StartsWith("/") && componentModel.HttpContext != null)
                 {
                     url = url.Substring(1);
-                    url = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{url}";
+                    url = $"{componentModel.HttpContext.Request.Scheme}://{componentModel.HttpContext.Request.Host}/{url}";
                 }
 
                 if (Uri.IsWellFormedUriString(url, UriKind.Absolute) == false)
@@ -144,7 +153,7 @@ namespace DbNetSuiteCore.Repositories
                 json = await _httpClient.GetStringAsync(url);
             }
 
-            if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && httpContext != null)
+            if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && componentModel.HttpContext != null)
             {
                 IEnumerable<object> items = (IEnumerable<object>)PluginHelper.TransformJson(gridModel, json);
 

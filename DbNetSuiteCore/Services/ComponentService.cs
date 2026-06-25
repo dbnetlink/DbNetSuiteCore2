@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
@@ -15,15 +16,8 @@ namespace DbNetSuiteCore.Services
 {
     public class ComponentService
     {
-        protected readonly IMSSQLRepository _msSqlRepository;
-        protected readonly ISQLiteRepository _sqliteRepository;
+        protected readonly IRepositoryFactory _repositoryFactory;
         protected readonly RazorViewToStringRenderer _razorRendererService;
-        protected readonly IJSONRepository _jsonRepository;
-        protected readonly IFileSystemRepository _fileSystemRepository;
-        protected readonly IMySqlRepository _mySqlRepository;
-        protected readonly IPostgreSqlRepository _postgreSqlRepository;
-        protected readonly IExcelRepository _excelRepository;
-        protected readonly IOracleRepository _oracleRepository;
 
         protected HttpContext _context;
         protected readonly IConfiguration _configuration;
@@ -31,19 +25,18 @@ namespace DbNetSuiteCore.Services
         protected readonly ILoggerFactory _loggerFactory = null;
         protected readonly ILogger _logger = null;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory)
+        public ComponentService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory)
         {
-            _msSqlRepository = msSqlRepository;
-            _razorRendererService = razorRendererService;
-            _sqliteRepository = sqliteRepository;
-            _jsonRepository = jsonRepository;
-            _fileSystemRepository = fileSystemRepository;
-            _mySqlRepository = mySqlRepository;
-            _postgreSqlRepository = postgreSqlRepository;
-            _excelRepository = excelRepository;
-            _oracleRepository = oracleRepository;
-            _configuration = configuration;
-            _webHostEnvironment = webHostEnvironment;
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
+            _razorRendererService = razorRendererService ?? throw new ArgumentNullException(nameof(razorRendererService));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException(nameof(webHostEnvironment));
+
             if (loggerFactory != null)
             {
                 _loggerFactory = loggerFactory;
@@ -339,22 +332,15 @@ namespace DbNetSuiteCore.Services
         {
             switch (componentModel.DataSourceType)
             {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.GetColumns(componentModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.GetColumns(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetColumns(componentModel);
                 case DataSourceType.JSON:
-                    return await _jsonRepository.GetColumns((GridSelectModel)componentModel, _context);
+                    return await _repositoryFactory.GetJsonRepository().GetColumns(componentModel);
                 case DataSourceType.Excel:
-                    return _excelRepository.GetColumns((GridSelectModel)componentModel);
+                    return await _repositoryFactory.GetExcelRepository().GetColumns(componentModel);
                 case DataSourceType.FileSystem:
-                    return _fileSystemRepository.GetColumns(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.GetColumns(componentModel);
+                    return await _repositoryFactory.GetFileSystemRepository().GetColumns(componentModel);
                 default:
-                    return await _msSqlRepository.GetColumns(componentModel);
+                    // All SQL-based data sources
+                    return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetColumns(componentModel);
             }
         }
 
@@ -362,137 +348,76 @@ namespace DbNetSuiteCore.Services
         {
             switch (componentModel.DataSourceType)
             {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecords(componentModel);
-                    break;
                 case DataSourceType.JSON:
-                    await _jsonRepository.GetRecords((GridSelectModel)componentModel, _context);
+                    await _repositoryFactory.GetJsonRepository().GetRecords(componentModel);
                     break;
                 case DataSourceType.Excel:
-                    _excelRepository.GetRecords((GridSelectModel)componentModel);
+                    await _repositoryFactory.GetExcelRepository().GetRecords(componentModel);
                     break;
                 case DataSourceType.FileSystem:
-                    _fileSystemRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.GetRecords(componentModel);
+                    await _repositoryFactory.GetFileSystemRepository().GetRecords(componentModel);
                     break;
                 default:
-                    await _msSqlRepository.GetRecords(componentModel);
+                    // All SQL-based data sources
+                    await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecords(componentModel);
                     break;
             }
         }
 
         protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
+            // Only SQL data sources support primary keys
+            if (componentModel.DataSourceType == DataSourceType.JSON || 
+                componentModel.DataSourceType == DataSourceType.Excel || 
+                componentModel.DataSourceType == DataSourceType.FileSystem)
             {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.MSSQL:
-                    return await _msSqlRepository.PrimaryKeyExists(componentModel);
+                return false;
             }
 
-            return false;
+            return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).PrimaryKeyExists(componentModel);
         }
 
         protected async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
         {
-            switch (formModel.DataSourceType)
+            // Only SQL data sources support uniqueness validation
+            if (formModel.DataSourceType == DataSourceType.JSON || 
+                formModel.DataSourceType == DataSourceType.Excel || 
+                formModel.DataSourceType == DataSourceType.FileSystem)
             {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.MSSQL:
-                    return await _msSqlRepository.ValueIsUnique(formModel, formColumn);
-                default:
-                    return true;
+                return true;
             }
+
+            return await _repositoryFactory.GetSqlRepository(formModel.DataSourceType).ValueIsUnique(formModel, formColumn);
         }
 
         protected async Task GetRecord(ComponentModel componentModel)
         {
             switch (componentModel.DataSourceType)
             {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecord(componentModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecord(componentModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecord(componentModel);
-                    break;
                 case DataSourceType.JSON:
-                    await _jsonRepository.GetRecord((GridSelectModel)componentModel, _context);
+                    await _repositoryFactory.GetJsonRepository().GetRecord((GridSelectModel)componentModel);
                     break;
                 case DataSourceType.Excel:
-                    _excelRepository.GetRecord((GridSelectModel)componentModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.GetRecord(componentModel);
+                    _repositoryFactory.GetExcelRepository().GetRecord(componentModel);
                     break;
                 default:
-                    await _msSqlRepository.GetRecord(componentModel);
+                    // All SQL-based data sources
+                    await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecord(componentModel);
                     break;
             }
         }
 
         internal async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.GetRecordDataTable(componentModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.GetRecordDataTable(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetRecordDataTable(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.GetRecordDataTable(componentModel);
-                default:
-                    return await _msSqlRepository.GetRecordDataTable(componentModel);
-            }
+            // Only SQL data sources return DataTable
+            return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecordDataTable(componentModel);
         }
 
 
         protected async Task GetLookupOptions(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.GetLookupOptions(componentModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetLookupOptions(componentModel);
-                    break;
-            }
+            // Only SQL data sources support lookup options
+            await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetLookupOptions(componentModel);
         }
 
         protected void AssignSearchDialogFilter(ComponentModel componentModel)

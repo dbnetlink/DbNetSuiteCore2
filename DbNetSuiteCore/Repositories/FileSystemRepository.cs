@@ -18,7 +18,7 @@ namespace DbNetSuiteCore.Repositories
             _configuration = configuration;
             _env = env;
         }
-        public void GetRecords(ComponentModel componentModel)
+        public Task GetRecords(ComponentModel componentModel)
         {
             var dataTable = BuildDataTable(componentModel);
             componentModel.Data = dataTable;
@@ -49,6 +49,8 @@ namespace DbNetSuiteCore.Repositories
             {
                 componentModel.Data = rows.CopyToDataTable();
             }
+
+            return Task.CompletedTask;
         }
 
         public DataTable GetFolderContents(string path, TreeModel treeModel)
@@ -73,9 +75,9 @@ namespace DbNetSuiteCore.Repositories
             return rows.CopyToDataTable();
         }
 
-        public DataTable GetColumns(ComponentModel componentModel)
+        public Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            return BuildDataTable(componentModel);
+            return Task.FromResult(BuildDataTable(componentModel));
         }
 
         public static void UpdateUrl(ComponentModel componentModel)

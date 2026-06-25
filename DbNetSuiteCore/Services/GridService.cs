@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
@@ -17,7 +18,13 @@ namespace DbNetSuiteCore.Services
 {
     public class GridService : ComponentService, IComponentService
     {
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public GridService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory) 
+            : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -519,24 +526,8 @@ namespace DbNetSuiteCore.Services
 
         protected async Task UpdateRecords(GridModel gridModel)
         {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.UpdateRecords(gridModel);
-                    break;
-                default:
-                    await _msSqlRepository.UpdateRecords(gridModel);
-                    break;
-            }
+            // Only SQL data sources support update operations
+            await _repositoryFactory.GetSqlRepository(gridModel.DataSourceType).UpdateRecords(gridModel);
         }
 
         private bool ValidateRecord(GridModel gridModel)

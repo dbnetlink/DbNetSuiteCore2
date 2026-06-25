@@ -4,15 +4,8 @@ using System.Data;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class BaseRepository
-    { 
-        protected string GetColumnExpressions(GridModel gridModel)
-        {
-            return gridModel.Columns.Any() ? string.Join(",", gridModel.Columns.Select(x => x.Expression).ToList()) : "*";
-        }
-    }
 
-    public class CommandConfig
+    public record CommandConfig
     {
         public string Sql = String.Empty;
         public DataSourceType DataSourceType = DataSourceType.MSSQL;
@@ -37,7 +30,7 @@ namespace DbNetSuiteCore.Repositories
             this.Params = parameters;
         }
     }
-    public class QueryCommandConfig : CommandConfig
+    public record QueryCommandConfig : CommandConfig
     {
         public CommandBehavior Behavior = CommandBehavior.Default;
 
@@ -49,7 +42,7 @@ namespace DbNetSuiteCore.Repositories
         {
         }
     }
-    public class UpdateCommandConfig : CommandConfig
+    public record UpdateCommandConfig : CommandConfig
     {
         public Dictionary<string, object> FilterParams = new Dictionary<string, object>();
 
