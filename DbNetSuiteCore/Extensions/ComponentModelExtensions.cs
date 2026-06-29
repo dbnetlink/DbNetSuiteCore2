@@ -751,6 +751,7 @@ namespace DbNetSuiteCore.Extensions
                     case DataSourceType.MySql:
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
+                    case DataSourceType.DuckDB:
                         limit = $" LIMIT {componentModel.QueryLimit}";
                         break;
                 }

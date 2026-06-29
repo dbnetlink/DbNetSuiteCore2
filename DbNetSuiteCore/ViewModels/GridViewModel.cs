@@ -128,9 +128,23 @@ namespace DbNetSuiteCore.ViewModels
                     switch (gridColumn?.DataTypeName)
                     {
                         case nameof(Boolean):
+                            if (gridColumn.InitialFilterValue != null)
+                            {
+                                switch(gridColumn.InitialFilterValue.ToString().ToLower())
+                                {
+                                    case "yes":
+                                    case "true":
+                                        gridColumn.InitialFilterValue = 1;
+                                        break;
+                                    case "no":
+                                    case "false":
+                                        gridColumn.InitialFilterValue = 0;
+                                        break;
+                                }
+                            }
                             return RenderColumnSelectFilter(GridColumn.BooleanFilterOptions, gridColumn);
                         default:
-                            return new HtmlString($"<input class=\"w-full\" type=\"search\" name=\"columnFilter\" value=\"{SearchInput}\" hx-post=\"{SubmitUrl}\" hx-trigger=\"input changed delay:1000ms, search\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn?.Key}\" autocomplete=\"off\" />");
+                            return new HtmlString($"<input class=\"w-full\" type=\"search\" name=\"columnFilter\" value=\"{gridColumn.InitialFilterValue?.ToString() ?? string.Empty}\" hx-post=\"{SubmitUrl}\" hx-trigger=\"input changed delay:1000ms, search\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn?.Key}\" autocomplete=\"off\"/>");
                     }
                 }
             }

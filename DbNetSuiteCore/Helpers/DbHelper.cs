@@ -25,6 +25,10 @@ namespace DbNetSuiteCore.Helpers
                         connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
                         connection = new SqliteConnection(connectionString);
                         break;
+                    case DataSourceType.DuckDB:
+                        connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
+                        connection = GetCustomDbConnection(dataSourceType, connectionString);
+                        break;
                     case DataSourceType.PostgreSql:
                     case DataSourceType.MySql:
                     case DataSourceType.Oracle:
@@ -37,7 +41,7 @@ namespace DbNetSuiteCore.Helpers
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error connecting to data source => {ex.Message}");
+                throw new InvalidOperationException($"Error connecting to data source '{connectionAlias}' of type '{dataSourceType}'", ex);
             }
 
             return connection;
@@ -53,7 +57,7 @@ namespace DbNetSuiteCore.Helpers
             FormService formService = formModel.HttpContext?.RequestServices.GetService<FormService>(); 
             if (formService == null)
             {
-                throw new Exception("FormService not registered with the dependency injection container.s");
+                throw new InvalidOperationException("FormService not registered with the dependency injection container.");
             }
             return formService.GetRecordDataTable(formModel).Result;
         }
@@ -81,7 +85,7 @@ namespace DbNetSuiteCore.Helpers
                 }
                 else
                 {
-                    throw new Exception($"Connection alias <b>{connectionAlias}</b> not found. To allow direct connection string use set appSetting <b>AllowConnectionString</b> to <b>true</b>");
+                    throw new InvalidOperationException($"Connection alias <b>{connectionAlias}</b> not found. To allow direct connection string use set appSetting <b>AllowConnectionString</b> to <b>true</b>");
                 }
             }
             
@@ -133,6 +137,10 @@ namespace DbNetSuiteCore.Helpers
                     assemblyName = "Oracle.ManagedDataAccess";
                     connectionName = "Client.OracleConnection";
                     break;
+                case DataSourceType.DuckDB:
+                    assemblyName = "DuckDB.NET.Data";
+                    connectionName = "DuckDBConnection";
+                    break;
                 default:
                     throw new NotImplementedException($"Custom connection not supported for {dataSourceType} data source type");
             }
@@ -143,13 +151,13 @@ namespace DbNetSuiteCore.Helpers
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}. {ex.Message}");
+                throw new InvalidOperationException($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}.", ex);
             }
             Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
 
             if (connectionType == null)
             {
-                throw new Exception($"Unable to find connection type ({connectionName}) in data provider ({assemblyName}).");
+                throw new InvalidOperationException($"Unable to find connection type ({connectionName}) in data provider ({assemblyName}).");
             }
 
             Object[] args = new Object[1];
@@ -161,14 +169,14 @@ namespace DbNetSuiteCore.Helpers
 
                 if (instance == null)
                 {
-                    throw new Exception($"Unable to create instance of connection type ({connectionName}) in data provider ({assemblyName}).");
+                    throw new InvalidOperationException($"Unable to create instance of connection type ({connectionName}) in data provider ({assemblyName}).");
                 }
 
                 return instance;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>");
+                throw new InvalidOperationException($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>", ex);
             }
         }
 
@@ -215,7 +223,7 @@ namespace DbNetSuiteCore.Helpers
                 else
                 {
                     dbParam = command.CreateParameter();
-                    dbParam.ParameterName = ParameterName(key, commandConfig.DataSourceType);
+                    dbParam.ParameterName = ParameterName(key, commandConfig.DataSourceType, true);
                     dbParam.Value = commandConfig.Params[key];
                 }
 
@@ -236,6 +244,14 @@ namespace DbNetSuiteCore.Helpers
             {
                 case DataSourceType.Oracle:
                     template = ":{0}";
+                    break;
+                case DataSourceType.DuckDB:
+                    if (parameterValue)
+                    {
+                        key = key.Replace("$", "");
+                        return key;
+                    }
+                    template = "${0}";
                     break;
             }
             if (key.Length > 0)
@@ -352,7 +368,8 @@ namespace DbNetSuiteCore.Helpers
                     sql = "SELECT name FROM sqlite_master WHERE type in ('table','view') order by 1";
                     break;
                 case DataSourceType.PostgreSql:
-                    sql = "SELECT table_schema || '.' || table_name AS name  FROM information_schema.tables where table_schema = 'public' order by 1";
+                case DataSourceType.DuckDB:
+                    sql = "SELECT table_schema || '.' || table_name AS name FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'pg_catalog') ORDER BY 1";
                     break;
                 case DataSourceType.MySql:
                     sql = "SELECT CONCAT(`table_schema`,'.',`table_name`) AS name  FROM information_schema.tables order by 1";

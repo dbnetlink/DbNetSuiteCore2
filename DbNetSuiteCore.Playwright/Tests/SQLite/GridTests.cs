@@ -80,6 +80,23 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             await GridColumnFilter(filterTests, "joined", true);
         }
 
+
+        [Test]
+        public async Task ColumnFilterInitialValue()
+        {
+            List<ColumnFilterInitialValueTest> filterTests = new List<ColumnFilterInitialValueTest>() {
+                new ColumnFilterInitialValueTest { ColumnFilter = new Dictionary<string, string> { { "last_update", ">17/06/24" } }, ExpectedRowCount = 6 },
+                new ColumnFilterInitialValueTest { ColumnFilter = new Dictionary<string, string> { { "active", "no" } }, ExpectedRowCount = 17 },
+                new ColumnFilterInitialValueTest { ColumnFilter = new Dictionary<string, string> { { "active", "yes" } }, ExpectedRowCount = 582 },
+                new ColumnFilterInitialValueTest { ColumnFilter = new Dictionary<string, string> { { "city", "London" } }, ExpectedRowCount = 2 },
+                new ColumnFilterInitialValueTest { ColumnFilter = new Dictionary<string, string> { { "postal_code", "00" } }, ExpectedRowCount = 15 },
+                new ColumnFilterInitialValueTest { ColumnFilter = new Dictionary<string, string> { { "postal_code", "00" },{ "active", "0" } }, ExpectedRowCount = 1 },
+            };
+
+            await GridColumnFilterInitialValue(filterTests, "sqlite/filterinitialvalue");
+         //   await GridColumnFilter(filterTests, "joined", true);
+        }
+
         [Test]
         public async Task SearchDialog()
         {

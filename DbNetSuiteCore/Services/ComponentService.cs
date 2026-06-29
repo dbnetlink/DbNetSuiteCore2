@@ -4,8 +4,6 @@ using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text;

@@ -20,6 +20,7 @@ namespace DbNetSuiteCore.Factories
         private readonly IPostgreSqlRepository _postgreSqlRepository;
         private readonly IExcelRepository _excelRepository;
         private readonly IOracleRepository _oracleRepository;
+        private readonly IDuckDbRepository _duckDbRepository;
         private readonly ILogger<RepositoryFactory>? _logger;
 
         public RepositoryFactory(
@@ -31,6 +32,7 @@ namespace DbNetSuiteCore.Factories
             IPostgreSqlRepository postgreSqlRepository,
             IExcelRepository excelRepository,
             IOracleRepository oracleRepository,
+            IDuckDbRepository duckDbRepository,
             ILogger<RepositoryFactory>? logger = null)
         {
             _msSqlRepository = msSqlRepository ?? throw new ArgumentNullException(nameof(msSqlRepository));
@@ -41,6 +43,7 @@ namespace DbNetSuiteCore.Factories
             _postgreSqlRepository = postgreSqlRepository ?? throw new ArgumentNullException(nameof(postgreSqlRepository));
             _excelRepository = excelRepository ?? throw new ArgumentNullException(nameof(excelRepository));
             _oracleRepository = oracleRepository ?? throw new ArgumentNullException(nameof(oracleRepository));
+            _duckDbRepository = duckDbRepository ?? throw new ArgumentNullException(nameof(duckDbRepository));
             _logger = logger;
         }
 
@@ -56,6 +59,8 @@ namespace DbNetSuiteCore.Factories
                 DataSourceType.MySql => _mySqlRepository,
                 DataSourceType.PostgreSql => _postgreSqlRepository,
                 DataSourceType.Oracle => _oracleRepository,
+                DataSourceType.DuckDB => _duckDbRepository,
+
                 DataSourceType.JSON or DataSourceType.Excel or DataSourceType.FileSystem => 
                     throw new InvalidOperationException(
                         $"Data source type '{dataSourceType}' is not a SQL repository. " +

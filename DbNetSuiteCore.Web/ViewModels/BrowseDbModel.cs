@@ -21,7 +21,21 @@ namespace DbNetSuiteCore.Web.ViewModels
         public string DatabaseName { get; set; } = string.Empty;
         [BindProperty]
         public string ConnectionAlias { get; set; } = string.Empty;
-        public string ConnectionString => string.IsNullOrEmpty(ConnectionAlias) || DataSourceType != DataSourceType.SQLite ? ConnectionAlias : $"Data Source=~/data/sqlite/{ConnectionAlias};Cache=Shared;";
+        public string ConnectionString
+        {
+            get
+            {
+                switch(DataSourceType)
+                {
+                    case DataSourceType.SQLite:
+                        return $"Data Source=~/data/sqlite/{ConnectionAlias};Cache=Shared;";
+                    case DataSourceType.DuckDB:
+                        return $"Data Source=~/data/duckdb/{ConnectionAlias};";
+                    default:
+                        return ConnectionAlias; 
+                }
+            }
+        }
 
         public Type ControlType = typeof(GridModel);
 
@@ -71,14 +85,24 @@ namespace DbNetSuiteCore.Web.ViewModels
 
         protected List<string> GetSQLiteDatabases()
         {
-            var provider = new PhysicalFileProvider($"{env?.WebRootPath}\\data\\sqlite");
+            return GetFileDatabases("sqlite");
+        }
+
+        protected List<string> GetDuckDbDatabases()
+        {
+            return GetFileDatabases("duckdb");
+        }
+
+        private List<string> GetFileDatabases(string subfolder)
+        {
+            var provider = new PhysicalFileProvider($"{env?.WebRootPath}\\data\\{subfolder}");
             var contents = provider.GetDirectoryContents(string.Empty);
 
             var databases = new List<string>();
             foreach (IFileInfo file in contents)
             {
                 databases.Add(file.Name);
-            };
+            }
             return databases;
         }
     }
