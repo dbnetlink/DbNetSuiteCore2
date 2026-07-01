@@ -72,7 +72,6 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(connectionAlias);
@@ -320,6 +319,7 @@ namespace DbNetSuiteCore.Helpers
             switch (dataSourceType)
             {
                 case DataSourceType.PostgreSql:
+                case DataSourceType.DuckDB:
                     expression = expression.ToLower();
                     break;
             }
@@ -338,6 +338,7 @@ namespace DbNetSuiteCore.Helpers
                 case DataSourceType.MySql:
                     return $"`@`";
                 case DataSourceType.PostgreSql:
+                case DataSourceType.DuckDB:
                     return $"\"@\"";
             }
             return "@";

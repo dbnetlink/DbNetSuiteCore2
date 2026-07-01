@@ -341,6 +341,7 @@ namespace DbNetSuiteCore.Models
                         IsSupportedType<MySqlDataTypes>(providerType);
                         break;
                     case DataSourceType.PostgreSql:
+                    case DataSourceType.DuckDB:
                         IsSupportedType<PostgreSqlDataTypes>(providerType);
                         if (DbDataType == PostgreSqlDataTypes.Enum.ToString())
                         {

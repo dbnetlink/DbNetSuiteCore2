@@ -14,9 +14,9 @@
 <body>
     <main>
         @{
-                var customerGrid = new GridModel(DataSourceType.DuckDB, "DuckDb", "christmas_cost") {  };
-                @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGrid))
-}
+            var customerGrid = new GridModel(DataSourceType.DuckDB, "Chinook(DuckDb)", "customer") { };
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerGrid))
+        }
     </main>
     @DbNetSuiteCore.Resources.ClientScript()
 </body>

@@ -95,7 +95,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (componentModel is GridModel gridModel)
             {
-                 gridModel.AddFilterPart(query);
+                gridModel.AddFilterPart(query);
             }
             return query;
         }
@@ -141,7 +141,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 foreach (var column in componentModel.SearchableColumns)
                 {
-                    ComponentModelExtensions.AddSearchFilterPart(componentModel, column, query, filterParts);
+                    AddSearchFilterPart(componentModel, column, query, filterParts);
                 }
 
                 foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
@@ -175,7 +175,7 @@ namespace DbNetSuiteCore.Extensions
                 string filterExpression = FilterExpression(searchFilterPart, query, componentModel, colummnModel);
                 if (string.IsNullOrEmpty(filterExpression) == false)
                 {
-                    filterParts.Add($"{RefineSearchExpression(colummnModel, componentModel)} {filterExpression}");
+                    filterParts.Add($"{RefineSearchExpression(colummnModel, componentModel, searchFilterPart)} {filterExpression}");
                 }
             }
             return string.Join($" {componentModel.SearchDialogConjunction} ", filterParts);
@@ -217,7 +217,7 @@ namespace DbNetSuiteCore.Extensions
                 default:
                     object value = ParamValue(searchDialogFilter.Value1, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
                     var paramName = ParameterName(searchDialogFilter.ColumnKey, 0);
-                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator, value) ?? string.Empty;
+                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator, value, query.DataSourceType) ?? string.Empty;
                     return template.Replace("{0}", paramName);
             }
 
@@ -227,7 +227,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static object SearchFilterParam(SearchOperator searchOperator, object value)
+        public static object SearchFilterParam(SearchOperator searchOperator, object value, DataSourceType dataSourceType)
         {
             string template = string.Empty;
             switch (searchOperator)
@@ -252,6 +252,16 @@ namespace DbNetSuiteCore.Extensions
                     break;
             }
 
+            switch(dataSourceType)
+            {
+                case DataSourceType.DuckDB:
+                    if (template.Contains("%"))
+                    {
+                        value = (value?.ToString() ?? string.Empty).ToLower();
+                    }
+                    break;
+            }
+
             if (string.IsNullOrEmpty(template))
             {
                 return value;
@@ -260,7 +270,7 @@ namespace DbNetSuiteCore.Extensions
             return string.Format(template, value?.ToString());
         }
 
-        public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel)
+        public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel, SearchDialogFilter searchDialogFilter = null)
         {
             string columnExpression = DbHelper.StripColumnRename(col.Expression);
 
@@ -269,7 +279,7 @@ namespace DbNetSuiteCore.Extensions
             {
                 if (gridCol.Aggregate != AggregateType.None)
                 {
-                    columnExpression = ComponentModelExtensions.AggregateExpression(gridCol);
+                    columnExpression = AggregateExpression(gridCol);
                 }
             }
 
@@ -300,7 +310,17 @@ namespace DbNetSuiteCore.Extensions
                             break;
                     }
                     break;
-                default:
+                case nameof(String):
+                    switch (componentModel.DataSourceType)
+                    {
+                        case DataSourceType.DuckDB:
+                            columnExpression = $"CAST({columnExpression} as STRING)";
+                            if (searchDialogFilter == null || searchDialogFilter != null && new[] { SearchOperator.Contains, SearchOperator.DoesNotContain, SearchOperator.StartsWith, SearchOperator.DoesNotStartWith, SearchOperator.EndsWith, SearchOperator.DoesNotEndWith }.Contains(searchDialogFilter.Operator))
+                            {
+                                columnExpression = $"LOWER({columnExpression})";
+                            }
+                            break;
+                    }
                     break;
             }
 
@@ -436,6 +456,9 @@ namespace DbNetSuiteCore.Extensions
                 case DataSourceType.Oracle:
                     expression = $"LOWER({expression})";
                     break;
+                case DataSourceType.DuckDB:
+                    expression = $"LOWER(CAST({expression} as STRING))";
+                    break;
             }
             return expression;
         }
@@ -456,7 +479,7 @@ namespace DbNetSuiteCore.Extensions
                     if (dataColumn == null)
                     {
                         continue;
-                    }   
+                    }
                     componentModel.Data.ParseColumnDataType((DataColumn)dataColumn, column, gridModel);
                 }
             }
@@ -732,6 +755,7 @@ namespace DbNetSuiteCore.Extensions
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
                 case DataSourceType.SQLite:
+                case DataSourceType.DuckDB:
                     return QueryLimit(componentModel);
             }
 
@@ -762,12 +786,15 @@ namespace DbNetSuiteCore.Extensions
 
         public static string UpdateParamName(string paramName, ColumnModel column, DataSourceType dataSourceType)
         {
-            if (dataSourceType == DataSourceType.PostgreSql)
+            switch (dataSourceType)
             {
-                if (column.DbDataType == PostgreSqlDataTypes.Enum.ToString())
-                {
-                    paramName = $"CAST({paramName} as \"{column.EnumName.Split(".").Last()}\")";
-                }
+                case DataSourceType.PostgreSql:
+                case DataSourceType.DuckDB:
+                    if (column.DbDataType == PostgreSqlDataTypes.Enum.ToString())
+                    {
+                        paramName = $"CAST({paramName} as \"{column.EnumName.Split(".").Last()}\")";
+                    }
+                    break;
             }
 
             return paramName;

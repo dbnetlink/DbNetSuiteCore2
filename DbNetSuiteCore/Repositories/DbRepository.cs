@@ -209,6 +209,7 @@ namespace DbNetSuiteCore.Repositories
                     }
                     break;
                 case DataSourceType.PostgreSql:
+                case DataSourceType.DuckDB:
                     foreach (var column in componentModel.GetColumns().Where(c => c.DbDataType == PostgreSqlDataTypes.Enum.ToString() && c.LookupOptions == null))
                     {
                         List<string> options = await GetPostgreSqlEnumOptions(componentModel, column.EnumName);

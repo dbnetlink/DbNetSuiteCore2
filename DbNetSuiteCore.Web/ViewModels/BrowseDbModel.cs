@@ -30,7 +30,7 @@ namespace DbNetSuiteCore.Web.ViewModels
                     case DataSourceType.SQLite:
                         return $"Data Source=~/data/sqlite/{ConnectionAlias};Cache=Shared;";
                     case DataSourceType.DuckDB:
-                        return $"Data Source=~/data/duckdb/{ConnectionAlias};";
+                        return $"Data Source=~/data/duckdb/{ConnectionAlias};ACCESS_MODE=READ_ONLY;";
                     default:
                         return ConnectionAlias; 
                 }

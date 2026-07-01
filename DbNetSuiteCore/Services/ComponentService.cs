@@ -103,6 +103,7 @@ namespace DbNetSuiteCore.Services
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
                 case DataSourceType.Oracle:
+                case DataSourceType.DuckDB:
                     if (string.IsNullOrEmpty(componentModel.ConnectionAlias) && componentModel.IsLinked == false)
                     {
                         throw new Exception($"The ConnectionAlias must be specified if the control is not linked to a parent control (<b>{componentModel.TableName}</b>)");
@@ -235,6 +236,7 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
                     case DataSourceType.Oracle:
+                    case DataSourceType.DuckDB:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
                             DataRow dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
