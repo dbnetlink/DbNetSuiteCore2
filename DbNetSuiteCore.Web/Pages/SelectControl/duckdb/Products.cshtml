@@ -1,0 +1,15 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var trackSelect = new SelectModel(DataSourceType.DuckDB, "Chinook(DuckDB)", "track join album on track.album_id = album.album_id") { Search = true };
+    trackSelect.Columns = new List<SelectColumn>()
+    {
+        new SelectColumn("track_id"),
+        new SelectColumn("name"),
+        new SelectColumn("title") {OptionGroup = true}
+    };
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(trackSelect))
+
+}

@@ -1,0 +1,14 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@{
+    var customerSelect = new SelectModel(DataSourceType.DuckDB, "Chinook(DuckDB)", "customer") { EmptyOption = "Please select a customer", Search = true };
+
+    customerSelect.Columns = new List<SelectColumn>
+    {
+        new SelectColumn("customer_id"),
+        new SelectColumn("concat(first_name, ', ', last_name, ', ',address,', ', city) as full_name") {DataType = typeof(String)}
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerSelect))
+}

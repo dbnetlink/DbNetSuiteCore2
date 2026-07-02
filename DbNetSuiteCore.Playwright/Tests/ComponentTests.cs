@@ -7,6 +7,7 @@ using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Sockets;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace DbNetSuiteCore.Playwright.Tests
@@ -402,7 +403,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task FormInsertTest(Dictionary<string, string> values, string page, bool mvc = false)
+        protected async Task FormInsertTest(Dictionary<string, string> values, string page, bool mvc = false, int expectedRowCount = 92)
         {
             await GoToPage(page, ComponentType.Form, mvc);
             await Page.GetByTestId("insert").ClickAsync();
@@ -411,11 +412,21 @@ namespace DbNetSuiteCore.Playwright.Tests
             foreach (string columnName in values.Keys)
             {
                 ILocator input = Page.Locator($"[name=\"_{columnName.ToLower()}\"]");
-                await input.FillAsync(values[columnName]);
+
+                string tagName = await input.EvaluateAsync<string>("element => element.tagName");
+
+                if (tagName == "SELECT")
+                {
+                    await input.SelectOptionAsync(values[columnName]);
+                }
+                else
+                {
+                    await input.FillAsync(values[columnName]);
+                }
             }
 
             await Page.GetByTestId("apply").ClickAsync();
-            await TestFormRowCount(92);
+            await TestFormRowCount(expectedRowCount);
         }
 
         protected async Task FormDeleteTest(string page = "", bool mvc = false)

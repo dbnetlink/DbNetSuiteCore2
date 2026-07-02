@@ -43,7 +43,7 @@ namespace DbNetSuiteCore.Playwright.Tests.SQLite
             await FormDeleteTest();
             await FormQuickSearchTest(new Dictionary<string, int>() {{ "DBNET", 0 }, { "", 91 }});
 
-            await FormInsertTest(InsertValues, $"customers?db={DatabaseName}", true);
+            await FormInsertTest(InsertValues, $"customers?db={DatabaseName}", true, 92);
             await FormQuickSearchTest(new Dictionary<string, int>() { { "DBNET", 1 } });
             await FormDeleteTest();
             await FormQuickSearchTest(new Dictionary<string, int>() { { "DBNET", 0 }, { "", 91 } });
