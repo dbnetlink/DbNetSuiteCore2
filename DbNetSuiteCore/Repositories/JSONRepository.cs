@@ -1,14 +1,14 @@
 ﻿using DbNetSuiteCore.Constants;
-using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
+using DuckDB.NET.Data;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
-using System.Text.Json;
+using System.Text.Json;  // Add this line
 using System.Web;
 
 namespace DbNetSuiteCore.Repositories
@@ -91,7 +91,8 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            DataTable dataTable = await JsonToDataTable(gridSelectModel);
+            string json = await JsonFromUrl(gridSelectModel);
+            DataTable dataTable = await GetDataTableFromJson(json);
 
             if (gridSelectModel.Cache)
             {
@@ -101,7 +102,7 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private async Task<DataTable> JsonToDataTable(ComponentModel componentModel)
+        private async Task<string> JsonFromUrl(ComponentModel componentModel)
         {
             string json = string.Empty;
 
@@ -162,24 +163,44 @@ namespace DbNetSuiteCore.Repositories
                     throw new Exception(gridModel.Message);
                 }
 
-                return items.ToList().ToDataTable();
+                json = JsonConvert.SerializeObject(items.ToList());
             }
 
-            DataTable dataTable = new();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return dataTable;
-            }
+            return Tabulate(json, componentModel);
+        }
 
+        private async Task<DataTable> GetDataTableFromJson(string json)
+        {
+            DataTable dataTable = new DataTable();
+
+            var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
             try
             {
-                dataTable = Tabulate(json, componentModel);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to convert JSON to a table. Please ensure root element is an array", ex);
-            }
+                await File.WriteAllTextAsync(tempPath, json);
 
+                using (var connection = new DuckDBConnection("DataSource=:memory:"))
+                {
+                    connection.Open();
+
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = $"CREATE TABLE t AS FROM read_json('{tempPath}')";
+                        cmd.ExecuteNonQuery();
+                        cmd.CommandText = $"SELECT * FROM t";
+                        using var reader = await cmd.ExecuteReaderAsync();
+                        dataTable.Load(reader);
+                        await reader.DisposeAsync();
+                    }
+
+                    connection.Close();
+                }
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            
             return dataTable;
         }
 
@@ -196,7 +217,7 @@ namespace DbNetSuiteCore.Repositories
                 {
                     if (string.IsNullOrEmpty(apiParameters[key]) == false)
                     {
-                        urlParameters.Add($"{key}={apiParameters[key]}");
+                        urlParameters.Add($"{key}={HttpUtility.UrlDecode(apiParameters[key])}");
                     }
                 }
                 if (urlParameters.Count > 0)
@@ -207,7 +228,7 @@ namespace DbNetSuiteCore.Repositories
             return url;
         }
 
-        private DataTable Tabulate(string json, ComponentModel componentModel)
+        private string Tabulate(string json, ComponentModel componentModel)
         {
             JToken jToken = JToken.Parse(json);
 
@@ -258,151 +279,11 @@ namespace DbNetSuiteCore.Repositories
                     trgArray.Add(cleanRow);
                 }
 
-                JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
-                //  jsonSerializerSettings.MaxDepth = 10;
+                return trgArray.ToString();
 
-                DataTable dataTable = JsonConvert.DeserializeObject<DataTable>(trgArray.ToString(), jsonSerializerSettings) ?? new DataTable();
-
-                foreach (string columnName in dataTypes.Keys)
-                {
-                    if (dataTable.Columns.Contains(columnName))
-                    {
-                        dataTable.Columns[columnName]!.ExtendedProperties.Add("DataType", dataTypes[columnName]);
-                    }
-                }
-
-                AddMissingColumns(componentModel, dataTable, dataColumnNames);
-
-                return dataTable;
             }
 
-            return new DataTable();
+            throw new Exception("JSON array not found.");
         }
-
-        private void AddMissingColumns(ComponentModel componentModel, DataTable dataTable, List<string> dataColumnNames)
-        {
-            if (componentModel.GetColumns().Any())
-            {
-                List<string> columnNames = componentModel.GetColumns().Select(c => c.Expression).ToList();
-                List<string> missingColumnNames = columnNames.Where(c => dataColumnNames.Contains(c, StringComparer.OrdinalIgnoreCase) == false).ToList();
-
-                foreach (string columnName in missingColumnNames)
-                {
-                    DataColumn Col = dataTable.Columns.Add(columnName, typeof(string));
-                    Col.SetOrdinal(columnNames.IndexOf(columnName));
-                }
-
-                dataTable = new DataView(dataTable).ToTable(false, columnNames.ToArray());
-            }
-        }
-
-        // Experimental conversion of JSON to DataTable for System.Text.Json
-        /* 
-        private DataTable SystemTextJsonTabulate(string json, ComponentModel componentModel)
-        {
-            using JsonDocument document = JsonDocument.Parse(json);
-            JsonElement root = document.RootElement;
-
-            if (componentModel is GridModel gridModel && string.IsNullOrEmpty(gridModel.JsonArrayProperty) == false)
-            {
-                root = root.GetProperty(gridModel.JsonArrayProperty);
-            }
-
-            if (root.ValueKind != JsonValueKind.Array)
-            {
-                foreach (JsonProperty property in root.EnumerateObject())
-                {
-
-                    if (property.Value.ValueKind == JsonValueKind.Array)
-                    {
-                        root = property.Value;
-                        break;
-                    }
-                }
-            }
-
-            Dictionary<string, Type> dataTypes = new Dictionary<string, Type>();
-            List<string> dataColumnNames = new List<string>();
-            JsonArray jsonArray = new JsonArray();
-
-            if (root.ValueKind != JsonValueKind.Array)
-            {
-                return new DataTable();
-            }
-            foreach (JsonElement jsonElement in root.EnumerateArray())
-            {
-                JsonNode? jsonNode = JsonNode.Parse(jsonElement.GetRawText());
-                if (jsonNode is JsonObject row)
-                {
-                    var cleanRow = new JsonObject();
-
-                    foreach (var kvp in row)
-                    {
-                        var columnName = kvp.Key;
-                        var columnValue = kvp.Value;
-
-                        cleanRow[columnName] = CopyJsonNode(columnValue);
-
-                        if (columnValue is not JsonValue)
-                        {
-                            dataTypes[columnName] = typeof(JsonDocument);
-                        }
-
-                        if (!dataColumnNames.Contains(columnName))
-                        {
-                            dataColumnNames.Add(columnName);
-                        }
-                    }
-
-                    jsonArray.Add(cleanRow);
-                }
-            }
-
-            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
-            //  jsonSerializerSettings.MaxDepth = 10;
-
-            DataTable dataTable = new DataTable();
-
-            foreach (string name in dataColumnNames)
-            {
-                dataTable.Columns.Add(new DataColumn(name));
-            }
-
-            foreach (JsonElement jsonObject in root.EnumerateArray())
-            {
-                DataRow newRow = dataTable.NewRow();
-                foreach (var property in jsonObject.EnumerateObject())
-                {
-                    if (dataTable.Columns.Contains(property.Name))
-                    {
-                        // Convert the JsonElement's value to a string for the DataRow
-                        newRow[property.Name] = property.Value.ToString();
-                    }
-                }
-                dataTable.Rows.Add(newRow);
-            }
-
-            AddMissingColumns(componentModel, dataTable, dataColumnNames);
-
-            return dataTable;
-
-        }
-
-        private JsonNode? CopyJsonNode(JsonNode? value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-            if (value is JsonValue)
-            {
-                return JsonValue.Create(value.GetValue<object>());
-            }
-            else
-            {
-                return JsonNode.Parse(value.ToJsonString());
-            }
-        }
-        */
     }
 }

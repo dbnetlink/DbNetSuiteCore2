@@ -1,13 +1,12 @@
-﻿using DbNetSuiteCore.Extensions;
+﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Extensions;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
-using DbNetSuiteCore.Repositories.Interfaces;
 using DocumentFormat.OpenXml;
-using ExcelDataReader;
+using DuckDB.NET.Data;
 using Microsoft.Extensions.Caching.Memory;
 using System.Data;
-using System.Text;
 
 namespace DbNetSuiteCore.Repositories
 {
@@ -80,23 +79,23 @@ namespace DbNetSuiteCore.Repositories
 
             if (ComponentModelExtensions.IsCsvFile(gridSelectModel))
             {
-                dataTable = CsvToDataTable(gridSelectModel);
+                dataTable = LoadSpreadsheet(gridSelectModel, FileFormat.CSV);
             }
             else if (ComponentModelExtensions.IsOdsFile(gridSelectModel))
             {
-                dataTable = OdsToDataTable(gridSelectModel);
+                dataTable = LoadSpreadsheet(gridSelectModel, FileFormat.ODS);
                // dataTable = LoadSpreadsheet(componentModel);
             }
             else
             {
-                dataTable = LoadSpreadsheet(gridSelectModel);
+                dataTable = LoadSpreadsheet(gridSelectModel, FileFormat.XLSX    );
             }
 
             foreach (ColumnModel column in gridSelectModel.GetColumns())
             {
                 if (column.DataType != typeof(DBNull))
                 {
-                    dataTable.UpdateColumnDataType(column.Expression, column.DataType);
+           //         dataTable.UpdateColumnDataType(column.Expression, column.DataType);
                 }
             }
 
@@ -120,116 +119,43 @@ namespace DbNetSuiteCore.Repositories
             return dataTable;
         }
 
-        private DataTable LoadSpreadsheet(ComponentModel componentModel)
+        private DataTable LoadSpreadsheet(ComponentModel componentModel, FileFormat fileFormat )
         {
             DataTable dataTable = new DataTable();
             try
             {
-                if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
-                {
-                    using (HttpClient client = new HttpClient())
-                    using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
-                    {
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            stream.CopyTo(ms);
-                            dataTable = GetDataTableFromStream(ms, componentModel);
-                        }
-                    }
-                }
-                else
-                {
-                    using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
-                    {
-                        dataTable = GetDataTableFromStream(stream, componentModel);
-                    }
-                }
+                dataTable = GetDataTableFromUrl(componentModel, fileFormat);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to read the Excel file {componentModel.Url} - {ex.Message}");
+                throw new Exception($"Unable to read the file {componentModel.Url} - {ex.Message}");
+            }
+
+            return dataTable;
+        }
+        private DataTable GetDataTableFromUrl(ComponentModel componentModel, FileFormat fileFormat)
+        {
+            DataTable dataTable = new DataTable();
+            using (var connection = new DuckDBConnection("DataSource=:memory:"))
+            {
+                connection.Open();
+
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = $"CREATE TABLE superstore AS FROM read_{fileFormat.ToString().ToLower()}('{FilePath(componentModel.Url)}', header = true)";
+                    cmd.ExecuteNonQuery();
+                    cmd.CommandText = $"SELECT * FROM superstore";
+                    using var reader = cmd.ExecuteReader();
+                    dataTable.Load(reader);
+                    reader.DisposeAsync().ConfigureAwait(false);
+                }
+
+                connection.Close();
             }
 
             return dataTable;
         }
 
-        private DataTable GetDataTableFromStream(Stream stream, ComponentModel componentModel)
-        {
-            using (var reader = ExcelReaderFactory.CreateReader(stream, new ExcelReaderConfiguration
-            {
-                FallbackEncoding = System.Text.Encoding.GetEncoding(1252)
-            }))
-            {
-                new ExcelDataSetConfiguration()
-                {
-                    ConfigureDataTable = _ => new ExcelDataTableConfiguration
-                    {
-                        UseHeaderRow = true
-                    }
-                };
-                DataSet dataSet = reader.AsDataSet(DataSetReaderConfiguration());
-                DataTable dataTable = dataSet.Tables[0];
-                if (componentModel is GridModel gridModel)
-                {
-                    dataTable = dataSet.GetTable(gridModel.SheetName);
-                }
-
-                return dataTable;
-            }
-        }
-
-        private DataTable CsvToDataTable(ComponentModel componentModel)
-        {
-            if (Uri.IsWellFormedUriString(componentModel.Url, UriKind.Absolute))
-            {
-                using (HttpClient client = new HttpClient())
-                using (Stream stream = client.GetStreamAsync(componentModel.Url).Result)
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    stream.CopyTo(ms);
-                    ms.Position = 0;
-                    return CsvStreamToDataTable(ms);
-                }
-            }
-            else
-            {
-                using (var stream = File.Open(FilePath(componentModel.Url), FileMode.Open, FileAccess.Read))
-                return CsvStreamToDataTable(stream);
-            }
-        }
-
-        private DataTable CsvStreamToDataTable(Stream stream)
-        {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            // Step 3: Create the CsvReader from the stream
-            using (var reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration()
-            {
-                // Default: cp1252 (Good fallback for older CSVs)
-                FallbackEncoding = Encoding.GetEncoding(1252),
-
-                // Optional: specify delimiter candidates if the CSV might use separators other than comma
-                // AutodetectSeparators = new char[] { ',', ';', '\t', '|', '#' } 
-            }))
-            {
-                // Step 4: Convert the IExcelDataReader to a DataSet
-                var result = reader.AsDataSet(DataSetReaderConfiguration());
-
-                return result.Tables[0];
-            }
-        }
-
-        private ExcelDataSetConfiguration DataSetReaderConfiguration()
-        {
-            return new ExcelDataSetConfiguration()
-            {
-                ConfigureDataTable = (tableReader) => new ExcelDataTableConfiguration()
-                {
-                    // Use the first row of the CSV as the column names in the DataTable
-                    UseHeaderRow = true
-                }
-            };
-        }
 
         private DataTable OdsToDataTable(ComponentModel componentModel)
         {
@@ -253,10 +179,9 @@ namespace DbNetSuiteCore.Repositories
 
         private string FilePath(string filePath)
         {
-            if (TextHelper.IsAbsolutePath(filePath) || filePath.ToLower().StartsWith("https://"))
+            if (TextHelper.IsAbsolutePath(filePath) || Uri.IsWellFormedUriString(filePath, UriKind.Absolute))
             {
                 return filePath;
-
             }
             return $"{_env.WebRootPath}{filePath.Replace("/", @"\")}".Replace("//", "/");
         }
