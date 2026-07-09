@@ -180,6 +180,14 @@ namespace DbNetSuiteCore.Services
                     nestedGrid.ConnectionAlias = gridModel.ConnectionAlias;
                     nestedGrid.DataSourceType = gridModel.DataSourceType;
                 }
+
+                switch (gridModel.DataSourceType)
+                {
+                    case DataSourceType.Excel:
+                    case DataSourceType.JSON:
+                        nestedGrid.TableName = gridModel.TableName;
+                        break;
+                }
             }
 
             gridModel._NestedGrids.ForEach(g => g.HttpContext = _context);

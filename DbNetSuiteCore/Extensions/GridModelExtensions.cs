@@ -111,7 +111,7 @@ namespace DbNetSuiteCore.Extensions
 
                 if (columnFilter != null)
                 {
-                    string expression = FilterColumnExpression(gridModel, column, havingFilter);
+                    string expression = FilterColumnExpression(gridModel, column, havingFilter, columnFilter.Value.Key);
                     object paramValue = ComponentModelExtensions.ParamValue(columnFilter.Value.Value, column, gridModel.DataSourceType, true);
 
                     if (string.IsNullOrEmpty(paramValue?.ToString()))
@@ -129,7 +129,7 @@ namespace DbNetSuiteCore.Extensions
                     query.Params[paramName] = paramValue;
 
                     paramName = ComponentModelExtensions.UpdateParamName(paramName, column, gridModel.DataSourceType);
-                    columnFilterParts.Add($"{expression} {columnFilter.Value.Key} {paramName}");
+                    columnFilterParts.Add($"{expression} {DbHelper.ConvertToILike(columnFilter.Value.Key, gridModel.DataSourceType)} {paramName}");
                 }
                 else
                 {
@@ -140,11 +140,11 @@ namespace DbNetSuiteCore.Extensions
             return columnFilterParts;
         }
 
-        private static string FilterColumnExpression(GridModel gridModel, GridColumn gridColumnModel, bool havingFilter)
+        private static string FilterColumnExpression(GridModel gridModel, GridColumn gridColumnModel, bool havingFilter, string comparisonOperator)
         {
             if (havingFilter == false)
             {
-                return ComponentModelExtensions.RefineSearchExpression(gridColumnModel, gridModel);
+                return ComponentModelExtensions.RefineSearchExpression(gridColumnModel, gridModel, null, comparisonOperator);
             }
 
             switch (gridModel.DataSourceType)
@@ -182,6 +182,7 @@ namespace DbNetSuiteCore.Extensions
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
                     case DataSourceType.DuckDB:
+                    case DataSourceType.Excel:
                         query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({offset})";
                         break;
                 }

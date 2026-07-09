@@ -1,12 +1,13 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
-@using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
-@using DbNetSuiteCore.Web.Enums
 @using DbNetSuiteCore.Web.Plugins
 
 @{
-    var sheets = new Dictionary<string, string> { { "Class_Summary", "Classifications Summary" }, { "Class_Results", "Individual Bathing Water Classifications" }, { "Class_Comms", "Individual Bathing Water Classifications By Area" } };
+    const string ClassSummary = "Class_Summary";
+    const string ClassResults = "Class_Results";
+    const string ClassComms = "Class_Comms";
+    var sheets = new Dictionary<string, string> { { ClassSummary, "Classifications Summary" }, { ClassResults, "Individual Bathing Water Classifications" }, { ClassComms, "Individual Bathing Water Classifications By Area" } };
 }
 
 <ul class="nav nav-tabs">
@@ -23,12 +24,24 @@
 <div class="tab-content" id="tabContent" style="padding-top:10px">
 @foreach (string tab in sheets.Keys)
 {
-   // var bathingStatsGrid = new GridModel(DataSourceType.Excel, "https://assets.publishing.service.gov.uk/media/69205a9da0e0fb4c2936ab72/EMBARGOED_EA_National_Bathing_Waters_Classification_Results_2025.ods");
-        var bathingStatsGrid = new GridModel(DataSourceType.Excel, "/data/ods/EA_National_Bathing_Waters_Classification_Results_2025.ods");
+    var bathingStatsGrid = new GridModel(DataSourceType.Excel, "/data/ods/EA_National_Bathing_Waters_Classification_Results_2025.ods");
 
     bathingStatsGrid.CustomisationPlugin = typeof(BathingWatersPlugin);
     bathingStatsGrid.SheetName = tab;
-    bathingStatsGrid.DeferredLoad = true;
+
+    switch (tab)
+        {
+            case ClassSummary:
+                bathingStatsGrid.SheetRange = "B7:M20";
+                break;
+            case ClassResults:
+                bathingStatsGrid.SheetRange = "B6:D457";
+                break;
+            case ClassComms:
+                bathingStatsGrid.SheetRange = "B7:K458";
+                break;
+        }
+        bathingStatsGrid.DeferredLoad = true;
     bathingStatsGrid.Cache = true;
     bathingStatsGrid.Bind(GridClientEvent.CellTransform, "highlightQuality");
 

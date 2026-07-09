@@ -8,7 +8,7 @@
     var cityColumns = new List<GridColumn>
     {
         new GridColumn("id") { PrimaryKey = true},
-        new GridColumn("name") ,
+        new GridColumn("_name") ,
         new GridColumn("state_id") { ForeignKey = true},
         new GridColumn("state_code"),
         new GridColumn("state_name"),
@@ -17,13 +17,13 @@
         new GridColumn("country_name"),
         new GridColumn("latitude"),
         new GridColumn("longitude"),
-        new GridColumn("wikiDataId") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
+        new GridColumn("wikidataid") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
     };
 
     var countryColumns = new List<GridColumn>
     {
          new GridColumn("id") { PrimaryKey = true},
-         new GridColumn("name"),
+         new GridColumn("_name"),
          new GridColumn("iso3"),
          new GridColumn("iso2"),
          new GridColumn("numeric_code"),
@@ -43,10 +43,10 @@
     var stateColumns = new List<GridColumn>
     {
         new GridColumn("id") { PrimaryKey = true},
-        new GridColumn("name"),
+        new GridColumn("_name"),
         new GridColumn("country_id") { ForeignKey = true, DataOnly = true},
         new GridColumn("state_code"),
-        new GridColumn("type"),
+        new GridColumn("_type"),
         new GridColumn("latitude"),
         new GridColumn("longitude")
     };

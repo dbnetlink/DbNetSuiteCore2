@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services;
+using DuckDB.NET.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using System.Data;
@@ -33,6 +34,9 @@ namespace DbNetSuiteCore.Helpers
                     case DataSourceType.MySql:
                     case DataSourceType.Oracle:
                         connection = GetCustomDbConnection(dataSourceType, connectionString);
+                        break;
+                    case DataSourceType.Excel:
+                        connection = new DuckDBConnection("DataSource=:memory:");
                         break;
                     default:
                         connection = new SqlConnection(connectionString);
@@ -245,6 +249,8 @@ namespace DbNetSuiteCore.Helpers
                     template = ":{0}";
                     break;
                 case DataSourceType.DuckDB:
+                case DataSourceType.Excel:
+                case DataSourceType.JSON:
                     if (parameterValue)
                     {
                         key = key.Replace("$", "");
@@ -332,13 +338,13 @@ namespace DbNetSuiteCore.Helpers
             switch (dataSourceType)
             {
                 case DataSourceType.MSSQL:
-                case DataSourceType.Excel:
                 case DataSourceType.SQLite:
                     return $"[@]";
                 case DataSourceType.MySql:
                     return $"`@`";
                 case DataSourceType.PostgreSql:
                 case DataSourceType.DuckDB:
+                case DataSourceType.Excel:
                     return $"\"@\"";
             }
             return "@";
@@ -403,5 +409,31 @@ namespace DbNetSuiteCore.Helpers
             return dataTable;
         }
 
+        public static bool TableExists(IDbConnection connection, string tableName)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = $tableName";
+            var param = cmd.CreateParameter();
+            param.ParameterName = "tableName";
+            param.Value = tableName;
+            cmd.Parameters.Add(param);
+
+            var count = (long)cmd.ExecuteScalar();
+            return count > 0;
+        }
+
+        public static string ConvertToILike(string input, DataSourceType dataSourceType)
+        {
+            switch (dataSourceType)
+            {
+                case DataSourceType.JSON:
+                case DataSourceType.Excel:
+                case DataSourceType.DuckDB:
+                    input = input.Replace("like", "ilike");
+                    break;
+            }
+
+            return input;
+        }
     }
 }

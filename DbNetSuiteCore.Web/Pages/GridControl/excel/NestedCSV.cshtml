@@ -1,14 +1,12 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
-@using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
-@using DbNetSuiteCore.Web.Enums
 
 @{
     var cityColumns = new List<GridColumn>
     {
         new GridColumn("id") { PrimaryKey = true},
-        new GridColumn("name") ,
+        new GridColumn("_name") ,
         new GridColumn("state_id") { ForeignKey = true},
         new GridColumn("state_code"),
         new GridColumn("state_name"),
@@ -18,15 +16,15 @@
         new GridColumn("country_name"),
         new GridColumn("latitude"),
         new GridColumn("longitude"),
-        new GridColumn("latitude & ',' & longitude", "Mapx") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
+        new GridColumn("latitude || ',' || longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
 
-        new GridColumn("wikiDataId") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
+        new GridColumn("wikidataid") {Format = "<a target='_blank' href='https://www.wikidata.org/wiki/{0}'>WikiData</a>"}
     };
 
     var countryColumns = new List<GridColumn>
     {
          new GridColumn("id") { PrimaryKey = true},
-         new GridColumn("name"),
+         new GridColumn("_name"),
          new GridColumn("iso3"),
          new GridColumn("iso2"),
          new GridColumn("numeric_code"),
@@ -42,19 +40,19 @@
          new GridColumn("subregion"),
          new GridColumn("latitude"),
          new GridColumn("longitude"),
-         new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"}
+         new GridColumn("latitude || ',' || longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"}
     };
 
     var stateColumns = new List<GridColumn>
     {
         new GridColumn("id") { PrimaryKey = true},
-        new GridColumn("name"),
+        new GridColumn("_name"),
         new GridColumn("country_id") { ForeignKey = true, DataOnly = true},
         new GridColumn("state_code"),
-        new GridColumn("type"),
+        new GridColumn("_type"),
         new GridColumn("latitude"),
         new GridColumn("longitude"),
-        new GridColumn("latitude & ',' & longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
+        new GridColumn("latitude || ',' || longitude", "Map") {Format = "<a target='_blank' href='https://www.google.com/maps/place/{0}'>Map</a>"},
     };
 
     var countryModel = new GridModel(DataSourceType.Excel, "/data/excel/countries.csv") { Columns = countryColumns, ViewDialog =  new ViewDialog() };

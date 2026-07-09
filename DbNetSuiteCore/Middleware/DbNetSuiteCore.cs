@@ -123,7 +123,6 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IOracleRepository, OracleRepository>();
             services.AddScoped<IDuckDbRepository, DuckDbRepository>();
 
-            // Register the Repository Factory (NEW!)
             services.AddScoped<IRepositoryFactory, RepositoryFactory>();
 
             return services;

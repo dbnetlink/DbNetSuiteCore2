@@ -20,7 +20,6 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
 
             await GridQuickSearchTest(searches, "json/Superstore");
             await GridQuickSearchTest(searches, $"json/Superstore?port={Port}");
-            await GridQuickSearchTest(searches, $"json/Superstore?port={Port}&mode=string");
         }
 
         [Test]
@@ -38,7 +37,7 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
                 { "segment", "Consumer" },
                 { "city", "Aberdeen" },
                 { "state", "Alabama" },
-                { "postal code", string.Empty },
+                { "postal code", "1040" },
                 { "region", "Central" },
                 { "category", "Furniture" },
                 { "sales", "£0.44" },
@@ -48,7 +47,6 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
 
             await GridHeadingSort(sorts, "json/Superstore");
             await GridHeadingSort(sorts, $"json/Superstore?port={Port}");
-            await GridHeadingSort(sorts, $"json/Superstore?port={Port}&mode=string");
         }
 
         [Test]
@@ -66,7 +64,7 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
                 { "segment", new KeyValuePair<string, string>("Consumer","Home Office") },
                 { "city", new KeyValuePair<string, string>("Aberdeen","Yuma") },
                 { "state", new KeyValuePair<string, string>("Alabama","Wyoming") },
-                { "postal code", new KeyValuePair<string, string>(string.Empty,"99301") },
+                { "postal code", new KeyValuePair<string, string>("1040","99301") },
                 { "region", new KeyValuePair<string, string>("Central","West") },
                 { "product id", new KeyValuePair<string, string>("FUR-BO-10000112","TEC-PH-10004977") },
                 { "category", new KeyValuePair<string, string>("Furniture","Technology") },
@@ -78,7 +76,6 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
 
             await GridHeadingReverseSort(sorts, "json/Superstore");
             await GridHeadingReverseSort(sorts, $"json/Superstore?port={Port}");
-            await GridHeadingReverseSort(sorts, $"json/Superstore?port={Port}&mode=string");
         }
 
         [Test]
@@ -93,7 +90,6 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
 
             await GridColumnFilter(filterTests, "json/Superstore");
             await GridColumnFilter(filterTests, $"json/Superstore?port={Port}");
-            await GridColumnFilter(filterTests, $"json/Superstore?port={Port}&mode=string");
         }
 
         [Test]
@@ -108,7 +104,6 @@ namespace DbNetSuiteCore.Playwright.Tests.JSON
 
             await GridSearchDialogFilter(searchDialogTests, "json/Superstore");
             await GridSearchDialogFilter(searchDialogTests, $"json/Superstore?port={Port}");
-            await GridSearchDialogFilter(searchDialogTests, $"json/Superstore?port={Port}&mode=string");
         }
     }
 }

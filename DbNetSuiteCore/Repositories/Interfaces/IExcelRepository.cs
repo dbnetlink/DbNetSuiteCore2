@@ -1,10 +1,6 @@
-﻿using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Repositories.Interfaces;
-
-namespace DbNetSuiteCore.Repositories
+﻿namespace DbNetSuiteCore.Repositories
 {
-    public interface IExcelRepository : IRepository
+    public interface IExcelRepository : ISqlRepository
     {
-        public void GetRecord(ComponentModel componentModel);
     }
 }

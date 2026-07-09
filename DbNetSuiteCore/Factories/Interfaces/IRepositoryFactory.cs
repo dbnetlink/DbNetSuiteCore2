@@ -23,11 +23,6 @@ namespace DbNetSuiteCore.Factories.Interfaces
         IJSONRepository GetJsonRepository();
 
         /// <summary>
-        /// Gets the Excel repository instance.
-        /// </summary>
-        IExcelRepository GetExcelRepository();
-
-        /// <summary>
         /// Gets the FileSystem repository instance.
         /// </summary>
         IFileSystemRepository GetFileSystemRepository();

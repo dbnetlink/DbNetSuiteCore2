@@ -60,8 +60,9 @@ namespace DbNetSuiteCore.Factories
                 DataSourceType.PostgreSql => _postgreSqlRepository,
                 DataSourceType.Oracle => _oracleRepository,
                 DataSourceType.DuckDB => _duckDbRepository,
+                DataSourceType.Excel => _excelRepository,
 
-                DataSourceType.JSON or DataSourceType.Excel or DataSourceType.FileSystem => 
+                DataSourceType.JSON or DataSourceType.FileSystem => 
                     throw new InvalidOperationException(
                         $"Data source type '{dataSourceType}' is not a SQL repository. " +
                         $"Use GetJsonRepository(), GetExcelRepository(), or GetFileSystemRepository() instead."),
@@ -74,9 +75,6 @@ namespace DbNetSuiteCore.Factories
 
         /// <inheritdoc/>
         public IJSONRepository GetJsonRepository() => _jsonRepository;
-
-        /// <inheritdoc/>
-        public IExcelRepository GetExcelRepository() => _excelRepository;
 
         /// <inheritdoc/>
         public IFileSystemRepository GetFileSystemRepository() => _fileSystemRepository;

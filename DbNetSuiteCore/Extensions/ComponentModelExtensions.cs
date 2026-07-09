@@ -3,7 +3,6 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Data;
 using System.Globalization;
@@ -148,7 +147,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     var paramName = DbHelper.ParameterName(column.ParamName, componentModel.DataSourceType);
                     query.Params[$"{paramName}"] = $"%{componentModel.SearchInput}%";
-                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} like {paramName}";
+                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} {DbHelper.ConvertToILike("like",componentModel.DataSourceType)} {paramName}";
                     filterParts.Add($"{RefineSearchExpression(column, componentModel)} in ({lookupSql})");
                 }
 
@@ -184,11 +183,13 @@ namespace DbNetSuiteCore.Extensions
         private static string FilterExpression(SearchDialogFilter searchDialogFilter, QueryCommandConfig query, ComponentModel componentModel, ColumnModel columnModel)
         {
             string template = searchDialogFilter.Operator.GetAttribute<FilterExpressionAttribute>()?.Expression ?? string.Empty;
-
+     
             if (template == string.Empty)
             {
                 return template;
             }
+            template = DbHelper.ConvertToILike(template, componentModel.DataSourceType);
+
             List<string> parameterNames = new List<string>();
 
             switch (searchDialogFilter.Operator)
@@ -270,10 +271,9 @@ namespace DbNetSuiteCore.Extensions
             return string.Format(template, value?.ToString());
         }
 
-        public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel, SearchDialogFilter searchDialogFilter = null)
+        public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel, SearchDialogFilter searchDialogFilter = null, string comparisonOperator = "=")
         {
             string columnExpression = DbHelper.StripColumnRename(col.Expression);
-
 
             if (col is GridColumn gridCol)
             {
@@ -314,8 +314,10 @@ namespace DbNetSuiteCore.Extensions
                     switch (componentModel.DataSourceType)
                     {
                         case DataSourceType.DuckDB:
+                        case DataSourceType.Excel:
+                        case DataSourceType.JSON:
                             columnExpression = $"CAST({columnExpression} as STRING)";
-                            if (searchDialogFilter == null || searchDialogFilter != null && new[] { SearchOperator.Contains, SearchOperator.DoesNotContain, SearchOperator.StartsWith, SearchOperator.DoesNotStartWith, SearchOperator.EndsWith, SearchOperator.DoesNotEndWith }.Contains(searchDialogFilter.Operator))
+                            if (comparisonOperator == "like" || searchDialogFilter != null && new[] { SearchOperator.Contains, SearchOperator.DoesNotContain, SearchOperator.StartsWith, SearchOperator.DoesNotStartWith, SearchOperator.EndsWith, SearchOperator.DoesNotEndWith }.Contains(searchDialogFilter.Operator))
                             {
                                 columnExpression = $"LOWER({columnExpression})";
                             }
@@ -439,17 +441,12 @@ namespace DbNetSuiteCore.Extensions
             string expression = DbHelper.StripColumnRename(columnModel.Expression);
             expression = CaseInsensitiveExpression(componentModel, expression);
             query.Params[$"{DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}"] = $"%{searchInput}%";
-            filterParts.Add($"{expression} like {DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}");
+            filterParts.Add($"{expression} {DbHelper.ConvertToILike("like", componentModel.DataSourceType)} {DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}");
         }
 
         public static string CaseInsensitiveExpression(ComponentModel componentModel, string expression)
         {
-            if (IsCsvFile(componentModel))
-            {
-                expression = $"LCASE({expression})";
-            }
-
-            switch (componentModel.DataSourceType)
+             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.PostgreSql:
                 case DataSourceType.MySql:
@@ -457,6 +454,8 @@ namespace DbNetSuiteCore.Extensions
                     expression = $"LOWER({expression})";
                     break;
                 case DataSourceType.DuckDB:
+                case DataSourceType.Excel:
+                case DataSourceType.JSON:
                     expression = $"LOWER(CAST({expression} as STRING))";
                     break;
             }

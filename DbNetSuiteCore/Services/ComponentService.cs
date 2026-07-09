@@ -221,7 +221,6 @@ namespace DbNetSuiteCore.Services
                 switch (componentModel.DataSourceType)
                 {
                     case DataSourceType.FileSystem:
-                    case DataSourceType.JSON:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
                             DataColumn dataColumn = dataColumns.FirstOrDefault(dc => dc.ColumnName.ToLower() == column.Expression.ToLower());
@@ -237,6 +236,7 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.SQLite:
                     case DataSourceType.Oracle:
                     case DataSourceType.DuckDB:
+                    case DataSourceType.JSON:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
                             DataRow dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
@@ -334,9 +334,7 @@ namespace DbNetSuiteCore.Services
             {
                 case DataSourceType.JSON:
                     return await _repositoryFactory.GetJsonRepository().GetColumns(componentModel);
-                case DataSourceType.Excel:
-                    return await _repositoryFactory.GetExcelRepository().GetColumns(componentModel);
-                case DataSourceType.FileSystem:
+                 case DataSourceType.FileSystem:
                     return await _repositoryFactory.GetFileSystemRepository().GetColumns(componentModel);
                 default:
                     // All SQL-based data sources
@@ -350,9 +348,6 @@ namespace DbNetSuiteCore.Services
             {
                 case DataSourceType.JSON:
                     await _repositoryFactory.GetJsonRepository().GetRecords(componentModel);
-                    break;
-                case DataSourceType.Excel:
-                    await _repositoryFactory.GetExcelRepository().GetRecords(componentModel);
                     break;
                 case DataSourceType.FileSystem:
                     await _repositoryFactory.GetFileSystemRepository().GetRecords(componentModel);
@@ -396,9 +391,6 @@ namespace DbNetSuiteCore.Services
             {
                 case DataSourceType.JSON:
                     await _repositoryFactory.GetJsonRepository().GetRecord((GridSelectModel)componentModel);
-                    break;
-                case DataSourceType.Excel:
-                    _repositoryFactory.GetExcelRepository().GetRecord(componentModel);
                     break;
                 default:
                     // All SQL-based data sources

@@ -192,6 +192,10 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public string SheetName { get; set; } = string.Empty;
         /// <summary>
+        /// Specfies the range of columns/rows selected from the spreadsheet e.g. "B7:M20". DataSourceType.Excel only.
+        /// </summary>
+        public string SheetRange { get; set; } = string.Empty;
+        /// <summary>
         /// Shows/Hides the Export button in the toolbar.
         /// </summary>
         public bool Export { get; set; } = true;

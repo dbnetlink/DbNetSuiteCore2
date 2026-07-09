@@ -8,102 +8,53 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
-using System.Text.Json;  // Add this line
+using System.Text.Json;
 using System.Web;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class JSONRepository : IJSONRepository
+    public class JSONRepository : DbRepository, IJSONRepository, IDuckDbInMemoryRepository
     {
-        private readonly IConfiguration _configuration;
-        private readonly IWebHostEnvironment _env;
+        private readonly DuckDBConnection _root;
+        private readonly object _lock = new();
+        private static readonly HttpClient _httpClient = new HttpClient();
         private readonly IMemoryCache _memoryCache;
 
-        private static readonly HttpClient _httpClient = new HttpClient();
-        public JSONRepository(IConfiguration configuration, IWebHostEnvironment env, IMemoryCache memoryCache)
+        public JSONRepository(IConfiguration configuration, IWebHostEnvironment env, IMemoryCache memoryCache) : base(Enums.DataSourceType.JSON, configuration, env)
         {
-            _configuration = configuration;
-            _env = env;
             _memoryCache = memoryCache;
+            _root = new DuckDBConnection("DataSource=:memory:");
+            _root.Open();
         }
-        public async Task GetRecords(ComponentModel componentModel)
+        public IDbConnection CreateConnection()
         {
-            if (componentModel is not GridSelectModel gridSelectModel)
-            {  
-                return; 
-            }
-            componentModel.Data = await BuildDataTable(gridSelectModel);
-
-            var dataTable = componentModel.Data;
-
-            if (componentModel is GridModel gridModel)
+            lock (_lock)
             {
-                if (gridModel.Data.Rows.Count > 0)
-                {
-                    dataTable.FilterAndSort(gridModel);
-                    gridModel.ConvertEnumLookups();
-                    gridModel.GetDistinctLookups();
-                }
-            }
-
-            if (componentModel is SelectModel selectModel)
-            {
-                if (selectModel.Distinct)
-                {
-                    var columnNames = dataTable.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
-                    dataTable = dataTable.DefaultView.ToTable(true, columnNames);
-                }
-                dataTable.FilterAndSort(selectModel);
-                selectModel.ConvertEnumLookups();
+                var conn = _root.Duplicate();
+                conn.Open();
+                return conn;
             }
         }
-        public async Task GetRecord(GridSelectModel gridSelectModel)
-        {
-            var dataTable = await BuildDataTable(gridSelectModel);
-            dataTable.FilterWithPrimaryKey(gridSelectModel);
-            gridSelectModel.ConvertEnumLookups();
-        }
 
-        public async Task<DataTable> GetColumns(ComponentModel componentModel)
+        public async Task<string> JsonFromUrl(ComponentModel componentModel)
         {
             if (componentModel is not GridSelectModel gridSelectModel)
             {
-                return new DataTable();
+                return string.Empty;
             }
-            componentModel.Data = await BuildDataTable(gridSelectModel);
-            return componentModel.Data;
-        }
 
-        private async Task<DataTable> BuildDataTable(GridSelectModel gridSelectModel)
-        {
-            if (gridSelectModel.Cache)
+            if (componentModel.TriggerName == TriggerNames.ApiRequestParameters)
             {
-                if (gridSelectModel.TriggerName == TriggerNames.ApiRequestParameters)
+                _memoryCache.Remove(gridSelectModel.CacheKey);
+            }
+            else if (_memoryCache.TryGetValue(gridSelectModel.CacheKey, out string cachedJson))
+            {
+                if (cachedJson != null)
                 {
-                    _memoryCache.Remove(gridSelectModel.CacheKey);
-                }
-                else if (_memoryCache.TryGetValue(gridSelectModel.CacheKey, out DataTable cachedDataTable))
-                {
-                    if (cachedDataTable != null)
-                    {
-                        return cachedDataTable;
-                    }
+                    return await WriteFile(cachedJson);
                 }
             }
 
-            string json = await JsonFromUrl(gridSelectModel);
-            DataTable dataTable = await GetDataTableFromJson(json);
-
-            if (gridSelectModel.Cache)
-            {
-                _memoryCache.Set(gridSelectModel.CacheKey, dataTable, CacheHelper.GetCacheOptions());
-            }
-
-            return dataTable;
-        }
-
-        private async Task<string> JsonFromUrl(ComponentModel componentModel)
-        {
             string json = string.Empty;
 
             if (String.IsNullOrEmpty(componentModel.DataSourcePluginName) == false)
@@ -138,70 +89,53 @@ namespace DbNetSuiteCore.Repositories
                     _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
                 }
 
-                if (componentModel is GridSelectModel gridSelectModel)
+                if (gridSelectModel.ApiRequestParameters.Keys.Any())
                 {
-                    if (gridSelectModel.ApiRequestParameters.Keys.Any())
-                    {
-                        url = UpdateUrlParameters(url, gridSelectModel.ApiRequestParameters);
-                    }
+                    url = UpdateUrlParameters(url, gridSelectModel.ApiRequestParameters);
+                }
 
-                    foreach (var key in gridSelectModel.ApiRequestHeaders.Keys)
-                    {
-                        _httpClient.DefaultRequestHeaders.Add(key, gridSelectModel.ApiRequestHeaders[key]);
-                    }
+                foreach (var key in gridSelectModel.ApiRequestHeaders.Keys)
+                {
+                    _httpClient.DefaultRequestHeaders.Add(key, gridSelectModel.ApiRequestHeaders[key]);
                 }
 
                 json = await _httpClient.GetStringAsync(url);
-            }
 
-            if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && componentModel.HttpContext != null)
-            {
-                IEnumerable<object> items = (IEnumerable<object>)PluginHelper.TransformJson(gridModel, json);
-
-                if (string.IsNullOrEmpty(gridModel.Message) == false)
+                if (componentModel is GridModel gridModel && String.IsNullOrEmpty(gridModel.JsonTransformPluginName) == false && componentModel.HttpContext != null)
                 {
-                    throw new Exception(gridModel.Message);
-                }
+                    IEnumerable<object> items = (IEnumerable<object>)PluginHelper.TransformJson(gridModel, json);
 
-                json = JsonConvert.SerializeObject(items.ToList());
-            }
-
-            return Tabulate(json, componentModel);
-        }
-
-        private async Task<DataTable> GetDataTableFromJson(string json)
-        {
-            DataTable dataTable = new DataTable();
-
-            var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
-            try
-            {
-                await File.WriteAllTextAsync(tempPath, json);
-
-                using (var connection = new DuckDBConnection("DataSource=:memory:"))
-                {
-                    connection.Open();
-
-                    using (var cmd = connection.CreateCommand())
+                    if (string.IsNullOrEmpty(gridModel.Message) == false)
                     {
-                        cmd.CommandText = $"CREATE TABLE t AS FROM read_json('{tempPath}')";
-                        cmd.ExecuteNonQuery();
-                        cmd.CommandText = $"SELECT * FROM t";
-                        using var reader = await cmd.ExecuteReaderAsync();
-                        dataTable.Load(reader);
-                        await reader.DisposeAsync();
+                        throw new Exception(gridModel.Message);
                     }
 
-                    connection.Close();
+                    json = JsonConvert.SerializeObject(items.ToList());
                 }
             }
-            finally
+
+            if (json == "[]")
             {
-                if (File.Exists(tempPath))
-                    File.Delete(tempPath);
+                return string.Empty;
             }
-            
-            return dataTable;
+
+            json = Tabulate(json, componentModel);
+
+
+            if (gridSelectModel.Cache)
+            {
+                _memoryCache.Set(gridSelectModel.CacheKey, json, CacheHelper.GetCacheOptions());
+            }
+
+            return await WriteFile(json);
+
+            async Task<string> WriteFile(string json)
+            {
+                var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
+                await File.WriteAllTextAsync(tempPath, json);
+                return tempPath;
+            }
+
         }
 
         private string UpdateUrlParameters(string url, Dictionary<string, string> apiParameters)
@@ -252,38 +186,39 @@ namespace DbNetSuiteCore.Repositories
             Dictionary<string, Type> dataTypes = new Dictionary<string, Type>();
             List<string> dataColumnNames = new List<string>();
 
-            if (jToken is JArray srcArray)
+            if (jToken is not JArray srcArray)
             {
-                JArray trgArray = new JArray();
-                foreach (JObject row in srcArray.Children<JObject>())
-                {
-                    var cleanRow = new JObject();
-                    foreach (JProperty column in row.Properties())
-                    {
-                        if (column.Value is JValue)
-                        {
-                            cleanRow.Add(column.Name, column.Value);
-                        }
-                        else
-                        {
-                            cleanRow.Add(column.Name, column.Value.ToString(Formatting.None));
-                            dataTypes[column.Name] = typeof(JsonDocument);
-                        }
-
-                        if (!dataColumnNames.Contains(column.Name))
-                        {
-                            dataColumnNames.Add(column.Name);
-                        }
-                    }
-
-                    trgArray.Add(cleanRow);
-                }
-
-                return trgArray.ToString();
-
+                throw new Exception("JSON array not found.");
             }
 
-            throw new Exception("JSON array not found.");
+            JArray trgArray = new JArray();
+            foreach (JObject row in srcArray.Children<JObject>())
+            {
+                var cleanRow = new JObject();
+                foreach (JProperty column in row.Properties())
+                {
+                    if (column.Value is JValue)
+                    {
+                        cleanRow.Add(column.Name, column.Value);
+                    }
+                    else
+                    {
+                        cleanRow.Add(column.Name, column.Value.ToString(Formatting.None));
+                        dataTypes[column.Name] = typeof(JsonDocument);
+                    }
+
+                    if (!dataColumnNames.Contains(column.Name))
+                    {
+                        dataColumnNames.Add(column.Name);
+                    }
+                }
+
+                trgArray.Add(cleanRow);
+            }
+
+            return trgArray.ToString();
         }
+
+        public void Dispose() => _root.Dispose();
     }
 }

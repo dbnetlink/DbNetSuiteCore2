@@ -66,6 +66,17 @@ namespace DbNetSuiteCore
                 componentModel.Url = string.Empty;
             }
 
+            switch (componentModel.DataSourceType)
+            {
+                case DataSourceType.Excel:
+                case DataSourceType.JSON:
+                    if (string.IsNullOrEmpty(componentModel.TableName))
+                    {
+                        componentModel.TableName = "t1";
+                    }
+                    break;
+            }
+
             if (componentModel is GridModel gridModel)
             {
                 if (gridModel.IsGrouped)
