@@ -10,6 +10,8 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text;
@@ -18,14 +20,18 @@ namespace DbNetSuiteCore.Services
 {
     public class GridService : ComponentService, IComponentService
     {
+        private readonly IMemoryCache _memoryCache;
+
         public GridService(
             IRepositoryFactory repositoryFactory, 
             RazorViewToStringRenderer razorRendererService, 
             IConfiguration configuration, 
             IWebHostEnvironment webHostEnvironment, 
-            ILoggerFactory loggerFactory) 
+            ILoggerFactory loggerFactory,
+            IMemoryCache memoryCache) 
             : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
+            _memoryCache = memoryCache;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -40,8 +46,10 @@ namespace DbNetSuiteCore.Services
                 _context = context;
                 switch (page.ToLower())
                 {
-                    case "gridcontrol":
+                    case PageNames.GridControl:
                         return await GridView();
+                    case PageNames.JsonCache:
+                        return await JsonCache(context);
                     default:
                         return new byte[0];
                 }
@@ -75,6 +83,24 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        private async Task<Byte[]> JsonCache(HttpContext context)
+        {
+            context.Request.Query.TryGetValue("key", out StringValues key);
+            string json = "[]";
+            if (string.IsNullOrEmpty(key))
+            {
+                _memoryCache.TryGetValue(key, out string cachedJson);
+
+                if (!string.IsNullOrEmpty(cachedJson))
+                {
+                    json = cachedJson;
+                }
+            }
+    
+            SetMimeType(_context, ".json");
+            return Encoding.UTF8.GetBytes(json);
+        }
+
         private async Task<GridViewDialogViewModel> ViewDialogContent(GridModel gridModel)
         {
             await GetRecord(gridModel);
@@ -90,6 +116,13 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.IsStoredProcedure == false && gridModel.Uninitialised)
             {
+                if (gridModel.DataSourceType == DataSourceType.JSON)
+                {
+                    var url = RequestHelper.BuildUrl(gridModel.HttpContext.Request, $"/{PageNames.JsonCache}{Middleware.DbNetSuiteCore.Extension}", $"key=test");
+                    var (ok, error) = await HttpHelper.CheckDuckDbHttpAccessAsync(url);
+                    gridModel.JsonCacheType = ok ? CacheType.Memory : CacheType.File;
+                }
+
                 await ConfigureColumns(gridModel);
 
                 if (gridModel.IsEditable && gridModel.Columns.Any(c => c.PrimaryKey) == false)
@@ -181,12 +214,9 @@ namespace DbNetSuiteCore.Services
                     nestedGrid.DataSourceType = gridModel.DataSourceType;
                 }
 
-                switch (gridModel.DataSourceType)
+                if (DbHelper.IsInMemoryDb(gridModel.DataSourceType))
                 {
-                    case DataSourceType.Excel:
-                    case DataSourceType.JSON:
-                        nestedGrid.TableName = gridModel.TableName;
-                        break;
+                    nestedGrid.TableName = gridModel.TableName;
                 }
             }
 

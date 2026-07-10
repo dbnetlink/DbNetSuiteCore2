@@ -1,4 +1,5 @@
-﻿using DbNetSuiteCore.Models;
+﻿using DbNetSuiteCore.Helpers; 
+using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using Newtonsoft.Json;
 using DbNetSuiteCore.ViewModels;
@@ -66,15 +67,9 @@ namespace DbNetSuiteCore
                 componentModel.Url = string.Empty;
             }
 
-            switch (componentModel.DataSourceType)
+            if (DbHelper.IsInMemoryDb(componentModel.DataSourceType) && string.IsNullOrEmpty(componentModel.TableName))
             {
-                case DataSourceType.Excel:
-                case DataSourceType.JSON:
-                    if (string.IsNullOrEmpty(componentModel.TableName))
-                    {
-                        componentModel.TableName = "t1";
-                    }
-                    break;
+                componentModel.TableName = "t1";
             }
 
             if (componentModel is GridModel gridModel)

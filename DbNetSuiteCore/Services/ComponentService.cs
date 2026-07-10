@@ -24,10 +24,10 @@ namespace DbNetSuiteCore.Services
         protected readonly ILogger _logger = null;
 
         public ComponentService(
-            IRepositoryFactory repositoryFactory, 
-            RazorViewToStringRenderer razorRendererService, 
-            IConfiguration configuration, 
-            IWebHostEnvironment webHostEnvironment, 
+            IRepositoryFactory repositoryFactory,
+            RazorViewToStringRenderer razorRendererService,
+            IConfiguration configuration,
+            IWebHostEnvironment webHostEnvironment,
             ILoggerFactory loggerFactory)
         {
             _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
@@ -86,13 +86,9 @@ namespace DbNetSuiteCore.Services
                     }
                 }
 
-                switch (componentModel.DataSourceType)
+                if (componentModel.DataSourceType == DataSourceType.FileSystem || DbHelper.IsInMemoryDb(componentModel.DataSourceType))
                 {
-                    case DataSourceType.JSON:
-                    case DataSourceType.FileSystem:
-                    case DataSourceType.Excel:
-                        gridModel.Columns.ToList().ForEach(c => c.Editable = false);
-                        break;
+                    gridModel.Columns.ToList().ForEach(c => c.Editable = false);
                 }
             }
 
@@ -208,7 +204,7 @@ namespace DbNetSuiteCore.Services
                 }
 
                 if (componentModel is FormModel formModel)
-                {   
+                {
                     formModel.Columns = formModel.Columns.Where(c => c.DataType != typeof(Byte[]));
                 }
 
@@ -334,7 +330,7 @@ namespace DbNetSuiteCore.Services
             {
                 case DataSourceType.JSON:
                     return await _repositoryFactory.GetJsonRepository().GetColumns(componentModel);
-                 case DataSourceType.FileSystem:
+                case DataSourceType.FileSystem:
                     return await _repositoryFactory.GetFileSystemRepository().GetColumns(componentModel);
                 default:
                     // All SQL-based data sources
@@ -362,8 +358,8 @@ namespace DbNetSuiteCore.Services
         protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
         {
             // Only SQL data sources support primary keys
-            if (componentModel.DataSourceType == DataSourceType.JSON || 
-                componentModel.DataSourceType == DataSourceType.Excel || 
+            if (componentModel.DataSourceType == DataSourceType.JSON ||
+                componentModel.DataSourceType == DataSourceType.Excel ||
                 componentModel.DataSourceType == DataSourceType.FileSystem)
             {
                 return false;
@@ -374,12 +370,11 @@ namespace DbNetSuiteCore.Services
 
         protected async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
         {
-            // Only SQL data sources support uniqueness validation
-            if (formModel.DataSourceType == DataSourceType.JSON || 
-                formModel.DataSourceType == DataSourceType.Excel || 
-                formModel.DataSourceType == DataSourceType.FileSystem)
+            switch(formModel.DataSourceType)
             {
-                return true;
+                case DataSourceType.IEnumerable:
+                case DataSourceType.FileSystem:
+                    return false;
             }
 
             return await _repositoryFactory.GetSqlRepository(formModel.DataSourceType).ValueIsUnique(formModel, formColumn);
@@ -483,7 +478,7 @@ namespace DbNetSuiteCore.Services
         {
             if (componentModel.Uninitialised)
             {
-             //   componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
+                //   componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
             }
         }
 

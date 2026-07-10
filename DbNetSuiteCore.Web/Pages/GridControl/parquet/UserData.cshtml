@@ -1,0 +1,40 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+@using Microsoft.Extensions.Primitives
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @DbNetSuiteCore.Resources.StyleSheet()
+</head>
+<body>
+    <main>
+        @{
+                var grid = new GridModel(DataSourceType.Parquet, "/data/parquet/userdata.parquet") { OptimizeForLargeDataset = true };
+
+                grid.Columns = new List<GridColumn>()
+                {
+                    new GridColumn("id"),
+                    new GridColumn("first_name") { Filter = FilterType.Default},
+                    new GridColumn("last_name") { Filter = FilterType.Default},
+                    new GridColumn("email") { Filter = FilterType.Default},
+                    new GridColumn("gender") { Filter = FilterType.Distinct},
+                    new GridColumn("ip_address") { Filter = FilterType.Default},
+                    new GridColumn("cc") { Filter = FilterType.Default},
+                    new GridColumn("country") { Filter = FilterType.Distinct},
+                    new GridColumn("CAST(try_strptime(birthdate, '%m/%d/%Y') AS DATE)", "DOB") { Filter = FilterType.Default},
+                    new GridColumn("salary") { Filter = FilterType.Default},
+                    new GridColumn("title") { Filter = FilterType.Default},
+                    new GridColumn("comments") { Filter = FilterType.Default}
+                };
+            @(await DbNetSuiteCore.Control.Create(HttpContext).Render(grid))
+        }
+    </main>
+    @DbNetSuiteCore.Resources.ClientScript()
+</body>
+</html>

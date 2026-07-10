@@ -311,17 +311,13 @@ namespace DbNetSuiteCore.Extensions
                     }
                     break;
                 case nameof(String):
-                    switch (componentModel.DataSourceType)
+                    if (DbHelper.IsDuckDb(componentModel.DataSourceType))
                     {
-                        case DataSourceType.DuckDB:
-                        case DataSourceType.Excel:
-                        case DataSourceType.JSON:
-                            columnExpression = $"CAST({columnExpression} as STRING)";
-                            if (comparisonOperator == "like" || searchDialogFilter != null && new[] { SearchOperator.Contains, SearchOperator.DoesNotContain, SearchOperator.StartsWith, SearchOperator.DoesNotStartWith, SearchOperator.EndsWith, SearchOperator.DoesNotEndWith }.Contains(searchDialogFilter.Operator))
-                            {
-                                columnExpression = $"LOWER({columnExpression})";
-                            }
-                            break;
+                        columnExpression = $"CAST({columnExpression} as STRING)";
+                        if (comparisonOperator == "like" || searchDialogFilter != null && new[] { SearchOperator.Contains, SearchOperator.DoesNotContain, SearchOperator.StartsWith, SearchOperator.DoesNotStartWith, SearchOperator.EndsWith, SearchOperator.DoesNotEndWith }.Contains(searchDialogFilter.Operator))
+                        {
+                            columnExpression = $"LOWER({columnExpression})";
+                        }
                     }
                     break;
             }
@@ -446,17 +442,18 @@ namespace DbNetSuiteCore.Extensions
 
         public static string CaseInsensitiveExpression(ComponentModel componentModel, string expression)
         {
-             switch (componentModel.DataSourceType)
+            switch (componentModel.DataSourceType)
             {
                 case DataSourceType.PostgreSql:
                 case DataSourceType.MySql:
                 case DataSourceType.Oracle:
                     expression = $"LOWER({expression})";
                     break;
-                case DataSourceType.DuckDB:
-                case DataSourceType.Excel:
-                case DataSourceType.JSON:
-                    expression = $"LOWER(CAST({expression} as STRING))";
+                default:
+                    if (DbHelper.IsDuckDb(componentModel.DataSourceType))
+                    {
+                        expression = $"LOWER(CAST({expression} as STRING))";
+                    }
                     break;
             }
             return expression;

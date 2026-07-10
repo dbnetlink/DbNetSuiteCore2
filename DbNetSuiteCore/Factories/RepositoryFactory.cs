@@ -21,6 +21,8 @@ namespace DbNetSuiteCore.Factories
         private readonly IExcelRepository _excelRepository;
         private readonly IOracleRepository _oracleRepository;
         private readonly IDuckDbRepository _duckDbRepository;
+        private readonly IParquetRepository _parquetRepository;
+
         private readonly ILogger<RepositoryFactory>? _logger;
 
         public RepositoryFactory(
@@ -33,6 +35,7 @@ namespace DbNetSuiteCore.Factories
             IExcelRepository excelRepository,
             IOracleRepository oracleRepository,
             IDuckDbRepository duckDbRepository,
+            IParquetRepository parquetRepository,
             ILogger<RepositoryFactory>? logger = null)
         {
             _msSqlRepository = msSqlRepository ?? throw new ArgumentNullException(nameof(msSqlRepository));
@@ -44,6 +47,7 @@ namespace DbNetSuiteCore.Factories
             _excelRepository = excelRepository ?? throw new ArgumentNullException(nameof(excelRepository));
             _oracleRepository = oracleRepository ?? throw new ArgumentNullException(nameof(oracleRepository));
             _duckDbRepository = duckDbRepository ?? throw new ArgumentNullException(nameof(duckDbRepository));
+            _parquetRepository = parquetRepository ?? throw new ArgumentNullException(nameof(parquetRepository));
             _logger = logger;
         }
 
@@ -61,6 +65,7 @@ namespace DbNetSuiteCore.Factories
                 DataSourceType.Oracle => _oracleRepository,
                 DataSourceType.DuckDB => _duckDbRepository,
                 DataSourceType.Excel => _excelRepository,
+                DataSourceType.Parquet => _parquetRepository, // Assuming Parquet uses DuckDB repository
 
                 DataSourceType.JSON or DataSourceType.FileSystem => 
                     throw new InvalidOperationException(

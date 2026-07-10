@@ -13,8 +13,6 @@ using System.Net;
 
 namespace DbNetSuiteCore.Middleware
 {
-//    public delegate Task<bool> FormValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
-//    public delegate Task<bool> GridValidationDelegate(GridModel gridModel, HttpContext context, IConfiguration configuration);
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
@@ -51,6 +49,7 @@ namespace DbNetSuiteCore.Middleware
             switch(page.ToLower())
             {
                 case "gridcontrol":
+                case "jsoncache":
                     response = await gridService.Process(context, page);
                     break;
                 case "selectcontrol":
@@ -122,6 +121,7 @@ namespace DbNetSuiteCore.Middleware
             services.AddScoped<IExcelRepository, ExcelRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
             services.AddScoped<IDuckDbRepository, DuckDbRepository>();
+            services.AddScoped<IParquetRepository, ParquetRepository>();
 
             services.AddScoped<IRepositoryFactory, RepositoryFactory>();
 

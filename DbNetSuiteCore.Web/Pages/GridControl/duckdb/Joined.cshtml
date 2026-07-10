@@ -22,7 +22,6 @@
         new GridColumn("customer.active", "Active") {DataType = typeof(Boolean), Filter = FilterType.Default},
     };
     
-    /*
     string[] columnNames = Request.Query["columnname"].ToString().Split(",");
     string[] filterValues = Request.Query["filtervalue"].ToString().Split(",");
 
@@ -37,7 +36,6 @@
             }
         }
     }
-    */
 
     var customerGridModel = new GridModel(DataSourceType.DuckDB, "Sakila(DuckDb)", "Customer join Address on Customer.Address_Id == Address.Address_Id join City on City.City_Id = Address.City_Id");
     customerGridModel.Columns = customerColumns;

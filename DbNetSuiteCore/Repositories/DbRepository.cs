@@ -197,36 +197,42 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetDbEnumOptions(ComponentModel componentModel)
         {
+            List<string> dbDataTypes = new List<string>();
+
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MySql:
-                    foreach (var column in componentModel.GetColumns().Where(c => (c.DbDataType == MySqlDataTypes.Enum.ToString() || c.DbDataType == MySqlDataTypes.Set.ToString()) && c.LookupOptions == null))
+                    dbDataTypes = new List<string> { MySqlDataTypes.Enum.ToString(), MySqlDataTypes.Set.ToString() };
+                    break;
+                default:
+                    if (componentModel.DataSourceType == DataSourceType.PostgreSql || DbHelper.IsDuckDb(componentModel.DataSourceType))
                     {
-                        List<string> options = await GetMySqlEnumOptions(componentModel.ConnectionAlias, column.BaseTableName, column.ColumnName);
-
-                        column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-
-                        foreach (var option in options.OrderBy(o => o))
-                        {
-                            column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
-                        }
+                        dbDataTypes = new List<string> { PostgreSqlDataTypes.Enum.ToString() };
                     }
                     break;
-                case DataSourceType.PostgreSql:
-                case DataSourceType.DuckDB:
-                case DataSourceType.Excel:
-                    foreach (var column in componentModel.GetColumns().Where(c => c.DbDataType == PostgreSqlDataTypes.Enum.ToString() && c.LookupOptions == null))
+            }
+
+            if (dbDataTypes.Any())
+            {
+                foreach (var column in componentModel.GetColumns().Where(c => (dbDataTypes.Contains(c.DbDataType) && c.LookupOptions == null)))
+                {
+                    List<string> options = new List<string>();
+                    if (componentModel.DataSourceType != DataSourceType.MySql)
                     {
-                        List<string> options = await GetPostgreSqlEnumOptions(componentModel, column.EnumName);
-
-                        column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-
-                        foreach (var option in options.OrderBy(o => o))
-                        {
-                            column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
-                        }
+                        options = await GetMySqlEnumOptions(componentModel.ConnectionAlias, column.BaseTableName, column.ColumnName);
                     }
-                    break;
+                    else
+                    {
+                        options = await GetPostgreSqlEnumOptions(componentModel, column.EnumName);
+                    }
+
+                    column.DbLookupOptions = new List<KeyValuePair<string, string>>();
+
+                    foreach (var option in options.OrderBy(o => o))
+                    {
+                        column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
+                    }
+                }
             }
         }
 
@@ -464,12 +470,9 @@ namespace DbNetSuiteCore.Repositories
         {
             using (IDbConnection connection = GetConnection(componentModel.ConnectionAlias))
             {
-                switch (componentModel.DataSourceType)
+                if (DbHelper.IsInMemoryDb(componentModel.DataSourceType))
                 {
-                    case DataSourceType.Excel:
-                    case DataSourceType.JSON:
-                        await CreateDatabaseTable(componentModel, connection);
-                        break;
+                    await CreateInMemoryDatabaseTable(componentModel, connection);
                 }
 
                 DataTable dataTable = new DataTable();
@@ -508,96 +511,15 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private async Task CreateDatabaseTable(ComponentModel componentModel, IDbConnection connection)
+        private async Task CreateInMemoryDatabaseTable(ComponentModel componentModel, IDbConnection connection)
         {
-            if (DbHelper.TableExists(connection, componentModel.TableName))
+            if (DbHelper.TableExists(connection, componentModel.TableName) == false && this is IDuckDbInMemoryRepository duckDbInMemoryRepository)
             {
-                return;
-            }
-
-            switch(componentModel.DataSourceType)
-            {
-                case DataSourceType.Excel:
-                    await CreateExcelDatabaseTable(componentModel, connection);
-                    break;
-                case DataSourceType.JSON:
-                    await CreateJsonDatabaseTable(componentModel, connection);
-                    break;
-            }   
-        }
-
-        private async Task CreateExcelDatabaseTable(ComponentModel componentModel, IDbConnection connection)
-        {
-            FileFormat fileFormat = FileFormat.XLSX;
-            if (ComponentModelExtensions.IsCsvFile(componentModel))
-            {
-                fileFormat = FileFormat.CSV;
-            }
-            else if (ComponentModelExtensions.IsOdsFile(componentModel))
-            {
-                fileFormat = FileFormat.ODS;
-            }
-
-            if (fileFormat == FileFormat.ODS)
-            {
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = @"INSTALL rusty_sheet FROM community;LOAD rusty_sheet;";
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            using (var cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = $"CREATE TABLE {componentModel.TableName} AS FROM ";
-                if (fileFormat == FileFormat.ODS)
-                {
-                    cmd.CommandText += $"read_sheet('{FilePath(componentModel.Url)}', header = true";
-                }
-                else
-                {
-                    cmd.CommandText += $"read_{fileFormat.ToString().ToLower()}('{FilePath(componentModel.Url)}', header = true, normalize_names = true";
-                }
-                if (componentModel is GridModel gridModel)
-                {
-                    if (string.IsNullOrEmpty(gridModel.SheetName) == false)
-                    {
-                        cmd.CommandText += $", sheet='{gridModel.SheetName}'";
-                    }
-                    if (string.IsNullOrEmpty(gridModel.SheetRange) == false)
-                    {
-                        cmd.CommandText += $", range='{gridModel.SheetRange}'";
-                    }
-                }
-                cmd.CommandText += ")";
-                cmd.ExecuteNonQuery();
+                await duckDbInMemoryRepository.CreateTable(componentModel, connection);
             }
         }
 
-        private async Task CreateJsonDatabaseTable(ComponentModel componentModel, IDbConnection connection)
-        {
-            if (this is not IJSONRepository jSONRepository)
-            {
-                throw new NotImplementedException("The current repository does not support JSON data source.");
-            }
-
-            var jsonFilePath = await jSONRepository.JsonFromUrl(componentModel);
-
-            using (var cmd = connection.CreateCommand())
-            {
-                if (string.IsNullOrEmpty(jsonFilePath))
-                {
-                    cmd.CommandText = $"CREATE TABLE {componentModel.TableName} ({string.Join(", ", componentModel.GetColumns().Select(c => $"{c.Expression} varchar"))})";
-                }
-                else
-                {
-                    cmd.CommandText = $"CREATE TABLE {componentModel.TableName} AS FROM read_json('{jsonFilePath}')";
-                }
-                cmd.ExecuteNonQuery();
-            }
-        }
-
-        private string FilePath(string filePath)
+        protected string FilePath(string filePath)
         {
             if (TextHelper.IsAbsolutePath(filePath) || Uri.IsWellFormedUriString(filePath, UriKind.Absolute))
             {

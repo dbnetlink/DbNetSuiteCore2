@@ -35,9 +35,6 @@ namespace DbNetSuiteCore.Helpers
                     case DataSourceType.Oracle:
                         connection = GetCustomDbConnection(dataSourceType, connectionString);
                         break;
-                    case DataSourceType.Excel:
-                        connection = new DuckDBConnection("DataSource=:memory:");
-                        break;
                     default:
                         connection = new SqlConnection(connectionString);
                         break;
@@ -248,15 +245,16 @@ namespace DbNetSuiteCore.Helpers
                 case DataSourceType.Oracle:
                     template = ":{0}";
                     break;
-                case DataSourceType.DuckDB:
-                case DataSourceType.Excel:
-                case DataSourceType.JSON:
-                    if (parameterValue)
+                default:
+                    if (IsDuckDb(dataSourceType))
                     {
-                        key = key.Replace("$", "");
-                        return key;
+                        if (parameterValue)
+                        {
+                            key = key.Replace("$", "");
+                            return key;
+                        }
+                        template = "${0}";
                     }
-                    template = "${0}";
                     break;
             }
             if (key.Length > 0)
@@ -342,10 +340,12 @@ namespace DbNetSuiteCore.Helpers
                     return $"[@]";
                 case DataSourceType.MySql:
                     return $"`@`";
-                case DataSourceType.PostgreSql:
-                case DataSourceType.DuckDB:
-                case DataSourceType.Excel:
-                    return $"\"@\"";
+                default:
+                    if (IsDuckDb(dataSourceType))
+                    {
+                        return $"\"@\"";
+                    }
+                    break;
             }
             return "@";
         }
@@ -424,16 +424,25 @@ namespace DbNetSuiteCore.Helpers
 
         public static string ConvertToILike(string input, DataSourceType dataSourceType)
         {
+            return IsDuckDb(dataSourceType) ? input.Replace("like", "ilike") : input;
+        }
+
+        public static bool IsInMemoryDb(DataSourceType dataSourceType)
+        {
             switch (dataSourceType)
             {
                 case DataSourceType.JSON:
                 case DataSourceType.Excel:
-                case DataSourceType.DuckDB:
-                    input = input.Replace("like", "ilike");
-                    break;
+                case DataSourceType.Parquet:
+                    return true;
             }
 
-            return input;
+            return false;
+        }
+
+        public static bool IsDuckDb(DataSourceType dataSourceType)
+        {
+            return (dataSourceType == DataSourceType.DuckDB || IsInMemoryDb(dataSourceType));
         }
     }
 }

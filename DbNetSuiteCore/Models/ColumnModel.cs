@@ -300,7 +300,7 @@ namespace DbNetSuiteCore.Models
             this.DataSource = dataSourceType;
             DataType = dataColumn.DataType;
             Initialised = true;
-            Name = (dataSourceType == Enums.DataSourceType.Excel || dataSourceType == Enums.DataSourceType.JSON) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
+            Name = DbHelper.IsInMemoryDb(dataSourceType) ? dataColumn.ColumnName : CleanColumnName(dataColumn.ColumnName);
 
             if (dataColumn.ExtendedProperties.Contains("DataType"))
             {

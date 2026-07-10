@@ -181,9 +181,13 @@ namespace DbNetSuiteCore.Extensions
                         break;
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
-                    case DataSourceType.DuckDB:
-                    case DataSourceType.Excel:
                         query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({offset})";
+                        break;
+                    default:
+                        if (DbHelper.IsDuckDb(gridModel.DataSourceType))
+                        {
+                            query.Sql += $" LIMIT {gridModel.PageSize} OFFSET({offset})";
+                        }
                         break;
                 }
             }

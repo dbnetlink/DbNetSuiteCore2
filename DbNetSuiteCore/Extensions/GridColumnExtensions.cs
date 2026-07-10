@@ -3,6 +3,7 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using System;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 
 namespace DbNetSuiteCore.Extensions
@@ -23,6 +24,10 @@ namespace DbNetSuiteCore.Extensions
        
             if (string.IsNullOrEmpty(gridColumn?.Format))
             {
+                if (gridColumn?.DataType.Name == typeof(String).Name)
+                {
+                    value = HtmlEncoder.Default.Encode(value.ToString());
+                }
                 return value;
             }
 

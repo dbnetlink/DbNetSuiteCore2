@@ -13,6 +13,7 @@ namespace DbNetSuiteCore.Enums
         Oracle,
         DuckDB,
         OpenDocumentSpreadsheet,
-        IEnumerable
+        IEnumerable,
+        Parquet
     };
 }
