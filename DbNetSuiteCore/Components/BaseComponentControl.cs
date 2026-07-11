@@ -45,18 +45,21 @@ namespace DbNetSuiteCore
         protected async Task<string> Render(SelectModel selectModel)
         {
             selectModel.HttpContext = _httpContext;
+            ValidateControl(selectModel);
             return await RenderView("Select/__ControlForm", new SelectViewModel(selectModel));
         }
 
         protected async Task<string> Render(FormModel formModel)
         {
             formModel.HttpContext = _httpContext;
+            ValidateControl(formModel);
             return await RenderView("Form/__ControlForm", new FormViewModel(formModel));
         }
 
         protected async Task<string> Render(TreeModel treeModel)
         {
             treeModel.HttpContext = _httpContext;
+            ValidateControl(treeModel);
             return await RenderView("Tree/__ControlForm", new TreeViewModel(treeModel));
         }
 

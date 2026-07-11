@@ -27,16 +27,16 @@ namespace DbNetSuiteCore.Playwright.Tests.CSV
         {
             Dictionary<string, string> sorts = new Dictionary<string, string>() {
                 { "id", "250"},
-                { "name","Afghanistan" },
+                { "_name","Afghanistan" },
                 { "iso3", "ABW" },
                 { "iso2", "AD" },
-                { "Numeric_Code", "004" },
+                { "numeric_code", "004" },
                 { "phone_code", "+1-242" },
-                { "capital", string.Empty },
+                { "capital", "Abu Dhabi" },
                 { "currency", "AAD" },
                 { "currency_name", "Afghan afghani" },
                 { "tld", ".ad" },
-                { "native", string.Empty },
+                { "native", "American Samoa" },
                 { "region", string.Empty },
                 { "subregion", string.Empty }
             };
@@ -49,16 +49,16 @@ namespace DbNetSuiteCore.Playwright.Tests.CSV
         {
             Dictionary<string, KeyValuePair<string, string>> sorts = new Dictionary<string, KeyValuePair<string, string>>() {
                 { "id", new KeyValuePair<string, string>("250","1") },
-                { "name",new KeyValuePair<string, string>("Afghanistan","Zimbabwe") },
+                { "_name",new KeyValuePair<string, string>("Afghanistan","Zimbabwe") },
                 { "iso3", new KeyValuePair<string, string>("ABW","ZWE") },
                 { "iso2", new KeyValuePair<string, string>("AD","ZW") },
-                { "Numeric_Code", new KeyValuePair<string, string>("004","926") },
+                { "numeric_code", new KeyValuePair<string, string>("004","926") },
                 { "phone_code", new KeyValuePair<string, string>("+1-242","998") },
-                { "capital", new KeyValuePair<string, string>(string.Empty,"Zagreb") },
+                { "capital", new KeyValuePair<string, string>("Abu Dhabi","Zagreb") },
                 { "currency", new KeyValuePair<string, string>("AAD","ZWL") },
                 { "currency_name", new KeyValuePair<string, string>("Afghan afghani","Zimbabwe Dollar") },
                 { "tld", new KeyValuePair<string, string>(".ad",".zw") },
-                { "native", new KeyValuePair<string, string>(string.Empty,"香港") },
+                { "native", new KeyValuePair<string, string>("American Samoa","북한") },
                 { "region", new KeyValuePair<string, string>(string.Empty,"Polar") },
                 { "subregion", new KeyValuePair<string, string>(string.Empty,"Western Europe") }
             };
