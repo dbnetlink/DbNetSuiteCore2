@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Html;
-using System.Runtime.Intrinsics.Arm;
 
 namespace DbNetSuiteCore.Helpers
 {
