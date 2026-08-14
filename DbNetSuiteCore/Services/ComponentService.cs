@@ -6,6 +6,7 @@ using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using Newtonsoft.Json;
 using System.Data;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -268,6 +269,23 @@ namespace DbNetSuiteCore.Services
                 componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
             }
 
+            if (componentModel.DataSourceType == DataSourceType.FileSystem)
+            {
+                foreach (PropertyInfo property in typeof(Models.FileSystemInfo).GetProperties())
+                {
+                    var column = componentModel.GetColumns().FirstOrDefault(c => c.Name == property.Name);
+                    if (column != null)
+                    {
+                        column.UserDataType = property.PropertyType.Name;
+
+                        if (property.PropertyType == typeof(DateTime) && string.IsNullOrEmpty(column.Format))
+                        {
+                            column.Format = "f";
+                        }
+                    }
+                }
+            }
+
             ValidateModel(componentModel);
         }
 
@@ -326,33 +344,12 @@ namespace DbNetSuiteCore.Services
 
         private async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.JSON:
-                    return await _repositoryFactory.GetJsonRepository().GetColumns(componentModel);
-                case DataSourceType.FileSystem:
-                    return await _repositoryFactory.GetFileSystemRepository().GetColumns(componentModel);
-                default:
-                    // All SQL-based data sources
-                    return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetColumns(componentModel);
-            }
+            return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetColumns(componentModel);
         }
 
         protected async Task GetRecords(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.JSON:
-                    await _repositoryFactory.GetJsonRepository().GetRecords(componentModel);
-                    break;
-                case DataSourceType.FileSystem:
-                    await _repositoryFactory.GetFileSystemRepository().GetRecords(componentModel);
-                    break;
-                default:
-                    // All SQL-based data sources
-                    await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecords(componentModel);
-                    break;
-            }
+            await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecords(componentModel);
         }
 
         protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
@@ -370,7 +367,7 @@ namespace DbNetSuiteCore.Services
 
         protected async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
         {
-            switch(formModel.DataSourceType)
+            switch (formModel.DataSourceType)
             {
                 case DataSourceType.IEnumerable:
                 case DataSourceType.FileSystem:
@@ -382,16 +379,7 @@ namespace DbNetSuiteCore.Services
 
         protected async Task GetRecord(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.JSON:
-                    await _repositoryFactory.GetJsonRepository().GetRecord((GridSelectModel)componentModel);
-                    break;
-                default:
-                    // All SQL-based data sources
-                    await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecord(componentModel);
-                    break;
-            }
+            await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecord(componentModel);
         }
 
         internal async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
@@ -399,7 +387,6 @@ namespace DbNetSuiteCore.Services
             // Only SQL data sources return DataTable
             return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecordDataTable(componentModel);
         }
-
 
         protected async Task GetLookupOptions(ComponentModel componentModel)
         {

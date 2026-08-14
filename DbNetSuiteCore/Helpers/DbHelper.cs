@@ -434,6 +434,7 @@ namespace DbNetSuiteCore.Helpers
                 case DataSourceType.JSON:
                 case DataSourceType.Excel:
                 case DataSourceType.Parquet:
+                case DataSourceType.FileSystem:
                     return true;
             }
 

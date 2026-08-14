@@ -11,7 +11,7 @@ using System.Web;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class JSONRepository : DuckDbInMemoryRepository, IJSONRepository, IDuckDbInMemoryRepository
+    public class JSONRepository : DuckDbInMemoryRepository, IJSONRepository
     {
         private readonly IMemoryCache _memoryCache;
         private static readonly HttpClient _httpClient = new HttpClient();
@@ -35,7 +35,7 @@ namespace DbNetSuiteCore.Repositories
             {
                 if (cachedJson != null)
                 {
-                    return await WriteFile(cachedJson);
+                    return await WriteJsonFile(cachedJson, componentModel, _memoryCache);
                 }
             }
 
@@ -110,26 +110,9 @@ namespace DbNetSuiteCore.Repositories
                 _memoryCache.Set(gridSelectModel.CacheKey, json, CacheHelper.GetCacheOptions());
             }
 
-            return await WriteFile(json);
+            return await WriteJsonFile(json, componentModel, _memoryCache);
 
-            async Task<string> WriteFile(string json)
-            {
-                if (IsMemoryCacheEnabled(componentModel))
-                {
-                    var guid = Guid.NewGuid();
-                    _memoryCache.Set(guid, json, CacheHelper.GetShortExpiryCacheOptions());
-                    return RequestHelper.BuildUrl(componentModel.HttpContext.Request, $"/{PageNames.JsonCache}{Middleware.DbNetSuiteCore.Extension}", $"key={guid}");
-                }
-
-                var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
-                await File.WriteAllTextAsync(tempPath, json);
-                return tempPath;
-            }
-        }
-
-        private bool IsMemoryCacheEnabled(ComponentModel componentModel)
-        {
-            return (componentModel is GridSelectModel gridSelectModel && gridSelectModel.JsonCacheType == CacheType.Memory);
+          
         }
 
         private string UpdateUrlParameters(string url, Dictionary<string, string> apiParameters)
@@ -215,36 +198,10 @@ namespace DbNetSuiteCore.Repositories
 
         public override async Task CreateTable(ComponentModel componentModel, IDbConnection connection)
         {
-            if (this is not IJSONRepository jSONRepository)
-            {
-                throw new NotImplementedException("The current repository does not support JSON data source.");
-            }
+            var jsonFilePath = await JsonFromUrl(componentModel);
 
-            var jsonFilePath = await jSONRepository.JsonFromUrl(componentModel);
-
-            using (var cmd = connection.CreateCommand())
-            {
-                if (string.IsNullOrEmpty(jsonFilePath))
-                {
-                    cmd.CommandText = $"CREATE TABLE {componentModel.TableName} ({string.Join(", ", componentModel.GetColumns().Select(c => $"{c.Expression} varchar"))})";
-                }
-                else
-                {
-                    cmd.CommandText = $"CREATE TABLE {componentModel.TableName} AS FROM read_json('{jsonFilePath}')";
-                }
-                cmd.ExecuteNonQuery();
-            }
-
-            if (!IsMemoryCacheEnabled(componentModel))
-            {
-                try
-                {
-                    File.Delete(jsonFilePath);
-                }
-                catch
-                {
-                }
-            }
+            CreateTableFromJson(jsonFilePath, componentModel, connection);
+         
         }
     }
 }

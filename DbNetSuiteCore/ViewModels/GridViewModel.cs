@@ -35,7 +35,7 @@ namespace DbNetSuiteCore.ViewModels
         public string JsonData => _gridModel.JsonData;
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
-        public int ColSpan => VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
+        public int ColSpan => GetColSpan();
         public bool Editable => GridModel.Columns.Any(c => c.Editable);
         public bool SearchDialog => SearchDialogColumns.Any() && GridModel.Search;
         public GridViewModel(GridModel gridModel) : base(gridModel)
@@ -215,6 +215,15 @@ namespace DbNetSuiteCore.ViewModels
         private string PageUrl(int pageNumber)
         {
             return $"/gridcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}?page={pageNumber}";
+        }
+
+        private int GetColSpan()
+        {
+            if (DataSourceType == DataSourceType.FileSystem && Columns.Count() == 0)
+            {
+                return typeof(Models.FileSystemInfo).GetProperties().Length;
+            }
+            return VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
         }
 
         public HtmlString RenderButton(string name, HtmlString icon, ResourceNames resourceName, bool disabled = false, string style = "")

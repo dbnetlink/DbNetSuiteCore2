@@ -65,16 +65,11 @@ namespace DbNetSuiteCore.Factories
                 DataSourceType.Oracle => _oracleRepository,
                 DataSourceType.DuckDB => _duckDbRepository,
                 DataSourceType.Excel => _excelRepository,
-                DataSourceType.Parquet => _parquetRepository, // Assuming Parquet uses DuckDB repository
-
-                DataSourceType.JSON or DataSourceType.FileSystem => 
-                    throw new InvalidOperationException(
-                        $"Data source type '{dataSourceType}' is not a SQL repository. " +
-                        $"Use GetJsonRepository(), GetExcelRepository(), or GetFileSystemRepository() instead."),
-                _ => throw new ArgumentException(
-                    $"Unsupported data source type: {dataSourceType}. " +
-                    $"Supported SQL types are: MSSQL, SQLite, MySql, PostgreSql, Oracle.",
-                    nameof(dataSourceType))
+                DataSourceType.Parquet => _parquetRepository,
+                DataSourceType.JSON => _jsonRepository,
+                DataSourceType.FileSystem => _fileSystemRepository,
+                DataSourceType.OpenDocumentSpreadsheet => _excelRepository,
+                _ => throw new ArgumentException($"Unsupported data source type: {dataSourceType}. ",nameof(dataSourceType))
             };
         }
 

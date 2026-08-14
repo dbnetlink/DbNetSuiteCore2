@@ -115,11 +115,11 @@ namespace DbNetSuiteCore.Services
             {
                 var childLevel = treeModel.Levels.Last().DeepCopy();
                 treeModel.NestedLevel = childLevel;
-                childLevel.Data = _repositoryFactory.GetFileSystemRepository().GetEmptyDataTable();
+                childLevel.Data = new DataTable();
 
                 foreach (var folder in folders)
                 {
-                    var dataTable = _repositoryFactory.GetFileSystemRepository().GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString(), childLevel);
+                    var dataTable = new DataTable();// _repositoryFactory.GetFileSystemRepository().GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString(), childLevel);
                     foreach (DataRow row in dataTable.Rows)
                     {
                         DataRow newRow = childLevel.Data.NewRow();
