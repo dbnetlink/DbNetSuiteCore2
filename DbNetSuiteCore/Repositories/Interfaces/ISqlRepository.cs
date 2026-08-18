@@ -17,5 +17,7 @@ namespace DbNetSuiteCore.Repositories
         public Task DeleteRecord(FormModel formModel);
         public Task InsertRecord(FormModel formModel);
         public Task<List<object>> GetPrimaryKeyValues(GridModel gridModel);
+        public Task<DataTable> GetDataTable(QueryCommandConfig queryCommandConfig, ComponentModel componentModel, bool coerceSqliteColumns = false, CommandType commandType = CommandType.Text, CommandBehavior commandBehavior = CommandBehavior.Default);
+
     }
 }

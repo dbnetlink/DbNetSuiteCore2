@@ -354,10 +354,7 @@ namespace DbNetSuiteCore.Services
 
         protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
         {
-            // Only SQL data sources support primary keys
-            if (componentModel.DataSourceType == DataSourceType.JSON ||
-                componentModel.DataSourceType == DataSourceType.Excel ||
-                componentModel.DataSourceType == DataSourceType.FileSystem)
+            if (new[] {DataSourceType.JSON, DataSourceType.Excel, DataSourceType.FileSystem}.Contains(componentModel.DataSourceType))
             {
                 return false;
             }
