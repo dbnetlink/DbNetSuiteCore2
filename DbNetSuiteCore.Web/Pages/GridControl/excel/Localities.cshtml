@@ -34,5 +34,6 @@
 @(await DbNetSuiteCore.Control.Create(HttpContext).Render(new GridModel(DataSourceType.Excel, "/Data/excel/localities.csv") { 
     Columns = columns, 
     Cache = false, 
-    ViewDialog = new ViewDialog() 
+    ViewDialog = new ViewDialog(),
+    OptimizeForLargeDataset = true
 }))

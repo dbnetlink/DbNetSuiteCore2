@@ -1,81 +1,26 @@
 ﻿using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Enums;
 using System.Data;
-using DbNetSuiteCore.Extensions;
 using Microsoft.Extensions.FileProviders;
 using DbNetSuiteCore.Helpers;
-using System.Text.RegularExpressions;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class FileSystemRepository : IFileSystemRepository
+    public class FileSystemRepository : DuckDbInMemoryRepository, IFileSystemRepository
     {
-        private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
-        private static readonly HttpClient _httpClient = new HttpClient();
-        public FileSystemRepository(IConfiguration configuration, IWebHostEnvironment env)
+        private readonly IMemoryCache _memoryCache;
+        public FileSystemRepository(IConfiguration configuration, IWebHostEnvironment env, IMemoryCache memoryCache) : base(configuration, env, DataSourceType.FileSystem)
         {
-            _configuration = configuration;
             _env = env;
-        }
-        public void GetRecords(ComponentModel componentModel)
-        {
-            var dataTable = BuildDataTable(componentModel);
-            componentModel.Data = dataTable;
-
-            string filterPart = string.Empty;
-            string orderPart = string.Empty;
-            if (componentModel is GridModel gridModel)
-            {
-                filterPart = AddFilterPart(gridModel);
-                orderPart = AddOrderPart(gridModel);
-            }
-
-            if (componentModel is SelectModel selectModel)
-            {
-                filterPart = AddFilterPart(selectModel);
-                orderPart = AddOrderPart(selectModel);
-            }
-
-            if (componentModel is TreeModel treeModel)
-            {
-                filterPart = AddFilterPart(treeModel);
-                orderPart = AddOrderPart(treeModel);
-            }
-
-            var rows = dataTable.Select(filterPart, orderPart);
-
-            if (rows.Any())
-            {
-                componentModel.Data = rows.CopyToDataTable();
-            }
+            _memoryCache = memoryCache;
         }
 
-        public DataTable GetFolderContents(string path, TreeModel treeModel)
+        public override async Task CreateTable(ComponentModel componentModel, IDbConnection connection)
         {
-            var dataTable = GetEmptyDataTable();
-            IDirectoryContents directoryContents = Contents(path);
-
-            foreach (IFileInfo file in directoryContents)
-            {
-                AddRow(file, dataTable);
-            }
-
-            string filterPart = AddFilterPart(treeModel);
-            string orderPart = AddOrderPart(treeModel);
-
-            var rows = dataTable.Select(filterPart, orderPart);
-
-            if (rows.Length == 0)
-            {
-                return dataTable;
-            }
-            return rows.CopyToDataTable();
-        }
-
-        public DataTable GetColumns(ComponentModel componentModel)
-        {
-            return BuildDataTable(componentModel);
+            string jsonFilePath = await WriteJsonFile(ContentsAsJson(componentModel.Url), componentModel, _memoryCache);
+            CreateTableFromJson(jsonFilePath, componentModel, connection);
         }
 
         public static void UpdateUrl(ComponentModel componentModel)
@@ -98,15 +43,6 @@ namespace DbNetSuiteCore.Repositories
             }
         }
 
-        private DataTable BuildDataTable(ComponentModel componentModel)
-        {
-            if (string.IsNullOrEmpty(componentModel.Url))
-            {
-                return GetEmptyDataTable();
-            }
-       
-            return Tabulate(Contents(componentModel.Url), componentModel);
-        }
 
         private string ConvertUrlToFilePath(string url)
         {
@@ -130,282 +66,23 @@ namespace DbNetSuiteCore.Repositories
                 }
             }
 
-            return string.Join(Path.DirectorySeparatorChar.ToString(), pathParts); 
+            return string.Join(Path.DirectorySeparatorChar.ToString(), pathParts);
         }
 
-        private IDirectoryContents Contents(string path)
+
+        private string ContentsAsJson(string path)
         {
             path = ConvertUrlToFilePath(path);
             var provider = new PhysicalFileProvider(path);
-            return provider.GetDirectoryContents(string.Empty);
+            return System.Text.Json.JsonSerializer.Serialize(Transform(provider.GetDirectoryContents(string.Empty)));
         }
 
-        public DataTable GetEmptyDataTable()
+        private IEnumerable<Models.FileSystemInfo> Transform(IDirectoryContents directoryContents)
         {
-            DataTable dataTable = new DataTable();
-            dataTable.Clear();
-            dataTable.Columns.Add(FileSystemColumn.Icon.ToString(), typeof(bool));
-            dataTable.Columns.Add(FileSystemColumn.IsDirectory.ToString(), typeof(bool));
-            dataTable.Columns.Add(FileSystemColumn.Name.ToString(), typeof(string));
-            dataTable.Columns.Add(FileSystemColumn.Extension.ToString(), typeof(string));
-            dataTable.Columns.Add(FileSystemColumn.Length.ToString(), typeof(Int64));
-            dataTable.Columns.Add(FileSystemColumn.Folder.ToString(), typeof(string));
-            dataTable.Columns.Add(FileSystemColumn.ParentFolder.ToString(), typeof(string));
-            dataTable.Columns.Add(FileSystemColumn.Path.ToString(), typeof(string));
-            dataTable.Columns.Add(FileSystemColumn.LastModified.ToString(), typeof(DateTime));
-            return dataTable;
-        }
-
-        private DataTable Tabulate(IDirectoryContents directoryContents, ComponentModel componentModel)
-        {
-            var dataTable = GetEmptyDataTable();
-
-            var contentColumns = (componentModel is GridModel) ? (componentModel as GridModel)!.ContentColumns : new List<GridColumn>();
-
-            var i = 0;
-            foreach (GridColumn gridColumn in contentColumns)
-            {
-                var name = $"{FileSystemColumn.Content}{i}";
-                gridColumn.Expression = name;
-                dataTable.Columns.Add(name, typeof(string));
-            }
-
             foreach (IFileInfo file in directoryContents)
             {
-                if (componentModel is SelectModel && file.IsDirectory)
-                {
-                    var selectModel = (SelectModel)componentModel;
-
-                    if (selectModel.IsGrouped && selectModel.OptionGroupColumn.ColumnName == FileSystemColumn.Folder.ToString())
-                    {
-                        AddSubFolder(file, dataTable);
-                        continue;
-                    }
-                }
-
-                AddRow(file, dataTable, contentColumns);
-            };
-
-            return dataTable;
-        }
-
-        private void AddRow(IFileInfo file, DataTable dataTable, IEnumerable<GridColumn> contentColumns = null)
-        {
-            DataRow dataRow = dataTable.NewRow();
-            dataRow[FileSystemColumn.Icon.ToString()] = file.IsDirectory;
-            dataRow[FileSystemColumn.IsDirectory.ToString()] = file.IsDirectory;
-            dataRow[FileSystemColumn.Name.ToString()] = file.Name;
-            dataRow[FileSystemColumn.Extension.ToString()] = file.IsDirectory ? string.Empty : file.Name.Split(".").Last();
-            dataRow[FileSystemColumn.Length.ToString()] = file.IsDirectory ? System.DBNull.Value : file.Length;
-            dataRow[FileSystemColumn.LastModified.ToString()] = file.LastModified.UtcDateTime;
-
-            var path = GetPath(file.PhysicalPath);
-            dataRow[FileSystemColumn.Folder.ToString()] = file.IsDirectory ? file.Name : ParentFolder(path);
-            dataRow[FileSystemColumn.ParentFolder.ToString()] = ParentFolder(path);
-            dataRow[FileSystemColumn.Path.ToString()] = path;
-
-            if (file.IsDirectory == false && (contentColumns ?? new List<GridColumn>()).Any() && file.Length < (1024 * 16))
-            {
-                var content = ReadFileContent(file);
-
-                foreach (GridColumn gridColumn in contentColumns ?? new List<GridColumn>())
-                {
-                    var match = Regex.Match(content, gridColumn.RegularExpression, RegexOptions.IgnoreCase);
-                    dataRow[gridColumn.Expression] = match.Success ? match.Groups[1].Value : string.Empty;
-                }
+                yield return new Models.FileSystemInfo(file, _env);
             }
-
-            dataTable.Rows.Add(dataRow);
-        }
-
-        private string ParentFolder(string path)
-        {
-            return path.Split("/").Count() > 1 ? path.Split("/").Reverse().Skip(1).First() : string.Empty;
-        }
-
-        private void AddSubFolder(IFileInfo folder, DataTable dataTable)
-        {
-            if (folder.PhysicalPath != null)
-            {
-                var contents = Contents(folder.PhysicalPath);
-
-                foreach (IFileInfo file in contents)
-                {
-                    AddRow(file, dataTable);
-                }
-            }
-        }
-
-        private string GetPath(string physicalPath)
-        {
-            if (physicalPath == null)
-            {
-                return string.Empty;
-            }
-
-            return physicalPath.Replace(_env.WebRootPath, string.Empty).Replace("\\", "/");
-        }
-
-        private static string ReadFileContent(IFileInfo fileInfo)
-        {
-            using (var reader = new StreamReader(fileInfo.CreateReadStream()))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        private string AddFilterPart(GridModel gridModel)
-        {
-            string filter = string.Empty;
-            List<string> filterParts = new List<string>();
-            if (string.IsNullOrEmpty(gridModel.SearchInput) == false)
-            {
-                List<string> searchFilterPart = new List<string>();
-
-                foreach (var col in gridModel.SearchableColumns.Select(c => c.Name).ToList())
-                {
-                    searchFilterPart.Add($"{col} like '%{gridModel.SearchInput}%'");
-                }
-
-                if (searchFilterPart.Any())
-                {
-                    filterParts.Add($"({string.Join(" or ", searchFilterPart)})");
-                }
-            }
-
-            if (gridModel.FilterColumns.Any())
-            {
-                List<string> columnFilterPart = new List<string>();
-                for (var i = 0; i < gridModel.ColumnFilter.Count; i++)
-                {
-                    if (string.IsNullOrEmpty(gridModel.ColumnFilter[i]))
-                    {
-                        continue;
-                    }
-
-                    var column = gridModel.Columns.Skip(i).First();
-
-                    var columnFilter = GridModelExtensions.ParseFilterColumnValue(gridModel.ColumnFilter[i], column);
-
-                    if (columnFilter != null)
-                    {
-                        columnFilterPart.Add($"{column.Name} {columnFilter.Value.Key} {Quoted(column)}{columnFilter.Value.Value}{Quoted(column)}");
-                    }
-                }
-
-                if (columnFilterPart.Any())
-                {
-                    filterParts.Add($"({string.Join(" and ", columnFilterPart)})");
-                }
-            }
-
-            string searchDialogFilter = Extensions.DataTableExtensions.AddSearchDialogFilterPart(gridModel);
-            if (string.IsNullOrEmpty(searchDialogFilter) == false)
-            {
-                filterParts.Add(searchDialogFilter);
-            }
-
-            if (!string.IsNullOrEmpty(gridModel.FixedFilter))
-            {
-                filterParts.Add($"({gridModel.FixedFilter})");
-            }
-
-            return String.Join(" and ", filterParts);
-        }
-
-
-        private string AddFilterPart(SelectModel selectModel)
-        {
-            string filter = string.Empty;
-            List<string> filterParts = new List<string>();
-            if (string.IsNullOrEmpty(selectModel.SearchInput) == false)
-            {
-                List<string> searchFilterPart = new List<string>();
-
-                foreach (var col in selectModel.SearchableColumns.Select(c => c.Name).ToList())
-                {
-                    searchFilterPart.Add($"{col} like '%{selectModel.SearchInput}%'");
-                }
-
-                if (searchFilterPart.Any())
-                {
-                    filterParts.Add($"({string.Join(" or ", searchFilterPart)})");
-                }
-            }
-
-            if (selectModel.IsLinked)
-            {
-                AddParentKeyFilterPart(selectModel, filterParts);
-            }
-
-            if (!string.IsNullOrEmpty(selectModel.FixedFilter))
-            {
-                filterParts.Add($"({selectModel.FixedFilter})");
-            }
-
-            return String.Join(" and ", filterParts);
-        }
-
-
-        public static void AddParentKeyFilterPart(SelectModel selectModel, List<string> filterParts)
-        {
-            if (selectModel.ParentModel == null || selectModel.ParentModel.RowIdx < 0)
-            {
-                filterParts.Add($"(1=2)");
-                return;
-            }
-
-            string folderName = selectModel.ParentModel!.ParentRow[FileSystemColumn.Name.ToString()].ToString();
-
-            if (string.IsNullOrEmpty(folderName) == false)
-            {
-                filterParts.Add($"{FileSystemColumn.ParentFolder} = '{folderName}'");
-            }
-        }
-
-        private string Quoted(GridColumn column)
-        {
-            return (new string[] { nameof(String), nameof(DateTime) }).Contains(column.DataTypeName) ? "'" : string.Empty;
-        }
-
-        private string AddOrderPart(GridModel gridModel)
-        {
-            if (string.IsNullOrEmpty(gridModel.SortColumnName))
-            {
-                return string.Empty;
-            }
-
-            return $"IsDirectory desc, {gridModel.SortColumnName} {gridModel.SortSequence}";
-        }
-
-        private string AddOrderPart(SelectModel selectModel)
-        {
-            string optionGroupSortColumnName = string.Empty;
-
-            if (selectModel.IsGrouped)
-            {
-                optionGroupSortColumnName = $"{TextHelper.DelimitColumn(selectModel.OptionGroupColumn.ColumnName, selectModel.DataSourceType)},";
-                return $"{optionGroupSortColumnName} {selectModel.SortColumnName} {selectModel.SortSequence}";
-            }
-
-            return $"IsDirectory desc,{selectModel.SortColumnName} {selectModel.SortSequence}";
-        }
-
-        private string AddFilterPart(TreeModel treeModel)
-        {
-            List<string> filterParts = new List<string>();
-         
-            if (!string.IsNullOrEmpty(treeModel.FixedFilter))
-            {
-                filterParts.Add($"({treeModel.FixedFilter})");
-            }
-
-            return String.Join(" and ", filterParts);
-        }
-
-        private string AddOrderPart(TreeModel treeModel)
-        {
-            return $"IsDirectory desc, Name";
         }
     }
 }

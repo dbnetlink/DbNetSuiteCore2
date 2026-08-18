@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Library</OutputType>
-    <Description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, SQLite, JSON, Excel, CSV and the file system</Description>
+    <Description>Interactive data-driven components for ASP.Net Core Razor Views. Support for MSSQL, MySql, PostgreSql, Oracle, SQLite, JSON, Excel, CSV and the file system</Description>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Title>Interactive data-driven components for ASP.Net Core Razor Views</Title>
     <NuspecFile>Nuget/dbnetsuitecore.nuspec</NuspecFile>
@@ -32,10 +32,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Resources\Blazor\**" />
+    <Compile Remove="Resources\TS\**" />
     <Compile Remove="Utilities\**" />
+    <Content Remove="Resources\Blazor\**" />
+    <Content Remove="Resources\TS\**" />
     <Content Remove="Utilities\**" />
+    <EmbeddedResource Remove="Resources\Blazor\**" />
+    <EmbeddedResource Remove="Resources\TS\**" />
     <EmbeddedResource Remove="Utilities\**" />
+    <None Remove="Resources\Blazor\**" />
+    <None Remove="Resources\TS\**" />
     <None Remove="Utilities\**" />
+    <TypeScriptCompile Remove="Resources\Blazor\**" />
+    <TypeScriptCompile Remove="Resources\TS\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,7 +61,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="bundleconfig.json" />
     <Content Remove="package.json" />
     <Content Remove="Views\Form\__ControlForm.cshtml" />
     <Content Remove="Views\Form\__Form.cshtml" />
@@ -88,9 +97,8 @@
     <None Remove="Resources\GIF\spinner.gif" />
     <None Remove="Resources\ICO\favicon.ico" />
     <None Remove="Resources\JS\blazor.js" />
-    <None Remove="Resources\JS\bundle.js" />
-    <None Remove="Resources\JS\bundle.min.js" />
     <None Remove="Resources\JS\componentControl.js" />
+    <None Remove="Resources\JS\dbnetsuite-core.bundle.js" />
     <None Remove="Resources\JS\draggableDialog.js" />
     <None Remove="Resources\JS\gridControl.js" />
     <None Remove="Resources\JS\htmlEditor.js" />
@@ -101,17 +109,6 @@
     <None Remove="Resources\JS\tailwindcss.js" />
     <None Remove="Resources\JS\viewDialog.js" />
     <None Remove="Resources\SVG\spinner.svg" />
-    <None Remove="TypeScript\confirmDialog.ts" />
-    <None Remove="TypeScript\draggableDialog.ts" />
-    <None Remove="TypeScript\formControl.ts" />
-    <None Remove="TypeScript\gridcontrol.ts" />
-    <None Remove="TypeScript\HtmlEditor.ts" />
-    <None Remove="TypeScript\selectControl.ts" />
-    <None Remove="TypeScript\viewDialog.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="bundleconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -124,27 +121,9 @@
     <EmbeddedResource Include="Resources\CSS\output.css" />
     <EmbeddedResource Include="Resources\CSS\tailwind.css" />
     <EmbeddedResource Include="Resources\GIF\spinner.gif" />
-    <EmbeddedResource Include="Resources\JS\blazor.js" />
-    <EmbeddedResource Include="Resources\JS\bundle.js" />
-    <EmbeddedResource Include="Resources\JS\bundle.min.js" />
-    <EmbeddedResource Include="Resources\JS\componentControl.js" />
-    <EmbeddedResource Include="Resources\JS\draggableDialog.js" />
-    <EmbeddedResource Include="Resources\JS\gridControl.js" />
-    <EmbeddedResource Include="Resources\JS\htmlEditor.js" />
+    <EmbeddedResource Include="Resources\JS\dbnetsuite-core.bundle.js" />
     <EmbeddedResource Include="Resources\JS\htmx.js" />
-    <EmbeddedResource Include="Resources\JS\viewDialog.js" />
     <EmbeddedResource Include="Resources\SVG\spinner.svg" />
-    <EmbeddedResource Include="TypeScript\blazor.ts" />
-    <EmbeddedResource Include="TypeScript\formControl.ts" />
-    <EmbeddedResource Include="TypeScript\dialog.ts" />
-    <EmbeddedResource Include="TypeScript\lookupDialog.ts" />
-    <EmbeddedResource Include="TypeScript\treeControl.ts" />
-    <EmbeddedResource Include="TypeScript\selectControl.ts" />
-    <EmbeddedResource Include="TypeScript\confirmDialog.ts" />
-    <EmbeddedResource Include="TypeScript\htmlEditor.ts" />
-    <EmbeddedResource Include="TypeScript\searchDialog.ts" />
-    <EmbeddedResource Include="TypeScript\viewDialog.ts" />
-    <EmbeddedResource Include="TypeScript\gridControl.ts" />
     <EmbeddedResource Include="Views\Shared\__SearchDialog.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -243,7 +222,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="bundleconfig.json" />
     <None Include="package.json" />
     <EmbeddedResource Include="Nuget\nuget_logo.png">
       <Pack>True</Pack>
@@ -292,28 +270,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0|AnyCPU'">
     <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
-    <ItemGroup>
-    <TypeScriptCompile Include="TypeScript\draggableDialog.ts" />
-  </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Blazor\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="ExcelDataReader" Version="3.8.0" />
-    <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.1" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3">
+    <PackageReference Include="DuckDB.NET.Data.Full" Version="1.5.3" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="6.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="MongoDB.Driver" Version="3.5.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
@@ -330,6 +301,21 @@
 
   <Target Name="Tailwind" BeforeTargets="Build">
     <Exec Command="npm run css:build" />
+  </Target>
+
+  <!--
+  <Target Name="RunEsbuild" BeforeTargets="Build;Publish">
+    <Exec Command="npm install" Condition="!Exists('node_modules')" />
+    <Exec Command="npm run build" />
+  </Target>
+  -->
+
+  <Target Name="NpmInstall" BeforeTargets="BuildTypeScript">
+    <Exec Command="npm install" WorkingDirectory="$(ProjectDir)" Condition="!Exists('$(ProjectDir)node_modules')" />
+  </Target>
+
+  <Target Name="BuildTypeScript" BeforeTargets="Build" DependsOnTargets="NpmInstall">
+    <Exec Command="node build.js" WorkingDirectory="$(ProjectDir)" />
   </Target>
 
   <PropertyGroup>

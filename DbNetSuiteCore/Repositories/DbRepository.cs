@@ -1,15 +1,15 @@
 ﻿using DbNetSuiteCore.Enums;
-using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Helpers;
+using DbNetSuiteCore.Models;
+using DbNetSuiteCore.Repositories.Interfaces;
 using System.Data;
 using System.Data.Common;
-using DbNetSuiteCore.Helpers;
 using System.Text.RegularExpressions;
-
 
 namespace DbNetSuiteCore.Repositories
 {
-    public class DbRepository : BaseRepository
+    public class DbRepository : IRepository
     {
         private readonly DataSourceType _dataSourceType;
         private readonly IConfiguration _configuration;
@@ -24,7 +24,14 @@ namespace DbNetSuiteCore.Repositories
 
         public IDbConnection GetConnection(string database)
         {
-            return DbHelper.GetConnection(database, _dataSourceType, _configuration, _env);
+            if (this is IDuckDbInMemoryRepository duckDbInMemoryRepository)
+            {
+                return duckDbInMemoryRepository.CreateConnection();
+            }
+
+            var connection = DbHelper.GetConnection(database, _dataSourceType, _configuration, _env);
+            connection.Open();
+            return connection;
         }
 
         private bool CoerceSqliteColumns(ComponentModel componentModel)
@@ -41,7 +48,7 @@ namespace DbNetSuiteCore.Repositories
                 commandType = CommandType.StoredProcedure;
             }
             else
-            {                 
+            {
                 query = componentModel.BuildQuery();
             }
 
@@ -154,7 +161,6 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = componentModel.BuildRecordQuery(primaryKeyValues);
             using (var connection = GetConnection(componentModel.ConnectionAlias))
             {
-                connection.Open();
                 var reader = await ExecuteQuery(query, connection);
                 var recordExists = reader.HasRows;
                 await reader.DisposeAsync();
@@ -168,7 +174,6 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = formModel.BuildUniqueQuery(formColumn);
             using (var connection = GetConnection(formModel.ConnectionAlias))
             {
-                connection.Open();
                 int? count = (int?)await ExecuteScalar(query, formModel);
                 connection.Close();
                 return (count ?? 0) == 0;
@@ -192,44 +197,52 @@ namespace DbNetSuiteCore.Repositories
 
         public async Task GetDbEnumOptions(ComponentModel componentModel)
         {
+            List<string> dbDataTypes = new List<string>();
+
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.MySql:
-                    foreach (var column in componentModel.GetColumns().Where(c => (c.DbDataType == MySqlDataTypes.Enum.ToString() || c.DbDataType == MySqlDataTypes.Set.ToString()) && c.LookupOptions == null))
+                    dbDataTypes = new List<string> { MySqlDataTypes.Enum.ToString(), MySqlDataTypes.Set.ToString() };
+                    break;
+                default:
+                    if (componentModel.DataSourceType == DataSourceType.PostgreSql || DbHelper.IsDuckDb(componentModel.DataSourceType))
                     {
-                        List<string> options = await GetMySqlEnumOptions(componentModel.ConnectionAlias, column.BaseTableName, column.ColumnName);
-
-                        column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-
-                        foreach (var option in options.OrderBy(o => o))
-                        {
-                            column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
-                        }
+                        dbDataTypes = new List<string> { PostgreSqlDataTypes.Enum.ToString() };
                     }
                     break;
-                case DataSourceType.PostgreSql:
-                    foreach (var column in componentModel.GetColumns().Where(c => c.DbDataType == PostgreSqlDataTypes.Enum.ToString() && c.LookupOptions == null))
+            }
+
+            if (dbDataTypes.Any())
+            {
+                foreach (var column in componentModel.GetColumns().Where(c => (dbDataTypes.Contains(c.DbDataType) && c.LookupOptions == null)))
+                {
+                    List<string> options = new List<string>();
+                    if (componentModel.DataSourceType != DataSourceType.MySql)
                     {
-                        List<string> options = await GetPostgreSqlEnumOptions(componentModel, column.EnumName);
-
-                        column.DbLookupOptions = new List<KeyValuePair<string, string>>();
-
-                        foreach (var option in options.OrderBy(o => o))
-                        {
-                            column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
-                        }
+                        options = await GetMySqlEnumOptions(componentModel.ConnectionAlias, column.BaseTableName, column.ColumnName);
                     }
-                    break;
+                    else
+                    {
+                        options = await GetPostgreSqlEnumOptions(componentModel, column.EnumName);
+                    }
+
+                    column.DbLookupOptions = new List<KeyValuePair<string, string>>();
+
+                    foreach (var option in options.OrderBy(o => o))
+                    {
+                        column.DbLookupOptions.Add(new KeyValuePair<string, string>(option, option));
+                    }
+                }
             }
         }
 
         public async Task UpdateRecord(FormModel formModel)
         {
             CommandConfig update = formModel.BuildUpdate();
-            var connection = GetConnection(formModel.ConnectionAlias);
-            connection.Open();
-            await ExecuteUpdate(update, connection);
-            connection.Close();
+            using (var connection = GetConnection(formModel.ConnectionAlias))
+            {
+                await ExecuteUpdate(update, connection);
+            }
         }
 
         public async Task UpdateRecords(GridModel gridModel)
@@ -239,16 +252,16 @@ namespace DbNetSuiteCore.Repositories
             foreach (var row in gridModel.ModifiedRows.Keys)
             {
                 CommandConfig update = gridModel.BuildUpdate(row, primaryKeysValues[row], gridModel.ModifiedRows[row].Columns);
-                var connection = GetConnection(gridModel.ConnectionAlias);
-                connection.Open();
-                await ExecuteUpdate(update, connection);
-                connection.Close();
+                using (var connection = GetConnection(gridModel.ConnectionAlias))
+                {
+                    await ExecuteUpdate(update, connection);
+                }
             }
         }
 
         public async Task InsertRecord(FormModel formModel)
         {
-            switch(formModel.DataSourceType)
+            switch (formModel.DataSourceType)
             {
                 case DataSourceType.Oracle:
                     FormColumn sequenceColumn = formModel.Columns.FirstOrDefault(c => string.IsNullOrEmpty(c.SequenceName) == false);
@@ -263,22 +276,21 @@ namespace DbNetSuiteCore.Repositories
 
             bool executeScalar = false;
             CommandConfig insert = formModel.BuildInsert(ref executeScalar);
-            var connection = GetConnection(formModel.ConnectionAlias);
-            connection.Open();
-            if (executeScalar)
+            using (var connection = GetConnection(formModel.ConnectionAlias))
             {
-                using (IDbCommand command = DbHelper.ConfigureCommand(insert, connection, CommandType.Text))
+                if (executeScalar)
                 {
-                    var result = await ((DbCommand)command).ExecuteScalarAsync();
-                    formModel.AutoincrementValue = Convert.ToInt64(result);
+                    using (IDbCommand command = DbHelper.ConfigureCommand(insert, connection, CommandType.Text))
+                    {
+                        var result = await ((DbCommand)command).ExecuteScalarAsync();
+                        formModel.AutoincrementValue = Convert.ToInt64(result);
+                    }
+                }
+                else
+                {
+                    await ExecuteUpdate(insert, connection);
                 }
             }
-            else
-            {
-                await ExecuteUpdate(insert, connection);
-            }
-                
-            connection.Close();
         }
 
         private async Task<long> GetOracleSequenceValue(string sequenceName, string connectionAliad)
@@ -286,7 +298,6 @@ namespace DbNetSuiteCore.Repositories
             Int64 sequenceValue = -1;
             using (IDbConnection connection = GetConnection(connectionAliad))
             {
-                connection.Open();
                 var reader = await ExecuteQuery($"SELECT {sequenceName}.nextval FROM DUAL", connection);
                 if (reader.HasRows)
                 {
@@ -297,7 +308,6 @@ namespace DbNetSuiteCore.Repositories
                 {
                     throw new Exception($"Unable to read sequence => {sequenceName}");
                 }
-                connection.Close();
             }
 
             return sequenceValue;
@@ -306,10 +316,10 @@ namespace DbNetSuiteCore.Repositories
         public async Task DeleteRecord(FormModel formModel)
         {
             CommandConfig update = formModel.BuildDelete();
-            var connection = GetConnection(formModel.ConnectionAlias);
-            connection.Open();
-            await ExecuteUpdate(update, connection);
-            connection.Close();
+            using (var connection = GetConnection(formModel.ConnectionAlias))
+            {
+                await ExecuteUpdate(update, connection);
+            }
         }
 
         private async Task GetLookupOptions(ComponentModel componentModel, ColumnModel column)
@@ -337,25 +347,16 @@ namespace DbNetSuiteCore.Repositories
             }
             else
             {
-                /*
-                if (componentModel.IsLinked)
+                var lookup = column.Lookup!;
+
+                if (string.IsNullOrEmpty(lookup.TableName))
                 {
-                    BuildLookupOptionsFromDataTableQuery(componentModel, column, ref query);
+                    query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} where {column.ColumnName} is not null order by 1"; ;
                 }
                 else
                 {
-                */
-                    var lookup = column.Lookup!;
-
-                    if (string.IsNullOrEmpty(lookup.TableName))
-                    {
-                        query.Sql = $"select distinct {column.ColumnName}, {column.ColumnName} from {componentModel.TableName} where {column.ColumnName} is not null order by 1"; ;
-                    }
-                    else
-                    {
-                        query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} order by 2";
-                    }
-               // }
+                    query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName}{(string.IsNullOrEmpty(lookup.Filter) ? string.Empty : $" where {lookup.Filter}")} order by 2";
+                }
             }
 
             DataTable lookupData;
@@ -399,7 +400,9 @@ namespace DbNetSuiteCore.Repositories
 
             //var keyColumn = $"{lookup.KeyColumn}{(componentModel.DataSourceType == DataSourceType.PostgreSql ? "::varchar" : string.Empty)}";
             var keyColumn = $"{lookup.KeyColumn}";
-            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName} where {keyColumn} in ({String.Join(",", paramNames)}) order by 2";
+
+            string filter = paramNames.Any() ? $" where {keyColumn} in ({String.Join(",", paramNames)})" : " where 1=2";
+            query.Sql = $"select {lookup.KeyColumn},{lookup.DescriptionColumn} from {lookup.TableName}{filter} order by 2";
         }
 
         private void BuildLookupOptionsFromDbQuery(ComponentModel componentModel, ColumnModel column, ref QueryCommandConfig query)
@@ -467,7 +470,11 @@ namespace DbNetSuiteCore.Repositories
         {
             using (IDbConnection connection = GetConnection(componentModel.ConnectionAlias))
             {
-                connection.Open();
+                if (DbHelper.IsInMemoryDb(componentModel.DataSourceType))
+                {
+                    await CreateInMemoryDatabaseTable(componentModel, connection);
+                }
+
                 DataTable dataTable = new DataTable();
 
                 if (coerceSqliteColumns)
@@ -499,10 +506,26 @@ namespace DbNetSuiteCore.Repositories
                     ds.Tables.Remove(dataTable);
                 }
 
-                connection.Close();
                 dataTable.Constraints.Clear();
                 return dataTable;
             }
+        }
+
+        private async Task CreateInMemoryDatabaseTable(ComponentModel componentModel, IDbConnection connection)
+        {
+            if (DbHelper.TableExists(connection, componentModel.TableName) == false && this is IDuckDbInMemoryRepository duckDbInMemoryRepository)
+            {
+                await duckDbInMemoryRepository.CreateTable(componentModel, connection);
+            }
+        }
+
+        protected string FilePath(string filePath)
+        {
+            if (TextHelper.IsAbsolutePath(filePath) || Uri.IsWellFormedUriString(filePath, UriKind.Absolute))
+            {
+                return filePath;
+            }
+            return $"{_env.WebRootPath}{filePath.Replace("/", @"\")}".Replace("//", "/");
         }
 
         public void ConfigureDataTableForSQLiteTypeAffinity(DataTable dataTable, ComponentModel componentModel)
@@ -528,11 +551,9 @@ namespace DbNetSuiteCore.Repositories
         {
             using (IDbConnection connection = GetConnection(database))
             {
-                connection.Open();
                 var reader = await ExecuteQuery(queryCommandConfig, connection, CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo);
                 DataTable dataTable = reader.GetSchemaTable() ?? new DataTable();
                 await reader.DisposeAsync();
-                connection.Close();
                 return dataTable;
             }
         }
@@ -541,7 +562,6 @@ namespace DbNetSuiteCore.Repositories
         {
             using (IDbConnection connection = GetConnection(componentModel.ConnectionAlias))
             {
-                connection.Open();
                 IDbCommand command = DbHelper.ConfigureCommand(query, connection);
                 return await ((DbCommand)command).ExecuteScalarAsync();
             }
@@ -580,7 +600,6 @@ namespace DbNetSuiteCore.Repositories
             QueryCommandConfig query = new QueryCommandConfig(DataSourceType.MySql) { Sql = $"SHOW COLUMNS FROM {tableName} WHERE Field = '{columnName}'" };
             using (IDbConnection connection = GetConnection(database))
             {
-                connection.Open();
                 using (var reader = await ExecuteQuery(query, connection))
                 {
                     if (reader.Read())
@@ -595,7 +614,6 @@ namespace DbNetSuiteCore.Repositories
                         }
                     }
                 }
-                connection.Close();
             }
             return enumOptions;
         }
@@ -617,8 +635,6 @@ namespace DbNetSuiteCore.Repositories
         {
             using (IDbConnection connection = GetConnection(database))
             {
-                connection.Open();
-
                 DataTable datatable = new DataTable();
                 datatable.Columns.Add("ColumnName", typeof(string));
                 datatable.Columns.Add("DataType", typeof(Type));

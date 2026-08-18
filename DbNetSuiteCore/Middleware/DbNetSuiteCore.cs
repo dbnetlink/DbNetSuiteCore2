@@ -1,4 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
+using DbNetSuiteCore.Factories;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services;
@@ -11,8 +13,6 @@ using System.Net;
 
 namespace DbNetSuiteCore.Middleware
 {
-//    public delegate Task<bool> FormValidationDelegate(FormModel formModel, HttpContext context, IConfiguration configuration);
-//    public delegate Task<bool> GridValidationDelegate(GridModel gridModel, HttpContext context, IConfiguration configuration);
     public class DbNetSuiteCore
     {
         private RequestDelegate _next;
@@ -49,6 +49,7 @@ namespace DbNetSuiteCore.Middleware
             switch(page.ToLower())
             {
                 case "gridcontrol":
+                case "jsoncache":
                     response = await gridService.Process(context, page);
                     break;
                 case "selectcontrol":
@@ -99,23 +100,30 @@ namespace DbNetSuiteCore.Middleware
             services.AddControllersWithViews();
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
+
+            // Register services
             services.AddScoped<GridService, GridService>();
             services.AddScoped<SelectService, SelectService>();
             services.AddScoped<FormService, FormService>();
             services.AddScoped<TreeService, TreeService>();
             services.AddScoped<IResourceService, ResourceService>();
+            services.AddScoped<RazorViewToStringRenderer>();
+            services.AddSingleton<DataProtectionService>();
+            services.AddScoped<ICacheService, CacheService>();
+
+            // Register individual repositories
             services.AddScoped<IMSSQLRepository, MSSQLRepository>();
             services.AddScoped<ISQLiteRepository, SQLiteRepository>();
             services.AddScoped<IJSONRepository, JSONRepository>();
             services.AddScoped<IFileSystemRepository, FileSystemRepository>();
-            services.AddScoped<RazorViewToStringRenderer>();
             services.AddScoped<IMySqlRepository, MySqlRepository>();
             services.AddScoped<IPostgreSqlRepository, PostgreSqlRepository>();
             services.AddScoped<IExcelRepository, ExcelRepository>();
-            services.AddScoped<IMongoDbRepository, MongoDbRepository>();
             services.AddScoped<IOracleRepository, OracleRepository>();
-            services.AddSingleton<DataProtectionService>();
-            services.AddScoped<ICacheService, CacheService>();
+            services.AddScoped<IDuckDbRepository, DuckDbRepository>();
+            services.AddScoped<IParquetRepository, ParquetRepository>();
+
+            services.AddScoped<IRepositoryFactory, RepositoryFactory>();
 
             return services;
         }

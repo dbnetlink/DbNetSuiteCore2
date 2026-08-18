@@ -13,7 +13,7 @@ namespace DbNetSuiteCore.Helpers
         static public string GenerateLabel(string label)
         {
             label = label.Split(".").Last();
-            label = label.Replace("[", string.Empty).Replace("]", string.Empty);
+            label = label.Replace("[", string.Empty).Replace("]", string.Empty).Replace("\"", string.Empty);
             label = Regex.Replace(label, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
             return Capitalise(label.Replace("_", " ").Replace(".", " "));
         }
@@ -22,16 +22,25 @@ namespace DbNetSuiteCore.Helpers
             return Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(text);
         }
 
+        private static Newtonsoft.Json.JsonSerializerSettings SerializerSettings()
+        {
+            return new Newtonsoft.Json.JsonSerializerSettings
+            {
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore,
+                MaxDepth = 64
+            };
+        }
+
         public static string ObfuscateString(ComponentModel componentModel)
         {
-            return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(componentModel), componentModel.HttpContext);
+            return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(componentModel, SerializerSettings()), componentModel.HttpContext);
         }
 
         public static string ObfuscateString(SummaryModel summaryModel)
         {
             if (summaryModel != null)
             {
-                return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(summaryModel), summaryModel.HttpContext);
+                return ObfuscateString(Newtonsoft.Json.JsonConvert.SerializeObject(summaryModel, SerializerSettings()), summaryModel.HttpContext);
             }
             else
             {
@@ -138,13 +147,7 @@ namespace DbNetSuiteCore.Helpers
 
         public static string DelimitColumn(string columnName, DataSourceType dataSourceType)
         {
-            switch (dataSourceType)
-            {
-                case DataSourceType.Excel:
-                case DataSourceType.JSON:
-                    return $"[{columnName}]";
-            }
-            return columnName;
+            return DbHelper.IsInMemoryDb(dataSourceType) ? $"\"{columnName}\"" : columnName;    
         }
 
         public static bool IsAlphaNumeric(string text)

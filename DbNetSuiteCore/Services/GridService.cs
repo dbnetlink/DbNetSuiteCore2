@@ -2,6 +2,7 @@
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
@@ -9,6 +10,8 @@ using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.ViewModels;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using System.Data;
 using System.Text;
@@ -17,8 +20,18 @@ namespace DbNetSuiteCore.Services
 {
     public class GridService : ComponentService, IComponentService
     {
-        public GridService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        private readonly IMemoryCache _memoryCache;
+
+        public GridService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory,
+            IMemoryCache memoryCache) 
+            : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
+            _memoryCache = memoryCache;
         }
 
         public async Task<Byte[]> Process(HttpContext context, string page)
@@ -33,8 +46,10 @@ namespace DbNetSuiteCore.Services
                 _context = context;
                 switch (page.ToLower())
                 {
-                    case "gridcontrol":
+                    case PageNames.GridControl:
                         return await GridView();
+                    case PageNames.JsonCache:
+                        return await JsonCache(context);
                     default:
                         return new byte[0];
                 }
@@ -68,6 +83,24 @@ namespace DbNetSuiteCore.Services
             }
         }
 
+        private async Task<Byte[]> JsonCache(HttpContext context)
+        {
+            context.Request.Query.TryGetValue("key", out StringValues key);
+            string json = "[]";
+            if (string.IsNullOrEmpty(key))
+            {
+                _memoryCache.TryGetValue(key, out string cachedJson);
+
+                if (!string.IsNullOrEmpty(cachedJson))
+                {
+                    json = cachedJson;
+                }
+            }
+    
+            SetMimeType(_context, ".json");
+            return Encoding.UTF8.GetBytes(json);
+        }
+
         private async Task<GridViewDialogViewModel> ViewDialogContent(GridModel gridModel)
         {
             await GetRecord(gridModel);
@@ -83,6 +116,13 @@ namespace DbNetSuiteCore.Services
 
             if (gridModel.IsStoredProcedure == false && gridModel.Uninitialised)
             {
+                if (gridModel.DataSourceType == DataSourceType.JSON)
+                {
+                    var url = RequestHelper.BuildUrl(gridModel.HttpContext.Request, $"/{PageNames.JsonCache}{Middleware.DbNetSuiteCore.Extension}", $"key=test");
+                    var (ok, error) = await HttpHelper.CheckDuckDbHttpAccessAsync(url);
+                    gridModel.JsonCacheType = ok ? CacheType.Memory : CacheType.File;
+                }
+
                 await ConfigureColumns(gridModel);
 
                 if (gridModel.IsEditable && gridModel.Columns.Any(c => c.PrimaryKey) == false)
@@ -97,6 +137,11 @@ namespace DbNetSuiteCore.Services
                         column.FormColumn.Expression = column.Expression;
                         ColumnsHelper.CopyPropertiesTo(column, column.FormColumn);
                     }
+                }
+
+                foreach (var column in gridModel.Columns.Where(c => c.Filter != FilterType.None))
+                {
+                    gridModel.ColumnFilter.Add(column.InitialFilterValue == null ? string.Empty : column.InitialFilterValue.ToString());
                 }
 
                 if (string.IsNullOrEmpty(gridModel.CustomisationPluginName) == false && _context != null)
@@ -148,7 +193,7 @@ namespace DbNetSuiteCore.Services
             foreach (var nestedGrid in gridModel._NestedGrids)
             {
                 nestedGrid.IsNested = true;
-                nestedGrid.Caption = string.Empty;
+              //  nestedGrid.Caption = string.Empty;
                 //nestedGrid.ParentKey = RequestHelper.FormValue("primaryKey", "", _context);
                 nestedGrid.AssignParentModel(_context, _configuration, "summarymodel");
                 nestedGrid.SetId();
@@ -167,6 +212,11 @@ namespace DbNetSuiteCore.Services
                 {
                     nestedGrid.ConnectionAlias = gridModel.ConnectionAlias;
                     nestedGrid.DataSourceType = gridModel.DataSourceType;
+                }
+
+                if (DbHelper.IsInMemoryDb(gridModel.DataSourceType))
+                {
+                    nestedGrid.TableName = gridModel.TableName;
                 }
             }
 
@@ -514,27 +564,8 @@ namespace DbNetSuiteCore.Services
 
         protected async Task UpdateRecords(GridModel gridModel)
         {
-            switch (gridModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.UpdateRecords(gridModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.UpdateRecords(gridModel);
-                    break;
-                default:
-                    await _msSqlRepository.UpdateRecords(gridModel);
-                    break;
-            }
+            // Only SQL data sources support update operations
+            await _repositoryFactory.GetSqlRepository(gridModel.DataSourceType).UpdateRecords(gridModel);
         }
 
         private bool ValidateRecord(GridModel gridModel)

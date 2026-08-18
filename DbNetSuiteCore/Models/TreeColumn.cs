@@ -1,5 +1,4 @@
 ﻿using DbNetSuiteCore.Enums;
-using MongoDB.Bson;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -23,9 +22,6 @@ namespace DbNetSuiteCore.Models
         }
 
         internal TreeColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
-        {
-        }
-        internal TreeColumn(BsonElement element) : base(element)
         {
         }
     }

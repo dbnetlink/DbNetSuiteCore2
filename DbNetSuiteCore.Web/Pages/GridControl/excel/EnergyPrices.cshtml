@@ -1,22 +1,37 @@
 ﻿@page
 @using DbNetSuiteCore.Enums
-@using DbNetSuiteCore.Helpers
 @using DbNetSuiteCore.Models
-@using DbNetSuiteCore.Web.Enums
 @using DbNetSuiteCore.Web.Plugins
+@using System.Globalization
 
 @{
 
-      var energyPricesGrid = new GridModel(DataSourceType.Excel, "https://localhost:7243/data/excel/DomesticEnergyPrices.xlsx");
-  //  var energyPricesGrid = new GridModel(DataSourceType.Excel, "/data/excel/DomesticEnergyPrices.xlsx");
+    //    var energyPricesGrid = new GridModel(DataSourceType.Excel, "https://localhost:7243/data/excel/DomesticEnergyPrices.xlsx");
+    var energyPricesGrid = new GridModel(DataSourceType.Excel, "/data/excel/DomesticEnergyPrices.xlsx");
 
-      energyPricesGrid.CustomisationPlugin = typeof(EnergyPricesPlugin);
-    energyPricesGrid.SheetName = "Table 5.5.1";
- //   energyPricesGrid.DeferredLoad = true;
- //   energyPricesGrid.Cache = true;
- //   energyPricesGrid.Bind(GridClientEvent.CellTransform, "highlightQuality");
+    energyPricesGrid.CustomisationPlugin = typeof(EnergyPricesPlugin);
+    energyPricesGrid.SheetName = "5.5.1 (inc. taxes)";
+    energyPricesGrid.SheetRange = "A9:AG55";
 
+    var columnNames = new List<string>() { "year", "austria", "belgium", "denmark", "finland", "france", "germany", "greece", "ireland", "italy", "luxembourg", "netherlands", "portugal", "spain", "sweden", "united_kingdom", "australia", "canada", "czech_republic", "hungary", "japan", "korea", "new_zealand", "norway", "poland", "slovakia", "switzerland", "turkey", "usa", "iea_median", "uk_relative_to_iea_median", "uk_relative_to_iea_rank", "uk_relative_to_g7_rank" };
 
-        @(await DbNetSuiteCore.Control.Create(HttpContext).Render(energyPricesGrid))
+    var gridColumns = new List<GridColumn>();
+
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+
+    foreach(string columnName in columnNames)
+    {
+        var gridColumn = new GridColumn(columnName/*, textInfo.ToTitleCase(columnName)*/);
+
+        if (columnName != "year" && columnName.Contains("rank") == false)
+        {
+            gridColumn.Format = "0.00";
+        }
+        gridColumns.Add(gridColumn);
+    }
+
+    energyPricesGrid.Columns = gridColumns;
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(energyPricesGrid))
 }
         

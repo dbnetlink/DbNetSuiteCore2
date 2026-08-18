@@ -10,8 +10,8 @@ namespace DbNetSuiteCore.Web.Helpers
             {DataSourceType.MSSQL, "Server=localhost;Database={0};Trusted_Connection=True;TrustServerCertificate=True;"},
             {DataSourceType.MySql, "server=localhost;database={0};user=root;password=password1234;"},
             {DataSourceType.PostgreSql, "Host=localhost;Username=postgres;Password=password1234;Database={0};pooling=false;"},
-            {DataSourceType.MongoDB, "{0}"}, 
-            {DataSourceType.SQLite, "Data Source=~/data/sqlite/{0}.db;Cache=Shared;"}
+            {DataSourceType.SQLite, "Data Source=~/data/sqlite/{0}.db;Cache=Shared;"},
+            {DataSourceType.DuckDB, "Data Source=~/data/duckdb/{0}.duckdb;Cache=Shared;"}
         };
 
         private static Dictionary<DataSourceType, string> ConnectionAlias = new Dictionary<DataSourceType, string>()
@@ -19,8 +19,8 @@ namespace DbNetSuiteCore.Web.Helpers
             {DataSourceType.MSSQL, "Northwind(mssql)"},
             {DataSourceType.MySql, "Northwind2(mysql)"},
             {DataSourceType.PostgreSql, "Northwind(postgresql)"},
-            {DataSourceType.MongoDB, "Northwind"},
-            {DataSourceType.SQLite, "Northwind(sqlite)"}
+            {DataSourceType.SQLite, "Northwind(sqlite)"},
+            {DataSourceType.DuckDB, "DuckDB"}
         };
         public static string TestConnectionString(StringValues db, DataSourceType dataSourceType)
         {

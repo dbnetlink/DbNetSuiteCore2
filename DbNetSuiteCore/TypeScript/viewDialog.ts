@@ -3,8 +3,8 @@ class ViewDialog extends Dialog {
     constructor(dialog: HTMLDialogElement, gridControl: GridControl) {
         super(dialog, gridControl);
         this.gridControl = gridControl;
-        this.dialog.querySelector(this.control.buttonSelector("previous")).addEventListener("click", () => gridControl.previousRow());
-        this.dialog.querySelector(this.control.buttonSelector("next")).addEventListener("click", () => gridControl.nextRow());
+        this.dialog.querySelector(this.control!.buttonSelector("previous"))?.addEventListener("click", () => gridControl.previousRow());
+        this.dialog.querySelector(this.control!.buttonSelector("next"))?.addEventListener("click", () => gridControl.nextRow());
         this.control.getButton("view").addEventListener("click", this.open.bind(this))
     }
 
@@ -19,8 +19,8 @@ class ViewDialog extends Dialog {
     }
 
     getRecord() {
-        let input = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
-        input.value = this.gridControl.selectedRow.dataset.id;
+        const input: HTMLInputElement = this.dialog.querySelector("input[hx-post]") as HTMLInputElement;
+        input.value = this.gridControl.selectedRow?.dataset.id as string;
         htmx.trigger(input, "changed");
     }
 
@@ -34,7 +34,7 @@ class ViewDialog extends Dialog {
     }
 
     columnCell(columnName: string) :HTMLDivElement {
-        return this.dialog.querySelector(`div[data-columnname='${columnName.toLowerCase()}']`);
+        return this.dialog.querySelector(`div[data-columnname='${columnName.toLowerCase()}']`) as HTMLDivElement;
     }
 
     columnValue(columnName: string) {

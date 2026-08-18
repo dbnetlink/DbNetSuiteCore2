@@ -1,14 +1,9 @@
-interface RowModification {
-    modified: boolean;
-    columns: Array<string>
-}
-
 class GridControl extends ComponentControl {
     private bgColourClass = "bg-cyan-600";
     private textColourClass = "text-zinc-100";
-    viewDialog: ViewDialog;
-    selectedRow: HTMLTableRowElement;
-    jsonData: [any];
+    viewDialog: ViewDialog | null = null;
+    selectedRow: HTMLTableRowElement | null = null;
+    jsonData: Array<object> = [];
     deferredLoad: boolean = false;
 
     constructor(gridId: string, deferredLoad: boolean) {
@@ -19,7 +14,7 @@ class GridControl extends ComponentControl {
         }
     }
 
-    afterRequest(evt) {
+    afterRequest(evt:any) {
         let gridId = evt.target.closest("form").id;
         if (gridId.startsWith(this.controlId) == false || evt.detail.elt.name == "nestedGrid") {
             return
@@ -31,11 +26,11 @@ class GridControl extends ComponentControl {
 
         switch (triggerName) {
             case "viewdialogcontent":
-                this.viewDialog.show();
+                this.viewDialog?.show();
                 this.invokeEventHandler('ViewDialogUpdated', { viewDialog: this.viewDialog });
                 return;
             case "refresh":
-                let hxVals = JSON.parse(this.triggerElement(evt).getAttribute("hx-vals"));
+                let hxVals = JSON.parse(this.triggerElement(evt).getAttribute("hx-vals") ?? '');
                 rowIndex = hxVals.rowIndex
         }
 
@@ -59,8 +54,8 @@ class GridControl extends ComponentControl {
             icons[1].addEventListener("click", ev => this.showHideNestedGrid(ev, false));
         });
 
-        this.controlElements("tr.grid-row").forEach((row: HTMLTableRowElement) => { this.invokeEventHandler('RowTransform', { row: row }) });
-        this.controlElements("td[data-value]").forEach((cell: HTMLTableCellElement) => { this.invokeCellTransform(cell) });
+        this.controlElements("tr.grid-row").forEach((row: Element) => { this.invokeEventHandler('RowTransform', { row: row }) });
+        this.controlElements("td[data-value]").forEach((cell: Element) => { this.invokeCellTransform(cell as HTMLTableCellElement) });
         this.reassignFormCheckboxValue();
 
         this.controlElements("tbody a").forEach((e) => {
@@ -75,7 +70,7 @@ class GridControl extends ComponentControl {
             if (this.controlElement(this.multiRowSelectAllSelector())) {
                 this.controlElement(this.multiRowSelectAllSelector()).addEventListener("change", (ev) => { this.updateMultiRowSelect(ev) });
                 this.controlElements(this.multiRowSelectSelector()).forEach((e) => {
-                    e.addEventListener("change", (ev) => {
+                    e.addEventListener("change", (ev:any) => {
                         this.selectRow(ev.target, true);
                     })
                 });
@@ -99,37 +94,37 @@ class GridControl extends ComponentControl {
             rowIndex = rowCount;
         }
 
-        let row: HTMLElement = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null));
+        const row: HTMLElement = document.querySelector(this.rowSelector(rowIndex > -1 ? rowIndex : null)) as HTMLElement;
         if (row) {
             row.click();
         }
 
-        this.controlElements("tr.lookup-refresh select").forEach((select: HTMLSelectElement) => {
-            let filter: HTMLSelectElement = this.controlElement(`thead select[data-key="${select.dataset.key}"]`)
+        this.controlElements("tr.lookup-refresh select").forEach((select) => {
+            let filter: HTMLSelectElement = this.controlElement(`thead select[data-key="${select.dataset.key}"]`) as HTMLSelectElement;
             if (filter) {
                 filter.innerHTML = select.innerHTML;
             }
         });
 
-        this.controlElements("thead input[data-key]").forEach((input: HTMLInputElement) => {
+        this.controlElements("thead input[data-key]").forEach((input) => {
             input.title = "";
             input.style.backgroundColor = "";
         });
 
-        this.controlElements("tr.column-filter-error span").forEach((span: HTMLElement) => {
-            let input: HTMLInputElement = this.controlElement(`thead input[data-key="${span.dataset.key}"]`)
+        this.controlElements("tr.column-filter-error span").forEach((span) => {
+            let input: HTMLInputElement = this.controlElement(`thead input[data-key="${span.dataset.key}"]`) as HTMLInputElement;
             input.title = span.innerText;
             input.style.backgroundColor = "rgb(252 165 165)";
         });
 
         let thead = this.controlElement("thead") as HTMLElement;
-        if (thead.dataset.frozen.toLowerCase() == "true") {
+        if (thead.dataset.frozen?.toLowerCase() == "true") {
             thead.style.top = `0px`;
             thead.style.position = 'sticky';
             thead.style.zIndex = '1';
         }
 
-        var args = {}
+        let args: Dictionary<object> = {};
         if (this.gridControlElement("#jsonData")) {
             this.jsonData = JSON.parse((this.gridControlElement("#jsonData") as HTMLTextAreaElement).value);
             args['json'] = this.jsonData;
@@ -143,10 +138,18 @@ class GridControl extends ComponentControl {
     }
 
     private setTableWidth() {
-        const table: HTMLTableElement = this.controlElement("table");
+        const table: HTMLTableElement | null = this.controlElement("table") as HTMLTableElement | null;
 
-        table.parentElement.style.width = '';
-        table.parentElement.style.overflowX = '';
+        if (!table) {
+            return;
+        }
+        const tableParent: HTMLElement = table.parentElement as HTMLElement;
+
+
+        if (table) {
+            tableParent.style.width = '';
+            tableParent.style.overflowX = '';
+        }
 
         let totalWidth = 0;
         const headers = table.querySelectorAll("th")
@@ -155,8 +158,8 @@ class GridControl extends ComponentControl {
         var offsetLeft = table.getBoundingClientRect().left;
 
         if (document.documentElement.clientWidth < totalWidth + offsetLeft) {
-            table.parentElement.style.width = `${document.documentElement.clientWidth - 30 - offsetLeft}px`;
-            table.parentElement.style.overflowX = 'auto';
+            tableParent.style.width = `${document.documentElement.clientWidth - 30 - offsetLeft}px`;
+            tableParent.style.overflowX = 'auto';
         }
     }
 
@@ -165,8 +168,8 @@ class GridControl extends ComponentControl {
         let popover = cell.querySelector(".tooltip-popover") as HTMLDivElement;
 
         if (!popover) {
-            popover = document.createElement('div');
-            popover.innerText = cell.dataset.value;
+            popover = document.createElement('div') as HTMLDivElement;
+            popover.innerText = cell.dataset.value as string;
             popover.className = 'tooltip-popover'
             cell.appendChild(popover);
         }
@@ -200,7 +203,7 @@ class GridControl extends ComponentControl {
 
         var viewDialog = this.controlElement(".view-dialog");
         if (viewDialog) {
-            this.viewDialog = new ViewDialog(viewDialog, this);
+            this.viewDialog = new ViewDialog(viewDialog as HTMLDialogElement, this);
         }
 
         this.assignSearchDialog();
@@ -209,14 +212,14 @@ class GridControl extends ComponentControl {
         document.body.addEventListener('htmx:configRequest', (ev) => { this.configRequest(ev) });
         document.body.addEventListener('htmx:afterSettle', (ev) => { this.afterSettle(ev) });
 
-        this.formMessage = this.controlElement("#form-message");
+        this.formMessage = this.controlElement("#form-message") as HTMLDivElement;
 
         window.addEventListener('resize', ev => this.setTableWidth())
         this.invokeEventHandler('Initialised');
     }
 
     checkForVisibility() {
-        let handleIntersection = function (entries) {
+        let handleIntersection = function (entries:any) {
             for (let entry of entries) {
                 if (entry.isIntersecting) {
                     let form = (entry.target as HTMLFormElement);
@@ -231,7 +234,7 @@ class GridControl extends ComponentControl {
         observer.observe(this.form);
     }
 
-    public configRequest(evt) {
+    public configRequest(evt:any) {
         if (this.isControlEvent(evt) == false) {
             return;
         }
@@ -243,7 +246,7 @@ class GridControl extends ComponentControl {
         }
     }
 
-    public afterSettle(evt) {
+    public afterSettle(evt:any) {
         if (this.isControlEvent(evt) == false) {
             return;
         }
@@ -256,7 +259,7 @@ class GridControl extends ComponentControl {
 
         switch (this.triggerName(evt)) {
             case "apply":
-                if (this.formBody.dataset.validationpassed == "True") {
+                if (this.formBody?.dataset.validationpassed == "True") {
                     this.validateUpdate()
                 }
                 else {
@@ -272,7 +275,7 @@ class GridControl extends ComponentControl {
         this.controlElements("tr.grid-row").forEach((row) => {
             let rowModification = this.getFormModification(row)
             if (rowModification.modified) {
-                modifiedRows.push(row);
+                modifiedRows.push(row as HTMLTableRowElement);
             }
         });
 
@@ -288,7 +291,7 @@ class GridControl extends ComponentControl {
         }
 
         this.currentValidationRow = null;
-        this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
+        (this.controlElement("input[name='validationPassed']") as HTMLInputElement).value = (inError == false).toString();
 
         if (inError == false) {
             this.triggerCommit()
@@ -332,13 +335,13 @@ class GridControl extends ComponentControl {
     }
 
     public columnSeriesData(columnName: string) {
-        let series = [];
+        let series = Array<string>();
         if (this.jsonData.length) {
             let propName = this.getPropertyName(this.jsonData[0], columnName);
 
             if (propName) {
-                for (var i = 0; i < this.jsonData.length; i++) {
-                    series.push(this.jsonData[i][propName])
+                for (let i = 0; i < this.jsonData.length; i++) {
+                    series.push((this.jsonData[i] as Record<string, unknown>)[propName] as string);
                 }
             }
         }
@@ -366,7 +369,7 @@ class GridControl extends ComponentControl {
                     for (let c = 0; c < columnNames.length; c++) {
                         let propName = this.getPropertyName(this.jsonData[r], columnNames[c]);
                         if (propName) {
-                            series.push(this.jsonData[r][propName])
+                            series.push((this.jsonData[r] as Record<string, unknown>)[propName] as string);
                         }
                     }
                 }
@@ -385,23 +388,28 @@ class GridControl extends ComponentControl {
     }
 
     private invokeCellTransform(cell: HTMLTableCellElement) {
-        var columnName = (this.controlElement("thead").children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname
-        var userDataType = (this.controlElement("colgroup").children[cell.cellIndex] as HTMLTableColElement).dataset.userdatatype
+        const columnName = (this.controlElement("thead")?.children[0].children[cell.cellIndex] as HTMLTableCellElement).dataset.columnname;
+        const userDataType = (this.controlElement("colgroup")?.children[cell.cellIndex] as HTMLTableColElement).dataset.userdatatype;
 
-        var args = { cell: cell, columnName: columnName }
+        const args: Record<string, unknown> = { cell, columnName };
 
-        if (userDataType == "JsonDocument") {
-            try { args['json'] = JSON.parse(cell.innerText); } catch { }
+        if (userDataType === "JsonDocument") {
+            try {
+                args['json'] = JSON.parse(cell.innerText);
+            } catch (e) {
+                console.warn("invokeCellTransform: failed to parse cell JSON", e);
+            }
         }
-        this.invokeEventHandler('CellTransform', args)
+
+        this.invokeEventHandler('CellTransform', args);
     }
 
     private configureNavigation() {
         let tbody = this.controlElement("tbody") as HTMLElement;
 
-        let currentPage = parseInt(tbody.dataset.currentpage);
-        let totalPages = parseInt(tbody.dataset.totalpages);
-        let rowCount = parseInt(tbody.dataset.rowcount);
+        let currentPage = parseInt(tbody.dataset.currentpage as string);
+        let totalPages = parseInt(tbody.dataset.totalpages as string);
+        let rowCount = parseInt(tbody.dataset.rowcount as string);
 
         if (totalPages == 0) {
             this.updateLinkedGrids('');
@@ -422,7 +430,7 @@ class GridControl extends ComponentControl {
         }
 
         if (this.toolbarExists()) {
-            let queryLimit = parseInt(this.controlElement("#query-limited").dataset.querylimit);
+            let queryLimit = parseInt(this.controlElement("#query-limited").dataset.querylimit as string);
 
             if (totalPages == 0) {
                 this.removeClass('#no-records', "hidden");
@@ -441,19 +449,24 @@ class GridControl extends ComponentControl {
             }
 
             this.setPageNumber(currentPage, totalPages, "page");
-            (this.controlElement('[data-type="total-pages"]') as HTMLInputElement).value = totalPages.toString();
+            let pageTotal = (this.controlElement('[data-type="total-pages"]') as HTMLInputElement);
+            if (pageTotal) {
+                pageTotal.value = totalPages.toString();
+            }
             (this.controlElement('[data-type="row-count"]') as HTMLInputElement).value = rowCount.toString();
 
-            this.getButton("first").disabled = currentPage == 1;
-            this.getButton("previous").disabled = currentPage == 1;
-            this.getButton("next").disabled = currentPage == totalPages;
-            this.getButton("last").disabled = currentPage == totalPages;
+            if (this.getButton("first")) {
+                this.getButton("first").disabled = currentPage == 1;
+                this.getButton("previous").disabled = currentPage == 1;
+                this.getButton("next").disabled = currentPage == totalPages;
+                this.getButton("last").disabled = currentPage == totalPages;
+            }
         }
     }
 
     private rowSelection() {
         let thead = this.controlElement("thead") as HTMLElement;
-        return thead.dataset.rowselection.toLowerCase();
+        return thead.dataset.rowselection?.toLowerCase();
     }
 
 
@@ -463,7 +476,7 @@ class GridControl extends ComponentControl {
         }
         let tbody = this.controlElement("tbody") as HTMLElement;
         let sortKey = tbody.dataset.sortkey;
-        let sortIcon = tbody.querySelector("span#sortIcon").innerHTML;
+        let sortIcon = (tbody.querySelector("span#sortIcon") as HTMLSpanElement).innerHTML;
 
         this.controlElements(`th[data-key] span`).forEach(e => e.innerHTML = '')
 
@@ -476,20 +489,20 @@ class GridControl extends ComponentControl {
         span.innerHTML = sortIcon
     }
 
-    private showHideNestedGrid(ev: Event, show) {
+    private showHideNestedGrid(ev: Event, show: boolean) {
         ev.stopPropagation();
         let tr = (ev.target as HTMLElement).closest("tr") as HTMLTableRowElement
 
-        let icons = tr.firstElementChild.querySelectorAll("span")
+        let icons = tr.firstElementChild?.querySelectorAll("span") as NodeListOf<HTMLSpanElement>
 
         let siblingRow = tr.nextElementSibling as HTMLElement;
 
         if (siblingRow && siblingRow.classList.contains("nested-grid-row")) {
-            siblingRow.style.display = show ? null : "none"
+            siblingRow.style.display = show ? 'block' : "none"
         }
         else if (show) {
             let span = icons[2]
-            span.setAttribute("hx-vals", JSON.stringify({ rowIndex: span.closest("tr").dataset.idx, primaryKey: span.dataset.foldername }));
+            span.setAttribute("hx-vals", JSON.stringify({ rowIndex: span.closest("tr")?.dataset.idx, primaryKey: span.dataset.foldername }));
             htmx.trigger(span, "click")
         }
 
@@ -498,15 +511,15 @@ class GridControl extends ComponentControl {
     }
 
     private refresh() {
-        let pageSelect = this.controlElement('[name="page"]')
+        let pageSelect = this.controlElement('[name="page"]') as HTMLInputElement
         pageSelect.value = "1";
         htmx.trigger(pageSelect, "changed");
     }
 
     private updateMultiRowSelect(ev: Event) {
         let checked = (ev.target as HTMLInputElement).checked
-        this.controlElements(this.multiRowSelectSelector()).forEach((e: HTMLInputElement) => {
-            e.checked = checked;
+        this.controlElements(this.multiRowSelectSelector()).forEach((e) => {
+            (e as HTMLInputElement).checked = checked;
             this.selectRow(e);
         });
 
@@ -514,7 +527,7 @@ class GridControl extends ComponentControl {
     }
 
     private selectRow(target: HTMLElement, multiSelect: boolean = false) {
-        let tr = target.closest('tr')
+        const tr = target.closest('tr') as HTMLTableRowElement;
         if (target.classList.contains("multi-select") == false) {
             if (tr.classList.contains(this.bgColourClass)) {
                 return;
@@ -533,7 +546,7 @@ class GridControl extends ComponentControl {
         tr.querySelectorAll("a").forEach(e => e.classList.add("selected"));
         tr.querySelectorAll("td[data-value] > div > svg,td[data-isfolder] svg,td > div.nested-icons svg").forEach(e => e.setAttribute("fill", "#ffffff"));
 
-        this.updateLinkedGrids(tr.dataset.idx);
+        this.updateLinkedGrids(tr.dataset.idx as string);
         this.selectedRow = tr;
 
         if (this.viewDialog) {
@@ -555,13 +568,13 @@ class GridControl extends ComponentControl {
         this.updateLinkedControls(this.getLinkedControlIds(), rowIdx)
     }
 
-    private clearHighlighting(row: HTMLTableRowElement) {
+    private clearHighlighting(row: HTMLTableRowElement|null) {
         if (row) {
             this.clearRowHighlight(row);
         }
         else {
             this.controlElements(this.rowSelector()).forEach(e => {
-                this.clearRowHighlight(e.closest("tr"));
+                this.clearRowHighlight(e.closest("tr") as HTMLTableRowElement);
             });
         }
     }
@@ -592,21 +605,21 @@ class GridControl extends ComponentControl {
         }
     }
 
-    private copyElementToClipboard(element) {
-        window.getSelection().removeAllRanges();
-        let range = document.createRange();
-        range.selectNode(typeof element === 'string' ? document.getElementById(element) : element);
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
+    private async copyElementToClipboard(element: HTMLElement) {
+        const html = element.innerHTML;
+        const blob = new Blob([html], { type: "text/html" });
+        const data = [new ClipboardItem({ "text/html": blob })];
+
+        await navigator.clipboard.write(data);
+
     }
 
     public previousRow() {
-        (this.selectedRow.previousElementSibling as HTMLTableRowElement).click()
+        (this.selectedRow?.previousElementSibling as HTMLTableRowElement).click()
     }
 
     public nextRow() {
-        (this.selectedRow.nextElementSibling as HTMLTableRowElement).click()
+        (this.selectedRow?.nextElementSibling as HTMLTableRowElement).click()
     }
 
     private download() {
@@ -631,7 +644,7 @@ class GridControl extends ComponentControl {
                     return response.blob()
                 }
                 else {
-                    throw new Error(response.headers.get("error"))
+                    throw new Error(response.headers.get("error") as string)
                 }
             })
             .then((blob) => {
@@ -646,13 +659,13 @@ class GridControl extends ComponentControl {
             }).catch((e) => console.log(`Critical failure: ${e.message}`));
     }
 
-    private openWindow(response) {
+    private openWindow(response: Blob) {
         const url = window.URL.createObjectURL(response);
-        const tab = window.open();
+        const tab = window.open() as Window;
         tab.location.href = url;
     }
 
-    private downloadFile(response, extension) {
+    private downloadFile(response: Blob, extension: string) {
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(response);
         extension = (extension == "excel") ? "xlsx" : extension;
@@ -686,18 +699,20 @@ class GridControl extends ComponentControl {
         return `td > input.multi-select`
     }
 
-    public gridControlElement(selector): HTMLElement {
+    public gridControlElement(selector:string): HTMLElement {
         return this.controlElement(selector)
     }
 
+
     private selectedValues() {
-        let selectedValues = [];
-        this.controlElements(this.multiRowSelectSelector()).forEach((checkbox: HTMLInputElement) => {
+        const selectedValues = Array<string>();
+        this.controlElements(this.multiRowSelectSelector()).forEach((el: Element) => {
+            const checkbox = el as HTMLInputElement
             if (checkbox.checked) {
                 let tr = checkbox.closest("tr") as HTMLTableRowElement;
 
                 if (tr.dataset.id) {
-                    selectedValues.push(tr.dataset.idx)
+                    selectedValues.push(tr.dataset?.idx as string)
                 }
             }
         })
@@ -705,16 +720,16 @@ class GridControl extends ComponentControl {
         return selectedValues;
     }
 
-    public columnCells(columnName): NodeListOf<HTMLTableCellElement> {
+    public columnCells(columnName: string): NodeListOf<HTMLTableCellElement> {
         let th = this.heading(columnName);
-        return this.controlElements(`td:nth-child(${(th.cellIndex + 1)})`)
+        return this.controlElements(`td:nth-child(${(th.cellIndex + 1)})`) as NodeListOf<HTMLTableCellElement>;
     }
 
-    public heading(columnName): HTMLTableCellElement {
-        return this.controlElement(`th[data-columnname='${columnName}']`) ?? this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)
+    public heading(columnName: string): HTMLTableCellElement {
+        return (this.controlElement(`th[data-columnname='${columnName}']`) ?? this.controlElement(`th[data-columnname='${columnName.toLowerCase()}']`)) as HTMLTableCellElement;
     }
 
-    public columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement {
+    public columnCell(columnName: string, row: HTMLTableRowElement): HTMLTableCellElement | null {
         let th = this.heading(columnName);
         if (!th) {
             console.error(`Column name: '${columnName}' not found`)
@@ -722,16 +737,16 @@ class GridControl extends ComponentControl {
         return th ? row.querySelector(`td:nth-child(${(th.cellIndex + 1)})`) : null;
     }
 
-    public columnValue(columnName: string, row: HTMLTableRowElement = null) {
+    public columnValue(columnName: string, row: HTMLTableRowElement | null = null) {
         if (!row) {
-            row = this.currentValidationRow ? this.currentValidationRow : this.selectedRow;
+            row = (this.currentValidationRow ? this.currentValidationRow : this.selectedRow) as HTMLTableRowElement;
         }
 
         let datasetValue = row.dataset[columnName] ?? row.dataset[columnName.toLowerCase()];
         if (datasetValue || datasetValue == '') {
             return datasetValue;
         }
-        let cell: HTMLTableCellElement = this.columnCell(columnName, row)
+        let cell: HTMLTableCellElement = this.columnCell(columnName, row) as HTMLTableCellElement;
 
         if (cell) {
             if (this.hasFormControl(cell)) {
@@ -759,11 +774,11 @@ class GridControl extends ComponentControl {
         this.updateFixedFilterParams(params);
     }
 
-    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
+    public highlightError(columnName: string, row: HTMLTableRowElement | null = null) {
         if (!row) {
-            row = this.currentValidationRow;
+            row = this.currentValidationRow as HTMLTableRowElement;
         }
-        let cell: HTMLTableCellElement = this.columnCell(columnName, row)
+        let cell: HTMLTableCellElement = this.columnCell(columnName, row) as HTMLTableCellElement;
         let element: HTMLElement = cell;
         if (this.hasFormControl(cell)) {
             element = this.formControl(columnName, row);
@@ -779,7 +794,7 @@ class GridControl extends ComponentControl {
     }
 
     private configureFormControls() {
-        let firstRow: HTMLTableRowElement = this.controlElement("tr.grid-row:first-child")
+        let firstRow: HTMLTableRowElement | null = this.controlElement("tr.grid-row:first-child") as HTMLTableRowElement
 
         if (!firstRow) {
             return;
@@ -793,10 +808,11 @@ class GridControl extends ComponentControl {
             }
         });
 
-        firstRow.querySelectorAll("input[type='text']").forEach((input: HTMLInputElement) => {
-            const textArray = [];
+        firstRow.querySelectorAll("input[type='text']").forEach((el: Element) => {
+            const input = el as HTMLInputElement;
+            const textArray = Array<string>();
             let cell = input.parentElement as HTMLTableCellElement
-            this.controlElements(`tr.grid-row td:nth-child(${cell.cellIndex + 1})`).forEach((c: HTMLTableCellElement) => {
+            this.controlElements(`tr.grid-row td:nth-child(${cell.cellIndex + 1})`).forEach((c: Element) => {
                 if (c.children.length && c.children[0].tagName == "INPUT") {
                     textArray.push((c.children[0] as HTMLInputElement).value)
                 }

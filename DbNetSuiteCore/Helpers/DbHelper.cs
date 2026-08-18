@@ -2,9 +2,9 @@
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
 using DbNetSuiteCore.Services;
+using DuckDB.NET.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using MongoDB.Driver;
 using System.Data;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -26,6 +26,10 @@ namespace DbNetSuiteCore.Helpers
                         connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
                         connection = new SqliteConnection(connectionString);
                         break;
+                    case DataSourceType.DuckDB:
+                        connectionString = MapDatabasePath(connectionString, webHostEnvironment!);
+                        connection = GetCustomDbConnection(dataSourceType, connectionString);
+                        break;
                     case DataSourceType.PostgreSql:
                     case DataSourceType.MySql:
                     case DataSourceType.Oracle:
@@ -38,7 +42,7 @@ namespace DbNetSuiteCore.Helpers
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error connecting to data source => {ex.Message}");
+                throw new InvalidOperationException($"Error connecting to data source '{connectionAlias}' of type '{dataSourceType}'", ex);
             }
 
             return connection;
@@ -54,7 +58,7 @@ namespace DbNetSuiteCore.Helpers
             FormService formService = formModel.HttpContext?.RequestServices.GetService<FormService>(); 
             if (formService == null)
             {
-                throw new Exception("FormService not registered with the dependency injection container.s");
+                throw new InvalidOperationException("FormService not registered with the dependency injection container.");
             }
             return formService.GetRecordDataTable(formModel).Result;
         }
@@ -69,7 +73,6 @@ namespace DbNetSuiteCore.Helpers
             }
         }
 
-
         public static string GetConnectionString(string connectionAlias, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(connectionAlias);
@@ -82,7 +85,7 @@ namespace DbNetSuiteCore.Helpers
                 }
                 else
                 {
-                    throw new Exception($"Connection alias <b>{connectionAlias}</b> not found. To allow direct connection string use set appSetting <b>AllowConnectionString</b> to <b>true</b>");
+                    throw new InvalidOperationException($"Connection alias <b>{connectionAlias}</b> not found. To allow direct connection string use set appSetting <b>AllowConnectionString</b> to <b>true</b>");
                 }
             }
             
@@ -134,6 +137,10 @@ namespace DbNetSuiteCore.Helpers
                     assemblyName = "Oracle.ManagedDataAccess";
                     connectionName = "Client.OracleConnection";
                     break;
+                case DataSourceType.DuckDB:
+                    assemblyName = "DuckDB.NET.Data";
+                    connectionName = "DuckDBConnection";
+                    break;
                 default:
                     throw new NotImplementedException($"Custom connection not supported for {dataSourceType} data source type");
             }
@@ -144,13 +151,13 @@ namespace DbNetSuiteCore.Helpers
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}. {ex.Message}");
+                throw new InvalidOperationException($"Unable to load data provider ({assemblyName}). Run Install-Package {assemblyName}.", ex);
             }
             Type connectionType = providerAssembly.GetType($"{assemblyName}.{connectionName}", true);
 
             if (connectionType == null)
             {
-                throw new Exception($"Unable to find connection type ({connectionName}) in data provider ({assemblyName}).");
+                throw new InvalidOperationException($"Unable to find connection type ({connectionName}) in data provider ({assemblyName}).");
             }
 
             Object[] args = new Object[1];
@@ -162,14 +169,14 @@ namespace DbNetSuiteCore.Helpers
 
                 if (instance == null)
                 {
-                    throw new Exception($"Unable to create instance of connection type ({connectionName}) in data provider ({assemblyName}).");
+                    throw new InvalidOperationException($"Unable to create instance of connection type ({connectionName}) in data provider ({assemblyName}).");
                 }
 
                 return instance;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>");
+                throw new InvalidOperationException($"Unable to create <b>{connectionName}</b> connection for connection string or alias <b>{connectionString}</b>", ex);
             }
         }
 
@@ -216,7 +223,7 @@ namespace DbNetSuiteCore.Helpers
                 else
                 {
                     dbParam = command.CreateParameter();
-                    dbParam.ParameterName = ParameterName(key, commandConfig.DataSourceType);
+                    dbParam.ParameterName = ParameterName(key, commandConfig.DataSourceType, true);
                     dbParam.Value = commandConfig.Params[key];
                 }
 
@@ -238,6 +245,17 @@ namespace DbNetSuiteCore.Helpers
                 case DataSourceType.Oracle:
                     template = ":{0}";
                     break;
+                default:
+                    if (IsDuckDb(dataSourceType))
+                    {
+                        if (parameterValue)
+                        {
+                            key = key.Replace("$", "");
+                            return key;
+                        }
+                        template = "${0}";
+                    }
+                    break;
             }
             if (key.Length > 0)
                 if (template.Substring(0, 1) == key.Substring(0, 1))
@@ -257,20 +275,6 @@ namespace DbNetSuiteCore.Helpers
             var connectionStrings = new Dictionary<string, string>();
             configuration.GetSection("ConnectionStrings").Bind(connectionStrings);
             return connectionStrings;
-        }
-
-        public static List<string> GetDatabases(string connectionAlias, IConfiguration configuration)
-        {
-            string connectionString = GetConnectionString(connectionAlias, configuration);
-            var client = new MongoClient(connectionString);
-            return client.ListDatabaseNames().ToList();
-        }
-
-        public static List<string> GetTables(string connectionAlias, IConfiguration configuration, string database)
-        {
-            string connectionString = GetConnectionString(connectionAlias, configuration);
-            var client = new MongoClient(connectionString);
-            return client.GetDatabase(database).ListCollectionNames().ToList();
         }
 
         public static List<string> GetTables(string connectionAlias, DataSourceType dataSourceType, IConfiguration configuration, IWebHostEnvironment webHostEnvironment = null)
@@ -319,6 +323,7 @@ namespace DbNetSuiteCore.Helpers
             switch (dataSourceType)
             {
                 case DataSourceType.PostgreSql:
+                case DataSourceType.DuckDB:
                     expression = expression.ToLower();
                     break;
             }
@@ -331,13 +336,16 @@ namespace DbNetSuiteCore.Helpers
             switch (dataSourceType)
             {
                 case DataSourceType.MSSQL:
-                case DataSourceType.Excel:
                 case DataSourceType.SQLite:
                     return $"[@]";
                 case DataSourceType.MySql:
                     return $"`@`";
-                case DataSourceType.PostgreSql:
-                    return $"\"@\"";
+                default:
+                    if (IsDuckDb(dataSourceType))
+                    {
+                        return $"\"@\"";
+                    }
+                    break;
             }
             return "@";
         }
@@ -367,7 +375,8 @@ namespace DbNetSuiteCore.Helpers
                     sql = "SELECT name FROM sqlite_master WHERE type in ('table','view') order by 1";
                     break;
                 case DataSourceType.PostgreSql:
-                    sql = "SELECT table_schema || '.' || table_name AS name  FROM information_schema.tables where table_schema = 'public' order by 1";
+                case DataSourceType.DuckDB:
+                    sql = "SELECT table_schema || '.' || table_name AS name FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'pg_catalog') ORDER BY 1";
                     break;
                 case DataSourceType.MySql:
                     sql = "SELECT CONCAT(`table_schema`,'.',`table_name`) AS name  FROM information_schema.tables order by 1";
@@ -399,9 +408,42 @@ namespace DbNetSuiteCore.Helpers
             dataTable.Load(command.ExecuteReader(CommandBehavior.Default));
             return dataTable;
         }
-        private static void LoadMongoDBCollections(IMongoDatabase database, List<string> tables)
+
+        public static bool TableExists(IDbConnection connection, string tableName)
         {
-            tables = database.ListCollectionNames().ToList();
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = $tableName";
+            var param = cmd.CreateParameter();
+            param.ParameterName = "tableName";
+            param.Value = tableName;
+            cmd.Parameters.Add(param);
+
+            var count = (long)cmd.ExecuteScalar();
+            return count > 0;
+        }
+
+        public static string ConvertToILike(string input, DataSourceType dataSourceType)
+        {
+            return IsDuckDb(dataSourceType) ? input.Replace("like", "ilike") : input;
+        }
+
+        public static bool IsInMemoryDb(DataSourceType dataSourceType)
+        {
+            switch (dataSourceType)
+            {
+                case DataSourceType.JSON:
+                case DataSourceType.Excel:
+                case DataSourceType.Parquet:
+                case DataSourceType.FileSystem:
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsDuckDb(DataSourceType dataSourceType)
+        {
+            return (dataSourceType == DataSourceType.DuckDB || IsInMemoryDb(dataSourceType));
         }
     }
 }

@@ -35,9 +35,9 @@ namespace DbNetSuiteCore.ViewModels
         public string JsonData => _gridModel.JsonData;
         public string HxTarget => $"{(GridModel.ToolbarPosition == ToolbarPosition.Bottom ? "previous" : "next")} tbody";
 
-        public int ColSpan => VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
+        public int ColSpan => GetColSpan();
         public bool Editable => GridModel.Columns.Any(c => c.Editable);
-        public bool SearchDialog => SearchDialogColumns.Any() && GridModel.Search && GridModel.DataSourceType != DataSourceType.MongoDB;
+        public bool SearchDialog => SearchDialogColumns.Any() && GridModel.Search;
         public GridViewModel(GridModel gridModel) : base(gridModel)
         {
             _gridModel = gridModel;
@@ -121,16 +121,30 @@ namespace DbNetSuiteCore.ViewModels
                 var options = gridColumn.LookupOptions ?? new List<KeyValuePair<string, string>>();
                 if (options.Any() || gridColumn?.Filter == FilterType.Distinct)
                 {
-                    return RenderColumnSelectFilter(options, gridColumn.Key);
+                    return RenderColumnSelectFilter(options, gridColumn);
                 }
                 else
                 {
                     switch (gridColumn?.DataTypeName)
                     {
                         case nameof(Boolean):
-                            return RenderColumnSelectFilter(GridColumn.BooleanFilterOptions, gridColumn.Key);
+                            if (gridColumn.InitialFilterValue != null)
+                            {
+                                switch(gridColumn.InitialFilterValue.ToString().ToLower())
+                                {
+                                    case "yes":
+                                    case "true":
+                                        gridColumn.InitialFilterValue = 1;
+                                        break;
+                                    case "no":
+                                    case "false":
+                                        gridColumn.InitialFilterValue = 0;
+                                        break;
+                                }
+                            }
+                            return RenderColumnSelectFilter(GridColumn.BooleanFilterOptions, gridColumn);
                         default:
-                            return new HtmlString($"<input class=\"w-full\" type=\"search\" name=\"columnFilter\" value=\"{SearchInput}\" hx-post=\"{SubmitUrl}\" hx-trigger=\"input changed delay:1000ms, search\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn?.Key}\" autocomplete=\"off\" />");
+                            return new HtmlString($"<input class=\"w-full\" type=\"search\" name=\"columnFilter\" value=\"{gridColumn.InitialFilterValue?.ToString() ?? string.Empty}\" hx-post=\"{SubmitUrl}\" hx-trigger=\"input changed delay:1000ms, search\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn?.Key}\" autocomplete=\"off\"/>");
                     }
                 }
             }
@@ -138,11 +152,11 @@ namespace DbNetSuiteCore.ViewModels
             return new HtmlString(string.Empty);
         }
 
-        public HtmlString RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, string key)
+        public HtmlString RenderColumnSelectFilter(List<KeyValuePair<string, string>> options, GridColumn gridColumn)
         {
             List<HtmlString> html = new List<HtmlString>();
-            html.Add(new HtmlString($"<select class=\"column-filter\" name=\"columnFilter\" hx-post=\"{SubmitUrl}\" hx-trigger=\"change\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{key}\">"));
-            AddLookupFilterOptions(html, options);
+            html.Add(new HtmlString($"<select class=\"column-filter\" name=\"columnFilter\" hx-post=\"{SubmitUrl}\" hx-trigger=\"change\" hx-target=\"next tbody\" hx-indicator=\"next .htmx-indicator\" hx-swap=\"outerHTML\" data-key=\"{gridColumn.Key}\">"));
+            AddLookupFilterOptions(html, options, true, gridColumn.InitialFilterValue?.ToString() ?? string.Empty);
             html.Add(new HtmlString($"</select>"));
 
             return new HtmlString(string.Join(" ", html));
@@ -201,6 +215,15 @@ namespace DbNetSuiteCore.ViewModels
         private string PageUrl(int pageNumber)
         {
             return $"/gridcontrol{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}?page={pageNumber}";
+        }
+
+        private int GetColSpan()
+        {
+            if (DataSourceType == DataSourceType.FileSystem && Columns.Count() == 0)
+            {
+                return typeof(Models.FileSystemInfo).GetProperties().Length;
+            }
+            return VisibleColumns.Count() + (GridModel.HasNestedGrids ? 1 : 0) + (GridModel.MultiRowSelectLocation == MultiRowSelectLocation.None ? 0 : 1);
         }
 
         public HtmlString RenderButton(string name, HtmlString icon, ResourceNames resourceName, bool disabled = false, string style = "")

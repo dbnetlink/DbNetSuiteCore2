@@ -2,7 +2,7 @@ class SearchDialog extends Dialog {
     lookupDialog: LookupDialog;
     constructor(dialog: HTMLDialogElement, componentControl: ComponentControl) {
         super(dialog, componentControl);
-        this.lookupDialog = new LookupDialog(componentControl.controlElement(".lookup-dialog"), componentControl);
+        this.lookupDialog = new LookupDialog(componentControl.controlElement(".lookup-dialog") as HTMLDialogElement, componentControl);
         this.dependentDialog = this.lookupDialog;
         this.bindSearchButton();
         this.control.getButton("clear").addEventListener("click", this.clear.bind(this))
@@ -12,15 +12,15 @@ class SearchDialog extends Dialog {
     }
 
     bindSearchButton() {
-        let btn = this.control.getButton("search");
+        let btn = this.control?.getButton("search");
         if (btn) {
-            btn.addEventListener("click", this.show.bind(this))
+            btn.addEventListener("click", () => this.show())
         }
     }
 
     operatorSelected(event: Event) {
         let select = event.target as HTMLSelectElement;
-        let tr = select.closest('tr');
+        let tr = select.closest('tr') as HTMLTableRowElement;
 
         tr.querySelectorAll(".first").forEach(e => e.classList.remove("hidden"))
         tr.querySelectorAll("button").forEach(e => e.style.display = 'inline-flex');
@@ -59,14 +59,14 @@ class SearchDialog extends Dialog {
         }
     }
 
-    isVisible(el) {
+    isVisible(el:any) {
         return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     }
 
     valueEntered(event: Event) {
         let input = event.target as HTMLInputElement;
-        let tr = input.closest('tr');
-        let select = tr.querySelector("select");
+        let tr = input.closest('tr') as HTMLTableRowElement;
+        let select = tr.querySelector("select") as HTMLSelectElement;
 
         if (input.value != '' && select.value == '') {
             select.options[1].selected = true;
@@ -84,17 +84,17 @@ class SearchDialog extends Dialog {
     }
 
     showLookup(event: Event) {
-        let button = (event.target as HTMLElement).closest("button");
-        let input = button.closest("tr").querySelector("input") as HTMLInputElement;
-        let label = button.closest("tr").querySelector("td").innerText;
+        let button = (event.target as HTMLElement).closest("button") as HTMLButtonElement;
+        let input = button.closest("tr")?.querySelector("input") as HTMLInputElement;
+        let label = (button.closest("tr")?.querySelector("td") as HTMLTableCellElement).innerText;
 
-        let select = null;
+        let select: HTMLSelectElement | null = null;
         if (this.control instanceof (GridControl))
         {
-            select = this.control.controlElement(`tr.lookup-refresh select[data-key='${button.dataset.key}']`)
+            select = this.control.controlElement(`tr.lookup-refresh select[data-key='${button.dataset.key}']`) as HTMLSelectElement;
         }
         if (this.control instanceof (FormControl)) {
-            select = this.control.controlElement(`div.lookup-refresh select[data-key='${button.dataset.key}']`)
+            select = this.control.controlElement(`div.lookup-refresh select[data-key='${button.dataset.key}']`) as HTMLSelectElement;
         }
 
         if (!select) {
@@ -104,13 +104,18 @@ class SearchDialog extends Dialog {
     }
 
     clear() {
-        this.dialog.querySelectorAll(".search-operator").forEach((e: HTMLSelectElement) => { e.value = ''; e.dispatchEvent(new Event('change')); });
+        this.dialog.querySelectorAll(".search-operator").forEach((e: Element) => this.clearElement(e as HTMLSelectElement));
+    }
+
+    clearElement(e: HTMLSelectElement) {
+        e.value = '';
+        e.dispatchEvent(new Event('change'));
     }
 
     openLookup(tr: HTMLTableRowElement) {
-        let caption = tr.querySelector("td").innerText;
+        let caption = (tr.querySelector("td") as HTMLTableCellElement).innerText;
         if (!this.lookupDialog || this.lookupDialog.caption != caption || this.lookupDialog.dialog.open == false) {
-            tr.querySelector("button").click();
+            (tr.querySelector("button") as HTMLButtonElement).click();
         }
     }
 }

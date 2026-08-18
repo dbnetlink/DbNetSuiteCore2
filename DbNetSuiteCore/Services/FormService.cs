@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Services.Interfaces;
 using DbNetSuiteCore.Repositories;
-using System.Text;
 using DbNetSuiteCore.Models;
 using System.Data;
 using DbNetSuiteCore.Helpers;
@@ -9,16 +8,20 @@ using DbNetSuiteCore.ViewModels;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
-using MongoDB.Bson;
-using Microsoft.Extensions.Options;
-using DbNetSuiteCore.Middleware;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Plugins.Interfaces;
 
 namespace DbNetSuiteCore.Services
 {
     public class FormService : ComponentService, IComponentService
     {
-        public FormService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public FormService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory) 
+            : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -116,15 +119,7 @@ namespace DbNetSuiteCore.Services
             List<object> primaryKeyValues = new List<object>();
             foreach (object value in (dataRow.ItemArray ?? new object[] { }))
             {
-                if (value == null)
-                {
-                    continue;
-                }
-                if (value is ObjectId)
-                {
-                    primaryKeyValues.Add(((ObjectId)value).ToString());
-                }
-                else
+                if (value != null)
                 {
                     primaryKeyValues.Add(value);
                 }
@@ -417,78 +412,21 @@ namespace DbNetSuiteCore.Services
 
         protected async Task UpdateRecord(FormModel formModel)
         {
-            switch (formModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.UpdateRecord(formModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.UpdateRecord(formModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.UpdateRecord(formModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.UpdateRecord(formModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.UpdateRecord(formModel);
-                    break;
-                default:
-                    await _msSqlRepository.UpdateRecord(formModel);
-                    break;
-            }
+            // Only SQL data sources support update operations
+            await _repositoryFactory.GetSqlRepository(formModel.DataSourceType).UpdateRecord(formModel);
         }
 
 
         protected async Task InsertRecord(FormModel formModel)
         {
-            switch (formModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.InsertRecord(formModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.InsertRecord(formModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.InsertRecord(formModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.InsertRecord(formModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.InsertRecord(formModel);
-                    break;
-                default:
-                    await _msSqlRepository.InsertRecord(formModel);
-                    break;
-            }
+            // Only SQL data sources support insert operations
+            await _repositoryFactory.GetSqlRepository(formModel.DataSourceType).InsertRecord(formModel);
         }
 
         protected async Task DeleteRecord(FormModel formModel)
         {
-            switch (formModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.DeleteRecord(formModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.DeleteRecord(formModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.DeleteRecord(formModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.DeleteRecord(formModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.DeleteRecord(formModel);
-                    break;
-                default:
-                    await _msSqlRepository.DeleteRecord(formModel);
-                    break;
-            }
+            // Only SQL data sources support delete operations
+            await _repositoryFactory.GetSqlRepository(formModel.DataSourceType).DeleteRecord(formModel);
         }
 
         private int GetRecordNumber(FormModel formModel)

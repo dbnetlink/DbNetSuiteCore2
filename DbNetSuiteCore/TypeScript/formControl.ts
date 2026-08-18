@@ -1,16 +1,15 @@
 class FormControl extends ComponentControl {
-    form: HTMLFormElement;
-    formContainer: HTMLElement;
-    confirmDialog: ConfirmDialog | null;
-    cachedMessage: string | null;
-    cachedMessageType: string | null;
+    formContainer: HTMLElement | null = null;
+    confirmDialog: ConfirmDialog | null = null;
+    cachedMessage: string | null | undefined = null;
+    cachedMessageType: string | null | undefined = null;
     htmlEditorArray: Dictionary<HtmlEditor> = {};
     htmlEditorMissing = false;
-    constructor(formId) {
+    constructor(formId:string) {
         super(formId)
     }
 
-    public afterRequest(evt) {
+    public afterRequest(evt:any) {
         if (this.isControlEvent(evt) == false) {
             return false
         }
@@ -18,15 +17,15 @@ class FormControl extends ComponentControl {
             return;
         }
 
-        this.formContainer = this.controlElement("div.form-container") as HTMLElement;
-        this.formBody = this.controlElement("div.form-body") as HTMLElement;
-        this.formMessage = this.controlElement("#form-message");
+        this.formContainer = this.controlElement("div.form-container");
+        this.formBody = this.controlElement("div.form-body");
+        this.formMessage = this.controlElement("#form-message") as HTMLDivElement;
 
         if (!this.formBody) {
             return
         }
 
-        if (this.formBody.dataset.onetoone.toLowerCase() == "true") {
+        if (this.formBody.dataset.onetoone?.toLowerCase() == "true") {
             var parentHxVals = JSON.parse(this.parentControl.form.getAttribute("hx-vals"));
             if (parentHxVals) {
                 var hxVals = JSON.parse(this.form.getAttribute("hx-vals"));
@@ -34,7 +33,7 @@ class FormControl extends ComponentControl {
                 this.form.setAttribute("hx-vals", JSON.stringify(hxVals));
             }
         }
-
+      
         this.notifyParent(this.formMode() == "update")
 
         switch (this.triggerName(evt)) {
@@ -46,21 +45,21 @@ class FormControl extends ComponentControl {
                     this.searchDialog.bindSearchButton();
                 }
                 if (this.htmlEditorMissing == false) {
-                    this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].reset(el) });
+                    this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].reset(el as HTMLTextAreaElement) });
                 }
                 break;
         }
 
         if (this.cachedMessage) {
-            this.setMessage(this.cachedMessage, this.cachedMessageType);
+            this.setMessage(this.cachedMessage, this.cachedMessageType ?? 'success');
         }
 
         this.updateLinkedChildControls()
 
         window.setTimeout(() => { this.clearErrorMessage() }, 3000)
-        this.controlElements("select.fc-control.readonly").forEach((el) => { this.makeSelectReadonly(el) });
-        this.controlElements("input.fc-control.readonly").forEach((el) => { this.makeCheckboxReadonly(el) });
-        this.controlElements("input[data-texttransform]").forEach((el) => { this.transformText(el) });
+        this.controlElements("select.fc-control.readonly").forEach((el: HTMLElement) => { this.makeSelectReadonly(el as HTMLSelectElement) });
+        this.controlElements("input.fc-control.readonly").forEach((el: HTMLElement) => { this.makeCheckboxReadonly(el as HTMLInputElement) });
+        this.controlElements("input[data-texttransform]").forEach((el: HTMLElement) => { this.transformText(el as HTMLInputElement) });
         this.reassignFormCheckboxValue();
 
         this.configureHtmlEditors();
@@ -69,7 +68,7 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('RecordLoaded');
     }
 
-    public afterSettle(evt) {
+    public afterSettle(evt:any) {
         if (this.isControlEvent(evt) == false) {
             return false
         }
@@ -104,19 +103,19 @@ class FormControl extends ComponentControl {
     private refreshParent() {
         if (this.parentControl) {
             if (this.parentControl instanceof GridControl) {
-                this.cachedMessage = this.formMessage.innerText;
-                this.cachedMessageType = this.formMessage.dataset.highlight;
+                this.cachedMessage = this.formMessage?.innerText;
+                this.cachedMessageType = this.formMessage?.dataset.highlight;
                 this.parentControl.refreshPage()
             }
         }
     }
 
     private validateUpdate() {
-        let args = { mode: this.formBody.dataset.mode, message: '' }
+        let args = { mode: this.formBody?.dataset.mode, message: '' }
         this.invokeEventHandler("ValidateUpdate", args);
 
         var inError = Boolean(args.message != '' || this.errorHighlighted(this.form));
-        this.controlElement("input[name='validationPassed']").value = (inError == false).toString();
+        (this.controlElement("input[name='validationPassed']") as HTMLInputElement).value = (inError == false).toString();
         if (inError) {
             this.setMessage(args.message != '' ? args.message : 'Highlighted fields are in error', 'error')
         }
@@ -150,10 +149,10 @@ class FormControl extends ComponentControl {
         this.invokeEventHandler('Initialised');
     }
 
-    private transformText(input) {
-        input.addEventListener("input", (e) => {
+    private transformText(input: HTMLInputElement) {
+        input.addEventListener("input", (e: Event) => {
             e.preventDefault();
-            let el = e.target;
+            let el = e.target as HTMLInputElement;
             el.value = el.dataset.texttransform == "Uppercase" ? el.value.toUpperCase() : el.value.toLowerCase();
         });
     }
@@ -162,25 +161,25 @@ class FormControl extends ComponentControl {
         this.updateLinkedControls(this.getLinkedControlIds())
     }
 
-    private makeSelectReadonly(selectElement) {
+    private makeSelectReadonly(selectElement:HTMLSelectElement) {
         "change".split(" ").forEach(function (e) {
             selectElement.addEventListener(e, (e) => {
                 e.preventDefault();
-                selectElement.value = selectElement.dataset.value;
+                selectElement.value = selectElement.dataset.value as string;
             });
         });
     }
 
-    private makeCheckboxReadonly(checkboxElement) {
+    private makeCheckboxReadonly(checkboxElement:HTMLInputElement) {
         "click".split(" ").forEach(function (e) {
             checkboxElement.addEventListener(e, (e) => {
                 e.preventDefault();
-                checkboxElement.checked = JSON.parse(checkboxElement.dataset.value);
+                checkboxElement.checked = JSON.parse(checkboxElement.dataset.value as string);
             });
         });
     }
 
-    public highlightError(columnName: string, row: HTMLTableRowElement = null) {
+    public highlightError(columnName: string, row: HTMLTableRowElement) {
         var element: HTMLFormElement = this.formControl(columnName, row);
         if (element) {
             element.dataset.error = "true";
@@ -188,10 +187,10 @@ class FormControl extends ComponentControl {
     }
 
     public getAutoIncrementValue() {
-        return this.formBody.dataset.autoincrementvalue;
+        return this.formBody?.dataset.autoincrementvalue;
     }
 
-    public confirmRequest(evt) {
+    public confirmRequest(evt:any) {
         if (this.isControlEvent(evt) == false || evt.target.hasAttribute('hx-confirm-dialog') == false) {
             return;
         }
@@ -209,17 +208,18 @@ class FormControl extends ComponentControl {
         this.confirmDialog.open(evt);
     }
 
-    public configRequest(evt) {
+    public configRequest(evt: any) {
         if (this.isControlEvent(evt) == false) {
             return;
         }
         this.htmlEditorElements().forEach((el) => { this.htmlEditorArray[el.id].assignContent(evt) });
 
-        evt.detail.parameters["modifiedform"] = JSON.stringify(this.getFormModification(this.formBody));
+        evt.detail.parameters["modifiedform"] = JSON.stringify(this.getFormModification(this.formBody as HTMLElement));
 
-        this.controlElements(".fc-control").forEach((el) => {
-            if (evt.detail.parameters[el.name] == undefined) {
-                evt.detail.parameters[el.name] = ''
+        this.controlElements(".fc-control").forEach((el: HTMLElement) => {
+            const formElement = el as HTMLFormElement;
+            if (evt.detail.parameters[formElement.name] == undefined) {
+                evt.detail.parameters[formElement.name] = ''
             }
         });
     }
@@ -251,7 +251,7 @@ class FormControl extends ComponentControl {
         this.checkIfFormModfied(evt);
     }
 
-    public checkIfFormModfied(evt:Event = null): boolean {
+    public checkIfFormModfied(evt:Event): boolean {
         if (this.formMode() != "empty") {
             return this.warnIfFormModified(evt);
         }
@@ -269,15 +269,16 @@ class FormControl extends ComponentControl {
 
     private setFocus() {
         var selector = this.errorHighlighted(this.form) ? ".fc-control[data-error='true']" : ".fc-control"
-        for (const el of this.controlElements(selector)) {
-            if (el.readOnly == false && el.disabled == false) {
-                el.focus();
+        for (let el of this.controlElements(selector)) {
+            const formElement = el as HTMLFormElement;
+            if (formElement.readOnly == false && formElement.disabled == false) {
+                formElement.focus();
                 break;
             }
         }
     }
 
-    private htmlEditorElements(): NodeListOf<HTMLTextAreaElement> {
+    private htmlEditorElements(): NodeListOf<HTMLElement> {
         return this.controlElements("textarea[data-htmleditor]")
     }
 
@@ -286,11 +287,11 @@ class FormControl extends ComponentControl {
         if (elements.length == 0) {
             return;
         }
-        let editor = elements[0].dataset.htmleditor
+        let editor: any = elements[0].dataset.htmleditor
         if (!HtmlEditor.editor(editor)) {
             this.setMessage(`${editor} library not available.`, "error");
             this.htmlEditorElements().forEach((el) => {
-                HtmlEditor.removeElement(el);
+                HtmlEditor.removeElement(el as HTMLTextAreaElement);
                 el.classList.remove("hidden");
                 el.removeAttribute('data-htmleditor');
             });
@@ -303,7 +304,7 @@ class FormControl extends ComponentControl {
 
     private initHtmlEditor() {
         this.htmlEditorElements().forEach((el) => {
-            this.htmlEditorArray[el.id] = new HtmlEditor(el, this);
+            this.htmlEditorArray[el.id] = new HtmlEditor(el as HTMLTextAreaElement, this);
         });
     }
 }

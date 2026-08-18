@@ -1,6 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using System.Data;
-using MongoDB.Bson;
 using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Helpers;
 using Newtonsoft.Json;
@@ -10,6 +9,7 @@ namespace DbNetSuiteCore.Models
     public class GridModel : GridSelectModel
     {
         private string _SortKey = string.Empty;
+        private int _pageSize = 20;
         private SortOrder? _SortSequence = null;
         [JsonIgnore]
         internal IEnumerable<GridColumn> VisbleColumns => Columns.Where(c => c.DataOnly == false);
@@ -45,7 +45,17 @@ namespace DbNetSuiteCore.Models
         /// <summary>
         /// Defines the number of rows rendered on each page with the default number being 20.
         /// </summary>
-        public int PageSize { get; set; } = 20;
+        public int PageSize
+        {
+            get
+            {
+                return PageNavigation ? _pageSize : Int32.MaxValue;
+            }
+            set
+            {
+                _pageSize = value > 0 ? value : 20;
+            }
+        }
         [JsonProperty]
         internal bool IsNested { get; set; } = false;
         /// <summary>
@@ -182,6 +192,10 @@ namespace DbNetSuiteCore.Models
         /// </summary>
         public string SheetName { get; set; } = string.Empty;
         /// <summary>
+        /// Specfies the range of columns/rows selected from the spreadsheet e.g. "B7:M20". DataSourceType.Excel only.
+        /// </summary>
+        public string SheetRange { get; set; } = string.Empty;
+        /// <summary>
         /// Shows/Hides the Export button in the toolbar.
         /// </summary>
         public bool Export { get; set; } = true;
@@ -193,6 +207,10 @@ namespace DbNetSuiteCore.Models
         /// Enables simple search functionality 
         /// </summary>
         public bool Search { get; set; } = true;
+        /// <summary>
+        /// If set to false the paging information is removed from the toolbar with all selected records show on the first page
+        /// </summary>
+        public bool PageNavigation { get; set; } = true;
 
         public GridModel() : base()
         {
@@ -258,11 +276,6 @@ namespace DbNetSuiteCore.Models
         internal override ColumnModel NewColumn(DataColumn dataColumn, DataSourceType dataSourceType)
         {
             return new GridColumn(dataColumn, dataSourceType);
-        }
-
-        internal override ColumnModel NewColumn(BsonElement element)
-        {
-            return new GridColumn(element);
         }
 
         internal void AddNestedGrid(GridModel gridModel)

@@ -1,0 +1,26 @@
+﻿@page
+@using DbNetSuiteCore.Enums
+@using DbNetSuiteCore.Models
+
+@{
+    var customerForm = new FormModel(DataSourceType.DuckDB, "Chinook(DuckDB)", "customer") { Insert = true, Delete = true, Caption = "Customer Form" };
+
+    customerForm.Columns = new List<FormColumn>() {
+        new FormColumn("customer_id") {PrimaryKey = true},
+        new FormColumn("first_name"),
+        new FormColumn("last_name"),
+        new FormColumn("company") { ColSpan = 2},
+        new FormColumn("address") { ColSpan = 2},
+        new FormColumn("city"),
+        new FormColumn("state"),
+        new FormColumn("country"),
+        new FormColumn("postal_code"),
+        new FormColumn("phone"),
+        new FormColumn("fax"),
+        new FormColumn("email"),
+        new FormColumn("support_rep_id") {Lookup = new Lookup("employee", "employee_id", "last_name || ', ' || first_name", "title = 'Sales Support Agent'")}
+    };
+
+    @(await DbNetSuiteCore.Control.Create(HttpContext).Render(customerForm))
+}
+

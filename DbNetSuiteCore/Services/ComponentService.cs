@@ -1,12 +1,12 @@
 ﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
-using DbNetSuiteCore.Repositories;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using System.Data;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -15,16 +15,8 @@ namespace DbNetSuiteCore.Services
 {
     public class ComponentService
     {
-        protected readonly IMSSQLRepository _msSqlRepository;
-        protected readonly ISQLiteRepository _sqliteRepository;
+        protected readonly IRepositoryFactory _repositoryFactory;
         protected readonly RazorViewToStringRenderer _razorRendererService;
-        protected readonly IJSONRepository _jsonRepository;
-        protected readonly IFileSystemRepository _fileSystemRepository;
-        protected readonly IMySqlRepository _mySqlRepository;
-        protected readonly IPostgreSqlRepository _postgreSqlRepository;
-        protected readonly IExcelRepository _excelRepository;
-        protected readonly IMongoDbRepository _mongoDbRepository;
-        protected readonly IOracleRepository _oracleRepository;
 
         protected HttpContext _context;
         protected readonly IConfiguration _configuration;
@@ -32,20 +24,18 @@ namespace DbNetSuiteCore.Services
         protected readonly ILoggerFactory _loggerFactory = null;
         protected readonly ILogger _logger = null;
 
-        public ComponentService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory)
+        public ComponentService(
+            IRepositoryFactory repositoryFactory,
+            RazorViewToStringRenderer razorRendererService,
+            IConfiguration configuration,
+            IWebHostEnvironment webHostEnvironment,
+            ILoggerFactory loggerFactory)
         {
-            _msSqlRepository = msSqlRepository;
-            _razorRendererService = razorRendererService;
-            _sqliteRepository = sqliteRepository;
-            _jsonRepository = jsonRepository;
-            _fileSystemRepository = fileSystemRepository;
-            _mySqlRepository = mySqlRepository;
-            _postgreSqlRepository = postgreSqlRepository;
-            _excelRepository = excelRepository;
-            _mongoDbRepository = mongoDbRepository;
-            _oracleRepository = oracleRepository;
-            _configuration = configuration;
-            _webHostEnvironment = webHostEnvironment;
+            _repositoryFactory = repositoryFactory ?? throw new ArgumentNullException(nameof(repositoryFactory));
+            _razorRendererService = razorRendererService ?? throw new ArgumentNullException(nameof(razorRendererService));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException(nameof(webHostEnvironment));
+
             if (loggerFactory != null)
             {
                 _loggerFactory = loggerFactory;
@@ -97,24 +87,20 @@ namespace DbNetSuiteCore.Services
                     }
                 }
 
-                switch (componentModel.DataSourceType)
+                if (componentModel.DataSourceType == DataSourceType.FileSystem || DbHelper.IsInMemoryDb(componentModel.DataSourceType))
                 {
-                    case DataSourceType.JSON:
-                    case DataSourceType.FileSystem:
-                    case DataSourceType.Excel:
-                        gridModel.Columns.ToList().ForEach(c => c.Editable = false);
-                        break;
+                    gridModel.Columns.ToList().ForEach(c => c.Editable = false);
                 }
             }
 
             switch (componentModel.DataSourceType)
             {
-                case DataSourceType.MongoDB:
                 case DataSourceType.SQLite:
                 case DataSourceType.MSSQL:
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
                 case DataSourceType.Oracle:
+                case DataSourceType.DuckDB:
                     if (string.IsNullOrEmpty(componentModel.ConnectionAlias) && componentModel.IsLinked == false)
                     {
                         throw new Exception($"The ConnectionAlias must be specified if the control is not linked to a parent control (<b>{componentModel.TableName}</b>)");
@@ -122,15 +108,6 @@ namespace DbNetSuiteCore.Services
                     break;
             }
 
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.MongoDB:
-                    if (string.IsNullOrEmpty(componentModel.DatabaseName))
-                    {
-                        throw new Exception("The DatabaseName property must also be supplied for MongoDB connections");
-                    }
-                    break;
-            }
 
             switch (componentModel.DataSourceType)
             {
@@ -228,7 +205,7 @@ namespace DbNetSuiteCore.Services
                 }
 
                 if (componentModel is FormModel formModel)
-                {   
+                {
                     formModel.Columns = formModel.Columns.Where(c => c.DataType != typeof(Byte[]));
                 }
 
@@ -241,7 +218,6 @@ namespace DbNetSuiteCore.Services
                 switch (componentModel.DataSourceType)
                 {
                     case DataSourceType.FileSystem:
-                    case DataSourceType.JSON:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
                             DataColumn dataColumn = dataColumns.FirstOrDefault(dc => dc.ColumnName.ToLower() == column.Expression.ToLower());
@@ -256,6 +232,8 @@ namespace DbNetSuiteCore.Services
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
                     case DataSourceType.Oracle:
+                    case DataSourceType.DuckDB:
+                    case DataSourceType.JSON:
                         foreach (ColumnModel column in componentModel.GetColumns())
                         {
                             DataRow dataRow = schema.Rows.Cast<DataRow>().FirstOrDefault(r => (r["ColumnName"]?.ToString() ?? string.Empty).ToLower() == column.Expression.ToLower());
@@ -289,6 +267,23 @@ namespace DbNetSuiteCore.Services
             for (var i = 0; i < componentModel.GetColumns().ToList().Count; i++)
             {
                 componentModel.GetColumns().ToList()[i].Ordinal = i + 1;
+            }
+
+            if (componentModel.DataSourceType == DataSourceType.FileSystem)
+            {
+                foreach (PropertyInfo property in typeof(Models.FileSystemInfo).GetProperties())
+                {
+                    var column = componentModel.GetColumns().FirstOrDefault(c => c.Name == property.Name);
+                    if (column != null)
+                    {
+                        column.UserDataType = property.PropertyType.Name;
+
+                        if (property.PropertyType == typeof(DateTime) && string.IsNullOrEmpty(column.Format))
+                        {
+                            column.Format = "f";
+                        }
+                    }
+                }
             }
 
             ValidateModel(componentModel);
@@ -349,172 +344,51 @@ namespace DbNetSuiteCore.Services
 
         private async Task<DataTable> GetColumns(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.GetColumns(componentModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.GetColumns(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetColumns(componentModel);
-                case DataSourceType.JSON:
-                    return await _jsonRepository.GetColumns((GridSelectModel)componentModel, _context);
-                case DataSourceType.Excel:
-                    return _excelRepository.GetColumns((GridSelectModel)componentModel);
-                case DataSourceType.FileSystem:
-                    return _fileSystemRepository.GetColumns(componentModel);
-                case DataSourceType.MongoDB:
-                    return await _mongoDbRepository.GetColumns(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.GetColumns(componentModel);
-                default:
-                    return await _msSqlRepository.GetColumns(componentModel);
-            }
+            return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetColumns(componentModel);
         }
 
         protected async Task GetRecords(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.JSON:
-                    await _jsonRepository.GetRecords((GridSelectModel)componentModel, _context);
-                    break;
-                case DataSourceType.Excel:
-                    _excelRepository.GetRecords((GridSelectModel)componentModel);
-                    break;
-                case DataSourceType.FileSystem:
-                    _fileSystemRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecords(componentModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.GetRecords(componentModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetRecords(componentModel);
-                    break;
-            }
+            await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecords(componentModel);
         }
 
         protected async Task<bool> PrimaryKeyExists(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
+            if (new[] {DataSourceType.JSON, DataSourceType.Excel, DataSourceType.FileSystem}.Contains(componentModel.DataSourceType))
             {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.PrimaryKeyExists(componentModel);
-                case DataSourceType.MSSQL:
-                    return await _msSqlRepository.PrimaryKeyExists(componentModel);
+                return false;
             }
 
-            return false;
+            return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).PrimaryKeyExists(componentModel);
         }
 
         protected async Task<bool> ValueIsUnique(FormModel formModel, FormColumn formColumn)
         {
             switch (formModel.DataSourceType)
             {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.ValueIsUnique(formModel, formColumn);
-                case DataSourceType.MSSQL:
-                    return await _msSqlRepository.ValueIsUnique(formModel, formColumn);
-                default:
-                    return true;
+                case DataSourceType.IEnumerable:
+                case DataSourceType.FileSystem:
+                    return false;
             }
+
+            return await _repositoryFactory.GetSqlRepository(formModel.DataSourceType).ValueIsUnique(formModel, formColumn);
         }
 
         protected async Task GetRecord(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetRecord(componentModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetRecord(componentModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetRecord(componentModel);
-                    break;
-                case DataSourceType.JSON:
-                    await _jsonRepository.GetRecord((GridSelectModel)componentModel, _context);
-                    break;
-                case DataSourceType.Excel:
-                    _excelRepository.GetRecord((GridSelectModel)componentModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    await _mongoDbRepository.GetRecord(componentModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.GetRecord(componentModel);
-                    break;
-                default:
-                    await _msSqlRepository.GetRecord(componentModel);
-                    break;
-            }
+            await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecord(componentModel);
         }
 
         internal async Task<DataTable> GetRecordDataTable(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    return await _sqliteRepository.GetRecordDataTable(componentModel);
-                case DataSourceType.MySql:
-                    return await _mySqlRepository.GetRecordDataTable(componentModel);
-                case DataSourceType.PostgreSql:
-                    return await _postgreSqlRepository.GetRecordDataTable(componentModel);
-                case DataSourceType.Oracle:
-                    return await _oracleRepository.GetRecordDataTable(componentModel);
-                default:
-                    return await _msSqlRepository.GetRecordDataTable(componentModel);
-            }
+            // Only SQL data sources return DataTable
+            return await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetRecordDataTable(componentModel);
         }
-
 
         protected async Task GetLookupOptions(ComponentModel componentModel)
         {
-            switch (componentModel.DataSourceType)
-            {
-                case DataSourceType.SQLite:
-                    await _sqliteRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.MySql:
-                    await _mySqlRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.PostgreSql:
-                    await _postgreSqlRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.Oracle:
-                    await _oracleRepository.GetLookupOptions(componentModel);
-                    break;
-                case DataSourceType.MongoDB:
-                    break;
-                default:
-                    await _msSqlRepository.GetLookupOptions(componentModel);
-                    break;
-            }
+            // Only SQL data sources support lookup options
+            await _repositoryFactory.GetSqlRepository(componentModel.DataSourceType).GetLookupOptions(componentModel);
         }
 
         protected void AssignSearchDialogFilter(ComponentModel componentModel)
@@ -588,7 +462,7 @@ namespace DbNetSuiteCore.Services
         {
             if (componentModel.Uninitialised)
             {
-             //   componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
+                //   componentModel.LicenseInfo = LicenseHelper.ValidateLicense(_configuration, _context, _webHostEnvironment);
             }
         }
 

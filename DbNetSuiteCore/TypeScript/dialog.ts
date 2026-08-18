@@ -1,6 +1,6 @@
 class Dialog {
     dialog: HTMLDialogElement;
-    dependentDialog: Dialog;
+    dependentDialog: Dialog | null = null;
     control: ComponentControl;
     draggableDialog: DraggableDialog | null = null;
     constructor(dialog: HTMLDialogElement, control: ComponentControl) {

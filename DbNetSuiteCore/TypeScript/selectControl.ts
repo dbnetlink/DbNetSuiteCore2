@@ -1,17 +1,17 @@
 class SelectControl extends ComponentControl {
-    select: HTMLSelectElement;
+    select: HTMLSelectElement | null = null;
     selectedOptions: HTMLCollectionOf<HTMLOptionElement> | undefined; 
-    constructor(selectId) {
+    constructor(selectId:string) {
         super(selectId)
     }
 
-    afterRequest(evt) {
+    afterRequest(evt:any) {
         let selectId = evt.target.closest("form").id;
         if (selectId.startsWith(this.controlId) == false) {
             return
         }
 
-        this.select = this.controlElement("select");
+        this.select = this.controlElement("select") as HTMLSelectElement;
 
         let selectElements = this.controlElements("select");
         this.select.innerHTML = selectElements[1].innerHTML;
@@ -38,7 +38,7 @@ class SelectControl extends ComponentControl {
         let url = '';
         if (target.selectedOptions.length) {
             var dataset = target.selectedOptions[0].dataset
-            url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path : ''
+            url = this.dataSourceIsFileSystem() && dataset.isdirectory && dataset.isdirectory.toLowerCase() == "true" ? dataset.path as string : ''
         }
         this.updateLinkedChildControls(target.selectedIndex.toString(), url);
         this.selectedOptions = target.selectedOptions;
@@ -50,15 +50,14 @@ class SelectControl extends ComponentControl {
     }
 
     private checkForError() {
-        var select = this.controlElement("select") as HTMLSelectElement;
-        const error = select.querySelector("div");
+        const error = (this.select as HTMLSelectElement).querySelector("div");
         if (error) {
-            select.parentElement.nextElementSibling.after(error)
+            (this.select as HTMLSelectElement)?.parentElement?.nextElementSibling?.after(error)
         }
     }
 
     public getSelectedOptions(): HTMLOptionElement[] {
-        return Array.from(this.select.selectedOptions);
+        return Array.from(this.select!.selectedOptions);
     }
 
     public updateFixedFilterParameters(params: any) {

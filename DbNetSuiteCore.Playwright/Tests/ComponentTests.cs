@@ -2,13 +2,12 @@
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Playwright.Enums;
 using DbNetSuiteCore.Playwright.Models;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace DbNetSuiteCore.Playwright.Tests
@@ -16,8 +15,8 @@ namespace DbNetSuiteCore.Playwright.Tests
     public class ComponentTests : PageTest
     {
         private int _port;
-        protected CustomWebApplicationFactory<Program> _factory;
-        protected HttpClient _client;
+        protected CustomWebApplicationFactory<Program>? _factory;
+        protected HttpClient? _client;
         public int Port => _port;
         private string _baseUrl = string.Empty;
 
@@ -27,12 +26,12 @@ namespace DbNetSuiteCore.Playwright.Tests
             _port = FreeTcpPort();
             _baseUrl = $"https://localhost:{_port}/";
             _factory = new CustomWebApplicationFactory<Program>(_baseUrl);
-            _client = _factory.CreateClient();
+            _client = _factory!.CreateClient();
         }
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _factory.Dispose();
+            _factory?.Dispose();
         }
 
         public async Task GoToPage(string page, ComponentType componentType = ComponentType.Grid, bool mvc = false)
@@ -52,6 +51,28 @@ namespace DbNetSuiteCore.Playwright.Tests
         {
             await GoToPage(page, ComponentType.Grid, mvc);
         }
+
+        /// <summary>
+        /// Reloads the current page and waits for it to be ready
+        /// </summary>
+        protected async Task RefreshPage()
+        {
+            await Page.ReloadAsync(new PageReloadOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle
+            });
+        }
+
+        /// <summary>
+        /// Navigates to a page with query parameters built from a dictionary
+        /// </summary>
+        protected async Task GoToPageWithParams(string basePage, Dictionary<string, string> queryParams, ComponentType componentType = ComponentType.Grid, bool mvc = false)
+        {
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+            var pageWithParams = $"{basePage}?{queryString}";
+            await GoToPage(pageWithParams, componentType, mvc);
+        }
+
 
         private int FreeTcpPort()
         {
@@ -120,6 +141,15 @@ namespace DbNetSuiteCore.Playwright.Tests
             foreach (ColumnFilterTest columnFilterTest in columnFilterTests)
             {
                 await TestColumnFilter(columnFilterTest);
+            }
+        }
+        protected async Task GridColumnFilterInitialValue(List<ColumnFilterInitialValueTest> columnFilterTests, string page, bool mvc = false)
+        {
+            foreach (ColumnFilterInitialValueTest columnFilterTest in columnFilterTests)
+            {
+                string pageWithParams = $"{page}?columnname={string.Join(",", columnFilterTest.ColumnFilter.Keys)}&filtervalue={string.Join(",", columnFilterTest.ColumnFilter.Values)}";
+                await GoToPage(pageWithParams, mvc);
+                await TestColumnFilterInitialValue(columnFilterTest);
             }
         }
 
@@ -197,6 +227,12 @@ namespace DbNetSuiteCore.Playwright.Tests
             {
                 await TestRowCount(columnFilterTest.ExpectedRowCount);
             }
+        }
+
+        private async Task TestColumnFilterInitialValue(ColumnFilterInitialValueTest columnFilterTest)
+        {
+            ILocator rowCount = Page.Locator($"input[data-type=\"row-count\"]");
+            await Expect(rowCount).ToHaveValueAsync(columnFilterTest.ExpectedRowCount.ToString());
         }
 
         private async Task TestSearchDialog(SearchDialogTest searchDialogTest)
@@ -285,7 +321,7 @@ namespace DbNetSuiteCore.Playwright.Tests
 
         private async Task TestRowCount(int expectedRowCount, string type = "row")
         {
-            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"),new PageWaitForResponseOptions() { Timeout = 3000});
+            await Page.WaitForResponseAsync(r => r.Url.Contains($"control{DbNetSuiteCore.Middleware.DbNetSuiteCore.Extension}"), new PageWaitForResponseOptions() { Timeout = 3000 });
             if (expectedRowCount == 0)
             {
                 await Expect(Page.Locator("div#no-records")).ToBeVisibleAsync();
@@ -367,7 +403,7 @@ namespace DbNetSuiteCore.Playwright.Tests
             }
         }
 
-        protected async Task FormInsertTest(Dictionary<string, string> values, string page, bool mvc = false)
+        protected async Task FormInsertTest(Dictionary<string, string> values, string page, bool mvc = false, int expectedRowCount = 92)
         {
             await GoToPage(page, ComponentType.Form, mvc);
             await Page.GetByTestId("insert").ClickAsync();
@@ -376,11 +412,21 @@ namespace DbNetSuiteCore.Playwright.Tests
             foreach (string columnName in values.Keys)
             {
                 ILocator input = Page.Locator($"[name=\"_{columnName.ToLower()}\"]");
-                await input.FillAsync(values[columnName]);
+
+                string tagName = await input.EvaluateAsync<string>("element => element.tagName");
+
+                if (tagName == "SELECT")
+                {
+                    await input.SelectOptionAsync(values[columnName]);
+                }
+                else
+                {
+                    await input.FillAsync(values[columnName]);
+                }
             }
 
             await Page.GetByTestId("apply").ClickAsync();
-            await TestFormRowCount(92);
+            await TestFormRowCount(expectedRowCount);
         }
 
         protected async Task FormDeleteTest(string page = "", bool mvc = false)

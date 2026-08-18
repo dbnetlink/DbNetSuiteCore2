@@ -227,5 +227,18 @@ namespace DbNetSuiteCore.Helpers
 
             return string.Join("</br>", diagnostics);
         }
+
+        public static string BuildUrl(HttpRequest request, string path, string queryString = null)
+        {
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = request.Scheme,
+                Host = request.Host.Host,
+                Port = request.Host.Port ?? -1,
+                Path = path,
+                Query = queryString ?? string.Empty
+            };
+            return uriBuilder.ToString();
+        }
     }
 }

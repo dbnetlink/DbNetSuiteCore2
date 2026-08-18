@@ -3,7 +3,6 @@ using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Repositories;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Data;
 using System.Globalization;
@@ -95,7 +94,7 @@ namespace DbNetSuiteCore.Extensions
 
             if (componentModel is GridModel gridModel)
             {
-                 gridModel.AddFilterPart(query);
+                gridModel.AddFilterPart(query);
             }
             return query;
         }
@@ -141,14 +140,14 @@ namespace DbNetSuiteCore.Extensions
             {
                 foreach (var column in componentModel.SearchableColumns)
                 {
-                    ComponentModelExtensions.AddSearchFilterPart(componentModel, column, query, filterParts);
+                    AddSearchFilterPart(componentModel, column, query, filterParts);
                 }
 
                 foreach (var column in componentModel.GetColumns().Where(c => c.Lookup != null && string.IsNullOrEmpty(c.Lookup.TableName) == false))
                 {
                     var paramName = DbHelper.ParameterName(column.ParamName, componentModel.DataSourceType);
                     query.Params[$"{paramName}"] = $"%{componentModel.SearchInput}%";
-                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} like {paramName}";
+                    var lookupSql = $"select {column.Lookup?.KeyColumn} from {column.Lookup?.TableName} where {column.Lookup?.DescriptionColumn} {DbHelper.ConvertToILike("like",componentModel.DataSourceType)} {paramName}";
                     filterParts.Add($"{RefineSearchExpression(column, componentModel)} in ({lookupSql})");
                 }
 
@@ -175,7 +174,7 @@ namespace DbNetSuiteCore.Extensions
                 string filterExpression = FilterExpression(searchFilterPart, query, componentModel, colummnModel);
                 if (string.IsNullOrEmpty(filterExpression) == false)
                 {
-                    filterParts.Add($"{RefineSearchExpression(colummnModel, componentModel)} {filterExpression}");
+                    filterParts.Add($"{RefineSearchExpression(colummnModel, componentModel, searchFilterPart)} {filterExpression}");
                 }
             }
             return string.Join($" {componentModel.SearchDialogConjunction} ", filterParts);
@@ -184,11 +183,13 @@ namespace DbNetSuiteCore.Extensions
         private static string FilterExpression(SearchDialogFilter searchDialogFilter, QueryCommandConfig query, ComponentModel componentModel, ColumnModel columnModel)
         {
             string template = searchDialogFilter.Operator.GetAttribute<FilterExpressionAttribute>()?.Expression ?? string.Empty;
-
+     
             if (template == string.Empty)
             {
                 return template;
             }
+            template = DbHelper.ConvertToILike(template, componentModel.DataSourceType);
+
             List<string> parameterNames = new List<string>();
 
             switch (searchDialogFilter.Operator)
@@ -217,7 +218,7 @@ namespace DbNetSuiteCore.Extensions
                 default:
                     object value = ParamValue(searchDialogFilter.Value1, columnModel, componentModel.DataSourceType) ?? DBNull.Value;
                     var paramName = ParameterName(searchDialogFilter.ColumnKey, 0);
-                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator, value) ?? string.Empty;
+                    query.Params[paramName] = SearchFilterParam(searchDialogFilter.Operator, value, query.DataSourceType) ?? string.Empty;
                     return template.Replace("{0}", paramName);
             }
 
@@ -227,7 +228,7 @@ namespace DbNetSuiteCore.Extensions
             }
         }
 
-        public static object SearchFilterParam(SearchOperator searchOperator, object value)
+        public static object SearchFilterParam(SearchOperator searchOperator, object value, DataSourceType dataSourceType)
         {
             string template = string.Empty;
             switch (searchOperator)
@@ -252,6 +253,16 @@ namespace DbNetSuiteCore.Extensions
                     break;
             }
 
+            switch(dataSourceType)
+            {
+                case DataSourceType.DuckDB:
+                    if (template.Contains("%"))
+                    {
+                        value = (value?.ToString() ?? string.Empty).ToLower();
+                    }
+                    break;
+            }
+
             if (string.IsNullOrEmpty(template))
             {
                 return value;
@@ -260,16 +271,15 @@ namespace DbNetSuiteCore.Extensions
             return string.Format(template, value?.ToString());
         }
 
-        public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel)
+        public static string RefineSearchExpression(ColumnModel col, ComponentModel componentModel, SearchDialogFilter searchDialogFilter = null, string comparisonOperator = "=")
         {
             string columnExpression = DbHelper.StripColumnRename(col.Expression);
-
 
             if (col is GridColumn gridCol)
             {
                 if (gridCol.Aggregate != AggregateType.None)
                 {
-                    columnExpression = ComponentModelExtensions.AggregateExpression(gridCol);
+                    columnExpression = AggregateExpression(gridCol);
                 }
             }
 
@@ -300,7 +310,15 @@ namespace DbNetSuiteCore.Extensions
                             break;
                     }
                     break;
-                default:
+                case nameof(String):
+                    if (DbHelper.IsDuckDb(componentModel.DataSourceType))
+                    {
+                        columnExpression = $"CAST({columnExpression} as STRING)";
+                        if (comparisonOperator == "like" || searchDialogFilter != null && new[] { SearchOperator.Contains, SearchOperator.DoesNotContain, SearchOperator.StartsWith, SearchOperator.DoesNotStartWith, SearchOperator.EndsWith, SearchOperator.DoesNotEndWith }.Contains(searchDialogFilter.Operator))
+                        {
+                            columnExpression = $"LOWER({columnExpression})";
+                        }
+                    }
                     break;
             }
 
@@ -378,7 +396,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static string AddSelectPart(this ComponentModel componentModel, bool recordQuery = false)
         {
-            if (componentModel.GetColumns().Any() == false)
+            if (componentModel.GetColumns().Any() == false || componentModel.DataSourceType == DataSourceType.FileSystem)
             {
                 return "*";
             }
@@ -419,22 +437,23 @@ namespace DbNetSuiteCore.Extensions
             string expression = DbHelper.StripColumnRename(columnModel.Expression);
             expression = CaseInsensitiveExpression(componentModel, expression);
             query.Params[$"{DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}"] = $"%{searchInput}%";
-            filterParts.Add($"{expression} like {DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}");
+            filterParts.Add($"{expression} {DbHelper.ConvertToILike("like", componentModel.DataSourceType)} {DbHelper.ParameterName(columnModel.ParamName, query.DataSourceType)}");
         }
 
         public static string CaseInsensitiveExpression(ComponentModel componentModel, string expression)
         {
-            if (IsCsvFile(componentModel))
-            {
-                expression = $"LCASE({expression})";
-            }
-
             switch (componentModel.DataSourceType)
             {
                 case DataSourceType.PostgreSql:
                 case DataSourceType.MySql:
                 case DataSourceType.Oracle:
                     expression = $"LOWER({expression})";
+                    break;
+                default:
+                    if (DbHelper.IsDuckDb(componentModel.DataSourceType))
+                    {
+                        expression = $"LOWER(CAST({expression} as STRING))";
+                    }
                     break;
             }
             return expression;
@@ -456,7 +475,7 @@ namespace DbNetSuiteCore.Extensions
                     if (dataColumn == null)
                     {
                         continue;
-                    }   
+                    }
                     componentModel.Data.ParseColumnDataType((DataColumn)dataColumn, column, gridModel);
                 }
             }
@@ -732,6 +751,7 @@ namespace DbNetSuiteCore.Extensions
                 case DataSourceType.MySql:
                 case DataSourceType.PostgreSql:
                 case DataSourceType.SQLite:
+                case DataSourceType.DuckDB:
                     return QueryLimit(componentModel);
             }
 
@@ -751,6 +771,7 @@ namespace DbNetSuiteCore.Extensions
                     case DataSourceType.MySql:
                     case DataSourceType.PostgreSql:
                     case DataSourceType.SQLite:
+                    case DataSourceType.DuckDB:
                         limit = $" LIMIT {componentModel.QueryLimit}";
                         break;
                 }
@@ -761,12 +782,15 @@ namespace DbNetSuiteCore.Extensions
 
         public static string UpdateParamName(string paramName, ColumnModel column, DataSourceType dataSourceType)
         {
-            if (dataSourceType == DataSourceType.PostgreSql)
+            switch (dataSourceType)
             {
-                if (column.DbDataType == PostgreSqlDataTypes.Enum.ToString())
-                {
-                    paramName = $"CAST({paramName} as \"{column.EnumName.Split(".").Last()}\")";
-                }
+                case DataSourceType.PostgreSql:
+                case DataSourceType.DuckDB:
+                    if (column.DbDataType == PostgreSqlDataTypes.Enum.ToString())
+                    {
+                        paramName = $"CAST({paramName} as \"{column.EnumName.Split(".").Last()}\")";
+                    }
+                    break;
             }
 
             return paramName;

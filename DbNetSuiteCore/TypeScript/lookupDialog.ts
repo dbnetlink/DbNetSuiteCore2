@@ -1,10 +1,10 @@
 class LookupDialog extends Dialog {
     select: HTMLSelectElement;
-    input: HTMLInputElement;
-    caption: string;
+    input: HTMLInputElement | null = null;
+    caption: string = '';
     constructor(dialog: HTMLDialogElement, componentControl: ComponentControl) {
         super(dialog, componentControl);
-        this.select = dialog.querySelector("select");
+        this.select = dialog.querySelector("select") as HTMLSelectElement;
         this.control.getButton("cancel").addEventListener("click", () => this.close())
         this.control.getButton("select").addEventListener("click", () => this.apply())
     }
@@ -31,8 +31,8 @@ class LookupDialog extends Dialog {
 
     apply() {
         var selectedValues = Array.from(this.select.selectedOptions).map(({ value }) => value);
-        this.input.value = selectedValues.join(',');
-        this.input.dispatchEvent(new Event('change'));
+        (this.input as HTMLInputElement).value = selectedValues.join(',');
+        (this.input as HTMLInputElement).dispatchEvent(new Event('change'));
         this.close();
     }
 }

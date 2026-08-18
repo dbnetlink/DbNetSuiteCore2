@@ -146,6 +146,7 @@ namespace DbNetSuiteCore.Extensions
                 {
                     case Enums.DataSourceType.PostgreSql:
                     case Enums.DataSourceType.SQLite:
+                    case Enums.DataSourceType.DuckDB:
                         insert.Sql += $" returning {formModel.Columns.First(c => c.Autoincrement).ColumnName}";
                         executeScalar = true;
                         break;

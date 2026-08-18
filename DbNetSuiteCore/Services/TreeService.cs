@@ -1,6 +1,7 @@
 ﻿using DbNetSuiteCore.Constants;
 using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Extensions;
+using DbNetSuiteCore.Factories.Interfaces;
 using DbNetSuiteCore.Helpers;
 using DbNetSuiteCore.Models;
 using DbNetSuiteCore.Plugins.Interfaces;
@@ -14,7 +15,13 @@ namespace DbNetSuiteCore.Services
 {
     public class TreeService : ComponentService, IComponentService
     {
-        public TreeService(IMSSQLRepository msSqlRepository, RazorViewToStringRenderer razorRendererService, ISQLiteRepository sqliteRepository, IJSONRepository jsonRepository, IFileSystemRepository fileSystemRepository, IMySqlRepository mySqlRepository, IPostgreSqlRepository postgreSqlRepository, IExcelRepository excelRepository, IMongoDbRepository mongoDbRepository, IOracleRepository oracleRepository, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, ILoggerFactory loggerFactory) : base(msSqlRepository, razorRendererService, sqliteRepository, jsonRepository, fileSystemRepository, mySqlRepository, postgreSqlRepository, excelRepository, mongoDbRepository, oracleRepository, configuration, webHostEnvironment, loggerFactory)
+        public TreeService(
+            IRepositoryFactory repositoryFactory, 
+            RazorViewToStringRenderer razorRendererService, 
+            IConfiguration configuration, 
+            IWebHostEnvironment webHostEnvironment, 
+            ILoggerFactory loggerFactory) 
+            : base(repositoryFactory, razorRendererService, configuration, webHostEnvironment, loggerFactory)
         {
         }
 
@@ -103,26 +110,48 @@ namespace DbNetSuiteCore.Services
             await GetRecords(treeModel.Levels.Last());
 
             var folders = treeModel.Levels.Last().Data.Rows.Cast<DataRow>().Where(r => Convert.ToBoolean(r.RowValue(FileSystemColumn.IsDirectory))).ToList();
+            ISqlRepository repository = _repositoryFactory.GetSqlRepository(treeModel.DataSourceType);
 
             while (folders.Any())
             {
                 var childLevel = treeModel.Levels.Last().DeepCopy();
                 treeModel.NestedLevel = childLevel;
-                childLevel.Data = _fileSystemRepository.GetEmptyDataTable();
+                childLevel.Data = GetEmptyDataTable();
 
                 foreach (var folder in folders)
                 {
-                    var dataTable = _fileSystemRepository.GetFolderContents(folder.RowValue(FileSystemColumn.Path).ToString(), childLevel);
+                    childLevel.Url = folder.RowValue(FileSystemColumn.Path).ToString();
+                    childLevel.TableName = $"t1_{DateTime.Now.Ticks}";
+                    QueryCommandConfig query = childLevel.BuildQuery();
+                    var dataTable = await repository.GetDataTable(query, childLevel);
+
                     foreach (DataRow row in dataTable.Rows)
                     {
                         DataRow newRow = childLevel.Data.NewRow();
                         newRow.ItemArray = row.ItemArray;
                         childLevel.Data.Rows.Add(newRow);
                     }
-                }   
+                }
               
                 folders = childLevel.Data.Rows.Cast<DataRow>().Where(r => Convert.ToBoolean(r.RowValue(FileSystemColumn.IsDirectory))).ToList();
             }
+        }
+
+        private DataTable GetEmptyDataTable()
+        {
+            DataTable dataTable = new DataTable();
+            dataTable.Clear();
+            dataTable.Columns.Add(FileSystemColumn.Icon.ToString(), typeof(bool));
+            dataTable.Columns.Add(FileSystemColumn.IsDirectory.ToString(), typeof(bool));
+            dataTable.Columns.Add(FileSystemColumn.Name.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.Extension.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.Length.ToString(), typeof(Int64));
+            dataTable.Columns.Add(FileSystemColumn.LastModified.ToString(), typeof(DateTime));
+            dataTable.Columns.Add(FileSystemColumn.Folder.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.ParentFolder.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.Path.ToString(), typeof(string));
+            dataTable.Columns.Add(FileSystemColumn.Content.ToString(), typeof(string));
+            return dataTable;
         }
 
         private TreeModel GetTreeModel()

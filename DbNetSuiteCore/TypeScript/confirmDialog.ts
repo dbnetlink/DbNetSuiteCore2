@@ -1,12 +1,11 @@
-class ConfirmDialog extends Dialog{
+class ConfirmDialog extends Dialog {
     event: any;
-
     constructor(control: ComponentControl, prompt: string) {
-        super(control.controlElement(".confirm-dialog"),control )
-        this.dialog.querySelector(".prompt").innerHTML = prompt;
+        super(control.controlElement(".confirm-dialog") as HTMLDialogElement, control);
+        (this.dialog.querySelector(".prompt") as HTMLElement).innerHTML = prompt;
 
-        this.dialog.querySelector(this.control.buttonSelector("confirm")).addEventListener("click", () => this.confirm());
-        this.dialog.querySelector(this.control.buttonSelector("cancel")).addEventListener("click", () => this.cancel());
+        this.dialog.querySelector(this.control!.buttonSelector("confirm"))?.addEventListener("click", () => this.confirm());
+        this.dialog.querySelector(this.control!.buttonSelector("cancel"))?.addEventListener("click", () => this.cancel());
     }
 
     public open(event: any) {

@@ -57,6 +57,15 @@ namespace DbNetSuiteCore.Helpers
                        .SetSize(1024);
         }
 
+        public static MemoryCacheEntryOptions GetShortExpiryCacheOptions()
+        {
+            return new MemoryCacheEntryOptions()
+                       .SetSlidingExpiration(TimeSpan.FromSeconds(10))
+                       .SetAbsoluteExpiration(TimeSpan.FromSeconds(10))
+                       .SetPriority(CacheItemPriority.Normal)
+                       .SetSize(1024);
+        }
+
         private static string RedisCacheObject(object obj, string key, HttpContext httpContext)
         {
             if (httpContext == null)

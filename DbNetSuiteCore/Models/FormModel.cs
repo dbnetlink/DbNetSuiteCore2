@@ -1,7 +1,5 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using DbNetSuiteCore.Repositories;
-using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -112,10 +110,7 @@ namespace DbNetSuiteCore.Models
         {
             return new FormColumn(dataColumn, dataSourceType) { Required = dataColumn.AllowDBNull == false};
         }
-        internal override ColumnModel NewColumn(BsonElement element)
-        {
-            return new FormColumn(element) { Autoincrement = element.Name == MongoDbRepository.PrimaryKeyName };
-        }
+
         /// <summary>
         /// Provides access to current form value for a specified column. Can be used with CustomisationPlugin property to provide custom server-side validation for the form.
         /// </summary>

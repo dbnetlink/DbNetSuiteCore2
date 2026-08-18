@@ -21,6 +21,8 @@ namespace DbNetSuiteCore.Models
         public List<DbParameter> ProcedureParameters { get; set; } = new List<DbParameter>();
         [JsonProperty]
         internal bool IsStoredProcedure { get; set; } = false;
+        /// [JsonProperty]
+        internal CacheType JsonCacheType { get; set; } = CacheType.File;
         /// <summary>
         /// When set to true the data retrieved from the data source will be cached for subsequent requests. Only valid for Excel and JSON data sources.
         /// </summary>

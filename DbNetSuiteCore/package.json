@@ -2,25 +2,28 @@
   "name": "dbnetsuitecore",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "css:build": "npx tailwind build -i ./resources/CSS/tailwind.css -o ./resources/CSS/output.css"
   },
+  "sideEffects": true,
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "devDependencies": {
     "@typescript/lib-dom": "npm:@types/web@^0.0.218",
     "autoprefixer": "^10",
     "concurrently": "^8",
     "del": "^7.1.0",
+    "esbuild": "^0.25.0",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
     "merge-stream": "^2.0.0",
     "postcss": "^8",
     "postcss-cli": "^10",
-    "tailwindcss": "^3.4.10"
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.7"

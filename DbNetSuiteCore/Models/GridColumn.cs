@@ -1,8 +1,6 @@
 ﻿using DbNetSuiteCore.Enums;
 using DbNetSuiteCore.Helpers;
-using MongoDB.Bson;
 using Newtonsoft.Json;
-using System.ComponentModel;
 using System.Data;
 
 namespace DbNetSuiteCore.Models
@@ -46,6 +44,11 @@ namespace DbNetSuiteCore.Models
                 }
             }
         }
+        /// <summary>
+        /// Specified the initial value of the column filter
+        /// </summary>
+        public object InitialFilterValue { get; set; } = null;
+
         [JsonProperty]
         internal string FilterError { get; set; } = string.Empty;
         /// <summary>
@@ -112,9 +115,6 @@ namespace DbNetSuiteCore.Models
         }
 
         internal GridColumn(DataRow dataRow, DataSourceType dataSourceType) : base(dataRow, dataSourceType)
-        {
-        }
-        internal GridColumn(BsonElement element) : base(element)
         {
         }
 

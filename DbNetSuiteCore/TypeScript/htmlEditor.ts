@@ -75,7 +75,7 @@ class HtmlEditor {
             Italic,
             Font,
             Paragraph
-        } = window['CKEDITOR'];
+        } = window['CKEDITOR' as keyof Window];
 
         let config = {
             licenseKey: "",
@@ -89,13 +89,13 @@ class HtmlEditor {
         this.updateConfiguration(config);
 
         ClassicEditor
-            .create(document.querySelector(`#${this.textarea.id}_ckeditor`), config).then(editor => {
+            .create(document.querySelector(`#${this.textarea.id}_ckeditor`), config).then((editor:any) => {
                 this.editorInstance = editor;
             });
     }
 
     private initFroalaEditor() {
-        this.editorInstance = new window['FroalaEditor'](`#${this.textarea.id}_froala`);
+        this.editorInstance = new window['FroalaEditor' as keyof Window](`#${this.textarea.id}_froala`);
     }
 
     private static editorName(textarea: HTMLTextAreaElement) {
@@ -106,7 +106,7 @@ class HtmlEditor {
         switch (HtmlEditor.editorName(textarea)) {
             case HtmlEditor.Froala:
             case HtmlEditor.CKEditor:
-                document.querySelector(`#${textarea.id}_${HtmlEditor.editorName(textarea).toLowerCase()}`).remove();
+                document.querySelector(`#${textarea.id}_${HtmlEditor.editorName(textarea)?.toLowerCase()}`)?.remove();
                 break;
         }
     }
@@ -123,6 +123,6 @@ class HtmlEditor {
                 editor = 'CKEDITOR';
                 break;
         }
-        return window[editor];
+        return window[editor as keyof Window];
     }
 }
