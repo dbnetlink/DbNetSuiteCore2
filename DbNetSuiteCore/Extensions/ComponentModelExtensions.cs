@@ -396,7 +396,7 @@ namespace DbNetSuiteCore.Extensions
 
         public static string AddSelectPart(this ComponentModel componentModel, bool recordQuery = false)
         {
-            if (componentModel.GetColumns().Any() == false)
+            if (componentModel.GetColumns().Any() == false || componentModel.DataSourceType == DataSourceType.FileSystem)
             {
                 return "*";
             }
